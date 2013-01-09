@@ -27,6 +27,22 @@
 
 ; Notes: use 'make rom=0' to build ROM 0
 
+; 4.0 Anya
+; 80 column mode
+
+; 4.0.1
+; fix DEF FN regression
+; fix ATN bug
+; possibly restore advanced LIST (IMC.ROM)
+; possibly restore parameters for NEW (0 = normal, 1 = USR 0)
+; possibly overload MODE command to deal with 7/8-bit ASCII
+; possibly overload POKE command to do DPOKE or series of data (see BusySoft)
+
+; 4.1 Buffy
+; hi-res graphics (from Basic64)
+; possible support for hi-res screen$ (using sideways RAM)
+; possibly support for screen$(x,y)
+
 .section .text
 
 initpal equ 0x0cf7					; code used as palette data
@@ -78,7 +94,7 @@ _next_ch:
 	jr		test_sp					; then jump
 
 l0025:
-	defb	"400"					; version number
+	defb	"401"					; version number
 
 _fp_calc:
 	jp		calculate				; immediate jump
@@ -11167,7 +11183,7 @@ token:
 
 token1:
 	push	ix						;
-	ld		hl, k_token + 89		;
+	ld		hl, k_token + 89		; PEN
 	ld		c, tk_usr - 6			;
 	call	token22					;
 	cp		'I'						;
