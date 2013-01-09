@@ -1,0 +1,117 @@
+#.SILENT: 
+#  These shouldn't need to be changed
+#
+#
+ifneq ($(strip $(CROSSASM)),)
+	export Z80BASE=$(CROSSASM)/z80/tools/bin/
+endif
+
+export AS=$(Z80BASE)z80-unknown-coff-as
+export AR=$(Z80BASE)z80-unknown-coff-ar
+export LD=$(Z80BASE)z80-unknown-coff-ld
+export OBJCOPY=$(Z80BASE)z80-unknown-coff-objcopy
+export OBJDUMP=$(Z80BASE)z80-unknown-coff-objdump
+
+export ASFLAGS += --defsym ROM$(rom)=1 -z80 -ignore-undocumented-instructions -warn-unportable-instructions
+# --oformat forces coff output, as small single file programs seem to generate binary output directly, which is not what we want
+export LDFLAGS = --trace --oformat coff-z80 
+
+ifneq ($(strip $(LDSCRIPT)),)
+    LDFLAGS += -T $(LDSCRIPT)
+endif
+ifneq ($(strip $(OUTSECTIONS)),)
+    COPYSECTIONS = $(addprefix -j,$(OUTSECTIONS))
+endif
+
+export ROOT=$(shell pwd)
+
+# Define the extension for src files
+ifneq ($(strip $(SRC_EXT)),)
+    SRCEXT = $(SRC_EXT)
+else
+    SRCEXT = z80
+endif
+
+BIN=rom
+OBJ=obj
+LST=lst
+
+COFF=$(TARGET:%.rom=%.coff)
+
+OBJF     = $(Z80_ASM:%.$(SRCEXT)=%.o)
+OBJFILES = $(addprefix $(OBJ)/,$(OBJF))
+LDLIBS   = $(addprefix -l,$(LINK_LIBS))
+LDLIBSDIR= $(addprefix -L,$(LIB_DIRS))
+INCDIRS  = $(addprefix -I,$(INC_DIRS))
+
+ASFLAGS += $(INCDIRS)
+
+$(TARGET) : bdirs binary
+$(LIBRARY): bdirs library
+
+# Build target.coff from target.rom through objcopy
+binary: $(COFF) 
+	@echo Info: Extract sections $(OUTSECTIONS) "-->" $(TARGET)
+	@$(OBJCOPY) -v $(OBJCOPYFLAGS) $(COPYSECTIONS) -O binary $< $(TARGET)
+	@chmod +x $(TARGET)
+	@echo
+
+libf:
+	@echo $(OBJFILES)
+
+# Produce library archive from OBJFILES
+library: $(OBJFILES)
+	@echo Info: Creating library $@
+	@rm -f $(LIBRARY)
+	@$(AR) -rsv $(LIBRARY) $(OBJFILES)
+	@echo
+
+# Assemble .z8s into .o
+$(OBJ)/%.o: %.$(SRCEXT)
+	@echo "Info: Assemble" $@ "<--" $<
+	@$(AS) $(ASFLAGS) -al=$(LST)/$(<:%.$(SRCEXT)=%.lst) -o$@ $(PARAMFILES) $<
+
+# Produce .coff by assembling Z80_ASM into a single .o and then linking with
+# libraries
+%.coff : $(Z80_ASM)
+	@echo "info: Assemble" $(@:%.coff=%.o) "<--" $?
+	$(AS) $(ASFLAGS) -al=$(LST)/$(@:%.coff=%.lst) -o$(OBJ)/$(@:%.coff=%.o) $(PARAMFILES) $?
+	@echo
+	@echo "Info: Link    " $(@:%.coff=%.o) "-->" $@
+	$(LD) $(LDFLAGS) -Map=$(LST)/$(@:%.coff=%.map) -o$@ $(OBJ)/$(@:%.coff=%.o) $(LDLIBSDIR) $(LDLIBS) 
+	@echo
+	@echo Info: Create object dump $(@:%.coff=%.dump)
+	@$(OBJDUMP) -d -S $(COPYSECTIONS) $@ > $(LST)/$(@:%.coff=%.dump)
+
+# Link .coff from individual .o files
+%.coff_needs_globl : $(OBJFILES)
+	@echo "Info: Link " $? "-->" $@
+	$(LD) $(LDFLAGS) -Map=$(LST)/$(@:%.coff=%.map) -o$@ $? $(LDLIBSDIR) $(LDLIBS) 
+	@echo
+	@echo Info: Create object dump $(@:%.coff=%.dump)
+	@$(OBJDUMP) -d -S $(COPYSECTIONS) $@ > $(LST)/$(@:%.coff=%.dump)
+
+ 
+#  Utility targets
+#
+bdirs:
+	@#[ -d $(BIN) ] || mkdir $(BIN)
+	@[ -d $(OBJ) ] || mkdir $(OBJ)
+	@[ -d $(LST) ] || mkdir $(LST)
+
+.PHONY: tags
+tags :
+	@rm -f ctags
+	find . -name \*.c -exec ctags -a {} \;
+	find . -name \*.h -exec ctags -a {} \;
+
+.PHONEY: gclean
+gclean :
+	find . -name \*.o -exec rm -f {} \;
+	find . -name \*.o._x -exec rm -f {} \;
+	find . -name .depend -exec rm -f {} \;
+	rm -f $(LST)/*.map $(LST)/*.lst *.coff *.rom $(LST)/*.dump
+	rmdir $(LST)
+	rmdir $(OBJ)
+
+clean: gclean
