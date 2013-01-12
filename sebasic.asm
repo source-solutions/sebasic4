@@ -23,25 +23,17 @@
 ; the 32K firmware for the Chloe 280SE (also known as the ZX Spectrum SE).
 ; ROM0 provides hi-res support while ROM1 supports the normal screen mode.
 ; ROM1 can be used on its own in ZX Spectrum clones that use a 16K firmware
-; or do not support the Timex hi-res mode. This file has a tab width of 4.
+; or do not support the 280SE hi-res mode. This file has a tab width of 4.
 
 ; Notes: use 'make rom=0' to build ROM 0
 
-; 4.0 Anya
+; 4.0.0
 ; 80 column mode
 
 ; 4.0.1
-; fix DEF FN regression
-; fix ATN bug
-; possibly restore advanced LIST (IMC.ROM)
-; possibly restore parameters for NEW (0 = normal, 1 = USR 0)
-; possibly overload MODE command to deal with 7/8-bit ASCII
-; possibly overload POKE command to do DPOKE or series of data (see BusySoft)
-
-; 4.1 Buffy
-; hi-res graphics (from Basic64)
-; possible support for hi-res screen$ (using sideways RAM)
-; possibly support for screen$(x,y)
+; Fixed DEF FN regression.
+; Enabled entry of ATN token.
+; PAUSE without parameter is equivalent to PAUSE 0
 
 .section .text
 
@@ -878,26 +870,25 @@ l05ed:
 	ret								;
 
 l0605:
-	pop		af
-	ld		a, (taddr)
-;		sub		p_save + 1 % 256 	; not supported by binutils
-	sub		0x0e
-	ld		(taddr), a
-	call	class_a
-	call	syntax_z
-	jr		z, l0652
-	ld		a, (taddr)
-	ld		bc, 0x0011
-	and		a
-	jr		z, l0621
-	ld		c, 34
+	pop		af						;
+	ld		a, (taddr)				;
+	sub		0x0e					; sub p_save + 1 % 256 
+	ld		(taddr), a				;
+	call	class_a					;
+	call	syntax_z				;
+	jr		z, l0652				;
+	ld		a, (taddr)				;
+	ld		bc, 0x0011				;
+	and		a						;
+	jr		z, l0621				;
+	ld		c, 34					;
 
 l0621:
-	rst		bc_spaces
-	push	de
-	pop		ix
-	ld		a, ' '
-	ld		b, 11
+	rst		bc_spaces				;
+	push	de						;
+	pop		ix						;
+	ld		a, ' '					;
+	ld		b, 11					;
 
 l0629:
 	ld		(de), a
@@ -4089,8 +4080,6 @@ l18bc:
 	push	bc						;
 	call	find_int				;
 	push	bc						;
-
-popldir:
 	pop		hl						;
 	pop		de						;
 	pop		bc						;
@@ -4403,8 +4392,8 @@ units:
 	ret								;
 
 syntax:
-	defb	p_deffn - $				;
-	defb	p_dir - $				;
+	defb	p_deffn - $				; There is an offset value for each of the
+	defb	p_dir - $				; 56 BASIC commands.
 	defb	p_format - $			;
 	defb	p_move - $				;
 	defb	p_erase - $				;
@@ -4452,7 +4441,7 @@ syntax:
 	defb	p_draw - $				;
 	defb	p_clear - $				;
 	defb	p_return - $			;
-	defb	p_copy - $				;
+	defb	p_mode - $				;
 	defb	p_delete - $			;
 	defb	p_edit - $				;
 	defb	p_renum - $				;
@@ -4549,10 +4538,10 @@ p_plot:
 .endif
 
 p_pause:
-	defb	numexp_nofops			;
+	defb	num_exp_0				;
 	defw	pause					;
 
-p_copy:
+p_mode:
 	defb	num_exp_0				;
 	defw	vmode					;
 
@@ -4686,25 +4675,25 @@ p_over:
 	defb	col_offst				;
 
 l1b17:
-	res		7, (iy + _flags)
-	call	eline_no
-	xor		a
-	ld		(subppc), a
-	dec		a
-	ld		(errnr), a
-	jr		line_null
+	res		7, (iy + _flags)		;
+	call	eline_no				;
+	xor		a						;
+	ld		(subppc), a				;
+	dec		a						;
+	ld		(errnr), a				;
+	jr		line_null				;
 
 stmtlp:
-	rst		next_ch
+	rst		next_ch					;
 
 line_null:
 	call	setwork					;
 	inc		(iy + _subppc)			;
-	jp		m, report_c
-	rst		get_ch
-	ld		b, 0
-	cp		ctrl_n_l
-	jr		z, lineend
+	jp		m, report_c				;
+	rst		get_ch					;
+	ld		b, 0					;
+	cp		ctrl_n_l				;
+	jr		z, lineend				;
 	cp		':'						;
 	jr		z, stmtlp				;
 	ld		hl, nextstat			;
@@ -4757,31 +4746,31 @@ nextstat:
 	defb	BREAK_into_program		;
 
 l1b7d:
-	bit		7, (iy + _nsppc)
-	jr		nz, stmtnext1
-	ld		hl, (newppc)
-	bit		7, h
-	jr		z, l1b9e
+	bit		7, (iy + _nsppc)		;
+	jr		nz, stmtnext1			;
+	ld		hl, (newppc)			;
+	bit		7, h					;
+	jr		z, l1b9e				;
 
 linerun:
 	ld		hl, 0xfffe				;
 	ld		(ppc), hl				;
 	ld		hl, (worksp)			;
 	dec		hl						;
-	ld		de, (eline)
-	dec		de
-	ld		a, (nsppc)
-	jr		next_line
+	ld		de, (eline)				;
+	dec		de						;
+	ld		a, (nsppc)				;
+	jr		next_line				;
 
 l1b9e:
-	call	line_addr
-	ld		a, (nsppc)
-	jr		z, lineuse
-	and		a
-	jr		nz, statlost
-	ld		a, (hl)
-	and		%11000000
-	jr		z, lineuse
+	call	line_addr				;
+	ld		a, (nsppc)				;
+	jr		z, lineuse				;
+	and		a						;
+	jr		nz, statlost			;
+	ld		a, (hl)					;
+	and		%11000000				;
+	jr		z, lineuse				;
 	rst		error_1					;
 	defb	OK						;
 
@@ -4792,13 +4781,13 @@ rem:
 	pop		af						;
 
 lineend:
-	call	syntax_z
-	ret		z
-	ld		hl, (nxtline)
-	ld		a, 192
-	and		(hl)
-	ret		nz
-	xor		a
+	call	syntax_z				;
+	ret		z						;
+	ld		hl, (nxtline)			;
+	ld		a, 192					;
+	and		(hl)					;
+	ret		nz						;
+	xor		a						;
 
 lineuse:
 	cp		1						;
@@ -4812,20 +4801,20 @@ lineuse:
 	inc		hl						;
 	ld		d, (hl)					;
 	ex		de, hl					;
-	add		hl, de
-	inc		hl
+	add		hl, de					;
+	inc		hl						;
 
 next_line:
 	ld		(nxtline), hl			;
 	ex		de, hl					;
-	ld		(chadd), hl
-	ld		e, 0
-	ld		d, a
-	ld		(iy + _nsppc), 255
-	dec		d
-	ld		(iy + _subppc), d
-	jp		z, stmtlp
-	inc		d
+	ld		(chadd), hl				;
+	ld		e, 0					;
+	ld		d, a					;
+	ld		(iy + _nsppc), 255		;
+	dec		d						;
+	ld		(iy + _subppc), d		;
+	jp		z, stmtlp				;
+	inc		d						;
 	call	skipstats				;
 	jr		z, stmtnext1			;
 
@@ -4837,12 +4826,12 @@ check_end:
 	call	syntax_z				;
 	ret		nz						;
 	pop		bc						;
-	pop		bc
+	pop		bc						;
 
 stmtnext1:
-	rst		get_ch
-	cp		ctrl_n_l
-	jr		z, lineend
+	rst		get_ch					;
+	cp		ctrl_n_l				;
+	jr		z, lineend				;
 	cp		':'						;
 	jp		z, stmtlp				;
 	rst		error_1					;
@@ -4972,16 +4961,15 @@ class_a:
 
 class_7:
 	call	syntax_z				;
-	call	nz, streamfe
-	pop		af
-	ld		a, (taddr)
-;		sub		p_pen - (tk_pen - 1) % 256 ; not supported by binutils
-	sub		0x39
-	call	cotemp4
-	call	check_end
-	ld		hl, (attrt)
-	ld		(attrp), hl
-	ld		hl, pflag
+	call	nz, streamfe			;
+	pop		af						;
+	ld		a, (taddr)				;
+	sub		0x39					; sub p_pen - (tk_pen - 1) % 256
+	call	cotemp4					;
+	call	check_end				;
+	ld		hl, (attrt)				;
+	ld		(attrp), hl				;
+	ld		hl, pflag				;
 	ld		a, (hl)					;
 	rlca							;
 	xor		(hl)					;
@@ -4995,15 +4983,15 @@ l1cb9:
 	jr		l1cd7					;
 
 class_9:
-	call	syntax_z
-	jr		z, l1cd2
-	call	streamfe
-	ld		hl, maskt
-	ld		a, (hl)
-	or		%11111000
-	ld		(hl), a
-	res		6, (iy + _pflag)
-	rst		get_ch
+	call	syntax_z				;
+	jr		z, l1cd2				;
+	call	streamfe				;
+	ld		hl, maskt				;
+	ld		a, (hl)					;
+	or		%11111000				;
+	ld		(hl), a					;
+	res		6, (iy + _pflag)		;
+	rst		get_ch					;
 
 l1cd2:
 	call	citem					;
@@ -5014,12 +5002,12 @@ l1cd7:
 	ret								;
 
 class_b:
-	jp		l0605
+	jp		l0605					;
 
 l1cde:
-	cp		ctrl_n_l
-	jr		z, no_to_stk
-	cp		':'
+	cp		ctrl_n_l				;
+	jr		z, no_to_stk			;
+	cp		':'						;
 	jr		nz, class_6				;
 
 no_to_stk:
@@ -5046,7 +5034,7 @@ _if:
 	jp		c, lineend				;
 
 l1d00:
-	jp		line_null
+	jp		line_null				;
 
 for:
 	cp		tk_step					;
@@ -5079,7 +5067,7 @@ reorder:
 	add		hl, bc					;
 	rlca							;
 	jr		c, lmt_step				;
-	ld		c, 13
+	ld		c, 13					;
 	call	make_room				;
 	inc		hl						;
 
@@ -5098,20 +5086,20 @@ lmt_step:
 	ld		(hl), e					;
 	inc		hl						;
 	ld		(hl), d					;
-	ld		d, (iy + _subppc)
-	inc		hl
-	inc		d
-	ld		(hl), d
+	ld		d, (iy + _subppc)		;
+	inc		hl						;
+	inc		d						;
+	ld		(hl), d					;
 	call	next_loop				;
 	ret		nc						;
-	ld		a, (subppc)
-	ld		hl, (ppc)
-	ld		(newppc), hl
-	ld		b, (iy + _stril)
-	neg
-	ld		hl, (chadd)
-	ld		d, a
-	ld		e, tk_next
+	ld		a, (subppc)				;
+	ld		hl, (ppc)				;
+	ld		(newppc), hl			;
+	ld		b, (iy + _stril)		;
+	neg								;
+	ld		hl, (chadd)				;
+	ld		d, a					;
+	ld		e, tk_next				;
 
 l1d64:
 	push	bc
@@ -7543,7 +7531,7 @@ l2852:
 	inc		hl
 	push	hl
 	push	de
-	call	scanfix					;
+	call	scanning					;
 	pop		af
 	xor		(iy + _flags)
 	and		%01000000
@@ -9990,7 +9978,7 @@ loc_mem:
 
 x80_fgt:
 	ld		hl, (mem)				;
-									;
+
 l3403:
 	push	de						;
 	call	loc_mem					;
@@ -10008,8 +9996,8 @@ x80_fst:
 	ld		hl, (mem)				;
 	call	loc_mem					;
 	ex		de, hl					;
-	ld		c, 5
-	ldir
+	ld		c, 5					;
+	ldir							;
 	ex		de, hl					;
 	pop		hl						;
 	ret								;
@@ -10019,8 +10007,8 @@ x80_fxch:
 
 swap_byte:
 	ld		a, (de)					;
-	ld		c, a						
-	ld		a, (hl)
+	ld		c, a					;	
+	ld		a, (hl)					;
 	ld		(de), a					;
 	ld		(hl), c					;
 	inc		hl						;
@@ -10059,38 +10047,38 @@ g_loop:
 	ret								;
 
 x80_fabs:
-	ld		b, 0xff
-	jr		negate
+	ld		b, 0xff					;
+	jr		negate					;
 
 x80_fneg:
-	call	tstzero
-	ret		c
-	ld		b, 0
+	call	tstzero					;
+	ret		c						;
+	ld		b, 0					;
 
 negate:
 	ld		a, (hl)					;
 	and		a						;
-	jr		z, l3468
-	inc		hl
-	ld		a, b
-	and		%10000000
-	or		(hl)
-	rla
-	ccf
-	rra
+	jr		z, l3468				;
+	inc		hl						;
+	ld		a, b					;
+	and		%10000000				;
+	or		(hl)					;
+	rla								;
+	ccf								;
+	rra								;
 	ld		(hl), a					;
 	dec		hl						;
 	ret								;
 
 l3468:
-	push	de
-	push	hl
-	call	fetchi
-	pop		hl
-	ld		a, c
-	or		b
-	cpl
-	jr		l347f
+	push	de						;
+	push	hl						;
+	call	fetchi					;
+	pop		hl						;
+	ld		a, c					;
+	or		b						;
+	cpl								;
+	jr		l347f					;
 
 x80_fsgn:
 	call	tstzero					;
@@ -10103,10 +10091,10 @@ x80_fsgn:
 	sbc		a, a					;
 
 l347f:
-	ld		c, a
-	call	l2d8e
-	pop		de
-	ret
+	ld		c, a					;
+	call	l2d8e					;
+	pop		de						;
+	ret								;
 
 x80_fin:
 	call	find_int				;
@@ -10128,30 +10116,30 @@ x80_fusr:
 	ret								;
 
 x80_fusrs:
-	call	stk_fetch
-	dec		bc
-	ld		a, c
-	or		b
-	jr		nz, invarg
-	ld		a, (de)
-	call	alpha
-	jr		c, l34af
-	sub		144
-	jr		c, invarg
-	inc		a
+	call	stk_fetch				;
+	dec		bc						;
+	ld		a, c					;
+	or		b						;
+	jr		nz, invarg				;
+	ld		a, (de)					;
+	call	alpha					;
+	jr		c, l34af				;
+	sub		144						;
+	jr		c, invarg				;
+	inc		a						;
 
 l34af:
-	dec		a
-	add		a, a
-	add		a, a
-	add		a, a
-	cp		0xa8
-	jr		nc, invarg
-	ld		bc, (udg)
-	add		a, c
-	ld		c, a
-	jr		nc, l34c0
-	inc		b
+	dec		a						;
+	add		a, a					;
+	add		a, a					;
+	add		a, a					;
+	cp		0xa8					;
+	jr		nc, invarg				;
+	ld		bc, (udg)				;
+	add		a, c					;
+	ld		c, a					;
+	jr		nc, l34c0				;
+	inc		b						;
 
 l34c0:
 	jp		stack_bc1				;
@@ -10930,25 +10918,25 @@ l3893:
 
 .ifdef ROM0
 ldir2:
-	push	hl
-	push	de
-	push	bc
-	set		5, h
-	set		5, d
-	ldir
-	pop		bc
-	pop		de
-	pop		hl
-	ldir
-	ret
+	push	hl						;
+	push	de						;
+	push	bc						;
+	set		5, h					;
+	set		5, d					;
+	ldir							;
+	pop		bc						;
+	pop		de						;
+	pop		hl						;
+	ldir							;
+	ret								;
 
 cls2nd:
-	ld		d, h
-	ld		e, l
-	ld		(hl), 0
-	inc		de
-	ldir
-	ret
+	ld		d, h					;
+	ld		e, l					;
+	ld		(hl), 0					;
+	inc		de						;
+	ldir							;
+	ret								;
 .endif
 
 .ifdef ROM1
@@ -11055,11 +11043,9 @@ l391d:
 l3927:
 	rst		next_ch					;
 	call	check_end				;
-;	ld		a, (flags)				;
-;	or		%00001000				;
-;	jp		l1f1f					;
-	set		3, (iy + _flags)
-	ret
+	set		3, (iy + _flags)		;
+	ret								;
+
 	defs	3, 255					; 3 spare bytes
 
 l3934:
@@ -11183,12 +11169,15 @@ token:
 
 token1:
 	push	ix						;
-	ld		hl, k_token + 89		; PEN
-	ld		c, tk_usr - 6			;
+	ld		hl, k_token + 31		; + 89 for INPUT
+	ld		c, tk_tab - 6			; tk_usr - 6
 	call	token22					;
-	cp		'I'						;
-	jr		nz, token2				;
-	call	token8					;
+	cp		'A'						;
+;	jr		nz, token2				;
+;	call	token8					;
+	jp		atn_fix
+	nop
+	nop
 
 token2:
 	pop		ix						;
@@ -11700,43 +11689,59 @@ l3ca1:
 	jr		c, l3ca1				;
 	jp		l0a7e					;
 
-scanfix:
-	ld		hl, 6					;
-	add		hl, sp					;
-	ld		e, (hl)					;
-	inc		hl						;
-	ld		d, (hl)					;
-	ld		h, d					;
-	ld		l, e					;
-	xor		a						;
+;scanfix:
+;	ld		hl, 6					; this fix addresses an issue with certain
+;	add		hl, sp					; functions but introduces a regression
+;	ld		e, (hl)					; for others that breaks them entirely
+;	inc		hl						;
+;	ld		d, (hl)					;
+;	ld		h, d					;
+;	ld		l, e					;
+;	xor		a						;
 
-nextchar:
-	cp		0x0e					;
-	call	z, l18b5				;
-	inc		hl						;
-	ld		a, (hl)					;
-	cp		')'						;
-	jr		nz, nextchar			;
+;nextchar:
+;	cp		0x0e					;
+;	call	z, l18b5				;
+;	inc		hl						;
+;	ld		a, (hl)					;
+;	cp		')'						;
+;	jr		nz, nextchar			;
 
-endfn:
-	sbc		hl, de					;
-	ld		b, h					;
-	ld		c, l					;
-	sbc		hl, hl					;
-	add		hl, sp					;
-	sbc		hl, bc					;
-	ld		sp, hl					;
-	push	bc						;
-	push	de						;
-	push	hl						;
-	ex		de, hl					;
-	ldir							;
-	call	scanning				;
-	call	popldir					;
-	ld		sp, hl					;
-	ret								;
+;endfn:
+;	sbc		hl, de					;
+;	ld		b, h					;
+;	ld		c, l					;
+;	sbc		hl, hl					;
+;	add		hl, sp					;
+;	sbc		hl, bc					;
+;	ld		sp, hl					;
+;	push	bc						;
+;	push	de						;
+;	push	hl						;
+;	ex		de, hl					;
+;	ldir							;
+;	call	scanning				;
+;	call	popldir					;
+;	ld		sp, hl					;
+;	ret								;
 
-	defb	12, 9					; release date (month/day)
+atn_fix:
+	jr		nz, input_chk			; fix to tokenize ATN
+	jr		entoken					;
+
+input_chk:
+	cp		'I'						;
+	jp		nz, token2				;
+	ld		hl, k_token + 89		;
+	ld		c, tk_usr - 6			;
+
+entoken:
+	call	token8					;
+	jp		token2					;
+
+	defs	25, 255					; 25 spare bytes
+
+	defb	1, 12					; release date (month/day)
 
 cursors:
 	incbin	"cursors.data"			;
