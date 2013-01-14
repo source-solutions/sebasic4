@@ -44,6 +44,12 @@
 ; BORDER no longer sets the hi-res color combo.
 ; In hi-res mode PEN and PAPER have a maximum value of 7.
 
+; 4.0.3
+; Replaced ACS token with ACOS.
+; Replaced ASN token with ASIN.
+; Replaced LDIR token with PUT.
+; Replaced LN token with LOG.
+
 .section .text
 
 initpal equ 0x0cf7					; code used as palette data
@@ -95,7 +101,7 @@ _next_ch:
 	jr		test_sp					; then jump
 
 l0025:
-	defb	"402"					; version number
+	defb	"403"					; version number
 
 _fp_calc:
 	jp		calculate				; immediate jump
@@ -213,7 +219,7 @@ l0099:
 k_token:
 	incbin	"tokens.txt"			; token definitions
 
-	defs	7, 255					; 7 spare bytes
+	defs	5, 255					; 5 spare bytes
 
 k_unshifted:
 	incbin	"unshifted.txt"			; unshifted character definitions
@@ -11160,8 +11166,8 @@ token:
 
 token1:
 	push	ix						;
-	ld		hl, k_token + 31		; + 89 for INPUT
-	ld		c, tk_tab - 6			; tk_usr - 6
+	ld		hl, k_token + 57		; start of ASIN token
+	ld		c, tk_asn - 6			;
 	call	token22					;
 	cp		'A'						;
 ;	jr		nz, token2				;
@@ -11723,8 +11729,8 @@ atn_fix:
 input_chk:
 	cp		'I'						;
 	jp		nz, token2				;
-	ld		hl, k_token + 89		;
-	ld		c, tk_usr - 6			;
+	ld		hl, k_token + 282		; start of INPUT token
+	ld		c, tk_input - 6			;
 
 entoken:
 	call	token8					;
@@ -11752,7 +11758,7 @@ prism:
 
 	defs	6, 255					; 6 spare bytes
 
-	defb	1, 13					; release date (month/day)
+	defb	1, 14					; release date (month/day)
 
 cursors:
 	incbin	"cursors.data"			;
