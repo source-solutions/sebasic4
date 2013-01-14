@@ -28,12 +28,21 @@
 ; Notes: use 'make rom=0' to build ROM 0
 
 ; 4.0.0
-; 80 column mode
+; 80 column text mode
 
 ; 4.0.1
 ; Fixed DEF FN regression.
 ; Enabled entry of ATN token.
-; PAUSE without parameter is equivalent to PAUSE 0
+; PAUSE without parameter is equivalent to PAUSE 0.
+
+; 4.0.2
+; Replaced BRIGHT and FLASH commands with CLUT and COLOR.
+; Replaced LPRINT and LLIST commands with SLOW and FAST.
+; Replaced the old COLOR command with the MODE command.
+; Brought back the CALL command with its original token.
+; Renamed the TYPE command to UDG, as per the TK90X.
+; BORDER no longer sets the hi-res color combo.
+; In hi-res mode PEN and PAPER have a maximum value of 7.
 
 .section .text
 
@@ -86,7 +95,7 @@ _next_ch:
 	jr		test_sp					; then jump
 
 l0025:
-	defb	"401"					; version number
+	defb	"402"					; version number
 
 _fp_calc:
 	jp		calculate				; immediate jump
@@ -203,6 +212,8 @@ l0099:
 
 k_token:
 	incbin	"tokens.txt"			; token definitions
+
+	defs	7, 255					; 7 spare bytes
 
 k_unshifted:
 	incbin	"unshifted.txt"			; unshifted character definitions
@@ -355,7 +366,7 @@ l0333:
 	add		a, 79					;
 	cp		'V' + 0x4f				;
 	ret		c						;
-	add		a, 13					;
+	add		a, 11					;
 	call	add_char				;
 	ld		a, ctrl_graphics		;
 	ret								;
@@ -1630,18 +1641,13 @@ l0a70:
 	ret
 
 l0a58:
-	call	getbyte					;
-	ld		(attrp), a				;
-	ret								;
-
-l0a7e:
 	sbc		hl, bc					;
 	add		a, '0' - 1				;
 	ld		(de), a					;
 	inc		de						;
 	ret								;
 
-	defs	2, 255					; 2 spare bytes
+	defs	9, 255					; 9 spare bytes
 
 l0a87:
 	ld		de, prmain
@@ -3920,9 +3926,7 @@ l17ed:
 	res		4, (iy + _dflag)
 	ret
 
-llist:
-	ld		a, 3					;
-	jr		l17fb					;
+	defs	4, 255					; 4 spare bytes
 
 list:
 	ld		a, 2					;
@@ -4393,10 +4397,10 @@ units:
 
 syntax:
 	defb	p_deffn - $				; There is an offset value for each of the
-	defb	p_dir - $				; 56 BASIC commands.
-	defb	p_format - $			;
-	defb	p_move - $				;
-	defb	p_erase - $				;
+	defb	p_udg - $				; 56 BASIC commands.
+	defb	p_mode - $				;
+	defb	p_ldir - $				;
+	defb	p_reset - $				;
 	defb	p_open  - $				;
 	defb	p_close - $				;
 	defb	p_merge - $				;
@@ -4410,8 +4414,8 @@ syntax:
 	defb	p_inverse - $			;
 	defb	p_over - $				;
 	defb	p_out - $				;
-	defb	p_lprint - $			;
-	defb	p_llist - $				;
+	defb	p_slow - $				;
+	defb	p_fast - $				;
 	defb	p_stop - $				;
 	defb	p_read - $				;
 	defb	p_data - $				;
@@ -4441,13 +4445,13 @@ syntax:
 	defb	p_draw - $				;
 	defb	p_clear - $				;
 	defb	p_return - $			;
-	defb	p_mode - $				;
+	defb	p_call - $				;
 	defb	p_delete - $			;
 	defb	p_edit - $				;
 	defb	p_renum - $				;
 	defb	p_palette - $			;
 	defb	p_sound - $				;
-	defb	p_onerr - $				;
+	defb	p_onerror - $			;
 
 p_let:
 	defb	var_rqd, '=', expr_num_str
@@ -4541,17 +4545,17 @@ p_pause:
 	defb	num_exp_0				;
 	defw	pause					;
 
-p_mode:
+p_call:
 	defb	num_exp_0				;
-	defw	vmode					;
+	defw	_call					;
 
-p_lprint:
-	defb	var_syn					;
-	defw	lprint					;
+p_slow:
+	defb	no_f_ops				;
+	defw	slow					;
 
-p_llist:
-	defb	var_syn					;
-	defw	llist					;
+p_fast:
+	defb	no_f_ops				;
+	defw	fast					;
 
 p_beep:
 	defb	two_c_s_num, no_f_ops	;
@@ -4599,15 +4603,15 @@ p_edit:
 	defb	num_exp_0				;
 	defw	l38e6					;
 
-p_format:
+p_mode:
 	defb	numexp_nofops			;
-	defw	l0a58					;
+	defw	vmode					;
 
-p_move:
+p_ldir:
 	defb	two_c_s_num, ',', numexp_nofops
 	defw	l18bc					;
 
-p_onerr:
+p_onerror:
 	defb	var_syn					;
 	defw	l1937					;
 
@@ -4639,8 +4643,8 @@ p_sound:
 	defb	var_syn					;
 	defw	l09c3					;
 
-p_dir:
-p_erase:
+p_udg:
+p_reset:
 	defb	var_syn					;
 	defw	l09a1					;
 
@@ -5564,9 +5568,7 @@ unstack_z:
 	ret		z						;
 	jp		(hl)					;
 
-lprint:
-	ld		a, 3					;
-	jr		l1fcf					;
+	defs	4, 255					; 4 spare bytes
 
 print:
 	ld		a, 2					;
@@ -5981,7 +5983,12 @@ l2234:
 l223e:
 	ld		c, a
 	ld		a, d
+.ifdef ROM0
+	cp		8
+.endif
+.ifdef ROM1
 	cp		10
+.endif
 	jr		c, l2246
 
 invcolerr:
@@ -6059,57 +6066,41 @@ cochng:
 	ret								;
 
 l2273:
-	sbc		a, a
-	ld		a, d
-	rrca
-	ld		b, %10000000
-	jr		nz, l227d
-	rrca
-	ld		b, %01000000
+	sbc		a, a					; test for COLOR
+	ld		a, d					; get parameter
+	ld		b, %11111111			; set mask for whole byte
+	ld		hl, attrt				; update temporary attribute
+	jr		nz, cochng				; set attr_t for COLOR n
+	ld		b, %11000000			; mask CLUT bits
+	cp		8						; jump if CLUT 8
+	jr		z, l228a				;
+	cp		4						; test for CLUT >3
+	jr		nc, invcolerr			; jump if so
+	rrca							; rotate into position
+	rrca							;
+	jr		cochng					; set CLUT
+	
+l228a:
+	inc		hl						; address mask_t
+	ld		a, b					; both CLUT bits will be set
+	jr		cochng					; 
 
-l227d:
-	ld		c, a
-	ld		a, d
-	cp		8
-	jr		z, cofbok
-	cp		2
-	jr		nc, invcolerr
-
-cofbok:
-	ld		a, c
-	ld		hl, attrt				;
-	call	cochng					;
-	ld		a, c					;
-	rrca							;
-	rrca							;
-	rrca							;
-	jr		cochng					;
+	defs	6, 255					; 6 spare bytes
 
 l2294:
 	call	getbyte
 	cp		8
 	jr		nc, invcolerr
-.ifdef ROM1
 	out		(ula), a				;
-.endif
 	rlca							;
 	rlca							;
 	rlca							;
-.ifdef ROM1
 	bit		5, a					;
 	jr		nz, l22a6				;
 	xor		%00000111				;
-.endif
 
 l22a6:
 	ld		(bordcr), a				;
-.ifdef ROM0
-	ld		c, a					;
-	ld		a, 56					;
-	sub		c						;
-	or		%00000110				;
-	out		(scld), a				;
-.endif
 	ret								;
 
 .ifdef ROM0
@@ -6694,11 +6685,11 @@ l2414:
 l241e:
 	defb	tk_line					;
 	defb	tk_list					;
-	defb	tk_llist				;
 	defb	tk_goto					;
 	defb	tk_gosub				;
 	defb	tk_restore				;
 	defb	tk_run					;
+	defb	tk_edit					;
 
 .ifdef ROM1
 l2425:
@@ -11687,7 +11678,7 @@ l3ca1:
 	add		hl, bc					;
 	inc		a						;
 	jr		c, l3ca1				;
-	jp		l0a7e					;
+	jp		l0a58					;
 
 ;scanfix:
 ;	ld		hl, 6					; this fix addresses an issue with certain
@@ -11739,9 +11730,29 @@ entoken:
 	call	token8					;
 	jp		token2					;
 
-	defs	25, 255					; 25 spare bytes
+_call:
+	call	find_int
+	ld		a, b
+	or		c
+	ret		z
+	push	bc
+	ret
 
-	defb	1, 12					; release date (month/day)
+slow:
+	xor		a						; 3.5Mhz
+	jr		prism
+
+fast:
+	ld		a, %00000011			; full speed
+
+prism:
+	ld		bc, 0x8e3b				; ZX Prism port
+	out		(c), a
+	ret
+
+	defs	6, 255					; 6 spare bytes
+
+	defb	1, 13					; release date (month/day)
 
 cursors:
 	incbin	"cursors.data"			;
