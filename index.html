@@ -35,7 +35,10 @@
 
 <ul>
 <li>128 RAM cleared on hard reset.</li>
-<li>8-bit character set support: TYPE 8.</li>
+<li>15 new commands.</li>
+<li>3 new functions.</li>
+<li>7-bit character support: UDG 7.</li>
+<li>8-bit character set support: UDG 8.</li>
 <li>8-bit mode can be used to provide an additional 128 UDGs.</li>
 <li>80 column text: MODE 1.</li>
 <li>Abbreviated command entry: GO. 100.</li>
@@ -48,8 +51,12 @@
 <li>AY-3-891x support: SOUND 1,2;3,4.</li>
 <li>Based on the ZX81 ROM by John Grant &amp; Steve Vickers, who wrote the Spectrum ROM.</li>
 <li>Built-in support for Spectranet syntax.</li>
+<li>CALL command for calling machine code.</li>
 <li>Chloe font specially designed for maximum legibility in hi-res mode.</li>
 <li>CLEAR performs a RESTORE.</li>
+<li>CLUT command allows in-line changing of CLUTs.</li>
+<li>CLUT command includes old BRIGHT functionality.</li>
+<li>COLOR command enables in-line setting of attributes.</li>
 <li>Cursor down repeatedly to jump to the end of a line.</li>
 <li>Cursor jumps to an error in the line.</li>
 <li>Cursor up repeatedly to jump to the start of a line.</li>
@@ -66,6 +73,7 @@
 <li>Error skipping: ON ERROR CONTINUE.</li>
 <li>Error trapping: ON ERROR GOTO 100.</li>
 <li>Extend mode is not required.</li>
+<li>FAST command sets CPU to full speed.</li>
 <li>Fast lo-res text printing.</li>
 <li>Fast pilot signal sync.</li>
 <li>Fast reset.</li>
@@ -100,7 +108,9 @@
 <li>Only 32K ROM supported by devices that force USR 0 mode.</li>
 <li>Optimized for speed.</li>
 <li>OVER support in 80 column mode.</li>
+<li>PAPER sets color pair in hi-res mode.</li>
 <li>PAUSE defaults to PAUSE 0 without a parameter.</li>
+<li>PEN sets color pair in hi-res mode.</li>
 <li>Prevents accidental deletion of edit line on older keyboards.</li>
 <li>Quick entry for common functions.</li>
 <li>Quick entry for most common tape commands.</li>
@@ -122,6 +132,7 @@
 <li>Simplified flags.</li>
 <li>Simplified key tables.</li>
 <li>Single code-base for lo-res and hi-res ROMs.</li>
+<li>SLOW command sets CPU to 3.5Mhz.</li>
 <li>STOP token accessible during INPUT with cursor down.</li>
 <li>Supports a large number of legacy devices.</li>
 <li>Supports most existing programs in lo-res mode.</li>
