@@ -50,6 +50,10 @@
 ; Replaced LDIR token with PUT.
 ; Replaced LN token with LOG.
 
+; 4.0.4
+; Fixed a regression with the INVERSE token.
+
+
 .section .text
 
 initpal equ 0x0cf7					; code used as palette data
