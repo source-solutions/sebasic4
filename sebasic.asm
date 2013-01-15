@@ -101,7 +101,7 @@ _next_ch:
 	jr		test_sp					; then jump
 
 l0025:
-	defb	"403"					; version number
+	defb	"404"					; version number
 
 _fp_calc:
 	jp		calculate				; immediate jump
@@ -11729,8 +11729,8 @@ atn_fix:
 input_chk:
 	cp		'I'						;
 	jp		nz, token2				;
-	ld		hl, k_token + 282		; start of INPUT token
-	ld		c, tk_input - 6			;
+	ld		hl, k_token + 206		; start of INVERSE token
+	ld		c, tk_inverse - 6		;
 
 entoken:
 	call	token8					;
