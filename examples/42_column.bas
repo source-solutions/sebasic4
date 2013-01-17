@@ -1,0 +1,7 @@
+   10 BORDER 7: COLOR 56: CLS
+   20 PRINT #4; AT 0, 0;
+   30 FOR i = 26 to 255
+   40 PRINT #4; CHR$ i;
+   50 NEXT i
+   60 STOP
+  100 CLEAR 64999: LOAD "" CODE : RUN
