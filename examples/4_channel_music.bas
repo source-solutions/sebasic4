@@ -14,4 +14,4 @@
   140 REM fourth chord
   150 SOUND 0, 241; 1, 1; 2, 162; 3, 1; 4, 57; 5, 1
   160 BEEP .25, -3: BEEP .25, -3: BEEP .25, -7: BEEP .25, -7: BEEP .25, -9: BEEP .25, -9: BEEP .25, -14: BEEP .25, -14
-  170 GO TO 50
+  170 GOTO 50

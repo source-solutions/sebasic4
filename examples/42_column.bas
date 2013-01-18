@@ -1,6 +1,6 @@
    10 BORDER 7: COLOR 56: CLS
    20 PRINT #4; AT 0, 0;
-   30 FOR i = 26 to 255
+   30 FOR i = 26 TO 255
    40 PRINT #4; CHR$ i;
    50 NEXT i
    60 STOP

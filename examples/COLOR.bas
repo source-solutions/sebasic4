@@ -7,5 +7,5 @@
    60 LET a = VAL ("\" + STR$ (c) + STR$ (p) + STR$ (i))
    70 PRINT COLOR a;
    80 COLOR a
-   90 PAUSE
-  100 CLS: LIST
+   90 CLS
+  100 LIST

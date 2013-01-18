@@ -16,7 +16,7 @@
   150 NEXT i
   160 REM paint backdrop
   170 FOR i = 0 TO 21
-  180 FORMAT i * 8
+  180 COLOR i * 8
   190 PRINT "                                "; 
   200 NEXT i
   210 PRINT #0; AT 0, 0; PEN 0; PAPER 6; CLUT 2; "                                "; PAPER 7; "                                "

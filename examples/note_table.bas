@@ -1,14 +1,14 @@
    10 CLEAR 
    20 REM LOAD "notes" DATA n$()
-   30 GO SUB 9900: REM load notes data
-   40 GO SUB 9932: REM set notes values
-   50 GO SUB 9934: REM set channel values
+   30 GOSUB 9900: REM load notes data
+   40 GOSUB 9932: REM set notes values
+   50 GOSUB 9934: REM set channel values
    60 SOUND Av, 13; P, 62
    70 FOR o = 1 TO 8
    80 RESTORE 9928
    90 FOR x = 1 TO 12
   100 READ n
-  110 GO SUB 9930
+  110 GOSUB 9930
   120 NEXT x
   130 NEXT o
   140 STOP 
