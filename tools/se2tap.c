@@ -3057,7 +3057,7 @@ int main (int argc, char **argv)
         printf ("\nSE2TAP\n(Based on BAS2TAP v2.5 by Martijn van der Heide of ThunderWare Research Center)\n\n");
     if (!AllOk)
     {
-        printf ("Usage: BAS2TAP [-q] [-w] [-e] [-c] [-aX] [-sX] FileIn [FileOut]\n");
+        printf ("Usage: SE2TAP [-q] [-w] [-e] [-c] [-aX] [-sX] FileIn [FileOut]\n");
         printf ("       -q = quiet: no banner, no progress indication\n");
         printf ("       -w = suppress generation of warnings\n");
         printf ("       -e = write errors to stdout in stead of stderr channel\n");
