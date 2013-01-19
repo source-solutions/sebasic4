@@ -27,33 +27,6 @@
 
 ; Notes: use 'make rom=0' to build ROM 0
 
-; 4.0.0
-; 80 column text mode
-
-; 4.0.1
-; Fixed DEF FN regression.
-; Enabled entry of ATN token.
-; PAUSE without parameter is equivalent to PAUSE 0.
-
-; 4.0.2
-; Replaced BRIGHT and FLASH commands with CLUT and COLOR.
-; Replaced LPRINT and LLIST commands with SLOW and FAST.
-; Replaced the old COLOR command with the MODE command.
-; Brought back the CALL command with its original token.
-; Renamed the TYPE command to UDG, as per the TK90X.
-; BORDER no longer sets the hi-res color combo.
-; In hi-res mode PEN and PAPER have a maximum value of 7.
-
-; 4.0.3
-; Replaced ACS token with ACOS.
-; Replaced ASN token with ASIN.
-; Replaced LDIR token with PUT.
-; Replaced LN token with LOG.
-
-; 4.0.4
-; Fixed a regression with the INVERSE token.
-
-
 .section .text
 
 initpal equ 0x0cf7					; code used as palette data
@@ -11689,42 +11662,6 @@ l3ca1:
 	inc		a						;
 	jr		c, l3ca1				;
 	jp		l0a58					;
-
-;scanfix:
-;	ld		hl, 6					; this fix addresses an issue with certain
-;	add		hl, sp					; functions but introduces a regression
-;	ld		e, (hl)					; for others that breaks them entirely
-;	inc		hl						;
-;	ld		d, (hl)					;
-;	ld		h, d					;
-;	ld		l, e					;
-;	xor		a						;
-
-;nextchar:
-;	cp		0x0e					;
-;	call	z, l18b5				;
-;	inc		hl						;
-;	ld		a, (hl)					;
-;	cp		')'						;
-;	jr		nz, nextchar			;
-
-;endfn:
-;	sbc		hl, de					;
-;	ld		b, h					;
-;	ld		c, l					;
-;	sbc		hl, hl					;
-;	add		hl, sp					;
-;	sbc		hl, bc					;
-;	ld		sp, hl					;
-;	push	bc						;
-;	push	de						;
-;	push	hl						;
-;	ex		de, hl					;
-;	ldir							;
-;	call	scanning				;
-;	call	popldir					;
-;	ld		sp, hl					;
-;	ret								;
 
 atn_fix:
 	jr		nz, input_chk			; fix to tokenize ATN

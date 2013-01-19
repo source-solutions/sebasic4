@@ -1,0 +1,50 @@
+2013-01-16  Andrew Owen  <aowen10@mail.bbk.ac.uk>
+
+        * SE Basic IV update 4.0.4 released.
+
+        * Fixed a bug that prevented entering the INVERSE token.
+
+2013-01-15  Andrew Owen  <aowen10@mail.bbk.ac.uk>
+
+        * SE Basic IV update 4.0.3 released.
+
+        * Replaced ACS token with ACOS.
+        * Replaced ASN token with ASIN.
+        * Replaced LDIR token with PUT.
+        * Replaced LN token with LOG.
+
+2013-01-14  Andrew Owen  <aowen10@mail.bbk.ac.uk>
+
+        * SE Basic IV update 4.0.2 released.
+        
+        * Replaced MODE command with CALL.
+        * Replaced COLOR command with MODE.
+        * Replaced BRIGHT command with CLUT.
+        * Replaced FLASH command with COLOR.
+        * Replaced LPRINT command with SLOW.
+        * Replaced LLIST command with FAST.
+        * Replaced TYPE token with UDG.
+        * Replaced LDIR token with PUT.
+        * BORDER no-longer sets hi-res color combo.
+        * PEN and PAPER have a maximum vale of 7 in hi-res mode.
+
+2013-01-13  Andrew Owen  <aowen10@mail.bbk.ac.uk>
+
+        * SE Basic IV update 4.0.1 released.
+        
+        * Reverted DEF FN fix which broke boolean logic in DEF FN.
+        * Fixed a bug that prevented entering the ATN token.
+        * Enabled use of PAUSE without parameter as equivalent of PAUSE 0.
+
+2012-12-09  Andrew Owen  <aowen10@mail.bbk.ac.uk>
+
+        * SE Basic IV 4.0 Anya released.
+        
+        * Forked from OpenSE BASIC 3.1.2.
+        * 32K ROM with independent ROM1.
+        * 80 column support on Chloe 280SE.
+        * Replaced CALL command with MODE.
+        * Replaced DIR token with TYPE.
+        * Replaced MOVE token with LDIR.
+        * Replaced FORMAT token with COLOR.
+        * Replaced ERASE token with RESET.
