@@ -1,11 +1,11 @@
-    0 REM http://www.amsat.org/amsat/articles/g3ruh/111.html
-    1 DEF FN G(X)=X*180/PI: REM DEG()
-    2 DEF FN R(X)=X*PI/180: REM RAD()
-    3 DEF FN S$(I,I$)=I$+VAL$ """""+FN S$(I-1,I$)"(TO 2+(12 AND I<>1)): REM STRING$()
-	4 DEF FN D$(D)=STR$(D): REM DATE$()
-    5 DEF FN D(Y,M,D)=INT((Y-(1 AND M<=2))*YM)+INT((M+1+(12 AND M<=2))*30.6)+D-428: REM Convert date to day-number
-    6 DEF FN A(Y,X)=(ATN(Y/X) AND X<>0)+(PI/2*SGN(Y) AND X=0)+(PI AND X<0)+(2*PI AND (((ATN(Y/X) AND X<>0)+(PI/2*SGN(Y) AND X=0)+(PI AND X<0))<0)): REM FNatn
-    7 DEF FN O(X)=INT(X+0.5): REM ROUND()
+    0 DEF FN A(Y,X)=(ATN(Y/X) AND X<>0)+(PI/2*SGN(Y) AND X=0)+(PI AND X<0)+(2*PI AND (((ATN(Y/X) AND X<>0)+(PI/2*SGN(Y) AND X=0)+(PI AND X<0))<0)): REM FNatn
+    1 DEF FN D(Y,M,D)=INT((Y-(1 AND M<=2))*YM)+INT((M+1+(12 AND M<=2))*30.6)+D-428: REM Convert date to day-number
+    2 DEF FN G(X)=X*180/PI: REM DEG
+    3 DEF FN I(X)=INT(X+0.5): REM ROUND
+    4 DEF FN M$(S$,S,L)=S$(S TO S-1+L): REM MID$
+    5 DEF FN R(X)=X*PI/180: REM RAD
+    6 DEF FN S$(I,I$)=I$+VAL$ """""+FN S$(I-1,I$)"(TO 2+(12 AND I<>1)): REM STRING$
+    7 DEF FN V(X,Y)=X-Y*INT (X/Y): REM MOD
     8 LET init=1000: LET satvec=2000: LET sunvec=3000: LET rangevec=4000
     9 LET mode=4280: LET printdata=6000: LET header=6140: REM PROCedures
    10 LET V$="PLAN13": REM OSCAR-13 POSITION, SUN+ECLIPSE PLANNER
@@ -213,7 +213,7 @@
  4130  
  4140 REM Calculate sub-satellite Lat/Lon
  4150 LET SLON=FN G(FN A(Sy,Sx)): REM Lon,+East
- 4160 LET SLAT=FN G(ASIN(Sz/RS)): REM Lat,+North
+ 4160 LET SLat=FN G(ASIN(Sz/RS)): REM Lat,+North
  4170  
  4180 REM Resolve Sat-Obs velocity vector along unit range vector.(VOz=0)
  4190 LET RR=(Vx-VOx)*Rx+(Vy-VOy)*Ry+Vz*Rz: REM Range rate, km/s
@@ -230,14 +230,16 @@
  4360 IF M>=220 THEN LET M$="-"
  4370 RETURN
  
- 5000 REM DEF FNdate(D)
- 5010 REM REM Convert day-number to date; valid 1900 Mar 01-2100 Feb 28
- 5020 REM D=D+428:DW=(D+5)MOD7
- 5030 REM Y=INT((D-122.1)/YM):D=D-INT(Y*YM)
- 5040 REM MN=INT(D/30.61):D=D-INT(MN*30.6)
- 5050 REM MN=MN-1:IF MN>12 THEN MN=MN-12:Y=Y+1  
- 5060 REM D$=STR$(Y)+" "+MID$("JanFebMarAprMayJunJulAugSepOctNovDec",3*MN-2,3)
- 5070 REM =D$+" "+STR$(D)+" ["+MID$("SunMonTueWedThuFriSat",3*DW+1,3)+"]"
+ 5000 REM DEF FN D$(D)
+ 5010 REM Convert day-number to date; valid 1900 Mar 01-2100 Feb 28
+ 5015 LET D=DN
+ 5020 REM bug LET D=D+428: LET DW=FN V(D+5,7)
+ 5030 LET Y=INT((D-122.1)/YM): LET D=D-INT(Y*YM)
+ 5040 LET MN=INT(D/30.61): LET D=D-INT(MN*30.6)
+ 5050 LET MN=MN-1: IF MN>12 THEN LET MN=MN-12: LET Y=Y+1  
+ 5060 REM bug LET D$=STR$(Y)+" "+FN M$("JanFebMarAprMayJunJulAugSepOctNovDec",3*MN-2,3)
+ 5070 REM bug LET D$=D$+" "+STR$(D)+" ["+FN M$("SunMonTueWedThuFriSat",3*DW+1,3)+"]"
+ 5075 PRINT D$: RETURN
 
  6000 REM PROCprintdata
  6010 REM Construct time as a string
@@ -247,22 +249,24 @@
  6050 LET T$=H$+N$+"  "
  6060 
  6070 REM PROCmode: REM Get AO-13 mode.  Now round-off data
- 6080 REM bug LET R=FN O(R): LET EL=FN O(EL): LET AZ=FN O(AZ): LET SQ=FN O(SQ): LET RR=FN O(RR*10)/10
- 6090 LET HGT=FN O(RS-RE): LET SLON=FN O(SLON): LET SLAT=FN O(SLAT)
- 6100 IF RN<>OLDRN THEN LET OLDRN=RN:PROCheader
- 6110 PRINT T$;STR$(M);"   ";M$,R,EL,AZ,SQ,RR,E$,HGT,SLAT,SLON
+ 6080 REM bug LET R=FN I(R): LET EL=FN I(EL): LET AZ=FN I(AZ): LET SQ=FN I(SQ): LET RR=FN I(RR*10)/10
+ 6090 REM bug LET HGT=FN I(RS-RE): LET SLON=FN I(SLON): LET SLat=FN I(SLat)
+ 6100 IF RN<>OLDRN THEN LET OLDRN=RN: GOSUB header
+ 6110 PRINT T$;STR$(M);"   ";M$,R,EL,AZ,SQ,RR,E$,HGT,SLat,SLON
  6120 RETURN
  6130 
  6140 REM header
- 6150 RAAN=FN O(FN G(RAAN)):AP=FN O(FN G(AP)):SAZ=FN O(FN G(SAZ))
- 6160 SEL=FN O(FN G(SEL)):ILL=FN O(100*ILL)
+ 6150 LET RAAN=FN I(FN G(RAAN)): LET AP=FN I(FN G(AP)): LET SAZ=FN I(FN G(SAZ))
+ 6160 REM bug LET SEL=FN I(FN G(SEL)): LET ILL=FN I(100*ILL)
  6170 PRINT:PRINT
- 6180 PRINT S$;" - "L$;SPC(16);"AMSAT DAY ";STR$(DN-722100);SPC(12);FNdate(DN)
+ 6180 PRINT S$;" - ";L$;FN S$(16," ");"AMSAT DAY ";STR$(DN-722100);FN S$(12," ");: GOSUB 50000: REM FN D$(DN)
  6190 PRINT "ORBIT:";RN;"   AP/RAAN:";AP;"/";RAAN;"   ALON/ALAT:";ALON;"/";ALAT;
  6200 PRINT"   SAZ/SEL:";SAZ;"/";SEL;"   ILL:";ILL;"%"
  6210 PRINT
  6220 PRINT " UTC  MA  MODE  RANGE     EL     AZ     SQ     RR  ECL?    ";
  6230 PRINT "HGT    SLAT   SLON"
- 6240 PRINT STRING$(77,"-")
+ 6240 PRINT FN S$(77,"-")
  6250 RETURN
  6260 
+ 
+16383 REM bug <- lines with this cannot be converted properly and must be edited after conversion
