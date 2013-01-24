@@ -169,7 +169,7 @@
  2430 RETURN
  
  3000 REM PROCsunvec
- 3010 REM bug LET MAS=MASE+FN R(MASD*T):          REM MA of Sun round its orbit
+ 3010 LET MAS=MASE+FN R(MASD*T):          REM MA of Sun round its orbit
  3020 LET TAS=MRSE+WW*T+EQC1*SIN(MAS)+EQC2*SIN(2*MAS)
  3030 LET C=COS(TAS): LET S=SIN(TAS):             REM Sin/Cos Sun's true anomaly
  3040 LET SUNx=C: LET SUNy=S*CNS: LET SUNz=S*SNS: REM Sun unit vector - CELESTIAL coords
@@ -233,12 +233,12 @@
  5000 REM DEF FN D$(D)
  5010 REM Convert day-number to date; valid 1900 Mar 01-2100 Feb 28
  5015 LET D=DN
- 5020 REM bug LET D=D+428: LET DW=FN V(D+5,7)
+ 5020 LET D=D+428: LET DW=FN V(D+5,7)
  5030 LET Y=INT((D-122.1)/YM): LET D=D-INT(Y*YM)
  5040 LET MN=INT(D/30.61): LET D=D-INT(MN*30.6)
  5050 LET MN=MN-1: IF MN>12 THEN LET MN=MN-12: LET Y=Y+1  
- 5060 REM bug LET D$=STR$(Y)+" "+FN M$("JanFebMarAprMayJunJulAugSepOctNovDec",3*MN-2,3)
- 5070 REM bug LET D$=D$+" "+STR$(D)+" ["+FN M$("SunMonTueWedThuFriSat",3*DW+1,3)+"]"
+ 5060 LET D$=STR$(Y)+" "+FN M$("JanFebMarAprMayJunJulAugSepOctNovDec",3*MN-2,3)
+ 5070 LET D$=D$+" "+STR$(D)+" ["+FN M$("SunMonTueWedThuFriSat",3*DW+1,3)+"]"
  5075 PRINT D$: RETURN
 
  6000 REM PROCprintdata
@@ -249,15 +249,15 @@
  6050 LET T$=H$+N$+"  "
  6060 
  6070 REM PROCmode: REM Get AO-13 mode.  Now round-off data
- 6080 REM bug LET R=FN I(R): LET EL=FN I(EL): LET AZ=FN I(AZ): LET SQ=FN I(SQ): LET RR=FN I(RR*10)/10
- 6090 REM bug LET HGT=FN I(RS-RE): LET SLON=FN I(SLON): LET SLat=FN I(SLat)
+ 6080 LET R=FN I(R): LET EL=FN I(EL): LET AZ=FN I(AZ): LET SQ=FN I(SQ): LET RR=FN I(RR*10)/10
+ 6090 LET HGT=FN I(RS-RE): LET SLON=FN I(SLON): LET SLat=FN I(SLat)
  6100 IF RN<>OLDRN THEN LET OLDRN=RN: GOSUB header
  6110 PRINT T$;STR$(M);"   ";M$,R,EL,AZ,SQ,RR,E$,HGT,SLat,SLON
  6120 RETURN
  6130 
  6140 REM header
  6150 LET RAAN=FN I(FN G(RAAN)): LET AP=FN I(FN G(AP)): LET SAZ=FN I(FN G(SAZ))
- 6160 REM bug LET SEL=FN I(FN G(SEL)): LET ILL=FN I(100*ILL)
+ 6160 LET SEL=FN I(FN G(SEL)): LET ILL=FN I(100*ILL)
  6170 PRINT:PRINT
  6180 PRINT S$;" - ";L$;FN S$(16," ");"AMSAT DAY ";STR$(DN-722100);FN S$(12," ");: GOSUB 50000: REM FN D$(DN)
  6190 PRINT "ORBIT:";RN;"   AP/RAAN:";AP;"/";RAAN;"   ALON/ALAT:";ALON;"/";ALAT;
@@ -269,4 +269,4 @@
  6250 RETURN
  6260 
  
-16383 REM bug <- lines with this cannot be converted properly and must be edited after conversion
+16383 REM use se2tap -n to switch off syntax checking when converting to TAP
