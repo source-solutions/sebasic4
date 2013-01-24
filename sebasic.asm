@@ -3386,6 +3386,8 @@ l13d5:
 l140c:
 	incbin	"reports.txt"			;
 
+	defb	0xff					; 1 spare byte
+
 l1555:
 	pop		hl						;
 	ld		hl, l1301				;

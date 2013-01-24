@@ -6,3 +6,5 @@ data/.DS_Store
 .DS_Store
 
 data/tokens.txt~
+
+*.txt~
