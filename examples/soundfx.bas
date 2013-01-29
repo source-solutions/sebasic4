@@ -1,11 +1,11 @@
    10 REM gunshots
-   20 FOR x=1 TO 10
+   20 FOR x = 1 TO 10
    30 SOUND 6, 15; 7, 7; 8, 16; 9, 16; 10, 16; 12, 16; 13, 0
    40 PAUSE 5
    50 NEXT x
   100 REM whistling bomb
   110 SOUND 7, 62; 8, 15
-  120 FOR x=50 TO 100
+  120 FOR x = 50 TO 100
   130 SOUND 0, x
   140 PAUSE 2
   150 NEXT x

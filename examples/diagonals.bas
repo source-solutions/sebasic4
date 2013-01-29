@@ -1,0 +1,2 @@
+Auto 1
+  10 PRINT CHR$ (144+INT (RND*2));: GO TO 10

@@ -1,0 +1,59 @@
+Programs
+--------
+birdy.bas	- dodge the arrows catch the insects. By Mike Lord.
+
+breakout.bas    - through the wall by Mike Lord. Pure genius.
+
+buzzword.bas 	- by David H Ahl. The texts remain unaltered since 1978.
+
+calendar.bas    - adapted from a Mike Lord program. Made Y2K compliant.
+		- display altered to be same as Windows calendar.
+
+charset.bas 	- published by Geoff Wearmouth, Popular Computing Weekly, Nov 85.
+	    	- redefines character set which can then be improved with 
+            	- the BASin UDG/Character editor.
+
+eliza2		- streetwise Eliza from WOS. Only slightly modified from
+		- the original 1978 David Ahl program.
+
+endgame.bas	- from the Spectrum manual. Extended to show the game that
+		- appears in Alice through the Looking Glass.
+
+hangman.bas	- from the Spectrum manual. Needs a pal to input.
+
+mixup.bas	- A well-presented puzzle with good use of SCREEN$.
+
+pangolins.bas   - from the Spectrum BASIC manual.
+
+patterns2.bas   - by Richard Francis Altwasser - ULA programmer.
+
+pong2.bas	- A game of pong that works in demo mode or player can 
+		- control the left paddle with key 'Q' and 'A'.
+
+primes.bas      - Calculates a screenful of primes. Good use of TAB.
+		- program by Mike Lord. 
+
+rainbow.bas	- by R F Altwasser - ZX Spectrum patentee.
+
+roman.bas	- by Mike Lord. Converts to Roman numerals. Very short.
+
+roots.bas       - Newton Raphson square roots demo.
+		- adapted from Jupiter Ace manual.
+
+rumpo.bas	- Plucked from the ganderbag of a rambling Vogon my dearios.
+
+sombrero.bas	- 3D sine waves. Slow - needs Newton and Raphson.
+
+squares.bas	- Colourful squares.
+
+sysvar.bas	- Crashes due to complex expressions in DATA.
+		- Saves wear and tear on the original manual.
+
+BASin features
+--------------
+1) Renumber expects RUN and RESTORE to have line numbers - warning only.
+2) Editor throws a newline with : and THEN in REM statements 
+3) A refinement would have editor parse str$1 etc. with implied spaces.
+4) DATA values with complex expressions crash.
+
+
