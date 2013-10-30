@@ -1,5 +1,5 @@
-; Definitions file for opense.asm
-; Copyright (c) 2011-2012 Andrew Owen
+; Definitions file for sebasic.asm
+; Copyright (c) 2011-2013 Andrew Owen
 
 ; X80 maths co-processor instruction set (uses binutils style macros)
 
@@ -250,7 +250,12 @@
 .endm
 
 
-; colours
+; constants
+
+end_marker		equ	0x80
+
+
+; colors
 
 black			equ	0x00
 blue			equ	0x01
@@ -268,16 +273,16 @@ ctrl_true_vid	equ	0x04
 ctrl_inv_vid	equ	0x05
 ctrl_caps		equ	0x06
 ctrl_comma		equ	0x06
-ctrl_edit		equ	0x07
+ctrl_tabstop	equ	0x07
 ctrl_left		equ	0x08
 ctrl_right		equ	0x09
 ctrl_down		equ	0x0a
 ctrl_up			equ	0x0b
-ctrl_rubout		equ	0x0c
-ctrl_n_l		equ	0x0d
+ctrl_delete		equ	0x0c
+ctrl_enter		equ	0x0d
 ctrl_symbol		equ	0x0e
 ctrl_number		equ	0x0e
-ctrl_graphics	equ	0x0f
+ctrl_control	equ	0x0f
 ctrl_pen		equ	0x10
 ctrl_paper		equ	0x11
 ctrl_flash		equ	0x12
@@ -352,10 +357,10 @@ tk_len			equ	0xb1
 tk_sin			equ	0xb2
 tk_cos			equ	0xb3
 tk_tan			equ	0xb4
-tk_asn			equ	0xb5
-tk_acs			equ	0xb6
+tk_asin			equ	0xb5
+tk_acos			equ	0xb6
 tk_atn			equ	0xb7
-tk_ln			equ	0xb8
+tk_log			equ	0xb8
 tk_exp			equ	0xb9
 tk_int			equ	0xba
 tk_sqr			equ	0xbb
@@ -377,29 +382,29 @@ tk_line			equ	0xca
 tk_then			equ	0xcb
 tk_to			equ	0xcc
 tk_step			equ	0xcd
-tk_deffn		equ	0xce
-tk_dir			equ	0xcf
-tk_format		equ	0xd0
-tk_move			equ	0xd1
-tk_erase		equ	0xd2
+tk_def_fn		equ	0xce
+tk_put			equ	0xcf
+tk_mode			equ	0xd0
+tk_udg			equ	0xd1
+tk_reset		equ	0xd2
 tk_open			equ	0xd3
 tk_close		equ	0xd4
 tk_merge		equ	0xd5
-tk_verify		equ	0xd6
+tk_trace		equ	0xd6
 tk_beep			equ	0xd7
 tk_circle		equ	0xd8
 tk_pen			equ	0xd9
 tk_paper		equ	0xda
-tk_flash		equ	0xdb
-tk_bright		equ	0xdc
+tk_color		equ	0xdb
+tk_clut			equ	0xdc
 tk_inverse		equ	0xdd
 tk_over			equ	0xde
 tk_out			equ	0xdf
-tk_lprint		equ	0xe0
-tk_llist		equ	0xe1
+tk_slow			equ	0xe0
+tk_fast			equ	0xe1
 tk_stop			equ	0xe2
 tk_read			equ	0xe3
-tkdata			equ	0xe4
+tk_data			equ	0xe4
 tk_restore		equ	0xe5
 tk_new			equ	0xe6
 tk_border		equ	0xe7
@@ -426,17 +431,18 @@ tk_cls			equ	0xfb
 tk_draw			equ	0xfc
 tk_clear		equ	0xfd
 tk_return		equ	0xfe
-tk_copy			equ	0xff
+tk_call			equ	0xff
 tk_delete		equ	0x00
 tk_edit			equ	0x01
 tk_renum		equ	0x02
 tk_palette		equ	0x03
 tk_sound		equ	0x04
-tk_onerr		equ	0x05
+tk_on_error		equ	0x05
 
 
 ; i/o ports
 
+mmu				equ	0xf4
 ula				equ	0xfe
 scld			equ	0xff
 ay_reg			equ	0xc0f5
@@ -450,13 +456,13 @@ ulaplus_dat		equ	0xff3b
 ; restarts
 
 start			equ	0x00
-error_1			equ	0x08
+error			equ	0x08
 print_a			equ	0x10
-get_ch			equ	0x18
-next_ch			equ	0x20
-fp_calc			equ	0x28
+get_char		equ	0x18
+next_char		equ	0x20
+;calc			equ	0x28
 bc_spaces		equ	0x30
-interrupt		equ	0x38
+mask_int		equ	0x38
 
 
 ; command classes
@@ -498,7 +504,7 @@ No_room_for_line		equ	0x0f
 STOP_in_INPUT			equ	0x10
 FOR_without_NEXT		equ	0x11
 Bad_device				equ	0x12
-Bad_colour				equ	0x13
+Bad_color				equ	0x13
 BREAK_into_program		equ	0x14
 Bad_CLEAR_address		equ	0x15
 Missing_statement		equ	0x16
@@ -514,132 +520,132 @@ bitmap			equ	0x4000
 attrmap			equ	0x5800
 palbuf			equ	0x5b00
 
-kstate			equ	0x5c00		; (iy - 0x3a)
-kstate_4		equ	kstate + 4	; (iy - 0x36)
-lastk			equ	kstate + 8	; (iy - 0x32)
-repdel			equ	lastk + 1	; (iy - 0x31)
-repper			equ	repdel + 1	; (iy - 0x30)
-defadd			equ	repper + 1	; (iy - 0x2f)
-defadd_h		equ	defadd + 1	; (iy - 0x2e)
-kdata			equ	defadd + 2	; (iy - 0x2d)
-vdudata			equ	kdata + 1	; (iy - 0x2c)
-vdudata_h		equ	vdudata + 1	; (iy - 0x2b)
-strms			equ	vdudata + 2	; (iy - 0x2a)
-strms_fe		equ	strms + 2	; (iy - 0x28)
-strms_ff		equ	strms + 4	; (iy - 0x26)
-strms_00		equ	strms + 6	; (iy - 0x24)
-strms_01		equ	strms + 8	; (iy - 0x22)
-strms_02		equ	strms + 10	; (iy - 0x20)
-strms_03		equ	strms + 12	; (iy - 0x1e)
-strms_04		equ	strms + 14	; (iy - 0x1c)
-strms_05		equ	strms + 16	; (iy - 0x1a)
-strms_06		equ	strms + 18	; (iy - 0x18)
-strms_07		equ	strms + 20	; (iy - 0x16)
-strms_08		equ	strms + 22	; (iy - 0x14)
-strms_09		equ	strms + 24	; (iy - 0x12)
-strms_10		equ	strms + 26	; (iy - 0x10)
-strms_11		equ	strms + 28	; (iy - 0x0e)
-strms_12		equ	strms + 30	; (iy - 0x0c)
-strms_13		equ	strms + 32	; (iy - 0x0a)
-strms_14		equ	strms + 34	; (iy - 0x08)
-strms_15		equ	strms + 36	; (iy - 0x06)
-chars			equ	strms + 38	; (iy - 0x04)
-errsound		equ	chars + 2	; (iy - 0x02)
-click			equ	errsound + 1; (iy - 0x01)
-errnr			equ	click + 1	; (iy + 0x00)
-flags			equ	errnr + 1	; (iy + 0x01)
-dflag			equ	flags + 1	; (iy + 0x02)
-errsp			equ	dflag + 1	; (iy + 0x03)
-listsp			equ	errsp + 2	; (iy + 0x05)
-mode			equ	listsp + 2	; (iy + 0x07)
-newppc			equ	mode + 1	; (iy + 0x08)
-nsppc			equ	newppc + 2	; (iy + 0x0a)
-ppc				equ	nsppc + 1	; (iy + 0x0b)
-subppc			equ	ppc + 2		; (iy + 0x0d)
-bordcr			equ	subppc + 1	; (iy + 0x0e)
-eppc			equ	bordcr + 1	; (iy + 0x0f)
-eppc_h			equ	eppc + 1	; (iy + 0x10)
-vars			equ	eppc + 2	; (iy + 0x11)
-dest			equ	vars + 2	; (iy + 0x13)
-chans			equ	dest + 2	; (iy + 0x15)
-curchl			equ	chans + 2	; (iy + 0x17)
-prog			equ	curchl + 2	; (iy + 0x19)
-nxtline			equ	prog + 2	; (iy + 0x1b)
-datadd			equ	nxtline + 2	; (iy + 0x1d)
-eline			equ	datadd + 2	; (iy + 0x1f)
-kcur			equ	eline	+2	; (iy + 0x21)
-chadd			equ	kcur + 2	; (iy + 0x23)
-xptr			equ	chadd + 2	; (iy + 0x25)
-worksp			equ	xptr + 2	; (iy + 0x27)
-stkbot			equ	worksp + 2	; (iy + 0x29)
-stkend			equ	stkbot + 2	; (iy + 0x2b)
-stkend_h		equ	stkend + 1	; (iy + 0x2c)
-breg			equ	stkend + 2	; (iy + 0x2d)
-mem				equ	breg + 1	; (iy + 0x2e)
-klflag			equ	mem + 2		; (iy + 0x30)
-dfsz			equ	klflag + 1	; (iy + 0x31)
-sdtop			equ	dfsz + 1	; (iy + 0x32)
-coppc			equ	sdtop + 2	; (iy + 0x34)
-cosppc			equ	coppc + 2	; (iy + 0x36)
-flage			equ	cosppc + 1	; (iy + 0x37)
-stril			equ	flage + 1	; (iy + 0x38)
-taddr			equ	stril + 2	; (iy + 0x3a)
-seed			equ	taddr + 2	; (iy + 0x3c)
-frames			equ	seed + 2	; (iy + 0x3e)
-frames_h		equ	frames + 2	; (iy + 0x40)
-udg				equ	frames + 3	; (iy + 0x41)
-xcoord			equ	udg + 2		; (iy + 0x43)
-ycoord			equ	xcoord + 1	; (iy + 0x44)
-onerrflag		equ	xcoord + 2	; (iy + 0x45)
-onerrflag_h		equ	xcoord + 3	; (iy + 0x46)
-user			equ	onerrflag + 2;(iy + 0x47)
-echoe			equ	user + 1	; (iy + 0x48)
-dfcc			equ	echoe + 2	; (iy + 0x4a)
-dfccl			equ	dfcc + 2	; (iy + 0x4c)
-sposnu			equ	dfccl + 2	; (iy + 0x4e)
-sposnu_h		equ	sposnu + 1	; (iy + 0x4f)
-sposnl			equ	sposnu + 2	; (iy + 0x50)
-sposnl_h		equ	sposnl + 1	; (iy + 0x51)
-scrct			equ	sposnl + 2	; (iy + 0x52)
-attrp			equ	scrct + 1	; (iy + 0x53)
-maskp			equ	attrp + 1	; (iy + 0x54)
-attrt			equ	maskp + 1	; (iy + 0x55)
-maskt			equ	attrt + 1	; (iy + 0x56)
-pflag			equ	maskt + 1	; (iy + 0x57)
-membot			equ	pflag + 1	; (iy + 0x58)
-mem_0_1			equ	membot + 1	; (iy + 0x59)
-mem_0_2			equ	membot + 2	; (iy + 0x5a)
-mem_0_3			equ	membot + 3	; (iy + 0x5b)
-mem_0_4			equ	membot + 4	; (iy + 0x5c)
-mem_1			equ	membot + 5	; (iy + 0x5d)
-mem_1_1			equ	membot + 6	; (iy + 0x5e)
-mem_1_2			equ	membot + 7	; (iy + 0x5f)
-mem_1_3			equ	membot + 8	; (iy + 0x60)
-mem_1_4			equ	membot + 9	; (iy + 0x61)
-mem_2			equ	membot + 10	; (iy + 0x62)
-mem_2_1			equ	membot + 11	; (iy + 0x63)
-mem_2_2			equ	membot + 12	; (iy + 0x64)
-mem_2_3			equ	membot + 13	; (iy + 0x65)
-mem_2_4			equ	membot + 14	; (iy + 0x66)
-mem_3			equ	membot + 15	; (iy + 0x67)
-mem_3_1			equ	membot + 15	; (iy + 0x68)
-mem_3_2			equ	membot + 17	; (iy + 0x69)
-mem_3_3			equ	membot + 18	; (iy + 0x6a)
-mem_3_4			equ	membot + 19	; (iy + 0x6b)
-mem_4			equ	membot + 20	; (iy + 0x6c)
-mem_4_1			equ	membot + 21	; (iy + 0x6d)
-mem_4_2			equ	membot + 22	; (iy + 0x6e)
-mem_4_3			equ	membot + 23	; (iy + 0x6f)
-mem_4_4			equ	membot + 24	; (iy + 0x70)
-mem_5			equ	membot + 25	; (iy + 0x71)
-mem_5_1			equ	membot + 26	; (iy + 0x72)
-mem_5_2			equ	membot + 27	; (iy + 0x73)
-mem_5_3			equ	membot + 28	; (iy + 0x74)
-mem_5_4			equ	membot + 29	; (iy + 0x75)
-nmiadd			equ	membot + 30	; (iy + 0x76)
-ramtop			equ	nmiadd + 2	; (iy + 0x78)
-pramt			equ	ramtop + 2	; (iy + 0x7a)
-channels		equ	pramt + 2
+kstate			equ	0x5c00			; (iy - 0x3a)
+kstate_4		equ	kstate + 4		; (iy - 0x36)
+last_k			equ	kstate + 8		; (iy - 0x32)
+repdel			equ	last_k + 1		; (iy - 0x31)
+repper			equ	repdel + 1		; (iy - 0x30)
+defadd			equ	repper + 1		; (iy - 0x2f)
+defadd_h		equ	defadd + 1		; (iy - 0x2e)
+k_data			equ	defadd + 2		; (iy - 0x2d)
+vdu_data		equ	k_data + 1		; (iy - 0x2c)
+vdu_data_h		equ	vdu_data + 1	; (iy - 0x2b)
+strms			equ	vdu_data + 2	; (iy - 0x2a)
+strms_fe		equ	strms + 2		; (iy - 0x28)
+strms_ff		equ	strms + 4		; (iy - 0x26)
+strms_00		equ	strms + 6		; (iy - 0x24)
+strms_01		equ	strms + 8		; (iy - 0x22)
+strms_02		equ	strms + 10		; (iy - 0x20)
+strms_03		equ	strms + 12		; (iy - 0x1e)
+strms_04		equ	strms + 14		; (iy - 0x1c)
+strms_05		equ	strms + 16		; (iy - 0x1a)
+strms_06		equ	strms + 18		; (iy - 0x18)
+strms_07		equ	strms + 20		; (iy - 0x16)
+strms_08		equ	strms + 22		; (iy - 0x14)
+strms_09		equ	strms + 24		; (iy - 0x12)
+strms_10		equ	strms + 26		; (iy - 0x10)
+strms_11		equ	strms + 28		; (iy - 0x0e)
+strms_12		equ	strms + 30		; (iy - 0x0c)
+strms_13		equ	strms + 32		; (iy - 0x0a)
+strms_14		equ	strms + 34		; (iy - 0x08)
+strms_15		equ	strms + 36		; (iy - 0x06)
+chars			equ	strms + 38		; (iy - 0x04)
+rasp			equ	chars + 2		; (iy - 0x02)
+pip				equ	rasp + 1		; (iy - 0x01)
+err_nr			equ	pip + 1			; (iy + 0x00)
+flags			equ	err_nr + 1		; (iy + 0x01)
+vdu_flag		equ	flags + 1		; (iy + 0x02)
+err_sp			equ	vdu_flag + 1	; (iy + 0x03)
+list_sp			equ	err_sp + 2		; (iy + 0x05)
+mode			equ	list_sp + 2		; (iy + 0x07)
+newppc			equ	mode + 1		; (iy + 0x08)
+nsppc			equ	newppc + 2		; (iy + 0x0a)
+ppc				equ	nsppc + 1		; (iy + 0x0b)
+subppc			equ	ppc + 2			; (iy + 0x0d)
+bordcr			equ	subppc + 1		; (iy + 0x0e)
+e_ppc			equ	bordcr + 1		; (iy + 0x0f)
+e_ppc_h			equ	e_ppc + 1		; (iy + 0x10)
+vars			equ	e_ppc + 2		; (iy + 0x11)
+dest			equ	vars + 2		; (iy + 0x13)
+chans			equ	dest + 2		; (iy + 0x15)
+curchl			equ	chans + 2		; (iy + 0x17)
+prog			equ	curchl + 2		; (iy + 0x19)
+nxtlin			equ	prog + 2		; (iy + 0x1b)
+datadd			equ	nxtlin + 2		; (iy + 0x1d)
+e_line			equ	datadd + 2		; (iy + 0x1f)
+k_cur			equ	e_line	+2		; (iy + 0x21)
+ch_add			equ	k_cur + 2		; (iy + 0x23)
+x_ptr			equ	ch_add + 2		; (iy + 0x25)
+worksp			equ	x_ptr + 2		; (iy + 0x27)
+stkbot			equ	worksp + 2		; (iy + 0x29)
+stkend			equ	stkbot + 2		; (iy + 0x2b)
+stkend_h		equ	stkend + 1		; (iy + 0x2c)
+breg			equ	stkend + 2		; (iy + 0x2d)
+mem				equ	breg + 1		; (iy + 0x2e)
+flags2			equ	mem + 2			; (iy + 0x30)
+df_sz			equ	flags2 + 1		; (iy + 0x31)
+s_top			equ	df_sz + 1		; (iy + 0x32)
+oldppc			equ	s_top + 2		; (iy + 0x34)
+osppc			equ	oldppc + 2		; (iy + 0x36)
+flagx			equ	osppc + 1		; (iy + 0x37)
+strlen			equ	flagx + 1		; (iy + 0x38)
+t_addr			equ	strlen + 2		; (iy + 0x3a)
+seed			equ	t_addr + 2		; (iy + 0x3c)
+frames			equ	seed + 2		; (iy + 0x3e)
+frames_h		equ	frames + 2		; (iy + 0x40)
+udg				equ	frames + 3		; (iy + 0x41)
+coords			equ	udg + 2			; (iy + 0x43)
+coord_y			equ	coords + 1		; (iy + 0x44)
+onerrflag		equ	coord_y + 1		; (iy + 0x45)
+onerrflag_h		equ	onerrflag + 1	; (iy + 0x46)
+user			equ	onerrflag_h + 1	; (iy + 0x47)
+echo_e			equ	user + 1		; (iy + 0x48)
+df_cc			equ	echo_e + 2		; (iy + 0x4a)
+df_ccl			equ	df_cc + 2		; (iy + 0x4c)
+s_posn			equ	df_ccl + 2		; (iy + 0x4e)
+s_posn_h		equ	s_posn + 1		; (iy + 0x4f)
+sposnl			equ	s_posn + 2		; (iy + 0x50)
+sposnl_h		equ	sposnl + 1		; (iy + 0x51)
+scr_ct			equ	sposnl + 2		; (iy + 0x52)
+attr_p			equ	scr_ct + 1		; (iy + 0x53)
+mask_p			equ	attr_p + 1		; (iy + 0x54)
+attr_t			equ	mask_p + 1		; (iy + 0x55)
+mask_t			equ	attr_t + 1		; (iy + 0x56)
+p_flag			equ	mask_t + 1		; (iy + 0x57)
+membot			equ	p_flag + 1		; (iy + 0x58)
+mem_0_1			equ	membot + 1		; (iy + 0x59)
+mem_0_2			equ	membot + 2		; (iy + 0x5a)
+mem_0_3			equ	membot + 3		; (iy + 0x5b)
+mem_0_4			equ	membot + 4		; (iy + 0x5c)
+mem_1			equ	membot + 5		; (iy + 0x5d)
+mem_1_1			equ	membot + 6		; (iy + 0x5e)
+mem_1_2			equ	membot + 7		; (iy + 0x5f)
+mem_1_3			equ	membot + 8		; (iy + 0x60)
+mem_1_4			equ	membot + 9		; (iy + 0x61)
+mem_2			equ	membot + 10		; (iy + 0x62)
+mem_2_1			equ	membot + 11		; (iy + 0x63)
+mem_2_2			equ	membot + 12		; (iy + 0x64)
+mem_2_3			equ	membot + 13		; (iy + 0x65)
+mem_2_4			equ	membot + 14		; (iy + 0x66)
+mem_3			equ	membot + 15		; (iy + 0x67)
+mem_3_1			equ	membot + 15		; (iy + 0x68)
+mem_3_2			equ	membot + 17		; (iy + 0x69)
+mem_3_3			equ	membot + 18		; (iy + 0x6a)
+mem_3_4			equ	membot + 19		; (iy + 0x6b)
+mem_4			equ	membot + 20		; (iy + 0x6c)
+mem_4_1			equ	membot + 21		; (iy + 0x6d)
+mem_4_2			equ	membot + 22		; (iy + 0x6e)
+mem_4_3			equ	membot + 23		; (iy + 0x6f)
+mem_4_4			equ	membot + 24		; (iy + 0x70)
+mem_5			equ	membot + 25		; (iy + 0x71)
+mem_5_1			equ	membot + 26		; (iy + 0x72)
+mem_5_2			equ	membot + 27		; (iy + 0x73)
+mem_5_3			equ	membot + 28		; (iy + 0x74)
+mem_5_4			equ	membot + 29		; (iy + 0x75)
+nmiadd			equ	membot + 30		; (iy + 0x76)
+ramtop			equ	nmiadd + 2		; (iy + 0x78)
+p_ramt			equ	ramtop + 2		; (iy + 0x7a)
+channels		equ	p_ramt + 2
 
 
 ; system variable IY offsets
@@ -648,14 +654,14 @@ channels		equ	pramt + 2
 
 _kstate			equ	0x3a
 _kstate_4		equ	0x36
-_lastk			equ	0x32
+_last_k			equ	0x32
 _repdel			equ	0x31
 _repper			equ	0x30
 _defadd			equ	0x2f
 _defadd_h		equ	0x2e
-_kdata			equ	0x2d
-_vdudata		equ	0x2c
-_vdudata_h		equ	0x2b
+_k_data			equ	0x2d
+_vdu_data		equ	0x2c
+_vdu_data_h		equ	0x2b
 _strms			equ	0x2a
 _strms_fe		equ	0x28
 _strms_ff		equ	0x26
@@ -676,73 +682,73 @@ _strms_13		equ	0x0a
 _strms_14		equ	0x08
 _strms_15		equ	0x06
 _chars			equ	0x04
-_errsound		equ	0x02
-_click			equ	0x01
+_rasp			equ	0x02
+_pip			equ	0x01
 
 ; positive
 
-_errnr			equ	0x00
+_err_nr			equ	0x00
 _flags			equ	0x01
-_dflag			equ	0x02
-_errsp			equ	0x03
-_listsp			equ	0x05
+_vdu_flag		equ	0x02
+_err_sp			equ	0x03
+_list_sp		equ	0x05
 _mode			equ	0x07
 _newppc			equ	0x08
 _nsppc			equ	0x0a
 _ppc			equ	0x0b
 _subppc			equ	0x0d
 _bordcr			equ	0x0e
-_eppc			equ	0x0f
-_eppc_h			equ	0x10
+_e_ppc			equ	0x0f
+_e_ppc_h		equ	0x10
 _vars			equ	0x11
 _dest			equ	0x13
 _chans			equ	0x15
 _curchl			equ	0x17
 _prog			equ	0x19
-_nxtline		equ	0x1b
+_nxtlin			equ	0x1b
 _datadd			equ	0x1d
-_eline			equ	0x1f
-_kcur			equ	0x21
-_kcur_h			equ	0x22
-_chadd			equ	0x23
-_xptr			equ	0x25
-_xptr_h			equ	0x26
+_e_line			equ	0x1f
+_k_cur			equ	0x21
+_k_cur_h		equ	0x22
+_ch_add			equ	0x23
+_x_ptr			equ	0x25
+_x_ptr_h		equ	0x26
 _worksp			equ	0x27
 _stkbot			equ	0x29
 _stkend			equ	0x2b
 _stkend_h		equ	0x2c
 _breg			equ	0x2d
 _mem			equ	0x2e
-_klflag			equ	0x30
-_dfsz			equ	0x31
-_sdtop			equ	0x32
-_coppc			equ	0x34
-_cosppc			equ	0x36
-_flage			equ	0x37
-_stril			equ	0x38
-_taddr			equ	0x3a
+_flags2			equ	0x30
+_df_sz			equ	0x31
+_s_top			equ	0x32
+_oldppc			equ	0x34
+_osppc			equ	0x36
+_flagx			equ	0x37
+_strlen			equ	0x38
+_t_addr			equ	0x3a
 _seed			equ	0x3c
 _frames			equ	0x3e
 _frames_h		equ	0x40
 _udg			equ	0x41
-_xcoord			equ	0x43
-_ycoord			equ	0x44
+_coords			equ	0x43
+_coord_y		equ	0x44
 _onerrflag		equ	0x45
 _onerrflag_h	equ	0x46
 _user			equ	0x47
-_echoe			equ	0x48
-_dfcc			equ	0x4a
-_dfccl			equ	0x4c
-_sposnu			equ	0x4e
-_sposnu_h		equ	0x4f
+_echo_e			equ	0x48
+_df_cc			equ	0x4a
+_df_ccl			equ	0x4c
+_s_posn			equ	0x4e
+_s_posn_h		equ	0x4f
 _sposnl			equ	0x50
 _sposnl_h		equ	0x51
-_scrct			equ	0x52
-_attrp			equ	0x53
-_maskp			equ	0x54
-_attrt			equ	0x55
-_maskt			equ	0x56
-_pflag			equ	0x57
+_scr_ct			equ	0x52
+_attr_p			equ	0x53
+_mask_p			equ	0x54
+_attr_t			equ	0x55
+_mask_t			equ	0x56
+_p_flag			equ	0x57
 _membot			equ	0x58
 _mem_0_1		equ	0x59
 _mem_0_2		equ	0x5a
@@ -775,4 +781,4 @@ _mem_5_3		equ	0x74
 _mem_5_4		equ	0x75
 _nmiadd			equ	0x76
 _ramtop			equ	0x78
-_pramt			equ	0x7a
+_p_ramt			equ	0x7a

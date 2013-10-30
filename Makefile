@@ -1,4 +1,3 @@
-rom=1
 TARGET=se-$(rom).rom
 
 # Point to z80-binutils installation (if required)
@@ -11,13 +10,13 @@ SUBDIRS=
 
 # Linker script (config)
 # 
-LDSCRIPT=sebasic.ld
+LDSCRIPT=sebasic4.ld
 
 # Library, link and include directories
 # 
 LIB_DIRS  =
 LINK_LIBS =
-INC_DIRS  = data
+INC_DIRS  = data modules
 
 # COFF sections to output into target
 # 
@@ -25,7 +24,7 @@ OUTSECTIONS= .text
 
 # Parameter files that get processed first
 #
-PARAMFILES= sebasic.def
+PARAMFILES= sebasic4.def
 
 # Define file ending for src files (defaults to z8s)
 # 
@@ -33,14 +32,26 @@ SRC_EXT=asm
 
 # Source files
 Z80_ASM =  \
-sebasic.asm
+sebasic4.asm
 
+all: rom0 rom1
+
+rom0: dirs clean $(Z80_ASM)
+	@make build rom=0
+
+rom1: dirs clean $(Z80_ASM)
+	@make build rom=1
+
+announce:
+	@echo "Info: Building SE Basic IV ROM $(rom) : $(TARGET)"
+
+build: dirs announce $(TARGET) map
+	@cp $(TARGET) bin/
+	@echo "Done."
+	@echo ""
 
 # Local Makefile Targets
 #
-all: dirs $(TARGET) map
-	@echo "Done."
-
 fresh: clean all
 
 dirs : 
@@ -58,7 +69,7 @@ map :
 	    echo "End   Addr is " $$E; \
 	)
 
-dump: sebasic.coff
+dump: sebasic4.coff
 	$(OBJDUMP) -s $?
 
 #include $(CROSSASM)/z80/Makefile_Z80

@@ -67,9 +67,9 @@ library: $(OBJFILES)
 	@echo
 
 # Assemble .z8s into .o
-$(OBJ)/%.o: %.$(SRCEXT)
-	@echo "Info: Assemble" $@ "<--" $<
-	@$(AS) $(ASFLAGS) -al=$(LST)/$(<:%.$(SRCEXT)=%.lst) -o$@ $(PARAMFILES) $<
+#$(OBJ)/%.o: %.$(SRCEXT)
+#	@echo "Info: X Assemble" $@ "<--" $<
+#	@$(AS) $(ASFLAGS) -al=$(LST)/$(<:%.$(SRCEXT)=%.lst) -o$@ $(PARAMFILES) $<
 
 # Produce .coff by assembling Z80_ASM into a single .o and then linking with
 # libraries
@@ -106,12 +106,10 @@ tags :
 	find . -name \*.h -exec ctags -a {} \;
 
 .PHONEY: gclean
-gclean :
-	find . -name \*.o -exec rm -f {} \;
-	find . -name \*.o._x -exec rm -f {} \;
-	find . -name .depend -exec rm -f {} \;
-	rm -f $(LST)/*.map $(LST)/*.lst *.coff *.rom $(LST)/*.dump
-	rmdir $(LST)
-	rmdir $(OBJ)
+gclean : 
+	find . -name \*.o -exec rm -f {} \; 
+	find . -name \*.o._x -exec rm -f {} \; 
+	find . -name .depend -exec rm -f {} \; 
+	rm -f $(LST)/*.map $(LST)/*.lst *.coff *.rom $(LST)/*.dump; 
 
 clean: gclean

@@ -1,3 +1,38 @@
+????-??-??  Andrew Owen  <aowen10@mail.bbk.ac.uk>
+
+        * SE Basic IV 4.1 Buffy.
+
+        * Refactor and code cleanup.
+        * Added META mode -- the next character entered has its high bit set.
+        * Added CONTROL mode -- next character entered is offset by 79.
+        * Cursor mode now reset after a character is entered.
+        * Lower-case not tokenized when CAPS LOCK is on.
+        * Switched to Logan/O'Hara labelling.
+        * Re-ordered the keyboard tables.
+        * Re-ordered the parameter definitions in the syntax table.
+        * Simplified the cursors -- now only one cursor.
+        * Removed inline color control code entry -- not good in hi-res mode.
+        * Enabled cursor up and down during INPUT.
+        * CALL now sets required HL' value on return.
+        * Extended NEW: NEW 128 is hard reset, defaults to 0 (soft reset).
+        * Extended LIST. LIST [f],[l] lists a range of lines.
+        * BORDER sets the color pair in text mode.
+        * Faster drawing in graphics mode.
+        * Faster editor.
+        * Fully commented source code.
+        * Graphics commands can now use the entire display:
+          PLOT 0, -16: DRAW 255, 191: CIRCLE 128, 80, 95: PRINT POINT (0,-16)
+        * Improved support for legacy microdrive syntax.
+        * Modular assembly listing.
+        * NEW 48 performs a warm restart and sets compatibility mode.
+        * ROM switching service routine.
+        * SAVE now saves immediately without displaying a message
+          (corrupting the lower two lines of SCREEN$).
+        * SCREEN$ (x,y) support in 80-column mode.
+        * SCROLL command for console style text handling in 32- or 80-column mode.
+        * SPEED command sets CPU speed.
+        * TRACE command for debugging.
+
 2013-01-16  Andrew Owen  <aowen10@mail.bbk.ac.uk>
 
         * SE Basic IV update 4.0.4 released.
