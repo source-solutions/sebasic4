@@ -4,7 +4,7 @@
   <head>
     <meta charset='utf-8' />
     <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="SE Basic IV Anya : An open source firmware for the Chloe 280SE, Timex 2000 series and ZX Spectrum compatible microcomputers." />
+    <meta name="description" content="SE Basic IV Buffy : An open source firmware for the Chloe 280SE, Timex 2000 series and ZX Spectrum compatible microcomputers." />
     <link rel="shortcut icon" href="favicon.ico" />
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
@@ -18,7 +18,7 @@
         <header class="inner">
           <a id="forkme_banner" href="https://github.com/cheveron/sebasic4">View on GitHub</a>
 
-          <h1 id="project_title">SE Basic IV Anya</h1>
+          <h1 id="project_title">SE Basic IV Buffy</h1>
           <h2 id="project_tagline">An open source firmware for the Chloe 280SE, Timex 2000 series and ZX Spectrum compatible microcomputers.</h2>
 
             <section id="downloads">
@@ -33,14 +33,46 @@
       <section id="main_content" class="inner">
         <h3><a href="https://github.com/cheveron/sebasic4/wiki">Online user guide</a></h3>
 
-<h3>More than 100 reasons to upgrade</h3>
+<h3>Over 25 new features in SE Basic IV Buffy</h3>
 
 <ul>
-<li>128 RAM cleared on hard reset.</li>
-<li>15 new commands.</li>
+
+<li>BORDER sets the color pair in text mode.</li>
+<li>CALL sets the required value of HL' on return.</li>
+<li>CONTROL-shift enables block graphics, UDGs, and more to be entered directly.</li>
+<li>Cursor up and down in an INPUT line.</li>
+<li>Embedded codes are not permitted in functions.</li>
+<li>Faster drawing in graphics mode.</li>
+<li>Faster editor.</li>
+<li>Fully commented source code.</li>
+<li>Graphics commands can now use the entire display: PLOT 0, -16: PRINT POINT (0,-16).</li>
+<li>Improved support for legacy microdrive syntax.</li>
+<li>Inline color codes are ignored in text mode to prevent screen flicker.</li>
+<li>Labels changed to Logan/O'Hara.</li>
+<li>List a single line or a range of lines: LIST: LIST 10: LIST 10,: LIST ,100.</li>
+<li>META-shift enables characters 32 to 255 to be entered directly.</li>
+<li>Modular assembly listing.</li>
+<li>NEW 48 performs a warm restart and sets compatibility mode.</li>
+<li>NEW 128 performs a cold restart (clearing 128 RAM). For devices that force USR 0 mode.</li>
+<li>Refactored code for improved readability.</li>
+<li>ROM switching service routine.</li>
+<li>SAVE now saves immediately without displaying a message and corrupting the screen.</li>
+<li>SCREEN$ (x,y) support in 80-column mode.</li>
+<li>SCROLL command for console style text handling in 32- or 80-column mode.</li>
+<li>SPEED command sets CPU speed.</li>
+<li>TRACE command for debugging.</li>
+<li>Universal cursor.</li>
+
+</ul>
+
+<h3>Includes the 100 best features of SE Basic IV Anya</h3>
+
+<ul>
+<li>16 new commands.</li>
+<li>128 RAM cleared on cold restart.</li>
 <li>3 new functions.</li>
-<li>7-bit character support: UDG 7.</li>
-<li>8-bit character set support: UDG 8.</li>
+<li>7-bit character support: UDG 0.</li>
+<li>8-bit character set support: UDG 1.</li>
 <li>8-bit mode can be used to provide an additional 128 UDGs.</li>
 <li>80 column text: MODE 1.</li>
 <li>Abbreviated command entry: GO. 100.</li>
@@ -51,10 +83,10 @@
 <li>AY silenced on BASIC report.</li>
 <li>AY supported on Timex and 128 ports.</li>
 <li>AY-3-891x support: SOUND 1,2;3,4.</li>
-<li>Based on the ZX81 ROM by John Grant &amp; Steve Vickers, who wrote the Spectrum ROM.</li>
+<li>Based on the ZX81 ROM by John Grant & Steve Vickers, who wrote the Spectrum ROM.</li>
 <li>Built-in support for Spectranet syntax.</li>
 <li>CALL command for calling machine code.</li>
-<li>Chloe font specially designed for maximum legibility in hi-res mode.</li>
+<li>Chloe font specially designed for maximum legibility in text mode.</li>
 <li>CLEAR performs a RESTORE.</li>
 <li>CLUT command allows in-line changing of CLUTs.</li>
 <li>CLUT command includes old BRIGHT functionality.</li>
@@ -68,6 +100,7 @@
 <li>Default ULAplus palette.</li>
 <li>Designed specifically for the Chloe 280SE.</li>
 <li>Detokenizer simplifies editing lines.</li>
+<li>Disable BREAK with ON ERROR CONTINUE.</li>
 <li>Edit any line: EDIT 10</li>
 <li>Enhanced floating point library.</li>
 <li>Enter tab stops directly.</li>
@@ -75,23 +108,22 @@
 <li>Error skipping: ON ERROR CONTINUE.</li>
 <li>Error trapping: ON ERROR GOTO 100.</li>
 <li>Extend mode is not required.</li>
-<li>FAST command sets CPU to full speed.</li>
 <li>Fast lo-res text printing.</li>
 <li>Fast pilot signal sync.</li>
 <li>Fast reset.</li>
 <li>Four channel sound possible by combining BEEP and SOUND commands.</li>
-<li>Full support for BASIC editing in hi-res mode.</li>
-<li>Full support for block graphics in hi-res mode.</li>
-<li>Full support for UDGs in hi-res mode.</li>
+<li>Full support for BASIC editing in text mode.</li>
+<li>Full support for block graphics in text mode.</li>
+<li>Full support for UDGs in text mode.</li>
 <li>Fully open source (GPLv2 licensed).</li>
 <li>Geneva Mono font suitable for 32 or 40 column lo-res displays.</li>
-<li>Hexadecimal to decimal function: &amp;F.</li>
+<li>Hexadecimal to decimal function: &F.</li>
 <li>Includes legally machine reverse engineered replacements for critical routines.</li>
 <li>Incorporates elements of SAM BASIC by Andy Wright, creator of BETA BASIC.</li>
 <li>Increased line range: 0-16383.</li>
 <li>Invalid lines generate an error sound.</li>
 <li>INVERSE support in 80 column mode.</li>
-<li>Inverted cursor for Timex hi-res.</li>
+<li>Inverted cursor for text mode.</li>
 <li>IY register available in interrupt mode 1</li>
 <li>Key click is silent by default.</li>
 <li>Key response is mode dependent.</li>
@@ -110,9 +142,7 @@
 <li>Only 32K ROM supported by devices that force USR 0 mode.</li>
 <li>Optimized for speed.</li>
 <li>OVER support in 80 column mode.</li>
-<li>PAPER sets color pair in hi-res mode.</li>
 <li>PAUSE defaults to PAUSE 0 without a parameter.</li>
-<li>PEN sets color pair in hi-res mode.</li>
 <li>Prevents accidental deletion of edit line on older keyboards.</li>
 <li>Quick entry for common functions.</li>
 <li>Quick entry for most common tape commands.</li>
@@ -122,24 +152,23 @@
 <li>Renumber with step: RENUM 5,5.</li>
 <li>Reset ULAplus palette from buffer: RESET.</li>
 <li>Retained support for embedding control codes.</li>
-<li>SAM style cursors.</li>
 <li>Save ULAplus screens with SAVE "screen" 16384, 6976</li>
+<li>Set the color pair in text mode.</li>
 <li>SCREEN$() supports UDGs and 8-bit character sets.</li>
 <li>Scroll counter increased.</li>
 <li>Set the permanent attribute: COLOR 7.</li>
 <li>Sets the standard video mode on reset.</li>
 <li>Shift in CAPS mode gives lower case letters.</li>
-<li>Simple code page support in hi-res mode.</li>
+<li>Simple code page support in text mode.</li>
 <li>Simplified error messages.</li>
 <li>Simplified flags.</li>
 <li>Simplified key tables.</li>
-<li>Single code-base for lo-res and hi-res ROMs.</li>
-<li>SLOW command sets CPU to 3.5Mhz.</li>
-<li>STOP token accessible during INPUT with cursor down.</li>
+<li>Single code-base for graphics and text ROMs.</li>
+<li>STOP token accessible during INPUT with META+B.</li>
 <li>Supports a large number of legacy devices.</li>
-<li>Supports most existing programs in lo-res mode.</li>
-<li>Supports some existing programs in hi-res mode.</li>
-<li>Switching to INSERT mode before entering a line prevents tokenizing lower case characters.</li>
+<li>Supports most existing programs in graphics mode.</li>
+<li>Supports some existing programs in text mode.</li>
+<li>Switching on CAPS LOCK before entering a line prevents tokenizing lower case characters.</li>
 <li>Text after a REM statement is not tokenized.</li>
 <li>Tokenized command entry.</li>
 <li>ULAplus palette buffer following the default screen area.</li>
@@ -147,7 +176,7 @@
 <li>Use REM at the start of a line to clear an unwanted edit line.</li>
 <li>Use reserved words as variable names during tokenization.</li>
 <li>User system variable space accessible via IY register.</li>
-<li>Works with esxDOS on divIDE.</li>
+<li>Works with esxDOS on divIDE and divMMC.</li>
 <li>Z80 LDIR block copy: PUT 49152, 16384, 6912.</li>
 </ul>
       </section>
@@ -156,12 +185,11 @@
     <!-- FOOTER  -->
     <div id="footer_wrap" class="outer">
       <footer class="inner">
-        <p class="copyright">SE Basic IV Anya maintained by <a href="https://github.com/cheveron">cheveron</a></p>
+      	<p>SE Basic IV Buffy includes over 12,000 lines of code, and if developed in a conventional proprietary way would have required three man years of work and cost $436,000 USD.</p>
+        <p class="copyright">SE Basic IV Buffy maintained by <a href="https://github.com/cheveron">cheveron</a></p>
         <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
-
-    
 
   </body>
 </html>
