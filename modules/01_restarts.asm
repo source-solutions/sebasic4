@@ -196,12 +196,16 @@ mode_switch:
 .endif
 .ifdef ROM1
 	ld		a, 62					; 512x192 mode, white on black
+
+mode_switch_1:
 	ld		e, %00001000			; ROM 0, VRAM 1, RAM 0
 	ld		hl, 0x0208				; set shorter key repeat
 .endif
 	ld		(repdel), hl			; set key repeat
-	ld		bc, paging				; 16-bit I/O
 	out		(scld), a				; set video mode
+
+mode_switch_2:
+	ld		bc, paging				; 16-bit I/O
 	out		(c), e					; set ROM and VRAM page
 	ret								; end of subroutine
 

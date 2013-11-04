@@ -15,36 +15,61 @@ org 0x11c5
 	defs	1, 255					; unused locations (common)
 
 .ifdef ROM0
-
 ; THE 'COLD START' ROUTINE
-org 0x11c6
-;org 0x3cac
 cold_start:
-	ld		a, 62					; 512x192 mode, white on black
-	out		(scld), a				; DOCK bank, interrupts on
-	xor		a						; ensure no sideways RAM is
-	out		(mmu), a				; paged in on Chloe 280SE
-	ld		b, 7					; bank count
-
-org 0x11cf
+ 	xor		a						; LD A, 0
+ 	out		(ula), a				; BORDER 0
+ 	out		(mmu), a				; ensure no sideways RAM is paged in
+	ld		a, %00001000			; ROM 0, VRAM 1; RAM 0
+	ld		bc, paging				; select paging
+	out		(c), a					; set it
+	ld		hl, font - 256			; offest to ASCII character zero
+	ld		(chars), hl				; store it in chars
+	ld		iy, err_nr				; err-nr to IY
+	ld		bc, 21					; byte count
+	ld		de, init_chan			; destination
+	ld		hl, channels			; source
+	ld		(chans), hl				; set system variable
+	ex		de, hl					; swap pointers
+	ldir							; copy initial channel table
+	ld		c, 14					; byte count
+	ld		de, strms				; destination
+	ld		hl, init_strm			; source
+	ldir							; copy initial streams table
+	ld		(iy + _df_sz), 2		; set lower display size
+	call	cls						; clear screen
+	xor		a						; prepare for printing
+	ld		de, copyright - 1		; copyright message
+	call 	po_msg					; print it
+ 	ld		a, 62					; 512x192 mode, white on black
+ 	out		(scld), a				; DOCK bank, interrupts on
+	ld		b, 6					; bank count
+		
 cold_start_1:
-	ld		a, b					; store count in A
+	ld		a, b					; count to A
+	or		%00001000				; set VRAM 1
 	ld		bc, paging				; select paging
 	out		(c), a					; set page
-	ld		hl, 49152				; first byte of top 16K
-	ld		de, 49153				; second byte of top 16K
-	ld		bc, 16383				; 16K - 1
-	ld		(hl), 0					; zero first byte
-	ldir							; cold_start_1 bank
-	ld		b, a					; restore count
-	djnz	cold_start_1			; loop until banks 1 to 7 cleared
-									; ROM 1 will clear bank 0
- 	jp		mode_switch				; switch immediately to graphics mode
+ 	ld		hl, 49152				; first byte of top 16K
+ 	ld		de, 49153				; second byte of top 16K
+ 	ld		bc, 16383				; 16K - 1
+ 	ld		(hl), 0					; zero first byte
+ 	ldir							; clear bank
+	and		%00000111				; get real count
+ 	ld		b, a					; restore count to B
+ 	djnz	cold_start_1			; loop until banks 1 to 6 cleared
+	im		1						; set interrupt
+	ld		b, 144					; pause approximately 5 seconds in total
+	ei								; enable interrupts
 
-org 0x11e8
-	defs	184, 255				; unused locations (ROM 0)
+cold_start_2:
+	halt							; pause
+	djnz	cold_start_2			;
+	di								; switch off interrupts again
+	ld		e, %00011000			; ROM 1, VRAM 1, RAM 0
+  	jp		mode_switch_2			; switch immediately to ROM 1
 .endif
-.ifdef ROM1
+ifdef ROM1
 
 ; THE 'TEST 16K' ROUTINE
 org 0x11c6
@@ -364,7 +389,9 @@ org 0x13dd
 .ifdef ROM1
 
 org 0x13da
-	defs	3, 255					; unused locations (ROM 1)
+new_128:
+	xor		a						; retain graphics mode
+	jr		new_128_1				; immediate jump
 
 org 0x13dd
 new_48:
@@ -385,8 +412,8 @@ new_128:
 .ifdef ROM1
 
 org 0x13e6
-new_128:
-	call	mode_switch				; ensure ROM 0
+new_128_1:
+	call	mode_switch_1			; ensure ROM 0
 
 org 0x13e9
 	defs	1, 255					; unused locations (ROM 1)

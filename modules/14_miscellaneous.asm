@@ -5,6 +5,7 @@ org 0x3cac
 	defs	4, 255					; unused locations (ROM 0)
 
 org 0x3cb0
+copyright:
 	incbin	"copyright.txt"			; 80 characters
 .endif
 
