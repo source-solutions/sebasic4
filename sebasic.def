@@ -516,8 +516,8 @@ palbuf			equ	0x5b00
 
 kstate			equ	0x5c00		; (iy - 0x3a)
 kstate_4		equ	kstate + 4	; (iy - 0x36)
-lastk			equ	kstate + 8	; (iy - 0x32)
-repdel			equ	lastk + 1	; (iy - 0x31)
+last_k			equ	kstate + 8	; (iy - 0x32)
+repdel			equ	last_k + 1	; (iy - 0x31)
 repper			equ	repdel + 1	; (iy - 0x30)
 defadd			equ	repper + 1	; (iy - 0x2f)
 defadd_h		equ	defadd + 1	; (iy - 0x2e)
@@ -576,8 +576,8 @@ stkend			equ	stkbot + 2	; (iy + 0x2b)
 stkend_h		equ	stkend + 1	; (iy + 0x2c)
 breg			equ	stkend + 2	; (iy + 0x2d)
 mem				equ	breg + 1	; (iy + 0x2e)
-klflag			equ	mem + 2		; (iy + 0x30)
-dfsz			equ	klflag + 1	; (iy + 0x31)
+flags2			equ	mem + 2		; (iy + 0x30)
+dfsz			equ	flags2 + 1	; (iy + 0x31)
 sdtop			equ	dfsz + 1	; (iy + 0x32)
 coppc			equ	sdtop + 2	; (iy + 0x34)
 cosppc			equ	coppc + 2	; (iy + 0x36)
@@ -648,7 +648,7 @@ channels		equ	pramt + 2
 
 _kstate			equ	0x3a
 _kstate_4		equ	0x36
-_lastk			equ	0x32
+_last_k			equ	0x32
 _repdel			equ	0x31
 _repper			equ	0x30
 _defadd			equ	0x2f
@@ -713,7 +713,7 @@ _stkend			equ	0x2b
 _stkend_h		equ	0x2c
 _breg			equ	0x2d
 _mem			equ	0x2e
-_klflag			equ	0x30
+_flags2			equ	0x30
 _dfsz			equ	0x31
 _sdtop			equ	0x32
 _coppc			equ	0x34

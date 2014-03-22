@@ -78,7 +78,7 @@ _next_ch:
 	jr		test_sp					; then jump
 
 l0025:
-	defb	"404"					; version number
+	defb	"405"					; version number
 
 _fp_calc:
 	jp		calculate				; immediate jump
@@ -110,7 +110,7 @@ _interrupt:
 anyi:
 	push	de						; store DE
 	push	bc						; store BC
-	call	l02bf					; read keypress
+	call	keyboard				; read keypress
 	pop		bc						; restore BC
 	pop		de						; restore DE
 	pop		af						; restore AF
@@ -198,49 +198,49 @@ k_token:
 
 	defs	5, 255					; 5 spare bytes
 
-k_unshifted:
+kt_unshifted:
 	incbin	"unshifted.txt"			; unshifted character definitions
 
-k_shifted:
-	defb	ctrl_rubout, ctrl_edit, ctrl_caps, ctrl_true_vid
-	defb	ctrl_inv_vid, ctrl_left, ctrl_down, ctrl_up, ctrl_right
-	defb	ctrl_graphics
-
-k_function:
+kt_alphasym:
 	incbin	"alphasym.txt"			; alpha symbol definitions
 
-k_graphic:
+kt_numsym:
 	incbin	"numsym.txt"			; numeric symbol definitions
 
-keyboard:
+kt_ctrl:
+	defb	ctrl_rubout, ctrl_edit, ctrl_caps, 247
+	defb	226, ctrl_left, ctrl_down, ctrl_up, ctrl_right
+	defb	ctrl_graphics
+
+key_scan:
 	ld		bc, 0xfefe				; B = counter, C = port
 	ld		de, 0xffff				; set DE to no key
 	ld		l, 47					; initial key value
 
-l0296:
+key_line:
 	in		a, (c)					; read ULA
 	cpl								; complement A
 	and		%00011111				; test for key press
-	jr		z, l02ab				; jump if not
+	jr		z, key_done				; jump if not
 	ld		h, a					; key bits to H
 	ld		a, l					; initial value to L
 
-l029f:
+key_3keys:
 	inc		d						; check for three keys pressed
 	ret		nz						; return if so
 
-l02a1:
+key_bits:
 	sub		8						; subtract 8
 	srl		h						; from key value
-	jr		nc, l02a1				; until bit found
+	jr		nc, key_bits			; until bit found
 	ld		d, e					; existing key value to D
 	ld		e, a					; new key value to E
-	jr		nz, l029f				; jump if additional keys
+	jr		nz, key_3keys			; jump if additional keys
 
-l02ab:
+key_done:
 	dec		l						; decrement key value 
 	rlc		b						; shift counter
-	jr		c, l0296				; jump for remaining key lines
+	jr		c, key_line				; jump for remaining key lines
 	ld		a, d					; check for single key
 	inc		a						; or no key
 	ret		z						; return if so
@@ -254,171 +254,151 @@ l02ab:
 	cp		24						; check for shift + symbol
 	ret								; end of subroutine
 
-l02bf:
-	call	keyboard				; get key pair in DE
+keyboard:
+	call	key_scan				; get key pair in DE
 	ret		nz						; return if no key
 	ld		hl, kstate				; kstate_0 to HL
 
-l02c6:
-	bit		7, (hl)					; 
-	jr		nz, l02d1				;
-	inc		hl						;
-	dec		(hl)					;
-	dec		hl						;
-	jr		nz, l02d1				;
-	ld		(hl), 255				;
+k_st_loop:
+	bit		7, (hl)					; is set free?
+	jr		nz, k_ch_set			; jump if so
+	inc		hl						; else
+	dec		(hl)					; decrease
+	dec		hl						; 5 call
+	jr		nz, k_ch_set			; counter
+	ld		(hl), 255				; then make set free
 
-l02d1:
-	ld		a, l					;
-	ld		hl, kstate_4			;
-	cp		l						;
-	jr		nz, l02c6				;
-	call	l031e					;
-	ret		nc						;
-	ld		hl, kstate				;
-	cp		(hl)					;
-	jr		z, l0310				;
-	ex		de, hl					;
-	ld		hl, kstate_4			;
-	cp		(hl)					;
-	jr		z, l0310				;
-	bit		7, (hl)					;
-	jr		nz, l02f1				;
-	ex		de, hl					;
-	bit		7, (hl)					;
-	ret		z						;
+k_ch_set:
+	ld		a, l					; low address to A
+	ld		l, kstate_4				; has second set
+	cp		l						; been considered? 
+	jr		nz, k_st_loop			; jump if not
+	call	k_test					; change key to main code
+	ret		nc						; return if no key or shift
+	ld		hl, kstate				; kstate_0 to HL
+	cp		(hl)					; jump if match
+	jr		z, k_repeat				; including repeat
+	ld		l, kstate_4				; kstate_4 to HL
+	cp		(hl)					; jump if match
+	jr		z, k_repeat				; including repeat
+	bit		7, (hl)					; test second set
+	jr		nz, k_new				; jump if free
+	ld		l, kstate				; kstate_0 to HL
+	bit		7, (hl)					; test first set
+	ret		z						; return if not free
 
-l02f1:
-	ld		(hl), a					;
-	ld		e, a					;
-	inc		hl						;
-	ld		(hl), 5					;
-	ld		a, (repdel)				;
-	inc		hl						;
-	ld		(hl), a					;
-	inc		hl						;
-	ld		d, (iy + _flags)		;
-	ld		c, (iy + _mode)			;
-	push	hl						;
-	call	l0333					;
-	pop		hl						;
-	ld		(hl), a					;
+k_new:
+	ld		(hl), a					; code to kstate
+	ld		e, a					; code to E
+	inc		hl						; 5 call counter
+	ld		(hl), 5					; reset to 5
+	ld		a, (repdel)				; repeat delay to A
+	inc		hl						; HL to kstate2/6
+	ld		(hl), a					; store A
+	inc		hl						; HL to kstate 3/7
+	push	hl						; stack pointer
+	ld		l, flags				; HL points to flags
+	ld		d, (hl)					; flags to D
+	ld		l, mode					; HL points to mode
+	ld		c, (hl)					; mode to C
+	call	k_meta					; decode with test for meta and control
+	pop		hl						; unstack pointer
+	ld		(hl), a					; code to kstate 3/7
 
-l0308:
-	set		5, (iy + _flags)		;
-	ld		(lastk), a				;
-	ret
+k_end:
+	ld		l, flags				; HL points to flags
+	set		5, (hl)					; signal new key
+	ld		(last_k), a				; code to last_k
+	ret								; end of subroutine
 
-l0310:
-	inc		hl						;
-	ld		(hl), 5					;
-	inc		hl						;
-	dec		(hl)					;
-	ret		nz						;
-	ld		a, (repper)				;
-	ld		(hl), a					;
-	inc		hl						;
-	ld		a, (hl)					;
-	jr		l0308					;
+	defs	2, 255					; unused locations (common)
 
-l031e:
-	ld		b, d					;
-	ld		a, e					;
-	ld		d, 0					;
-	cp		39						;
-	ret		nc						;
-	cp		24						;
-	jr		nz, l032c				;
-	bit		7, b					;
-	ret		nz						;
+k_repeat:
+	inc		hl						; set 5 call counter
+	ld		(hl), 5					; to 5
+	inc		hl						; point to repdel value
+	dec		(hl)					; reduce it
+	ret		nz						; return if delay not finished
+	ld		a, (repper)				; repeat period to A
+	ld		(hl), a					; store it
+	inc		hl						; point to kstate3/7
+	ld		a, (hl)					; get code
+	jr		k_end					; immediate jump
 
-l032c:
-	ld		hl, k_unshifted			;
-	add		hl, de					;
-	scf								;
-	ld		a, (hl)					;
-	ret								;
+k_test:
+	ld		b, d					; copy shift byte
+	ld		a, e					; move key number
+	ld		d, 0					; clear D register
+	cp		39						; shift or no-key?
+	ret		nc						; return if so
+	cp		24						; test for alternate
+	jr		nz, k_main				; jump if not
+	bit		7, b					; test for alternate and key
+	ret		nz						; return with alternate only
 
-l0333:
-	ld		a, e					;
-	cp		':'						;
-	jr		c, l035f				;
-	dec		c						;
-	jp		m, l034b				;
-	jr		z, l034b				;
-	add		a, 79					;
-	cp		'V' + 0x4f				;
-	ret		c						;
-	add		a, 11					;
-	call	add_char				;
-	ld		a, ctrl_graphics		;
-	ret								;
+k_main:
+	ld		hl, kt_unshifted		; base of table
+	add		hl, de					; get offset
+	scf								; signal valid keystroke
+	ld		a, (hl)					; get code
+	ret								; end of subroutine
 
-l034b:
-	ld		hl, k_function - 'A'	;
-	bit		0, b					;
-	jr		z, l03a1				;
-	bit		3, (iy + _klflag)		;
-	jr		z, l035a				;
-	xor		%00100000				;
+k_decode:
+	ld		a, e					; copy main code
 
-l035a:
-	inc		b						;
-	ret		nz						;
-	xor		%00100000				;
-	ret								;
+k_decode_1:
+	cp		':'						; jump if digit, return, shift
+	jr		c, k_digit				; or alternate
+	ld		hl, kt_alphasym - 'A'	; point to alpha symbol table
+	bit		0, b					; test for alternate
+	jr		z, k_look_up			; jump if so
+	ld		hl, flags2				; address flags2
+	bit		3, (hl)					; test for caps lock
+	jr		z, k_caps				; jump if not
+	xor		%00100000				; toggle bit 6
 
-l035f:
-	cp		'0'						;
-	ret		c						;
-	dec		c						;
-	jp		m, l0395				;
-	jr		nz, l0381				;
-	ld		hl, k_graphic - '0'		;
-	bit		5, b					;
-	jr		z, l03a1				;
-	cp		'8'						;
-	jr		nc, l037a				;
-	sub		32						;
-	inc		b						;
-	ret		z						;
-	add		a, 8					;
-	ret								;
+;org 0x0348
+k_caps:
+	inc		b						; test for shift
+	ret		nz						; return if not
+	xor		%00100000				; toggle bit 6
+	ret								; end of subroutine
 
-l037a:
-	sub		54						;
-	inc		b						;
-	ret		z						;
-	add		a, 254					;
-	ret								;
+;org 0x034d
+k_meta:
+	call	k_decode				; get the key in A
+	ld		c, (iy + _mode)			; get mode
+	ld		(iy + _mode), 0			; set normal mode
+	dec		c						; test for meta
+	ret		m						; return if normal
+	jr		nz, k_control			; jump if control
+	set		7, a					; set high bit
+	ret								; end of subroutine
 
-l0381:
-	ld		hl, k_shifted - '0'		;
-	cp		'9'						;
-	jr		z, l03a1				;
-	cp		'0'						;
-	jr		z, l03a1				;
-	and		%00000111				;
-	add		a, 0x80					;
-	inc		b						;
-	ret		z						;
-	xor		15						;
-	ret								;
+;org 0x035e
+k_control:
+	add		a, 79					; CTRL+"A" = UDG A
+	ret								; end of subroutine
 
-l0395:
-	inc		b						;
-	ret		z						;
-	bit		5, b					;
-	ld		hl, k_shifted - '0'		;
-	jr		nz, l03a1				;
-	ld		hl, k_graphic - '0'		;
+;org 0x0361
+k_digit:
+	cp		'0'						; digit, return, space, shift, alt?
+	ret		c						; return if not
+	inc		b						; shift or alternate?
+	ret		z						; return if not
+	bit		5, b					; shift?
+	ld		hl, kt_ctrl - '0'		; set control table
+	jr		nz, k_look_up			; jump if shift
+	ld		hl, kt_numsym - '0'		; else use symbol table
 
-l03a1:
-	ld		d, 0					;
-	add		hl, de					;
-	ld		a, (hl)					;
-	ret								;
-	defs	1, 255					; 1 spare bytes
+;org 0x0370
+k_look_up:
+	ld		d, 0					; clear D
+	add		hl, de					; index table
+	ld		a, (hl)					; get character
+	ret								; end of subroutine
+	
+	defs	50, 255
 
 .ifdef ROM0
 	defs	14, 255					; 14 spare bytes
@@ -609,8 +589,8 @@ l04c2:
 	ld		hl, 0x0c98				;
 
 l04d0:
-	di								;
-	ex		af, af'					;'
+	ex		af, af'					;'store flag (trapped by emulators)
+	di								; interrupts off
 	ld		a, red					;
 	dec		ix						;
 	inc		de						;
@@ -2335,7 +2315,7 @@ l0da0:
 l0daf:
 	ld		hl, 0					;
 	ld		(xcoord), hl			;
-	res		0, (iy + _klflag)		;
+	res		0, (iy + _flags2)		;
 	call	l0d94					;
 	call	streamfe
 	ld		b, 24					;
@@ -2929,7 +2909,7 @@ graphics:
 	jp		add_char
 
 eder:
-	bit		4, (iy + _klflag)
+	bit		4, (iy + _flags2)
 	jr		z, l101f
 	call	l1167
 	jp		edag
@@ -2957,7 +2937,7 @@ kyip:
 	ret		z						;
 
 l10b3:
-	ld		a, (lastk)				;
+	ld		a, (last_k)				;
 	res		5, (iy + _flags)		;
 	push	af						;
 	bit		5, (iy + _dflag)		;
@@ -2978,7 +2958,7 @@ l10b3:
 	jr		l1105
 
 l10d9:
-	ld		hl, klflag				;
+	ld		hl, flags2				;
 	jp		z, l0fff				;
 	cp		7						;
 	jr		nz, l10e6				;
@@ -3262,7 +3242,7 @@ l12ac:
 	call	l1b17
 	bit		7, (iy + _errnr)
 	jr		nz, l12cf
-	bit		4, (iy + _klflag)
+	bit		4, (iy + _flags2)
 	jr		z, l1301
 	ld		hl, (eline)
 	call	l11a7
@@ -3278,7 +3258,7 @@ l12cf:
 	rst		get_ch
 	cp		ctrl_n_l
 	jr		z, l12a2
-	bit		0, (iy + _klflag)
+	bit		0, (iy + _flags2)
 	call	nz, l0daf
 	call	clslower
 	ld		a, 25
@@ -3530,7 +3510,7 @@ l1610:
 	add		hl, de
 
 chanflag:
-	res		4, (iy + _klflag)
+	res		4, (iy + _flags2)
 	ld		(curchl), hl			;
 	inc		hl						;
 	inc		hl						;
@@ -3555,7 +3535,7 @@ cltab:
 
 l1634:
 	res		5, (iy + _flags)
-	set		4, (iy + _klflag)
+	set		4, (iy + _flags2)
 	set		0, (iy + _dflag)
 	jr		l1646
 
@@ -3866,7 +3846,7 @@ autolist:
 	set		0, (iy + _dflag)
 	call	l0e44
 	res		0, (iy + _dflag)
-	set		0, (iy + _klflag)		;
+	set		0, (iy + _flags2)		;
 	ld		de, (sdtop)				;
 	ld		hl, (eppc)				;
 	and		a						;
@@ -4087,14 +4067,14 @@ opcursor:
 	ld		a, (mode)
 	cp		2						;
 	jr		c, l18e5				;
-	ld		a, 29					;
+	ld		a, ' '					;
 	jr		l18ee					;
 
 l18e5:
-	ld		a, 30					;
-	bit		3, (iy + _klflag)		;
+	ld		a, ' '					;
+	bit		3, (iy + _flags2)		;
 	jr		z, l18ee				;
-	inc		a						;
+	nop								;
 
 l18ee:
 	exx								;
@@ -4109,7 +4089,7 @@ l18ee:
 	ret								;
 
 l18ff:
-	ld		hl, lastk				;
+	ld		hl, last_k				;
 	ld		(hl), l					;
 
 l1903:
@@ -5794,7 +5774,7 @@ inp7:
 inperr:
 	ld		hl, inperr				;
 	push	hl						;
-	bit		4, (iy + _klflag)
+	bit		4, (iy + _flags2)
 	jr		z, l2148
 	ld		(errsp), sp
 
@@ -7132,14 +7112,14 @@ iminkeys:
 	res		6, (hl)
 	bit		7, (hl)
 	jr		z, l2665
-	call	keyboard
+	call	key_scan
 	ld		c, 0
 	jr		nz, l2660
-	call	l031e
+	call	k_test
 	jr		nc, l2660
 	ld		e, a
 	dec		d
-	call	l0333
+	call	k_decode
 	ld		bc, 1
 	push	af
 	rst		bc_spaces

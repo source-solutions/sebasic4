@@ -1,7 +1,14 @@
+2014-03-21  Andrew Owen  <aowen10@gmail.bbk.ac.uk>
+
+        * SE Basic IV update 4.0.5 released.
+        * Back-ported the keyboard code from 4.1.0.
+        * Macros for tokens LOAD, CODE, RUN, SAVE, DATA, and STOP.
+        * Simplified the cursors.
+        * Adjusted the tape code for better emulator support.
+
 2013-01-16  Andrew Owen  <aowen10@mail.bbk.ac.uk>
 
         * SE Basic IV update 4.0.4 released.
-
         * Fixed a bug that prevented entering the INVERSE token.
         * Changed the [I] + V to Z shortcuts.
 
