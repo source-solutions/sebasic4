@@ -1,3 +1,8 @@
+2014-03-27  Andrew Owen  <aowen10@gmail.bbk.ac.uk>
+
+        * SE Basic IV update 4.0.6 released.
+        * Back-ported the tape code from 4.1.0.
+
 2014-03-21  Andrew Owen  <aowen10@gmail.bbk.ac.uk>
 
         * SE Basic IV update 4.0.5 released.

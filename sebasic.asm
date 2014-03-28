@@ -78,7 +78,7 @@ _next_ch:
 	jr		test_sp					; then jump
 
 l0025:
-	defb	"405"					; version number
+	defb	"406"					; version number
 
 _fp_calc:
 	jp		calculate				; immediate jump
@@ -580,860 +580,981 @@ l04b9:
 	rst		error_1					;
 	defb	Syntax_error			;
 
-l04c2:
-	ld		hl, l053f				;
-	push	hl						;
-	bit		7, a					;
-	ld		hl, 0x1f80				;
-	jr		z, l04d0				;
-	ld		hl, 0x0c98				;
+; --- THE TAPE HANDLING ROUTINES ----------------------------------------------
 
-l04d0:
+; THE 'SA-BYTES' SUBROUTINE
+;org 0x04c2
+sa_bytes:
+	ld		hl, sa_ld_ret			; return routine to HL
+	push	hl						; stack it
+	bit		7, a					; header?
+	ld		hl, 0x1df8				; about 4.75 seconds (@ 50Hz)
+	jr		z, sa_flag				; jump if header
+	ld		hl, 0x0bfe				; slightly under 2 seconds (@ 50Hz)
+
+;org 0x04d0
+sa_flag:
 	ex		af, af'					;'store flag (trapped by emulators)
 	di								; interrupts off
-	ld		a, red					;
-	dec		ix						;
-	inc		de						;
-	ld		b, a					;
-
-l04d8:
-	djnz	l04d8					;
-	out		(ula), a				;
-	ld		b, 164					;
-	xor		%00001111				;
-	dec		l						;
-	jr		nz, l04d8				;
-	dec		b						;
-	dec		h						;
-	jp		p, l04d8				;
-	ld		b, 47					;
-
-l04ea:
-	djnz	l04ea					;
-	out		(ula), a				;
-	ld		b, 55					;
-	ld		a, 13					;
-
-l04f2:
-	djnz	l04f2					;
-	out		(ula), a				;
-	ex		af, af'					;'
-	ld		l, a					;
-	ld		bc, 0x3b0e				;
-	jp		l0507					;
-
-l04fe:
-	ld		a, e					;
-	or		d						;
-	jr		z, l050e				;
-	ld		l, (ix + 0x00)			;
-
-l0505:
-	ld		a, h					;
-	xor		l						;
-
-l0507:
-	ld		h, a					;
-	scf								;
-	ld		a, blue					;
-	jp		l0525					;
-
-l050e:
-	ld		l, h					;
-	jr		l0505					;
-
-l0511:
-	ld		a, c					;
-	bit		7, b					;
-
-l0514:
-	djnz	l0514					;
-	jr		nc, l051c				;
-	ld		b, 66					;
-
-l051a:
-	djnz	l051a					;
-
-l051c:
-	out		(ula), a				;
-	ld		b, 62					;
-	jr		nz, l0511				;
-	xor		a						;
-	dec		b						;
-	inc		a						;
-
-l0525:
-	rl		l						;
-	jp		nz, l0514				;
-	ld		b, 49					;
-	inc		ix						;
-	dec		de						;
-	ld		a, 127					;
-	in		a, (ula)				;
-	rra								;
-	ret		nc						;
-	ld		a, d					;
-	inc		a						;
-	jp		nz, l04fe				;
-	ld		b, 59					;
-
-l053c:
-	djnz	l053c					;
-	ret								;
-
-l053f:
-	push	af						;
-	ld		a, (bordcr)				;
-	and		%00111000				;
-	rrca							;
-	rrca							;
-	rrca							;
-	out		(ula), a				;
-	ld		a, 127					;
-	in		a, (ula)				;
-	rra								;
-	ei								;
-	jr		c, l0554				;
-	rst		error_1					;
-	defb	BREAK_CONTINUE_repeats	;
-
-l0554:
-	pop		af						;
-	ret								;
-
-l0556:
-	di								;
-	inc		d						;
-	ex		af, af'					;'
-	dec		d						;
-	ld		a, 15					;
-	out		(ula), a				;
-	ld		hl, l053f				;
-	push	hl						;
-	in		a, (ula)				;
-	rra								;
-	and		%00100000				;
-	or		red						;
-	ld		c, a					;
-	cp		a						;
-
-l056b:
-	ret		nz						;
-
-l056c:
-	call	l05e7					;
-	jr		nc, l056b				;
-	ld		hl, 0x0115				;
-
-l0574:
-	djnz	l0574					;
-	dec		hl						;
-	ld		a, l					;
-	or		h						;
-	jr		nz, l0574				;
-	call	l05e3					;
-	jr		nc, l056b				;
-
-l0580:
-	ld		b, 156					;
-	call	l05e3					;
-	jr		nc, l056b				;
-	ld		a, 198					;
-	cp		b						;
-	jr		nc, l056c				;
-	inc		h						;
-	jr		nz, l0580				;
-
-l058f:
-	ld		b, 201					;
-	call	l05e7					;
-	jr		nc, l056b				;
-	ld		a, b					;
-	cp		212						;
-	jr		nc, l058f				;
-	call	l05e7					;
-	ret		nc						;
-	ld		a, c					;
-	xor		%00000011				;
-	ld		c, a					;
-	ld		h, 0					;
-	ld		b, 176					;
-	jr		l05c8					;
-
-l05a9:
-	ex		af, af'					;'
-	jr		nz, l05b3				;
-	jr		nc, l05bd				;
-	ld		(ix + 0x00), l			;
-	jr		l05c2					;
-
-l05b3:
-	rl		c						;
-	xor		l						;
-	ret		nz						;
-	ld		a, c					;
-	rra								;
-	ld		c, a					;
-	jp		l05c5					;
-
-l05bd:
-	ld		a, (ix + 0x00)			;
-	xor		l						;
-	ret		nz						;
-
-l05c2:
-	inc		ix						;
-
-l05c4:
-	dec		de						;
-
-l05c5:
-	ex		af, af'					;'
-	ld		b, 178					;
-
-l05c8:
-	ld		l, %00000001			;
-
-l05ca:
-	call	l05e3					;
-	ret		nc						;
-	ld		a, 203					;
-	cp		b						;
-	rl		l						;
-	ld		b, 176					;
-	jp		nc, l05ca				;
-	ld		a, h					;
-	xor		l						;
-	ld		h, a					;
-	ld		a, d					;
-	or		e						;
-	jr		nz, l05a9 				;
-	ld		a, h					;
-	cp		1						;
-	ret								;
-
-l05e3:
-	call	l05e7					;
-	ret		nc						;
-
-l05e7:
-	ld		a, 22					;
-
-l05e9:
-	dec		a						;
-	jr		nz, l05e9				;
-	and		a						;
-
-l05ed:
-	inc		b						;
-	ret		z						;
-	ld		a, 127					;
-	in		a, (ula)				;
-	rra								;
-	ret		nc						;
-	xor		c						;
-	and		%00100000				;
-	jr		z, l05ed				;
-	ld		a, c					;
-	cpl								;
-	ld		c, a					;
-	and		%00000111				;
-	or		%00001000				;
-	out		(ula), a				;
-	scf								;
-	ret								;
-
-l0605:
-	pop		af						;
-	ld		a, (taddr)				;
-	sub		0x0e					; sub p_save + 1 % 256 
-	ld		(taddr), a				;
-	call	class_a					;
-	call	syntax_z				;
-	jr		z, l0652				;
-	ld		a, (taddr)				;
-	ld		bc, 0x0011				;
-	and		a						;
-	jr		z, l0621				;
-	ld		c, 34					;
-
-l0621:
-	rst		bc_spaces				;
-	push	de						;
-	pop		ix						;
-	ld		a, ' '					;
-	ld		b, 11					;
-
-l0629:
-	ld		(de), a
-	inc		de
-	djnz	l0629
-	ld		(ix + 0x01), 255
-	call	stk_fetch
-	dec		bc
-	ld		hl, 0xfff6
-	add		hl, bc
-	inc		bc
-	jr		nc, l064b
-	ld		a, (taddr)
-	and		a
-	jr		nz, l0644
-	rst		error_1
-	defb	Bad_filename
-
-l0644:
-	ld		a, c
-	or		b
-	jr		z, l0652
-	ld		bc, 10
-
-l064b:
-	push	ix
-	pop		hl
-	ex		de, hl
-	inc		de
-	ldir
-
-l0652:
-	rst		get_ch
-	cp		tkdata
-	jr		nz, l06a0
-	ld		a, (taddr)
-	cp		3
-	jp		z, report_c
-	rst		next_ch
-	call	look_vars
-	set		7, c
-	jr		nc, l0672
-	ld		a, (taddr)
-	dec		a
-	ld		hl, 0
-	jr		z, l0685
-
-l0670:
-	rst		error_1
-	defb	Undefined_variable
-
-l0672:
-	jp		nz, report_c
-	call	l04b9
-	jr		z, l0692
-	inc		hl
-	ld		a, (hl)
-	ld		(ix + 0x0b), a
-	inc		hl
-	ld		a, (hl)
-	ld		(ix + 0x0c), a
-	inc		hl
-
-l0685:
-	ld		a, 1
-	ld		(ix + 0x0e), c
-	bit		6, c
-	jr		z, l068f
-	inc		a
-
-l068f:
-	ld		(ix + 0x00), a
-
-l0692:
-	ex		de, hl
-	rst		next_ch
-	cp		')'
-	jr		nz, l0672
-	rst		next_ch
-	call	check_end
-	ex		de, hl
-	jp		l075a
-
-l06a0:
-	cp		tk_screen_str
-	jr		nz, l06c3
-	ld		a, (taddr)
-	cp		3
-	jp		z, report_c
-	rst		next_ch
-	call	check_end
-	ld		hl, bitmap
-	ld		(ix + 0x0b), 0
-	ld		(ix + 0x0c), 27
-	ld		(ix + 0x0d), l
-	ld		(ix + 0x0e), h
-	jr		l0710
-
-l06c3:
-	cp		tk_code
-	jr		nz, l0716
-	ld		a, (taddr)
-	cp		3
-	jp		z, report_c
-	rst		next_ch
-	call	l2048
-	jr		nz, l06e1
-	ld		a, (taddr)
-	and		a
-	jp		z, report_c
-	call	no_to_stk
-	jr		l06f0
-
-l06e1:
-	call	class_6
-	rst		get_ch
-	cp		','
-	jr		z, l06f5
-	ld		a, (taddr)
-	and		a
-	jp		z, report_c
-
-l06f0:
-	call	no_to_stk
-	jr		l06f9
-
-l06f5:
-	rst		next_ch
-	call	class_6
-
-l06f9:
-	call	check_end
-	call	find_int
-	ld		(ix + 0x0c), b
-	ld		(ix + 0x0b), c
-	call	find_int
-	ld		h, b
-	ld		(ix + 0x0e), h
-	ld		l, c
-	ld		(ix + 0x0d), l
-
-l0710:
-	ld		(ix + 0x00), 3
-	jr		l075a
-
-l0716:
-	cp		tk_line
-	jr		z, l0723
-	call	check_end
-	ld		(ix + 0x0e), 0x80
-	jr		l073a
-
-l0723:
-	ld		a, (taddr)
-	and		a
-	jp		nz, report_c
-	rst		next_ch
-	call	class_6
-	call	check_end
-	call	syntax3
-	ld		(ix + 0x0e), b
-	ld		(ix + 0x0d), c
-
-l073a:
-	ld		de, (prog)
-	ld		hl, (eline)
-	ld		(ix + 0x00), 0
-	scf
-	sbc		hl, de
-	ld		(ix + 0x0c), h
-	ld		(ix + 0x0b), l
-	ld		hl, (vars)
-	sbc		hl, de
-	ld		(ix + 0x10), h
-	ld		(ix + 0x0f), l
-	ex		de, hl
-
-l075a:
-	ld		a, (taddr)
-	and		a
-	jp		z, l0970
-	push	hl
-	ld		bc, 0x0011
-	add		ix, bc
-
-l0767:
-	xor		a
-	push	ix
-	ld		de, 0x0011
-	scf
-	call	l0556
-	pop		ix
-	jr		nc, l0767
-	ld		a, 254
-	call	l1601
-	ld		a, (ix + 0x00)
-	ld		(iy + _scrct), 255
-	ld		c, 0x80
-	cp		(ix - 0x11)
-	jr		nz, l078a
-	ld		c, 246
-
-l078a:
-	cp		4
-	jr		nc, l0767
-	ld		de, l13d5 - 1
-	push	bc
-	call	l0c0a
-	pop		bc
-	push	ix
-	pop		de
-	ld		hl, 0xfff0
-	add		hl, de
-	ld		a, (hl)
-	ld		b, 10
-	inc		a
-	jr		nz, l07a6
-	ld		a, c
-	add		a, b
-	ld		c, a
-
-l07a6:
-	inc		de
-	ld		a, (de)
-	cp		(hl)
-	inc		hl
-	jr		nz, l07ad
-	inc		c
-
-l07ad:
-	rst		print_a
-	djnz	l07a6
-	bit		7, c
-	jr		nz, l0767
-	ld		a, ctrl_n_l
-	rst		print_a
-	pop		hl
-	ld		a, (ix + 0x00)
-	cp		3
-	jr		z, l07cb
-	ld		a, (taddr)
-	dec		a
-	jp		z, l0808
-	cp		2
-	jp		z, l08b6
-
-l07cb:
-	push	hl
-	ld		h, (ix - 0x05)
-	ld		l, (ix - 0x06)
-	ld		d, (ix + 0x0c)
-	ld		e, (ix + 0x0b)
-	ld		a, l
-	or		h
-	jr		z, l07e9
-	sbc		hl, de
-	jr		c, terror
-	jr		z, l07e9
-	ld		a, (ix + 0x00)
-	cp		3
-	jr		nz, terror
-
-l07e9:
-	pop		hl
-	ld		a, l
-	or		h
-	jr		nz, l07f4
-	ld		h, (ix + 0x0e)
-	ld		l, (ix + 0x0d)
-
-l07f4:
-	push	hl
-	pop		ix
-	ld		a, (taddr)
-	cp		2
-	scf
-	jr		nz, l0800
-	and		a
-
-l0800:
-	ld		a, 255
-
-l0802:
-	call	l0556
-	ret		c						;
-
-terror:
-	rst		error_1					;
-	defb	Loading_error			;
-
-l0808:
-	ld		d, (ix + 0x0c)
-	ld		e, (ix + 0x0b)
-	push	hl
-	ld		a, l
-	or		h
-	jr		nz, l0819
-	inc		de
-	inc		de
-	inc		de
-	ex		de, hl
-	jr		l0825
-
-l0819:
-	ld		h, (ix - 0x05)
-	ld		l, (ix - 0x06)
-	ex		de, hl
-	scf
-	sbc		hl, de
-	jr		c, l082e
-
-l0825:
-	ld		de, 5
-	add		hl, de
-	ld		c, l
-	ld		b, h
-	call	test_room
-
-l082e:
-	pop		hl
-	ld		a, (ix + 0x00)
-	and		a
-	jr		z, l0873
-	ld		a, l
-	or		h
-	jr		z, l084c
-	dec		hl
-	ld		b, (hl)
-	dec		hl
-	ld		c, (hl)
-	dec		hl
-	inc		bc
-	inc		bc
-	inc		bc
-	ld		(xptr), ix
-	call	reclaim_2
-	ld		ix, (xptr)
-
-l084c:
-	ld		hl, (eline)
-	dec		hl
-	ld		b, (ix + 0x0c)
-	ld		c, (ix + 0x0b)
-	push	bc
-	inc		bc
-	inc		bc
-	inc		bc
-	ld		a, (ix - 0x03)
-	push	af
-	call	make_room
-	inc		hl
-	pop		af
-	ld		(hl), a
-	pop		de
-	inc		hl
-	ld		(hl), e
-	inc		hl
-	ld		(hl), d
-	inc		hl
-	push	hl
-	pop		ix
-	scf
-	ld		a, 255
-	jp		l0802
-
-l0873:
-	ex		de, hl
-	ld		hl, (eline)
-	dec		hl
-	ld		(xptr), ix
-	ld		b, (ix + 0x0c)
-	ld		c, (ix + 0x0b)
-	push	bc
-	call	reclaim_1
-	pop		bc
-	push	hl
-	push	bc
-	call	make_room
-	ld		ix, (xptr)
-	inc		hl
-	ld		b, (ix + 0x10)
-	ld		c, (ix + 0x0f)
-	add		hl, bc
-	ld		(vars), hl
-	ld		h, (ix + 0x0e)
-	ld		a, h
-	and		%11000000
-	jr		nz, l08ad
-	ld		l, (ix + 0x0d)
-	ld		(newppc), hl
-	ld		(iy + _nsppc), 0
-
-l08ad:
-	pop		de
-	pop		ix
-	scf
-	ld		a, 255
-	jp		l0802
-
-l08b6:
-	ld		b, (ix + 0x0c)
-	ld		c, (ix + 0x0b)
-	push	bc
-	inc		bc
-	rst		bc_spaces
-	ld		(hl), 0x80
-	ex		de, hl
-	pop		de
-	push	hl
-	push	hl
-	pop		ix
-	scf
-	ld		a, 255
-	call	l0802
-	pop		hl
-	ld		de, (prog)
-
-l08d2:
-	ld		a, (hl)
-	and		%11000000
-	jr		nz, l08f0
-
-l08d7:
-	ld		a, (de)
-	inc		de
-	cp		(hl)
-	inc		hl
-	jr		nz, l08df
-	ld		a, (de)
-	cp		(hl)
-
-l08df:
-	dec		hl
-	dec		de
-	jr		nc, l08eb
-	push	hl
-	ex		de, hl
-	call	next_one
-	pop		hl
-	jr		l08d7
-
-l08eb:
-	call	l092c
-	jr		l08d2
-
-l08f0:
-	ld		a, (hl)
-	ld		c, a
-	cp		0x80
-	ret		z
-	push	hl
-	ld		hl, (vars)
-
-l08f9:
-	ld		a, (hl)
-	cp		0x80
-	jr		z, l0923
-	cp		c
-	jr		z, l0909
-
-l0901:
-	push	bc
-	call	next_one
-	pop		bc
-	ex		de, hl
-	jr		l08f9
-
-l0909:
-	and		%11100000
-	cp		%10100000
-	jr		nz, l0921
-	pop		de
-	push	de
-	push	hl
-
-l0912:
-	inc		de
-	ld		a, (de)
-	inc		hl
-	cp		(hl)
-	jr		nz, l091e
-	rla
-	jr		nc, l0912
-	pop		hl
-	jr		l0921
-
-l091e:
-	pop		hl
-	jr		l0901
-
-l0921:
-	ld		a, 255
-
-l0923:
-	inc		a
-	pop		de
-	ex		de, hl
-	scf
-	call	l092c
-	jr		l08f0
-
-l092c:
-	jr		nz, l093e
-	ld		(xptr), hl
-	ex		af, af'
-	ex		de, hl
-	call	next_one
-	call	reclaim_2
-	ex		af, af'
-	ex		de, hl
-	ld		hl, (xptr)
-
-l093e:
-	push	de
-	ex		af, af'
-	call	next_one
-	ex		af, af'
-	ld		(xptr), hl
-	ld		hl, (prog)
-	ex		(sp), hl
-	push	bc
-	jr		c, l0955
-	dec		hl
-	call	make_room
-	inc		hl
-	jr		l0958
-
-l0955:
-	call	make_room
-
-l0958:
-	pop		bc
-	pop		de
-	inc		hl
-	ld		(prog), de
-	ld		de, (xptr)
-	push	bc
-	push	de
-	ex		de, hl
-	ldir
-	pop		hl
-	pop		bc
-	push	de
-	call	reclaim_2
-	pop		de
-	ret
-
-l0970:
-	push	hl						;
-	ld		a, 253					;
-	call	l1601					;
-	xor		a						;
-	ld		de, l13b6 - 1			;
-	call	l0c0a					;
-	set		5, (iy + _dflag)		;
-	call	waitkey					;
-	push	ix						;
-	ld		de, 0x0011				;
-	xor		a						;
-	call	l04c2					;
-	pop		ix						;
-	ld		b, 50					;
-
-l0991:
-	halt							;
-	djnz	l0991					;
-	ld		e, (ix + 0x0b)			;
-	ld		d, (ix + 0x0c)			;
-	ld		a, 255					;
-	pop		ix						;
-	jp		l04c2					;
+	ld		a, cyan					; MIC on and CYAN border
+	dec		ix						; reduce base address
+	inc		de						; increase length
+	ld		b, a					; store A in B
+
+;org 0x04d8
+sa_leader:
+	djnz	sa_leader				; timing loop
+	out		(ula), a				; write port
+	ld		b, 164					; timing constant
+	xor		%00001111				; switch MIC on/off and border each pass
+	dec		l						; reduce low counter
+	jr		nz, sa_leader			; jump back for another pulse
+	dec		h						; reduce high counter
+	dec		b						; reduce by 13 t-states
+	jp		p, sa_leader			; jump back for another pulse
+	ld		b, 47					; timing constant
+
+;org 0x04ea
+sa_sync_1:
+	djnz	sa_sync_1				; timing loop
+	out		(ula), a				; write port
+	ld		b, 55					; timing constant
+	ld		a, 10					; MIC off and RED border
+
+;org 0x04f2
+sa_sync_2:
+	djnz	sa_sync_2				; timing loop
+	out		(ula), a				; write port
+	ex		af, af'					;'restore flag
+	ld		l, a					; flag to L
+	ld		bc, 0x3b0e				; B = timing constant, C = MIC off & YELLOW
+	jp		sa_start				; immediate jump
+
+;org 0x04fe
+sa_loop:
+	ld		a, e					; test length
+	or		d						; and jump
+	jr		z, sa_parity			; when zero
+	ld		l, (ix + 0)				; next byte to save
+
+;org 0x0505
+sa_loop_p:
+	ld		a, l					; get current parity
+	xor		h						; include current byte
+
+;org 0x0507
+sa_start:
+	ld		h, a					; restore parity
+	scf								; byte marker
+	ld		a, blue					; MIC on and BLUE border
+	jp		sa_8_bits				; immediate jump
+
+;org 0x050e
+sa_parity:
+	ld		l, h					; final parity value
+	jr		sa_loop_p				; jump back
+
+;org 0x0511
+sa_bit_2:
+	bit		7, b					; set zero flag for second pass
+	ld		a, c					; fetch MIC off and YELLOW border
+
+;org 0x0514
+sa_bit_1:
+	djnz	sa_bit_1				; timing loop
+	jr		nc, sa_out				; take shorter path if saving a zero
+	ld		b, 66					; add 855 t-states for a one
+
+;org 0x051a
+sa_set:
+	djnz	sa_set					; timing loop
+
+;org 0x051c
+sa_out:
+	out		(ula), a				; MIC on and BLUE / MIC off and YELLOW
+	ld		b, 62					; timing constant
+	jr		nz, sa_bit_2			; jump back after first pass
+	xor		a						; clear carry flag
+	dec		b						; reclaim 13 t-states
+	inc		a						; MIC on and BLUE
+
+;org 0x0525
+sa_8_bits:
+	rl		l						; move bit 7 to carry, marker left
+	jp		nz, sa_bit_1			; save bit unless finished byte
+	ld		b, 49					; timing constant
+	inc		ix						; increase base address
+	dec		de						; decrease counter
+	ld		a, 127					; test for
+	in		a, (ula)				; space key
+	rra								; return
+	ret		nc						; if pressed
+	ld		a, d					; test counter
+	inc		a						; jump back even at zero
+	jp		nz, sa_loop				; to include parity byte
+	ld		b, 59					; timing constant
+
+;org 0x053c
+sa_delay:
+	djnz	sa_delay				; timing loop
+	ret								; end of sa-bytes subroutine
+
+; THE 'SA/LD-RET' SUBROUTINE
+;org 0x053f
+sa_ld_ret:
+	push	af						; stack carry flag
+	ld		a, (bordcr)				; get border color
+	and		%00111000				; mask it
+	rrca							; rotate it to
+	rrca							; rightmost
+	rrca							; three bits
+	out		(ula), a				; set border color
+	ld		a, 127					; test for break
+	in		a, (ula)				; read keyboard
+	rra								; rotate right accumulator
+	ei								; enable interrupts
+	jr		c, sa_ld_end			; jump if no break
+	rst		error_1					; else
+	defb	BREAK_CONTINUE_repeats	; error
+
+;org 0x0554
+sa_ld_end:
+	pop		af						; unstack carry flag
+	ret								; end of subroutine
+
+; THE 'LD-BYTES' SUBROUTINE
+;org 0x0556
+ld_bytes:
+	di								; switch off interrupts
+	inc		d						; reset zero flag
+	ex		af, af'					;'A holds 0 for header or 127 for data
+	dec		d						; restore D
+	ld		a, 15					; set border
+	out		(ula), a				; to black
+	ld		hl, sa_ld_ret			; stack
+	push	hl						; return address
+	in		a, (ula)				; read ULA
+	rra								; rotate
+	and		%00100000				; keep EAR bit
+	or		red						; red border
+	ld		c, a					; store C (22=off, 2=on)
+	cp		a						; set zero flag
+
+;org 0x056b
+ld_break:
+	ret		nz						; exit on break
+
+;org 0x056c
+ld_start:
+	call	ld_edge_1				; test for edge
+	jr		nc, ld_break			; return with carry reset if not found
+	ld		hl, 0x0115				; approx 1/4 second pause
+
+;org 0x0574
+ld_wait:
+	djnz	ld_wait					; pause
+	dec		hl						; 
+	ld		a, l					; 
+	or		h						; 
+	jr		nz, ld_wait				; 
+	call	ld_edge_2				; continue if two edges found
+	jr		nc, ld_break			; else exit
+
+;org 0x0580
+ld_leader:
+	ld		b, 156					; timing constant
+	call	ld_edge_2				; test for second edge
+	jr		nc, ld_break			; return with carry reset if not found
+	ld		a, 198					; within 3000 t-states
+	cp		b						; count edge pairs
+	jr		nc, ld_start			; in H until
+	inc		h						; 256 pairs
+	jr		nz, ld_leader			; are found
+
+;org 0x058f
+ld_sync:
+	ld		b, 201					; timing constant
+	call	ld_edge_1				; consider every edge
+	jr		nc, ld_break			; until two found
+	ld		a, b					; close together
+	cp		212						; start and finishing
+	jr		nc, ld_sync				; edges of off sync pulse
+	call	ld_edge_1				; test for finishing edge of
+	ret		nc						; on sync pulse
+	ld		b, 176					; timing constant
+	ld		h, 0					; parity byte to zero
+	ld		a, c					; C to A
+	xor		%00000011				; blue/yellow border
+	ld		c, a					; A to C
+	jr		ld_marker				; immediate jump
+
+;org 0x05a9
+ld_loop:
+	ex		af, af'					;'get flags
+	jr		nz, ld_flag				; jump if first byte
+	jr		nc, ld_verify			; jump to verify
+	ld		(ix + 0), l				; load when required
+	jr		ld_next					; next byte
+
+;org 0x05b3
+ld_flag:
+	rl		c						; store carry flag
+	xor		l						; match for first byte?
+	ret		nz						; return if not
+	ld		a, c					; restore carry flag
+	rra								; 
+	ld		c, a					; 
+	jp		ld_dec					; immediate jump
+
+;org 0x05bd
+ld_verify:
+	ld		a, (ix + 0)				; get original byte
+	xor		l						; match for new byte?
+	ret		nz						; return if not
+
+;org 0x05c2
+ld_next:
+	inc		ix						; increment destination
+	dec		de						; reduce counter
+
+;org 0x05c5
+ld_dec:
+	ex		af, af'					;'store flags
+	ld		b, 178					; timing constant
+
+;org 0x05c8
+ld_marker:
+	ld		l, %00000001			; clear L except for marker bit
+
+;org 0x05ca
+ld_8_bits:
+	call	ld_edge_2				; get length of pulses
+	ret		nc						; return if time period exceeded
+	ld		a, 203					; 2400 t-states
+	cp		b						; carry flag
+	rl		l						; store bit in L
+	ld		b, 176					; timing constant
+	jp		nc, ld_8_bits			; jump until L filled
+	ld		a, l					; new byte
+	xor		h						; parity byte
+	ld		h, a					; store it
+	ld		a, e					; test for
+	or		d						; zero
+	jr		nz, ld_loop 			; jump if not
+	ld		a, h					; parity byte
+	cp		1						; set carry flag on zero
+	ret								; end of subroutine
+
+; THE 'LD-EDGE-2' AND 'LD-EDGE-1' SUBROUTINES
+;org 0x05e3
+ld_edge_2:
+	call	ld_edge_1				; call ld_edge_1 twice
+	ret		nc						; return on error
+
+;org 0x05e7
+ld_edge_1:
+	ld		a, 22					; 358 t-states
+
+;org 0x05e9
+ld_delay:
+	dec		a						; sampling
+	jr		nz, ld_delay			; loop
+	and		a						; test for zero
+
+;org 0x05ed
+ld_sample:
+	inc		b						; count each pass
+	ret		z						; return with carry reset if zero
+	ld		a, 0x7f					; read key row
+	in		a, (ula)				; 0x7ffe
+	rra								; shift the byte
+	ret		nc						; return with carry and zero reset on BREAK
+	xor		c						; test against
+	and		%00100000				; last edge type
+	jr		z, ld_sample			; jump back if unchanged
+	ld		a, c					; change last edge type
+	cpl								; and border color
+	ld		c, a					; store A in C 
+	and		%00000111				; preserve border color
+	or		%00001000				; set MIC off
+	out		(ula), a				; change the border
+	scf								; signal success
+	ret								; end of subroutine
+
+; THE 'SAVE, LOAD & MERGE' COMMAND ROUTINES
+;org 0x0605
+save_etc:
+	pop		af						; take scan_loop return address off stack
+	ld		a, (taddr)				; subtract the offset from taddr
+	sub		p_save + 1 % 256		; safe to ignore overflow warning
+	ld		(taddr), a				; 0=SAVE, 1=LOAD, 2=MERGE
+	call	class_a					; parameter to calculator stack
+	call	syntax_z				; checking syntax?
+	jr		z, sa_data				; jump if so
+	ld		a, (taddr)				; fetch parameter
+	ld		bc, 17					; 17 bytes for SAVE
+	and		a						; was it SAVE?
+	jr		z, sa_space				; jump if so
+	ld		c, 34					; else 34 bytes
+
+;org 0x0621
+sa_space:
+	rst		bc_spaces				; make room in the workspace
+	ld		a, ' '					; store a space
+	ld		b, 11					; eleven times
+	push	de						; start address
+	pop		ix						; into IX
+
+;org 0x0629
+sa_blank:
+	ld		(de), a					; put spaces in the
+	inc		de						; filename area
+	djnz	sa_blank				; loop until done
+	ld		(ix + 1), 0xff			; a null name is represented by 0xff
+	call	stk_fetch				; get parameters
+	dec		bc						; reduce BC
+	ld		hl, -10					; filenames can be 10 characters long
+	add		hl, bc					; is filename valid?
+	inc		bc						; increment BC
+	jr		nc, sa_name				; jump if valid
+	ld		a, (taddr)				; get parameter
+	and		a						; is it SAVE?
+	jr		nz, sa_null				; jump if not for null values
+	rst		error_1					; else
+	defb	Bad_filename			; error
+
+;org 0x0644
+sa_null:
+	ld		a, c					; test for
+	or		b						; null length
+	jr		z, sa_data				; jump if so
+	ld		bc, 10					; truncate longer names
+
+;org 0x064b
+sa_name:
+	ex		de, hl					; switch pointers
+	push	ix						; copy IX
+	pop		de						; to DE
+	inc		de						; point to second location
+	ldir							; copy filename
+
+;org 0x0652
+sa_data:
+	rst		get_ch					; get character
+	cp		tkdata					; DATA token?
+	jr		nz, sa_scr_str			; jump if not
+	ld		a, (taddr)				; get parameter
+	cp		2						; is it MERGE?
+	jp		z, report_c				; error if so
+	rst		next_ch					; get next character
+	call	look_vars				; find array
+	set		7, c					; set bit 7 of array name
+	jr		nc, sa_v_old			; jump with existing array
+	ld		a, (taddr)				; get parameter
+	dec		a						; reduce it
+	ld		hl, 0					; signal new array
+	jr		z, sa_v_new				; trying to save new array?
+	rst		error_1					; error
+	defb	Undefined_variable		; if so
+
+;org 0x0672
+sa_v_old:
+	jp		nz, report_c			; jump if error
+	call	sa_v_old_1				; exclude simple strings
+	jr		z, sa_data_1			; 
+	inc		hl						; point to low length of variable
+	ld		a, (hl)					; store it in A
+	ld		(ix + 11), a			; store it in the workspace
+	inc		hl						; point to high byte
+	ld		a, (hl)					; store it in A
+	ld		(ix + 12), a			; store it in the workspace
+	inc		hl						; step past length
+
+;org 0x0685
+sa_v_new:
+	ld		a, 1					; assume numeric array
+	ld		(ix + 14), c			; copy array name
+	bit		6, c					; numeric array?
+	jr		z, sa_v_type			; jump if so
+	inc		a						; else character array
+
+;org 0x068f
+sa_v_type:
+	ld		(ix + 0), a				; store type in first header byte
+
+;org 0x0692
+sa_data_1:
+	ex		de, hl					; pointer to DE
+	rst		next_ch				; get next character
+	cp		')'						; closing parenthesis?
+	jr		nz, sa_v_old			; error if not
+	rst		next_ch				; get next character
+	call	check_end				; next statement if checking syntax
+	ex		de, hl					; restore pointer to HL
+	jp		sa_all					; immediate jump
+
+;org 0x06a0
+sa_scr_str:
+	cp		tk_screen_str			; SCREEN$ token?
+	jr		nz, sa_code				; jump if not
+	ld		a, (taddr)				; get parameter
+	cp		2						; MERGE?
+	jp		z, report_c				; error if so
+	rst		next_ch					; get next character
+	call	check_end				; next statement if checking syntax
+;.ifdef ROM0
+;	ld		hl, 49152				; point to alternate screen address
+;.endif
+;.ifdef ROM1
+	ld		hl, bitmap				; point to screen address
+;.endif
+	ld		(ix + 14), h			; 
+	ld		(ix + 13), l			; 
+;.ifdef ROM0
+;	ld		(ix + 12), 0x38			; 14336 bytes
+;.endif
+;.ifdef ROM1
+	ld		(ix + 12), 0x1b			; 6912 bytes
+;.endif
+	ld		(ix + 11), 0			; of bitmap data
+	jr		sa_type_3				; immediate jump
+
+;org 0x06c3
+sa_code:
+	cp		tk_code					; CODE token?
+	jr		nz, sa_line				; jump if not
+	ld		a, (taddr)				; get parameter
+	cp		2						; MERGE?
+	jp		z, report_c				; error if so
+	rst		next_ch					; get next character
+	call	l2048					; check statement end
+	jr		nz, sa_code_1			; jump if not
+	ld		a, (taddr)				; get parameter
+	and		a						; test for SAVE
+	jp		z, report_c				; error if not
+	call	no_to_stk				; put zero on calculator stack
+	jr		sa_code_2				; immediate jump
+
+;org 0x06e1
+sa_code_1:
+	call	class_6					; get first number
+	rst		get_ch					; get next character
+	cp		','						; comma?
+	jr		z, sa_code_3			; jump if so
+	ld		a, (taddr)				; get parameter
+	and		a						; require start and length with SAVE
+	jp		z, report_c				; error if not
+
+;org 0x06f0
+sa_code_2:
+	call	no_to_stk				; put zero on calculator stack
+	jr		sa_code_4				; immediate jump
+
+;org 0x06f5
+sa_code_3:
+	rst		next_ch				; get next character
+	call	class_6				; get length
+
+;org 0x06f9
+sa_code_4:
+	call	check_end				; next statement if checking syntax
+	call	find_int				; get length in BC
+	ld		(ix + 12), b			; store it
+	ld		(ix + 11), c			; in header
+	call	find_int				; get start address in BC
+	ld		(ix + 14), b			; store it
+	ld		(ix + 13), c			; in header
+	ld		l, c					; store pointer
+	ld		h, b					; in HL
+
+;org 0x0710
+sa_type_3:
+	ld		(ix + 0), 3				; type 3 for CODE and SCREEN$
+	jr		sa_all					; immediate jump
+
+;org 0x0716
+sa_line:
+	cp		tk_line					; LINE token?
+	jr		z, sa_line_1			; jump if so
+	call	check_end				; next statement if checking syntax
+	ld		(ix + 14), 0x80			; store 0x80 when no further parameters
+	jr		sa_type_0				; immediate jump
+
+;org 0x0723
+sa_line_1:
+	ld		a, (taddr)				; get parameter
+	and		a						; SAVE?
+	jp		nz, report_c			; error if LINE without SAVE
+	rst		next_ch					; get next character
+	call	class_6					; number to calculator stack
+	call	check_end				; next statement if checking syntax
+	call	syntax3					; line number to BC
+	ld		(ix + 14), b			; store line number
+	ld		(ix + 13), c			; in header
+
+;org 0x073a
+sa_type_0:
+	ld		de, (prog)				; pointer to start of program
+	ld		hl, (eline)				; pointer to end of variables
+	ld		(ix + 0), 0				; set type 0
+	scf								; set carry flag
+	sbc		hl, de					; get length of program and variables
+	ld		(ix + 12), h			; store
+	ld		(ix + 11), l			; result
+	ld		hl, (vars)				; pointer to start of variables
+	sbc		hl, de					; get length of program without variables
+	ld		(ix + 16), h			; store
+	ld		(ix + 15), l			; result
+	ex		de, hl					; pointer to HL
+
+;org 0x075a
+sa_all:
+	ld		a, (taddr)				; get parameter
+	and		a						; SAVE?
+	jp		z, sa_contrl			; jump if so
+	push	hl						; stack destination pointer
+	ld		bc, 17					; header length
+	add		ix, bc					; base address of second header
+
+;org 0x0767
+ld_look_h:
+	xor		a						; signal header
+	push	ix						; stack base address
+	ld		de, 17					; load header
+	scf								; signal LOAD
+	call	ld_bytes				; look for header
+	pop		ix						; unstack base address
+	jr		nc, ld_look_h			; loop until match found
+	ld		a, 254					; open 'S'
+	call	chan_open				; channel
+	ld		(iy + _scrct), 255		; scroll count to 255
+	ld		a, (ix + 0)				; new type
+	ld		c, 0x80					; signal no match
+	cp		(ix - 17)				; compare against old type
+	jr		nz, ld_type				; jump if no match
+	ld		c, -10					; signal match 10
+
+;org 0x078a
+ld_type:
+	cp		4						; valid header (0 to 3)?
+	jr		nc, ld_look_h			; load header if valid
+	ld		de, l13d5 - 1			; point to tape messages
+	push	bc						; stack C
+	call	l0c0a					; print message
+	pop		bc						; unstack C
+	push	ix						; copy IX
+	pop		de						; to DE
+	ld		hl, -16					; make HL point
+	add		hl, de					; to old name
+	ld		a, (hl)					; get character
+	ld		b, 10					; consider ten characters
+	inc		a						; actual name?
+	jr		nz, ld_name				; jump if so
+	ld		a, b					; if old name is null
+	add		a, c					; signal all
+	ld		c, a					; characters match
+
+;org 0x07a6
+ld_name:
+	inc		de						; point to next character of new name
+	ld		a, (de)					; store it in A
+	cp		(hl)					; compare against old name
+	inc		hl						; point to next character of old name
+	jr		nz, ld_ch_pr			; jump if no match
+	inc		c						; increment count
+
+;org 0x07ad
+ld_ch_pr:
+	rst		print_a					; print new character
+	djnz	ld_name					; loop ten times
+	bit		7, c					; accept name if count is zero
+	jr		nz, ld_look_h			; look for next header if not
+	ld		a, ctrl_n_l				; print a
+	rst		print_a					; carriage return
+	pop		hl						; unstack pointer
+	ld		a, (ix + 0)				; SCREEN$ and CODE are
+	cp		3						; handled via vr_contrl
+	jr		z, vr_contrl			; jump with a match
+	ld		a, (taddr)				; get byte
+	dec		a						; reduce it
+	jp		z, ld_contrl			; jump if LOAD
+	jp		me_contrl				; else must be MERGE
+
+;org 0x07c9
+	defs	2, 255					; unused locations (common)
+
+;org 0x07cb
+vr_contrl:
+	push	hl						; stack pointer
+	ld		d, (ix + 12)			; get number of bytes
+	ld		e, (ix + 11)			; from new header
+	ld		h, (ix - 5)				; get number of bytes
+	ld		l, (ix - 6)				; from old header
+	ld		a, l					; test for zero
+	or		h						; (length unspecified)
+	jr		z, vr_cont_1			; jump if so
+	sbc		hl, de					; is block longer than required length?
+	jr		c, report_r				; error if so
+	jr		z, vr_cont_1			; jump if not
+	ld		a, (ix + 0)				; get type
+	cp		3						; SCREEN$ or CODE?
+	jr		nz, report_r			; error if so
+
+;org 0x07e9
+vr_cont_1:
+	pop		hl						; unstack pointer
+	ld		a, l					; test
+	or		h						; for zero
+	jr		nz, vr_cont_2			; use old header if so
+	ld		h, (ix + 14)			; use new header
+	ld		l, (ix + 13)			; if not
+
+;org 0x07f4
+vr_cont_2:
+	push	hl						; copy pointer
+	pop		ix						; to IX
+	scf								; set carry flag
+	ld		a, 0xff					; signal LOAD
+	jp		ld_block				; immediate jump
+
+; -----------------------------------------------------------------------------
+
+; THE 'STREAM-FE' SUBROUTINE 
+;org 0x7fd
+stream_fe:
+	ld		a, 254					; located here
+	jp		chan_open				; for space efficiency
+
+; -----------------------------------------------------------------------------
+
+; THE 'LOAD A DATA BLOCK' SUBROUTINE
+;org 0x0802
+ld_block:
+	call	ld_bytes				; LOAD a data block
+	ret		c						; return unless error
+
+;org 0x0806
+report_r:
+	rst		error_1					; report
+	defb	Loading_error			; loading error
+
+; THE 'LOAD' CONTROL ROUTINE
+;org 0x0808
+ld_contrl:
+	ld		d, (ix + 12)			; get number of bytes
+	ld		e, (ix + 11)			; from new header
+	push	hl						; stack destination pointer
+	ld		a, l					; test for
+	or		h						; zero
+	jr		nz, ld_cont_1			; jump unless loading undeclared array
+	inc		de						; add three bytes
+	inc		de						; for variable name
+	inc		de						; and length
+	ex		de, hl					; length to HL
+	jr		ld_cont_2				; immediate jump
+
+;org 0x0819
+ld_cont_1:
+	ld		h, (ix - 5)				; get size of
+	ld		l, (ix - 6)				; program and variables
+	ex		de, hl					; put in DE
+	scf								; set carry flag
+	sbc		hl, de					; extra room needed?
+	jr		c, ld_data				; jump if not
+
+;org 0x0825
+ld_cont_2:
+	ld		de, 5					; add five
+	add		hl, de					; bytes
+	ld		c, l					; result
+	ld		b, h					; to BC
+	call	test_room				; test for room
+
+;org 0x082e
+ld_data:
+	pop		hl						; unstack pointer
+	ld		a, (ix + 0)				; loading a
+	and		a						; program?
+	jr		z, ld_prog				; jump if so
+	ld		a, l					; test for zero
+	or		h						; an array?
+	jr		z, ld_data_1			; jump if so
+	dec		hl						; get
+	ld		b, (hl)					; length of
+	dec		hl						; existing
+	ld		c, (hl)					; array
+	dec		hl						; point to old name
+	inc		bc						; add three bytes
+	inc		bc						; for name
+	inc		bc						; and length
+	ld		(xptr), ix				; store IX
+	call	reclaim_2				; reclaim old array
+	ld		ix, (xptr)				; restore IX
+
+;org 0x084c
+ld_data_1:
+	ld		hl, (eline)			; pointer to end of variables
+	dec		hl						; point to end marker
+	ld		b, (ix + 12)			; get length
+	ld		c, (ix + 11)			; of new array
+	push	bc						; stack it
+	inc		bc						; add three bytes
+	inc		bc						; for name
+	inc		bc						; and length
+	ld		a, (ix - 3)				; get name from old header
+	push	af						; stack it
+	call	make_room				; make room
+	pop		af						; unstack name
+	inc		hl						; point to next location
+	ld		(hl), a					; store name
+	inc		hl						; point to next location
+	pop		de						; unstack length
+	ld		(hl), e					; store low byte
+	inc		hl						; point to next location
+	ld		(hl), d					; store high byte
+	inc		hl						; point to next location
+	push	hl						; copy pointer
+	pop		ix						; to IX
+	scf								; set carry flag
+	ld		a, 0xff					; signal data block
+	jp		ld_block				; immediate jump
+
+;org 0x0873
+ld_prog:
+	ex		de, hl					; destination pointer to DE
+	ld		hl, (eline)			; address of end of variables
+	dec		hl						; point to end marker
+	ld		(xptr), ix				; store IX
+	ld		b, (ix + 12)			; get
+	ld		c, (ix + 11)			; length
+	push	bc						; stack it
+	call	reclaim_1				; reclaim program and variables area
+	pop		bc						; unstack length
+	push	hl						; stack pointer to program area
+	push	bc						; stack length
+	call	make_room				; make room
+	inc		hl						; increment pointer
+	ld		ix, (xptr)				; restore IX
+	ld		b, (ix + 16)			; calculate
+	ld		c, (ix + 15)			; new value
+	add		hl, bc					; of vars
+	ld		(vars), hl				; and store it
+	ld		h, (ix + 14)			; was a
+	ld		a, h					; line number
+	and		%11000000				; specified?
+	jr		nz, ld_prog_1			; jump if not
+	ld		l, (ix + 13)			; get rest of line number
+	ld		(newppc), hl			; and store it
+	ld		(iy + _nsppc), 0		; set nsppc
+
+;org 0x08ad
+ld_prog_1:
+	pop		de						; get length
+	pop		ix						; get start
+	scf								; set carry flag
+	ld		a, 0xff					; signal data block
+	jp		ld_block				; immediate jump
+
+; THE 'MERGE' CONTROL ROUTINE
+;org 0x08b6
+me_contrl:
+	ld		b, (ix + 12)			; get length
+	ld		c, (ix + 11)			; of data block
+	push	bc						; stack length
+	inc		bc						; length plus one
+	rst		bc_spaces				; make space in workspace
+	ld		(hl), 0x80		; end marker
+	ex		de, hl					; start pointer to HL
+	pop		de						; unstack length
+	push	hl						; stack start
+	push	hl						; start
+	pop		ix						; to IX
+	scf								; set carry flag
+	ld		a, 0xff					; signal data block
+	call	ld_block				; LOAD data block
+	pop		hl						; unstack start of new program
+	ld		de, (prog)				; start of old program to DE
+
+;org 0x08d2
+me_new_lp:
+	ld		a, (hl)					; get line number
+	and		%11000000				; test it
+	jr		nz, me_var_lp			; jump when all lines complete
+
+;org 0x08d7
+me_old_lp:
+	ld		a, (de)					; compare high line number byte
+	cp		(hl)					; of old program with new
+	inc		hl						; increment
+	inc		de						; both pointers
+	jr		nz, me_old_l1			; jump with no match
+	ld		a, (de)					; compare low line number byte
+	cp		(hl)					; of old program with new
+
+;org 0x08df
+me_old_l1:
+	dec		hl						; restore pointers
+	dec		de						; to high byte
+	jr		nc, me_new_l2			; jump if correct place found for new line
+	ex		de, hl					; switch pointers
+	push	de						; stack old program pointer
+	call	next_one				; find address of start of next old line
+	pop		hl						; unstack old program pointer
+	jr		me_old_lp				; loop until done
+
+;org 0x08eb
+me_new_l2:
+	call	me_enter				; enter new line
+	jr		me_new_lp				; loop until done
+
+;org 0x08f0
+me_var_lp:
+	ld		a, (hl)					; get variable name
+	ld		c, a					; test it
+	cp		0x80				; no more variables?
+	ret		z						; return if so
+	push	hl						; stack new pointer
+	ld		hl, (vars)				; old program variables address to HL
+
+;org 0x08f9
+me_old_vp:
+	ld		a, (hl)					; get variable name
+	cp		0x80				; test for end marker
+	jr		z, me_var_l2			; jump if so
+	cp		c						; compare names
+	jr		z, me_old_v2			; jump with match
+
+;org 0x0901
+me_old_v1:
+	push	bc						; stack new variable name
+	call	next_one				; get next old variable
+	ex		de, hl					; restore pointer
+	pop		bc						; unstack new variable name
+	jr		me_old_vp				; immediate jump
+
+;org 0x0909
+me_old_v2:
+	and		%11100000				; consider bits 7 to 5
+	cp		%10100000				; accept all variable types
+	jr		nz, me_var_l1			; except long name variables
+	pop		de						; DE points to the first character
+	push	de						; of the new name
+	push	hl						; stack pointer to old name
+
+;org 0x0912
+me_old_v3:
+	inc		de						; update new and
+	inc		hl						; old pointers
+	ld		a, (de)					; new pointer to A
+	cp		(hl)					; compare characters
+	jr		nz, me_old_v4			; jump if no match
+	rla								; last character?
+	jr		nc, me_old_v3			; loop until found
+	pop		hl						; unstack pointer to start of old name
+	jr		me_var_l1				; immediate jump
+
+;org 0x091e
+me_old_v4:
+	pop		hl						; unstack pointer
+	jr		me_old_v1				; immediate jump
+
+;org 0x0921
+me_var_l1:
+	ld		a, 255					; signal replace variable
+
+;org 0x0923
+me_var_l2:
+	ex		de, hl					; switch pointers and set zero flag for
+	inc		a						; replacement or reset for insertion
+	pop		hl						; unstack pointer to new name
+	scf								; signal handling variables
+	call	me_enter				; make the entry
+	jr		me_var_lp				; loop until done
+
+; THE 'MERGE A LINE OR VARIABLE' SUBROUTINE
+;org 0x092c
+me_enter:
+	jr		nz, me_ent_1			; jump with insertion
+	ld		(xptr), hl				; store flags
+	ex		af, af'					;'store new pointer
+	ex		de, hl					; while old line
+	call	next_one				; or variable
+	call	reclaim_2				; is reclaimed
+	ex		af, af'					;'restore new pointer
+	ex		de, hl					; swap registers
+	ld		hl, (xptr)				; restore flags
+
+;org 0x093e
+me_ent_1:
+	push	de						; stack destination pointer
+	ex		af, af'					;'store flags
+	call	next_one				; get length of new variable or line
+	ld		(xptr), hl				; store pointer to new variable or line
+	ld		hl, (prog)				; avoid corruption
+	ex		(sp), hl				; stack prog
+	push	bc						; stack length
+	ex		af, af'					;'restore flags
+	jr		c, me_ent_2				; jump if inserting variable
+	dec		hl						; new line to be added before destination
+	call	make_room				; make room
+	inc		hl						; restore destination
+	jr		me_ent_3				; immediate jump
+
+;org 0x0955
+me_ent_2:
+	call	make_room				; make room
+
+;org 0x0958
+me_ent_3:
+	pop		bc						; unstack length
+	pop		de						; unstack prog
+	inc		hl						; point to first location
+	ld		(prog), de				; restore prog
+	ld		de, (xptr)				; get new pointer
+	push	bc						; stack length
+	ex		de, hl					; swap pointers 
+	push	hl						; stack new pointer
+	ldir							; copy the new variable or line
+	pop		hl						; unstack new pointer
+	pop		bc						; unstack length
+	push	de						; stack old pointer
+	call	reclaim_2				; remove variable or line from workspace
+	pop		de						; unstack old pointer
+	ret								; end of subroutine
+
+; THE 'SAVE' CONTROL ROUTINE
+;org 0x0970
+sa_contrl:
+	push	hl						; stack pointer
+	push	ix						; stack base address of header
+	xor		a						; signal header
+	ld		de, 17					; SAVE 17 bytes
+	call	sa_bytes				; send header with type and parity byte
+	ld		b, 50					; one second delay (@ 50Hz)
+	pop		ix						; unstack base address of header
+
+;org 0x097e
+sa_1_sec:
+	halt							; wait for interrupt
+	djnz	sa_1_sec				; jump until delay is complete
+	ld		a, 0xff					; signal data block 
+	ld		d, (ix + 12)			; get length
+	ld		e, (ix + 11)			; of data block
+	pop		ix						; unstack start of block
+	jp		sa_bytes				; immediate jump
+
+;org 0x098e
+sa_v_old_1:
+	call	syntax_z				; return if
+	ret		z						; checking syntax
+	bit		7, (hl)					; simple string?
+	ret		nz						; return if not
+	rst		error_1					; otherwise
+	defb	Syntax_error			; error
+
+	defs	16, 255					; SPARE BYTES
+
+; end of backport
 
 l09a1:
 	rst		get_ch					;
@@ -1485,12 +1606,6 @@ l09e5:
 	jr		z, l09c2				;
 	call	check_end				;
 	ret								;
-
-streamfe:
-	ld		a, 254					;
-	jp		l1601					;
-
-	defs	1, 255					; 1 spare bytes
 
 prmain:
 	call	l0b03					;
@@ -2317,7 +2432,7 @@ l0daf:
 	ld		(xcoord), hl			;
 	res		0, (iy + _flags2)		;
 	call	l0d94					;
-	call	streamfe
+	call	stream_fe
 	ld		b, 24					;
 	call	l0e44					;
 	ld		hl, (curchl)			;
@@ -3489,6 +3604,7 @@ l15f7:
 	ret								;
 
 l1601:
+chan_open:
 	add		a, a
 	add		a, 22
 	ld		h, kstate/256
@@ -4619,10 +4735,10 @@ p_save:
 p_load:
 	defb	tap_offst				;
 
-p_verify:
+p_merge:
 	defb	tap_offst				;
 
-p_merge:
+p_verify:
 	defb	tap_offst				;
 
 p_pen:
@@ -4930,7 +5046,7 @@ class_a:
 
 class_7:
 	call	syntax_z				;
-	call	nz, streamfe			;
+	call	nz, stream_fe			;
 	pop		af						;
 	ld		a, (taddr)				;
 	sub		0x39					; sub p_pen - (tk_pen - 1) % 256
@@ -4954,7 +5070,7 @@ l1cb9:
 class_9:
 	call	syntax_z				;
 	jr		z, l1cd2				;
-	call	streamfe				;
+	call	stream_fe				;
 	ld		hl, maskt				;
 	ld		a, (hl)					;
 	or		%11111000				;
@@ -4971,7 +5087,7 @@ l1cd7:
 	ret								;
 
 class_b:
-	jp		l0605					;
+	jp		save_etc				;
 
 l1cde:
 	cp		ctrl_n_l				;
