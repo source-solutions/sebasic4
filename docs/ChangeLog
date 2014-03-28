@@ -1,3 +1,10 @@
+2014-03-28  Andrew Owen  <aowen10@gmail.bbk.ac.uk>
+
+        * SE Basic IV update 4.0.7 released.
+        * Back-ported the tokenizer from 4.1.0.
+        * Modified keyboard code to enable direct entry of tokens 0 to 6.
+        * Swapped DELETE and RESET tokens to enable use of DELETE * “filename”
+
 2014-03-27  Andrew Owen  <aowen10@gmail.bbk.ac.uk>
 
         * SE Basic IV update 4.0.6 released.

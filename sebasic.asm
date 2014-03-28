@@ -78,7 +78,7 @@ _next_ch:
 	jr		test_sp					; then jump
 
 l0025:
-	defb	"406"					; version number
+	defb	"407"					; version number
 
 _fp_calc:
 	jp		calculate				; immediate jump
@@ -193,10 +193,10 @@ l0099:
 	jp		nc, l100e				; jump if so
 	ret								; end of subroutine
 
+	defs	3, 255					; 5 spare bytes
+
 k_token:
 	incbin	"tokens.txt"			; token definitions
-
-	defs	5, 255					; 5 spare bytes
 
 kt_unshifted:
 	incbin	"unshifted.txt"			; unshifted character definitions
@@ -377,6 +377,16 @@ k_meta:
 
 ;org 0x035e
 k_control:
+	cp		12						; higher than 11
+	jr		nc, k_add				; jump if so
+	sub		6						; reduce range if not
+	call	add_char				; insert token
+	ld		hl, kcur				; cursor position
+	dec		(hl)					; reduce it
+	ld		a, 9					; right
+	ret
+
+k_add:
 	add		a, 79					; CTRL+"A" = UDG A
 	ret								; end of subroutine
 
@@ -398,7 +408,7 @@ k_look_up:
 	ld		a, (hl)					; get character
 	ret								; end of subroutine
 	
-	defs	50, 255
+	defs	34, 255					; 34 spare bytes
 
 .ifdef ROM0
 	defs	14, 255					; 14 spare bytes
@@ -1552,7 +1562,7 @@ sa_v_old_1:
 	rst		error_1					; otherwise
 	defb	Syntax_error			; error
 
-	defs	16, 255					; SPARE BYTES
+	defs	16, 255					; 16 spare bytes
 
 ; end of backport
 
@@ -3353,7 +3363,7 @@ l12a9:
 l12ac:
 	xor		a
 	call	l1601
-	call	token
+	call	tokenizer
 	call	l1b17
 	bit		7, (iy + _errnr)
 	jr		nz, l12cf
@@ -4481,7 +4491,7 @@ syntax:
 	defb	p_udg - $				; 56 BASIC commands.
 	defb	p_mode - $				;
 	defb	p_ldir - $				;
-	defb	p_reset - $				;
+	defb	p_delete - $			;
 	defb	p_open  - $				;
 	defb	p_close - $				;
 	defb	p_merge - $				;
@@ -4527,7 +4537,7 @@ syntax:
 	defb	p_clear - $				;
 	defb	p_return - $			;
 	defb	p_call - $				;
-	defb	p_delete - $			;
+	defb	p_reset - $				;
 	defb	p_edit - $				;
 	defb	p_renum - $				;
 	defb	p_palette - $			;
@@ -7281,7 +7291,7 @@ l267b:
 	rst		next_ch
 	jr		s_numeric
 .ifdef ROM0
-	defs	8, 0xFF					; 8 spare bytes
+	defs	8, 255					; 8 spare bytes
 .endif
 
 l2684:
@@ -11234,184 +11244,164 @@ l39c6:
 	pop		de						;
 	ret								;
 
-token:
-	set		7, (iy + _errnr)		;
-	call	editor					;
-	ld		ix, (eline)				;
+; back-ported tokenizer from 4.1.0
 
-token1:
-	push	ix						;
-	ld		hl, k_token + 57		; start of ASIN token
-	ld		c, tk_asn - 6			;
-	call	token22					;
-	cp		'A'						;
-;	jr		nz, token2				;
-;	call	token8					;
-	jp		atn_fix
-	nop
-	nop
+_165 equ k_token + 270				; start of REM token
+_5 equ k_token + 389				; start of ON ERROR token
 
-token2:
-	pop		ix						;
-	ld		hl, k_token				;
-	ld		c, tk_rnd - 6			;
+; THE 'TOKENIZER' ROUTINE
+tokenizer:
+	set		7, (iy + _errnr)		; set no error
+	call	editor					; prepare line
+	xor		a						; first pass
+	ld		de, _165				; check REM first
 
-token3:
-	call	token22					;
-	cp		ctrl_n_l				;
-	ret		z						;
-	cp		tk_rem					;
-	ret		z						;
-	cp		'"'						;
-	jr		nz, token6				;
+tokenizer_1:
+	ld		hl, (eline)				; fetch line start
+	push	de						; store token
+	pop		ix						; position in IX
 
-token4:
-	inc		ix						;
-	ld		a, (ix + 0x00)			;
-	jp		l3a01					;
+tokenizer_2:
+	ld		bc, 0					; clear alpha flag
+	push	af						; stack token number
 
-l39ff:
-	defw	0xffff					;
+tokenizer_3:
+	push	ix						; restore token
+	pop		de						; position to DE
+
+tokenizer_4:
+	ld		a, (hl)					; get character
+	cp		'%'						; Spectranet command?
+	jr		z, tokenizer_14			; jump if so
+	cp		tk_rem					; REM token?
+	jr		z, tokenizer_14			; jump if so				
+	cp		ctrl_n_l				; enter?
+	jr		z, tokenizer_14			; jump if so
+	cp		'"'						; in quotes?
+	jr		nz, tokenizer_5			; jump if not
+	inc		c						; toggle bit 0
+
+tokenizer_5:
+	bit		0, c					; in quotes?
+	jr		nz, tokenizer_7			; jump if so
+	call	tokenizer_17			; alpha?
+	jr		nc, tokenizer_6			; jump if not
+	bit		7, b					; was previous alpha?
+	jp		l3a01
+
+l39ff:	
+	defw	0xffff
 
 l3a01:
-	cp		ctrl_n_l				;
-	ret		z						;
-	cp		'"'						;
-	jr		nz, token4				;
+	jr		nz, tokenizer_7			; jump if so
 
-token5:
-	inc		ix						;
-	jr		token3					;
+tokenizer_6:
+	ex		de, hl					; switch HL and DE
+	cp		(hl)					; first character match?
+	ex		de, hl					; switch back
+	jr		z, tokenizer_8			; jump if match
 
-token6:
-	cp		'%'						;
-	jr		nz, token8				;
+tokenizer_7:
+	inc		hl						; next character
+	jr		tokenizer_4				; repeat until end of line
 
-token7:
-	inc		ix						;
-	ld		a, (ix + 0x00)			;
-	cp		ctrl_n_l				;
-	ret		z						;
-	cp		' '						;
-	jr		nz, token7				;
-	jr		token5					;	
+tokenizer_8:
+	ld		(mem_5_1), hl			; store position
 
-token8:
-	push	ix						;
-	pop		de						;
-	cp		(hl)					;
-	jr		nz, token13				;
+tokenizer_9:
+	inc		hl						; next position
+	ld		a, (hl)					; character to A	
+	call	tokenizer_17			; make caps
+	ex		af, af'					;'store A
 
-token9:
-	inc		ix						;
+tokenizer_10:
+	ex		af, af'					;'restore A
+	inc		de						; next character of token
+	ex		de, hl					; switch HL and DE
+	cp		(hl)					; does next character match?
+	ex		de, hl					; switch back
+	jr		z, tokenizer_9			; jump if match
+	ex		af, af'					;'store A
+	ld		a, (de)					; token character to A
+	cp		' '						; space?
+	jr		z, tokenizer_10			; jump if so
+	ex		af, af'					;'restore A
+	cp		'.'						; abbreviation?
+	jr		z, tokenizer_11			; jump if so
+	or		%10000000				; set bit 7
+	ex		de, hl					; token character address to HL
+	cp		(hl)					; final character?
+	ex		de, hl					; token character address to DE
+	jr		nz, tokenizer_3			; start at next with no match
+	cp		128 + '@'				; non-alpha?
+	jr		c, tokenizer_12			; jump if so
 
-token10:
-	inc		hl						;
+tokenizer_11:
+	inc		hl						; next character
+	ld		a, (hl)					; trailing character to A
+	cp		' '						; space?	
+	jr		z, tokenizer_12			; jump if so
+	dec		hl						; final character of token
+	cp		'$'						; string?
+	jr		z, tokenizer_3			; jump if so
+	call	alpha					; alpha?
+	jr		c, tokenizer_3			; jump if so
 
-token11:
-	call	token22					;
-	cp		'.'						;
-	jr		z, token18				;
-	ld		b, (hl)					;
-	cp		' '						;
-	jr		z, token17				;
-	push	af						;
-	ld		a, b					;
-	cp		' '						;
-	jr		nz, token16				;
-	pop		af						;
-	inc		hl						;
-	jr		token11					;
+tokenizer_12:
+	ld		de, (mem_5_1)			; first character 
 
-token12:
-	bit		7, (hl)					;
-	jr		z, token9				;
-	ld		a, (ix + 0x01)			;
-	call	token23					;
-	jr		nc, token18				;
+tokenizer_13:
+	dec		de						; point to leading character
+	ld		a, (de)					; store it in A
+	cp		' '						; space?
+	jr		z, tokenizer_13			; jump if so
+	inc		de						; first character
+	call	reclaim_1				; remove spaces
+	pop		af						; unstack token
+	push	ix						; store IX
+	pop		de						; in DE
+	push	af						; stack A
+	add		a, 6					; add offset
+	ld		(hl), a					; insert token
+	pop		af						; unstack A
+	and		a						; REM?
+	jp		nz, tokenizer_2			; jump if not
+	ld		(hl), tk_rem			; store REM token
+	push	af						; prevent loop
 
-token13:
-	inc		c						;
-	push	de						;
-	pop		ix						;
+tokenizer_14:
+	ld		de, _5					; start of final token
+	pop		af						; restore token
+	sub		1						; dec A and set carry if zero
+	jp		c, tokenizer_1			; jump if carry flag set.
+	cp		tk_rnd - 7				; first token?
+	ret		z						; return if so
+	push	ix						; IX to
+	pop		hl						; HL
 
-token14:
-	bit		7, (hl)					;
-	inc		hl						;
-	jr		z, token14				;
-	ld		a, c					;
-	and		a						;
-	jr		nz, token3				;
-	inc		ix						;
+tokenizer_15:
+	dec		hl						; end of previous token
 
-token15:
-	jp		token1					;
+tokenizer_16:
+	dec		hl						; down one character
+	bit		7, (hl)					; final character of a token?
+	jr		z, tokenizer_16			; jump if not
+	inc		hl						; first character of next token
+	ex		de, hl					; store in DE
+	jp		tokenizer_1				; next token
 
-token16:
-	pop		af						;
+tokenizer_17:
+	bit		3, (iy + _flags2)		; don't tokenize lower case
+	ret		nz						; if caps in use
+	call	alpha					; test alpha
+	ld		b, c					; previous result to B
+	ld		c, 0					; clear C
+	ret		nc						; return if non-alpha
+	res		5, a					; make upper case
+	set		7, c					; set flag if alpha
+	ret								; end of subroutine
 
-token17:
-	res		7, b					;
-	cp		b						;
-	jr		z, token12				;
-	ld		a, b					;
-	cp		' '						;
-	jr		nz, token13				;
-	inc		hl						;
-	jr		token10					;
-
-token18:
-	ld		a, (ix + 0x01)			;
-	cp		' '						;
-	jr		nz, token19				;
-	inc		ix						;
-
-token19:
-	dec		de						;
-	ld		a, (de)					;
-	cp		' '						;
-	jr		z, token20				;
-	inc		de						;
-	call	token23					;
-	jr		c, token13				;
-
-token20:
-	inc		c						;
-	inc		c						;
-	inc		c						;
-	inc		c						;
-	inc		c						;
-	inc		c						;
-	ld		(ix + 0x00), c			;
-	ld		hl, (kcur)				;
-	and		a						;
-	sbc		hl, de					;
-	jr		c, token21				;
-	add		hl, de					;
-	push	ix						;
-	pop		bc						;
-	scf								;
-	sbc		hl, bc					;
-	jr		nc, token21				;
-	ld		(kcur), de				;
-
-token21:
-	push	de						;
-	ex		(sp), ix				;
-	pop		hl						;
-	call	reclaim_1				;
-	jr		token15					;
-
-token22:
-	ld		a, (ix + 0x00)			;
-
-token23:
-	bit		1, (iy + _mode)			;
-	ret		nz						;
-	call	alpha					;
-	ret		nc						;
-	and		%11011111				;
-	ret								;
+	defs	44, 255					; 44 spare bytes
 
 l3aa9:
 	ld		hl, (stkend)			;
@@ -11464,8 +11454,7 @@ l3adc:
 	sbc		hl, de					;
 	ret		z						;
 	call	l3c44					;
-	jp		l3b01					;
-	defb	0xff					;
+	jr		l3b01					;
 
 l3aff:
 	defw	0xffff					;
@@ -11761,20 +11750,6 @@ l3ca1:
 	jr		c, l3ca1				;
 	jp		l0a58					;
 
-atn_fix:
-	jr		nz, input_chk			; fix to tokenize ATN
-	jr		entoken					;
-
-input_chk:
-	cp		'I'						;
-	jp		nz, token2				;
-	ld		hl, k_token + 206		; start of INVERSE token
-	ld		c, tk_inverse - 6		;
-
-entoken:
-	call	token8					;
-	jp		token2					;
-
 _call:
 	call	find_int
 	ld		a, b
@@ -11795,12 +11770,7 @@ prism:
 	out		(c), a
 	ret
 
-	defs	6, 255					; 6 spare bytes
-
-	defb	1, 14					; release date (month/day)
-
-cursors:
-	incbin	"cursors.data"			;
+	defs	52, 255					; 52 spare bytes
 
 font:
 .ifdef ROM0
