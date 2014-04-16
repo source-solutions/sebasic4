@@ -96,8 +96,8 @@ _bc_spaces:
 	jp		reserve					; then jump
 
 _interrupt:
-	push	hl						; store HL
-	push	af						; store AF
+	push	af						; store HL
+	push	hl						; store AF
 	ld		hl, frames				; L addresses low byte of frames
 	inc		(hl)					; increment lowest byte
 	jr		nz, anyi				; jump if no roll over
@@ -108,13 +108,13 @@ _interrupt:
 	inc		(hl)					; increment high byte
 
 anyi:
-	push	de						; store DE
-	push	bc						; store BC
-	call	keyboard				; read keypress
-	pop		bc						; restore BC
-	pop		de						; restore DE
-	pop		af						; restore AF
-	pop		hl						; restore HL
+	push	bc						; store DE
+	push	de						; store BC
+	call	mouse				; read keypress
+	pop		de						; restore BC
+	pop		bc						; restore DE
+	pop		hl						; restore AF
+	pop		af						; restore HL
 	ei								; switch on interrupts
 	ret								; end of maskable interrupt
 
@@ -3421,13 +3421,16 @@ l130f:
 	ld		de, l140c - 1
 	set		0, (iy + _flags)
 	call	l0c0a
-	jp		l134a
+	jr		l1349
 
-l1344:
+l1343:
 	call	restorez				;
 	jp		cls						;
 
-l134a:
+; static address used by esxDOS follows
+
+l1349:
+	nop								;
 	ld		a, ','					;
 	rst		print_a					;
 	ld		a, ' '					;
@@ -5462,7 +5465,7 @@ clr3:
 	ld		de, (vars)
 	dec		hl
 	call	reclaim_1
-	call	l1344
+	call	l1343
 	ld		de, 50
 	ld		hl, (stkend)
 	add		hl, de
@@ -11401,7 +11404,42 @@ tokenizer_17:
 	set		7, c					; set flag if alpha
 	ret								; end of subroutine
 
-	defs	44, 255					; 44 spare bytes
+	defs	6, 255					; 44 spare bytes
+
+mouse:
+	push	hl			; stack hl
+	ld		hl, 0x5bff	; mouse_y
+	ld		bc, 64479	; get y
+	in		a, (c)		; value of y
+	ld		d, a		; store it in B
+	ld		a, (hl) 	; old value to A	
+	cp		d			; compare against old value
+	ld		(hl), d		; store new value
+	ld		a, 9		; assume right
+	jr		nz, y_fnd	; jump if not equal (horizontal movement)
+
+x_move:
+	dec		hl			; mouse_x
+	ld		b, 0xff		; get x
+	in		a, (c)		; value of x
+	ld		e, a		; store it in B
+	ld		a, (hl)		; old value to A	
+	cp		e			; compare against old value
+	ld		(hl), e		; store new value
+	ld		a, 11		; assume up
+
+y_fnd:
+	pop		hl			; unstack hl
+	jp		z, keyboard	; return if no mouse movement
+	jr		c, found	; jump if more than (up)
+
+reduce:
+	dec		a
+
+found:
+	jp		k_new			; done
+
+; ---
 
 l3aa9:
 	ld		hl, (stkend)			;
