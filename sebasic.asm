@@ -4501,9 +4501,9 @@ units:
 
 syntax:
 	defb	p_deffn - $				; There is an offset value for each of the
-	defb	p_udg - $				; 56 BASIC commands.
+	defb	p_ldir - $				; 56 BASIC commands.
 	defb	p_mode - $				;
-	defb	p_ldir - $				;
+	defb	p_udg - $				;
 	defb	p_delete - $			;
 	defb	p_open  - $				;
 	defb	p_close - $				;
