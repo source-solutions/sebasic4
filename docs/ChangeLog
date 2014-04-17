@@ -1,21 +1,34 @@
-2014-03-28  Andrew Owen  <aowen10@gmail.bbk.ac.uk>
+2014-04-17  Andrew Owen  <aowen10@gmail.bbk.ac.uk>
 
         * SE Basic IV update 4.0.7 released.
         * Back-ported the tokenizer from 4.1.0.
         * Modified keyboard code to enable direct entry of tokens 0 to 6.
-        * Swapped DELETE and RESET tokens to enable use of DELETE * “filename”
+        * Swapped DELETE and RESET tokens to enable use of DELETE * “filename”.
+        * Experimental Kempston Mouse support.
+        * Updated Chloe character set to include copyright symbol.
+        * Unfinished commands:
+          o TRACE (currently functions as MERGE)
+          o SPEED (currently functions as SLOW)
+          o SCROLL (currently functions as FAST)
 
 2014-03-27  Andrew Owen  <aowen10@gmail.bbk.ac.uk>
 
         * SE Basic IV update 4.0.6 released.
-        * Back-ported the tape code from 4.1.0.
+        * Back-ported the tape code from 4.1.0:
+          o SAVE now saves immediately without displaying a message
+            (corrupting the lower two lines of SCREEN$).
 
 2014-03-21  Andrew Owen  <aowen10@gmail.bbk.ac.uk>
 
         * SE Basic IV update 4.0.5 released.
-        * Back-ported the keyboard code from 4.1.0.
+        * Back-ported the keyboard code from 4.1.0:
+          o Added META mode -- the next character entered has its high bit set.
+          o Added CONTROL mode -- next character entered is offset by 79.
+          o Cursor mode now reset after a character is entered.
+          o Lower-case not tokenized when CAPS LOCK is on.
+          o Removed inline color control code entry -- not good in hi-res mode.
         * Macros for tokens LOAD, CODE, RUN, SAVE, DATA, and STOP.
-        * Simplified the cursors.
+        * Simplified the cursors -- now only one cursor.
         * Adjusted the tape code for better emulator support.
 
 2013-01-16  Andrew Owen  <aowen10@mail.bbk.ac.uk>

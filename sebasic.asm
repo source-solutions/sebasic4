@@ -582,15 +582,22 @@ l04aa:
 	add		a, 223					;
 	ret								;
 
-l04b9:
-	call	syntax_z				;
-	ret		z						;
-	bit		7, (hl)					;
-	ret		nz						;
-	rst		error_1					;
+;l04b9:
+	call	syntax_z				; FIXME
+	ret		z						; this is a duplicate
+	bit		7, (hl)					; of the 
+	ret		nz						; sa_v_old_1
+	rst		error_1					; routine
 	defb	Syntax_error			;
 
+
 ; --- THE TAPE HANDLING ROUTINES ----------------------------------------------
+
+; FIXME - text mode needs a separate screen handler to page in bank 7 during
+;		  loading and saving of SCREEN$
+;
+;		- if ULAplus is enabled in graphics mode, loading and saving of SCREEN$
+;		  should include the palette data
 
 ; THE 'SA-BYTES' SUBROUTINE
 ;org 0x04c2
@@ -3486,7 +3493,10 @@ l1396:
 .endif
 
 l13b6:
-	incbin	"tape.txt"				;
+;	incbin	"tape.txt"				;
+
+	defs	31, 255
+
 
 l13d5:
 	incbin	"filetypes.txt"			;

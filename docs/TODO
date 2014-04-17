@@ -1,0 +1,27 @@
+Planned features for 4.0.8:
+
+        * Back-ported of the rest of the functionality from 4.1.0:
+          x Enabled cursor up and down during INPUT.
+          x CALL now sets required HL' value on return.
+          x Extended NEW: NEW 128 is hard reset, defaults to 0 (soft reset).
+          x Extended LIST. LIST [f],[l] lists a range of lines.
+          x BORDER sets the color pair in text mode.
+          x Faster drawing in graphics mode.
+          o Faster editor.
+          x Graphics commands can now use the entire display:
+            PLOT 0, -16: DRAW 255, 191: CIRCLE 128, 80, 95: PRINT POINT (0,-16)
+          x Improved support for legacy microdrive syntax.
+          x NEW 48 performs a warm restart and sets compatibility mode.
+          x ROM switching service routine.
+          x SCREEN$ (x,y) support in 80-column mode.
+          x SCROLL command for console style text handling in 32- or 80-column mode.
+          x SPEED command sets CPU speed.
+          x TRACE command for debugging.
+
+Differences in 4.1.0:
+          o Refactor and code cleanup.
+          o Switched to Logan/O'Hara labelling.
+          o Re-ordered the keyboard tables.
+          o Re-ordered the parameter definitions in the syntax table.
+          o Fully commented source code.
+          o Modular assembly listing.  
