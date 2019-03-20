@@ -1,0 +1,38 @@
+   {
+    // Verwendet IntelliSense zum Ermitteln möglicher Attribute.
+    // Zeigen Sie auf vorhandene Attribute, um die zugehörigen Beschreibungen anzuzeigen.
+    // Weitere Informationen finden Sie unter https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "z80-debug",
+            "request": "launch",
+            "name": "Z80 Debugger",
+            "zhostname": "localhost",
+            "zport": 10000,
+                        "listFiles": [
+                // "../basic/48.list",
+                { 
+                    "path": "../basic/48.list", 
+                    "useFiles": true,
+                    "asm": "zcl",
+                    "mainFile": "basic.asm"
+                }
+            ],
+            "startAutomatically": false,
+            "skipInterrupt": true,
+            "commandsAfterLaunch": [
+                //"-sprites",
+                //"-patterns"
+            ],
+            "disassemblerArgs": {
+                "esxdosRst": true
+            },
+            "rootFolder": "${workspaceFolder}",
+            "topOfStack": "stack_top",
+            	// "load": "z80-sample-program.sna",
+            "smallValuesMaximum": 513,
+            "tmpDir": ".tmp"
+       }
+    ]
+}
