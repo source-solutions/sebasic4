@@ -27,9 +27,9 @@ dot_test:
 	jr nc, tokenizer_0;			// jump if so
 	cp ctrl_enter;				// end of line?
 	jr z, tokenizer_0;			// jump if so
-	cp '.';						// dot command?
-	jr nz, dot_test;			// jump if not;
-	ld (hl), ' ';				// else remove it
+;	cp '.';						// dot command?
+;	jr nz, dot_test;			// jump if not;
+;	ld (hl), ' ';				// else remove it
 	jr dot_test;				// loop until command or EOL found
 
 tokenizer_0:
