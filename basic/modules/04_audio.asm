@@ -157,6 +157,10 @@ be_octave:
 	dec de;								// reduce cycle count
 	jp beeper;							// exit via beeper subroutine
 
+report_overflow_0:
+	rst error;
+	defb overflow;
+
 bell:
 	ld de, (rasp);						// pitch
 	ld hl, 2148;						// duration
@@ -164,7 +168,19 @@ bell:
 	ld (iy + _err_nr), 255;				// clear error
 	ret;								// end of subroutine
 
-report_overflow_0:
-	rst error;
-	defb overflow;
+mute_psg:
+	ld hl, $fe07;						// H = AY-0, L = Volume register (7)
+	ld de, $bfff;						// D = data port, E = register port / mute
+	ld c, $fd;							// low byte of AY port
+	call mute_ay;						// mute AY-0
+	inc h;								// AY-1
+
+mute_ay:
+	ld b, e;							// AY register port
+	out (c), h;							// select AY (255/254)
+	out (c), l;							// select register
+	ld b, d;							// AY data port
+	out (c), e;							// AY off;
+	ret;								// end of subroutine
+
 
