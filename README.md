@@ -76,6 +76,6 @@ The firmware presents the user with a command line interface to the BASIC langua
 
 ## License
 
-Copyright &copy; 1999-2019 Source Solutions, Inc. All rights reserved.
+Copyright &copy; 1999-2020 Source Solutions, Inc. All rights reserved.
 
 Licensed under the [GNU General Public License](LICENSE).

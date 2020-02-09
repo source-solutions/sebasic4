@@ -1,5 +1,5 @@
 ;	// Definitions file for basic.asm
-;	// Copyright (c) 1999-2019 Source Solutions, Inc.
+;	// Copyright (c) 1999-2020 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by

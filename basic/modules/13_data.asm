@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2019 Source Solutions, Inc.
+;	// Copyright (c) 1999-2020 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ copyright:
 	defb "Copyright ", pchr_copyright, " 1999 Chloe Corporation.", ctrl_enter;
 	defb ctrl_enter;
 	defb "SE Basic IV 4.2 Cordelia", ctrl_enter;
-	defb "Copyright ", pchr_copyright, " 2019 Source Solutions, Inc.", ctrl_enter;
+	defb "Copyright ", pchr_copyright, " 2020 Source Solutions, Inc.", ctrl_enter;
 	defb ctrl_enter;
 	defb "41647 BASIC bytes free", 	ctrl_enter;
 	defb ctrl_enter + end_marker;
