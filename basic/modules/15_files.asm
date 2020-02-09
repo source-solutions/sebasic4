@@ -34,7 +34,7 @@
 ;	// File commands page out the BASIC ROM.
 ;	// They must be stored at $4000 or later.
 
-	include "../os/unodos3.inc";		// label definitions
+	include "../boot/os.inc";		// label definitions
 
 	org $4600;
 
