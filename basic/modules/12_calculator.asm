@@ -276,7 +276,7 @@ fp_sgn_2:
 	pop de;								// unstack stkend
 	ret;								// end of subroutine
 
-fp_in:
+fp_inp:
 	call find_int2;						// last value to BC
 	in a, (c);							// get signal
 	jr in_pk_stk;						// stack result

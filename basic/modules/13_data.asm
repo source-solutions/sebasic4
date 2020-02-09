@@ -19,15 +19,19 @@
 
 	org $3d00
 copyright:
-	defb end_marker;
-	defb "Chloe 280SE Microcomputer", ctrl_enter;
-	defb "Copyright ", pchr_copyright, " 1999 Chloe Corporation.", ctrl_enter;
+	defb "CHLOE 280SE 512K Microcomputer", ctrl_enter;
+	defb "Copyright (C)1999 Chloe Corporation.", ctrl_enter;
 	defb ctrl_enter;
-	defb "SE Basic IV 4.2 Cordelia", ctrl_enter;
-	defb "Copyright ", pchr_copyright, " 2020 Source Solutions, Inc.", ctrl_enter;
+	defb "SE BASIC IV 4.2 Cordelia", ctrl_enter;
+	defb "Copyright (C)2017 Source Solutions, Inc.", ctrl_enter;
 	defb ctrl_enter;
-	defb "41647 BASIC bytes free", 	ctrl_enter;
-	defb ctrl_enter + end_marker;
+;	defb "Release 200214", ctrl_enter;
+	defb "Build: ", TIMESTR, ctrl_enter;
+	defb ctrl_enter, 0;
+
+bytes_free:
+	defb " BASIC bytes free", ctrl_enter;
+	defb ctrl_enter, 0;
 
 ;	// used in 04_audio
 semi_tone:
@@ -55,6 +59,24 @@ rtable:
 	defw pos_5;
 	defw pos_6;
 	defw pos_7;
+
+;	// used in 08_executive
+init_strm:
+	defb $01, $00;						// stream $fd, channel K
+	defb $06, $00;						// stream $fe, channel S
+	defb $0b, $00;						// stream $ff, channel R
+	defb $01, $00;						// stream $00, channel K
+	defb $01, $00;						// stream $01, channel K
+	defb $06, $00;						// stream $02, channel S
+
+init_chan:
+	defw print_out, key_input;			// keyboard
+	defb 'K';							// channel
+	defw print_out, report_bad_io_dev;	// screen
+	defb 'S';							// channel
+	defw add_char, report_bad_io_dev;	// workspace
+	defb 'R';							// channel
+	defb end_marker;					// no more channels
 
 ;	// used in 10_expression
 tbl_of_ops:
@@ -142,7 +164,7 @@ tbl_addrs:
 	defw fp_sgn;
 	defw fp_abs;
 	defw fp_peek;
-	defw fp_in;
+	defw fp_inp;
 	defw fp_usr_no;
 	defw fp_str_str;
 	defw fp_chr_str;
@@ -165,24 +187,87 @@ tbl_addrs:
 	defw fp_st_mem_xx;
 	defw fp_get_mem_xx;
 
-;	// the remaining part of BASIC exists in RAM and can therefore be modified by the user
+;	// used in 15_files
+dir_msg:
+	defb "<DIR>   ", 0;
 
-	org $4000;
+;	// the remaining part of BASIC exists in RAM and can therefore be modified by the user
+	org $4000
+
+;	// used in 06_screen_80
+scrl_mssg:
+	defb "Scroll?", 0;
+
+;	// padding for translation
+	org scrl_mssg + 12
+
+sp_in_sp:
+	defb " in ", 0;
+
+ready:
+	defb "Ready", 0;
+	defb 0;								// one byte padding for translation
+
+;	// used in 08_executive
+rpt_mesgs:
+	defb "Ok", 0;						// code 255
+	defb "Break", 0;					// code 0
+	defb "NEXT without FOR", 0;			// code 1
+	defb "Syntax error", 0;				// code 2
+	defb "RETURN without GOSUB", 0;		// code 3
+	defb "Out of DATA", 0;				// code 4
+	defb "Illegal function call", 0;	// code 5
+	defb "Overflow", 0;+				// code 6
+	defb "Out of memory", 0;			// code 7
+	defb "Undefined line number", 0;	// code 8
+	defb "Subscript out of range", 0;	// code 9
+	defb "Undefined variable", 0;		// no equivalent
+	defb "Address out of range", 0;		// no equivalent
+	defb "Statement missing", 0;		// no equivalent
+	defb "Type mismatch", 0;			// code 13
+	defb "Out of screen", 0;			// no equivalent
+	defb "Bad I/O device", 0;			// no equivalent
+	defb "Undefined stream", 0;			// no equivalent
+	defb "Undefined channel", 0;		// no equivalent
+	defb "Undefined user function", 0;	// code 18
+	defb "Line buffer overflow", 0;		// code 23
+	defb "FOR without NEXT", 0;			// code 26
+	defb "File not found", 0;			// code 53
+	defb "Input past end", 0;			// code 62
+	defb "Path not found", 0;			// code 76
+
+;	// A total of 576 bytes are allocated for translated error messages
+
+	org $4240
 
 ;	// used in 03_keyboard
+;kt_main:
+;	defb "BHY65TGVNJU74RFCMKI83EDX", ctrl_symbol;
+;	defb "LO92WSZ ", ctrl_enter, "P01QA";
+;
+;kt_dig_shft:
+;	defb ")!@#$%^&*(";
+;
+;kt_alpha_sym:
+;	defb ctrl_left, ",>", ctrl_right, "_:", '"', "|};'\\/.[]~+", ctrl_down, "-{?", ctrl_up, "<=`"
+;
+;kt_dig_sym:
+;	defb ctrl_backspace, ctrl_tab, ctrl_caps, ctrl_ins, ctrl_clr_home;
+;	defb ctrl_pg_up, ctrl_delete, ctrl_end, ctrl_pg_dn, ctrl_graphics;
+
 kt_main:
 	defb "BHY65TGVNJU74RFCMKI83EDX", ctrl_symbol;
 	defb "LO92WSZ ", ctrl_enter, "P01QA";
 
-kt_dig_sym:
-	defb "_!@#$%&'()";
+kt_dig_shft:
+	defb ctrl_backspace, ctrl_tab, ctrl_caps, ctrl_pg_up, ctrl_pg_dn;
+	defb ctrl_left, ctrl_down, ctrl_up, ctrl_right, ctrl_graphics;
 
 kt_alpha_sym:
 	defb "~*?\\", ctrl_end, "{}^", ctrl_ins, "-+=.,;", '"', ctrl_clr_home, "<|>]/", ctrl_delete, "`[:";"
 
-kt_dig_shft:
-	defb ctrl_backspace, ctrl_tab, ctrl_caps, ctrl_pg_up, ctrl_pg_dn;
-	defb ctrl_left, ctrl_down, ctrl_up, ctrl_right, ctrl_graphics;
+kt_dig_sym:
+	defb "_!@#$%&'()";
 
 ;	// used in 02_tokenizer and 06_screen_80
 token_table:
@@ -195,7 +280,7 @@ token_table:
 	dbtb "LEN", "SIN", "COS", "TAN";
 	dbtb "ASIN", "ACOS", "ATAN", "LOG";
 	dbtb "EXP", "INT", "SQR", "SGN";
-	dbtb "ABS", "PEEK", "IN", "USR";
+	dbtb "ABS", "PEEK", "INP", "USR";
 	dbtb "STR$", "CHR$", "NOT", "MOD";
 	dbtb "OR", "AND", "<=", ">=";
 	dbtb "<>", "LINE", "THEN", "TO";
@@ -229,61 +314,6 @@ tk_ptr_rem:
 	
 tk_ptr_last:
 	dbtb "_FF";
-
-;	// used in 06_screen_80
-scrl_mssg:
-	defb "Scroll?", 0;
-
-sp_in_sp:
-	defb " in ", 0;
-
-ready:
-	defb "Ready", 0;
-
-;	// used in 08_executive
-rpt_mesgs:
-	defb "Ok", 0;						// code 255
-	defb "Break", 0;					// code 0
-	defb "NEXT without FOR", 0;			// code 1
-	defb "Syntax error", 0;				// code 2
-	defb "RETURN without GOSUB", 0;		// code 3
-	defb "Out of DATA", 0;				// code 4
-	defb "Illegal function call", 0;	// code 5
-	defb "Overflow", 0;+				// code 6
-	defb "Out of memory", 0;			// code 7
-	defb "Undefined line number", 0;	// code 8
-	defb "Subscript out of range", 0;	// code 9
-	defb "Undefined variable", 0;		// no equivalent
-	defb "Address out of range", 0;		// no equivalent
-	defb "Statement missing", 0;		// no equivalent
-	defb "Type mismatch", 0;			// code 13
-	defb "Out of screen", 0;			// no equivalent
-	defb "Bad I/O device", 0;			// no equivalent
-	defb "Undefined stream", 0;			// no equivalent
-	defb "Undefined channel", 0;		// no equivalent
-	defb "Undefined user function", 0;	// code 18
-	defb "Line buffer overflow", 0;		// code 23
-	defb "FOR without NEXT", 0;			// code 26
-	defb "File not found", 0;			// code 53
-	defb "Input past end", 0;			// code 62
-	defb "Path not found", 0;			// code 76
-
-init_strm:
-	defb $01, $00;						// stream $fd, channel K
-	defb $06, $00;						// stream $fe, channel S
-	defb $0b, $00;						// stream $ff, channel R
-	defb $01, $00;						// stream $00, channel K
-	defb $01, $00;						// stream $01, channel K
-	defb $06, $00;						// stream $02, channel S
-
-init_chan:
-	defw print_out, key_input;			// keyboard
-	defb 'K';							// channel
-	defw print_out, report_bad_io_dev;	// screen
-	defb 'S';							// channel
-	defw add_char, report_bad_io_dev;	// workspace
-	defb 'R';							// channel
-	defb end_marker;					// no more channels
 
 ;	// used in 09_command
 offst_tbl:
@@ -416,7 +446,7 @@ p_sound:
 	defw sound;
 
 p_files:
-	defb no_f_ops;
+	defb var_syn;
 	defw files;
 
 p_kill:

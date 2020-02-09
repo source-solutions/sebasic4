@@ -34,15 +34,131 @@
 ;	// File commands page out the BASIC ROM.
 ;	// They must be stored at $4000 or later.
 
-	include "../boot/os.inc";		// label definitions
+	include "../boot/os.inc";				// label definitions
 
 	org $4600;
+
+run_app:
+	call unstack_z;						// return if checking syntax
+	call get_dest;						// app name to second buffer
+	ld hl, basepath;					// base path
+	ld de, $5a00;						// point to first buffer
+	ld bc, 10;							// byte count
+	ldir;								// copy basepath
+
+	ld hl, $5900;						// source
+	ld bc, 11;							// maximum name length
+
+copy11:
+	ld a, (hl);							// get character
+	cp ' ';								// is it a space?
+	jr nz, not_space;					// jump if not
+	ld a, '_';							// substitute underline
+	ld (hl), a;							// write it back
+
+not_space:
+	ldi;								// write contents of HL to DE, decrement BC
+	ld a, (hl);							// next character
+	and a;								// test for zero
+	jr z, endcp11;						// jump if end of filename reached
+	ld a, c;							// test count
+	or b;								// for zero
+	jr nz, copy11;						// loop until done
+
+endcp11:
+	ld hl, prgpath;						// complete path
+	ld bc, 6;							// byte count
+	ldir;								// copy it
+
+	ld a, '*';							// use current drive
+	ld ix, $5a00;						// pointer to path
+	rst divmmc;							// issue a hookcode
+	defb f_chdir;						// change folder
+	call chk_path_error;				// test for error
+
+	ld (oldsp), sp;						// save old SP
+	ld sp, $6000;						// lower stack
+
+; get shortname
+	ld hl, $5900 - 1;					// start of filename - 1
+	ld b, 9;							// maximum name length + 1
+
+skip8:
+	inc hl;								// next character
+	ld a, (hl);							// get character
+	and a;								// test for zero
+	jr z, endskp8;						// jump if end of filename reached
+	djnz skip8;							// loop until done
+
+endskp8:
+	ex de, hl;							// destination to DE
+	ld hl, appname;						// tail end of short name
+	ld bc, 5;							// five bytes to copy
+	ldir;								// copy it
+; end of get shortname
+
+	ld ix, $5900;						// default program name
+	ld a, '*';							// use current drive
+	ld b, fa_read | fa_open_ex;			// open for reading if file exists
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_open;						// open file
+	jr c, app_not_found;				// jump if error
+	ld (handle), a;						// store handle
+
+	ld ix, f_stats;						// buffer for file stats
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_fstat;						// get file stats
+	jr c, app_not_found;				// jump if error
+
+	ld a, (handle);						// restore handle
+	ld bc, (f_size);					// get length
+	ld ix, $6000;						// get address
+
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_read;						// 
+	jr c, app_not_found;				// jump if error
+	ld a, (handle);						// 
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_close;						// 
+	jr c, app_not_found;				// jump if error
+
+	ld a, '*';							// use current drive
+	ld ix, resources;					// path to resource fork
+	rst divmmc;							// issue a hookcode
+	defb f_chdir;						// change folder
+
+	jp $6000;							// run app
+
+app_not_found:
+	ld sp, (oldsp);						// restore stack pointer
+	jp report_file_not_found;			// and error
+
+;	// the following data cannot be moved to the ROM area
+basepath:
+	defb "/programs";					// "/programs/" (continues into progpath)
+
+prgpath:
+	defb "/prg";						// "/prg/", 0 (continues into rootpath)
+	
+rootpath:
+	defb '/', 0;						// root	
+
+appname:
+	defb ".prg", 0;						// application extension
+
+resources:
+	defb "../rsc", 0;					// resource folder
 
 ;	// file subroutines (IX must point to an ASCIIZ path on entry)
 
 f_open_read_ex:
 	ld a, '*';							// use current drive
 	ld b, fa_read | fa_open_ex;			// open for reading if file exists
+	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_open;						// open file
 	jr c, report_file_not_found;		// jump if error
@@ -52,6 +168,7 @@ f_open_read_ex:
 f_open_write_al:
 	ld a, '*';							// use current drive
 	ld b, fa_write | fa_open_al;		// open for writing
+	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_open;						// open file
 	jr c, report_file_not_found;		// jump if error
@@ -59,10 +176,12 @@ f_open_write_al:
 	ret;								// end of subroutine
 
 f_write_out:
+	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_write;						// change folder
 	jr c, report_file_not_found;		// jump if error
 	ld a, (handle);						// restore handle from sysvar
+	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_close;						// change folder
 	jr c, report_file_not_found;		// jump if error
@@ -70,10 +189,12 @@ f_write_out:
 	ret;								// done
 
 f_read_in:
+	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_read;						// 
 	jp c, report_file_not_found;		// jump if error
 	ld a, (handle);						// 
+	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_close;						// 
 	jr c, report_file_not_found;		// jump if error
@@ -97,7 +218,8 @@ get_path:
 	jp z, report_bad_fn_call;			// error if so
 	ex de, hl;							// start to HL
 	ld de, $5a00;						// destination - FIXME use workspace
-	ldir;								// copy it
+;	ldir;								// copy it
+	call ldir_space;
 	ex de, hl;							// end to HL
 	ld (hl), 0;							// set end marker
 	ret;								// done
@@ -109,17 +231,34 @@ get_dest:
 	jp z, report_bad_fn_call;			// error if so
 	ex de, hl;							// start to HL
 	ld de, $5900;						// destination - FIXME use workspace
-	ldir;								// copy it
+;	ldir;								// copy it
+	call ldir_space;
 	ex de, hl;							// end to HL
 	ld (hl), 0;							// set end marker
 	ret;								// done
 
+ldir_space:
+	ld a, (hl);							// get character
+	ldi;								// copy bytes
+	cp ' ';								// is it space?
+	jr nz, no_space;					// jump if not
+	ld a, '_';							// underscore
+	dec de;								// back one place
+	ld (de), a;							// replace space
+	inc de;								// forward one place
+
+no_space:
+	ld a, c;							// test count
+	or b;								// for zero
+	jr nz, ldir_space;					// loop until done
+	ret;
+
 ;	// file commands
 
-run_app:
-	call load;							// load BASIC program
-	call use_zero;						// use line zero
-	jp run;								// run
+;run_auto:
+;	call load;							// load BASIC program
+;	call use_zero;						// use line zero
+;	jp run;								// run
 
 bload:
 	call unstack_z;						// return if checking syntax
@@ -127,6 +266,8 @@ bload:
 	ld (f_addr), bc;					// store it
 	call get_path;						// path to buffer
 	ld ix, $5a00;						// pointer to path
+
+bload_2:
 	call f_open_read_ex;				// open file for reading
 	call f_get_stats;					// get binary length
 
@@ -165,42 +306,48 @@ copy:
 ;	// open file for writing with alternate handle
 	ld a, '*';							// use current drive
 	ld b, fa_write | fa_open_al;		// open for writing
+	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_open;						// open file
-	jp c, report_file_not_found;					// jump if error
+	jp c, report_file_not_found;		// jump if error
 	ld (handle_1), a;					// store handle in sysvar
 
 ;	// read a byte
-copy_byte:
-	ld a, (handle);						// get file handle to source
-	ld ix, f_attr;						// use file attributes sys var as buffer
-	ld bc, 1;							// one byte
-	rst divmmc;							// issue a hookcode
-	defb f_read;						// read a byte
-	jp c, report_file_not_found;					// jump if error
-
-	ld a, (handle_1);					// get file handle to destination
-	ld ix, f_attr;						// use file attributes sys var as buffer
-	ld bc, 1;							// one byte
-	rst divmmc;							// issue a hookcode
-	defb f_write;						// write a byte
-	jp c, report_file_not_found;					// jump if error
-
+copy_bytes:
 	ld hl, (f_size);					// byte count
-	dec hl;								// reduce count
+	ld a, h;							// high byte to A
+	and a;								// test for zero
+	jr z, lt_256;						// jump if less than 256 bytes to copy
+	dec h;								// reduce count by 256
 	ld (f_size), hl;					// write it back
-	ld a, l;							// test for
-	or h;								// zero
-	jr nz, copy_byte;					// loop until done
+	ld bc, 256;							// one chunk to copy
+	call read_chunk;					// read it
+	ld bc, 256;							// one chunk to copy
+	call write_chunk;					// write it
+	jr copy_bytes;						// loop until done
 
+lt_256:
+	ld a, l;							// low byte to A
+	and a;								// test for zero
+	jr z, copy_close;					// jump if no more bytes to copy
+	ld b, 0;							// bytes to copy
+	ld c, l;							// to BC
+	push bc;							// store amount to copy
+	call read_chunk;					// read it
+	pop bc;								// restore amount to copy
+	call write_chunk;					// write it
+
+copy_close:
 ;	// close source
 	ld a, (handle);						// restore handle from sysvar
+	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_close;						// change folder
 	jp c, report_file_not_found;		// jump if error
 
 ;	// close destination
 	ld a, (handle_1);					// restore handle from sysvar
+	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_close;						// change folder
 	jp c, report_file_not_found;		// jump if error
@@ -208,6 +355,25 @@ copy_byte:
  ;	// return to BASIC
 	or a;								// clear flags
 	ret;								// done
+
+;	// call with bytes to copy in C
+read_chunk:
+	ld a, (handle);						// get file handle to source
+	ld ix, $5900;						// 256 byte buffer
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_read;						// read a byte
+	jp c, report_file_not_found;		// jump if error
+	ret;								// else done
+
+write_chunk:
+	ld a, (handle_1);					// get file handle to destination
+	ld ix, $5900;						// 256 byte buffer
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_write;						// write a byte
+	jp c, report_file_not_found;		// jump if error
+	ret;								// else done
 
 dload:
 	call unstack_z;						// return if checking syntax
@@ -257,6 +423,7 @@ kill:
 	call get_path;						// path to buffer
 	ld a, '*';							// use current drive
 	ld ix, $5a00;						// pointer to path
+	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_unlink;						// release file
 	jp c, report_file_not_found;		// jump if error
@@ -303,11 +470,12 @@ name:
 	ld a, '*';							// use current drive
 	ld ix, $5a00;						// pointer to source
 	ld de, $5900;						// pointer to dest
+	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_rename;						// change folder
-	jp c, report_file_not_found;					// jump if error
+	jp c, report_file_not_found;		// jump if error
 	or a;								// clear flags
-	ret;		
+	ret;								// done
 
 save:
 	call unstack_z;						// return if checking syntax
@@ -329,20 +497,18 @@ save:
 
 init_path:
 	ld a, '*';							// use current drive
-	ld ix, os_path;						// default path
+	ld ix, rootpath;					// default path
 	rst divmmc;							// issue a hookcode
 	defb f_chdir;						// change folder
-	or a;
-	ret;
-
-os_path:
-	defb '/', 0;						// root	
+	or a;								// clear flags
+	ret;								// done
 
 chdir:
 	call unstack_z;						// return if checking syntax
 	call get_path;						// path to buffer
 	ld a, '*';							// use current drive
 	ld ix, $5a00;						// pointer to path
+	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_chdir;						// change folder
 	jr chk_path_error;					// test for error
@@ -352,6 +518,7 @@ mkdir:
 	call get_path;						// path to buffer
 	ld a, '*';							// use current drive
 	ld ix, $5a00;						// pointer to path
+	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_mkdir;						// change folder
 	jr chk_path_error;					// test for error
@@ -361,6 +528,7 @@ rmdir:
 	call get_path;						// path to buffer
 	ld a, '*';							// use current drive
 	ld ix, $5a00;						// pointer to path
+	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_rmdir;						// change folder
 
@@ -373,486 +541,210 @@ report_path_not_found:
 	rst error;
 	defb path_not_found;
 
+;	// print a folder listing to the main screen
 files:
+	rst get_char;						// get character
+	cp ctrl_enter;						// test for carriage return
+	jr z, use_cwd;						// jump if so
+	cp ':';								// test for next statement
+	jr z, use_cwd;						// jump if so
+	call expt_exp;						// expect string expression
+	call check_end;						// no further operands
+	call get_path;						// path to buffer
+	jr open_folder;						// immedaite jump
+
+use_cwd:
 	call unstack_z;						// return if checking syntax
+	ld a, '*';							// use current drive
+	ld ix, $5a00;						// folder path buffer
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_getcwd;						// get current working folder
+	jr c, report_path_not_found;		// jump if error
+
+open_folder:
+;	rst divmmc;							// issue a hookcode
+;	defb f_umount;						// unmount drive
+;	rst divmmc;							// issue a hookcode
+;	defb f_mount;						// remount drive
 	ld a, 2;							// select main screen
 	call chan_open;						// open channel
-	jr files2;							// immediate jump
-
-files1:
-	ld a, l;							// 
-	or h;								// 
-	jr z, files2;						// 
-	ld bc, $50;							// 
-	ld de, folder_path_buffer;			// 
-	call files18;						// 
-	jr nz, files3;						// 
-
-files2:
+	ld b, 0;							// folder access mode (read only?)
 	ld a, '*';							// use current drive
-	ld ix, folder_path_buffer;			// 
+	ld ix, $5a00;						// folder path buffer
+	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
-	defb f_getcwd;						// 
+	defb f_opendir;						// open folder
 	jp c, report_file_not_found;		// jump if error
-	jr files8;
+	ld (handle), a;						// store folder handle
+	ld hl, $5a00;						// point to file path
 
-files3:
-	ld b, 1;							// 
+pr_asciiz_uc:
+	ld a, (hl);							// get character
+	or a;								// null terminator?
+	jr z, pr_asciiz_uc_end;				// jump if so
+	cp '_';								// underscore?
+	ld a, ' ';							// substitute space
+	jr z, pr_asciiz_any;				// jump if so
+	ld a, (hl);							// restore character
+
+	call alpha;							// test alpha
+	jr nc, pr_asciiz_any;				// jump if non-alpha
+	res 5,a;							// make upper case
+
+pr_asciiz_any:
+	rst print_a;						// else print it
+	inc hl;								// next location
+	jr pr_asciiz_uc;					// loop until done
+
+pr_asciiz_uc_end:
+	ld a, ctrl_enter;					// newline
+	rst print_a;						// print it
+
+read_folders:
+	ld ix, $5900;						// folder buffer
+	ld a, (handle);						// get folder handle
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_readdir;						// read a folder entry
+	jp c, report_file_not_found;		// jump if read failed
+	or a;								// last entry?
+	jr z, read_files;					// jump if so
+	ld hl, $5900;						// folder buffer
+	ld a, (hl);							// attibutes to A
+	and %00010000;						// folder?
+	jr z, read_folders;					// skip files
+
+;	and %00000010;						// hidden folder?
+;	jr nz, read_folders;				// skip hidden folders
+
+	inc hl;								// next location
+	ld b, 12;							// count (12 characters)
+
+pr_foldername:
+	ld a, (hl);							// get character
+	or a;								// null terminator?
+	jr nz, printable_chr;				// jump if not
+	ld a, ' ';							// else print a space
+	jr pr_fn_chr;						// immediate jump
+
+ignore_dot:
+	ld a, b;							// test count
+	cp 4;								// at the separator?
+	ld a, '.';							// restore dot just in case
+	jr nz, pr_fn_chr;					// jump if not at the separator
+	ld a, (hl);							// get next character
+
+printable_chr:
+	call alpha;							// test alpha
+	jr nc, pr_ch_na;					// jump if non-alpha
+	res 5,a;							// make upper case
+
+pr_ch_na:
+	inc hl;								// next location
+	cp '.';								// dot?
+	jr z, ignore_dot;					// ignore it if so
+	cp ' ';								// printable character?
+	jr nc, pr_fn_chr;					// jump if so
+	ld a, '?';							// else substitute a question mark
+
+pr_fn_chr:
+;	rst print_a;						// print character
+	call print_f;
+	djnz pr_foldername;					// loop until all 12 are done
+	ld hl, dir_msg;						// else point to "<DIR>   " message
+
+pr_asciiz:
+	ld a, (hl);							// get character
+	or a;								// null terminator?
+	jr z, read_folders;					// jump to do next entry if so
+	rst print_a;						// else print it
+	inc hl;								// next location
+	jr pr_asciiz;						// loop until done
+
+read_files:
+	ld a, (handle);						// get folder handle
+	rst divmmc;							// issue a hookcode
+	defb f_close;						// close it
+	ld b, 0;							// folder access mode (read only?)
 	ld a, '*';							// use current drive
-	ld ix, folder_path_buffer;			//
+	ld ix, $5a00;						// folder path buffer
+	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
-	defb f_open;						//
-	jr c, files8;						// 
-	ld ix, f_stats;						// 
-	ld (handle), a;						// 
-	rst divmmc;							// issue a hookcode
-	defb f_fstat;						// 
-	ld a, (handle);						// 
-	rst divmmc;							// issue a hookcode
-	defb f_close;						// 
-	ld b, $0c;							// 
-	ld hl, folder_path_buffer;			// 
-
-files4:
-	ld a, (hl);							// 
-	or a;								// 
-	jr nz, files5;						// 
-	ld a, ' ';							// 
-	jr files6;							// 
-
-files5:
-	inc hl;								// 
-	cp ' ';								// 
-	jr nc, files6;						// 
-	ld a, '?';							// 
-
-files6:
-	cp 'a';								// 
-	jr c, files7;						// 
-	cp '{';								// 
-	jr nc, files7;						// 
-	sub ' ';							// 
-
-files7:
-	rst print_a;						// 
-	djnz files4;						// 
-	ld a, ' ';							// 
-	rst print_a;						// 
-	ld hl, f_size;						// 
-	call files38;						// 
-	ld a, ' ';							// 
-	rst print_a;						// 
-	ld hl, (f_date);					// 
-	call files27;						// 
-	ld a, $0d;							// 
-	rst print_a;						// 
-	xor a;								// 
-	ret;								// 
-
-files8:
-	ld b, 0;							// 
-	ld a, '*';							// 
-	ld ix, folder_path_buffer;			// 
-	rst divmmc;							// issue a hookcode
-	defb f_opendir;						//
+	defb f_opendir;						// open folder
 	jp c, report_file_not_found;		// jump if error
-	ld (handle), a;						//
+	ld (handle), a;						// store folder handle
 
-files9:
-	ld ix, folder_path_buffer;			// 
-	ld a, (handle);						// 
+read_files_2:
+	ld ix, $5900;						// folder buffer
+	ld a, (handle);						// get folder handle
+	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
-	defb f_readdir;						// 
-	jr c, files15;						// 
-	or a;								// 
-	jr z, files15;						// 
-	ld hl, folder_path_buffer;			// 
-	ld c, (hl);							// 
-	inc hl;								// 
-	ld b, $0c;							// 
+	defb f_readdir;						// read a folder entry
+	jp c, report_file_not_found;		// jump if read failed
+	or a;								// last entry?
+	jr z, last_entry;					// jump if so
+	ld hl, $5900;						// folder buffer
+	ld a, (hl);							// attibutes to A
+	and %00010000;						// folder?
+	jr nz, read_files_2;				// skip folders
 
-files10:
-	ld a, (hl);							// 
-	or a;								// 
-	jr nz, files11;						// 
-	ld a, ' ';							// 
-	jr files12;							// 
+;	and %00000010;						// hidden file?
+;	jr nz, read_files_2;				// skip hidden files
 
-files11:
-	inc hl;								// 
-	cp ' ';								// 
-	jr nc, files12;						// 
-	ld a, '?';							// 
+	inc hl;								// next location
+	ld b, 12;							// count (12 characters)
 
-files12:
-	rst print_a;						// 
-	djnz files10;						// 
-	ld a, ' ';							// 
-	inc hl;								// 
-	rst print_a;						// 
-	ld e, (hl);							// 
-	inc hl;								// 
-	ld d, (hl);							// 
-	inc hl;								// 
-	ld (f_time), de;					// 
-	ld e, (hl);							// 
-	inc hl;								// 
-	ld d, (hl);							// 
-	inc hl;								// 
-	ld a, c;							// 
-	ld (f_date), de;					// 
-	and $10;							// 
-	jr z, files13;						// 
-	ld hl, dir_msg;						// 
-	call files24;						// 
-	jr files14;							// 
+;	ld a, (hl);							// get first character
+;	cp '_';								// UNIX system file?
+;	jr z, read_files_2;					// skip system files
 
-files13:
-	call files38;						// 
+pr_filename:
+	ld a, (hl);							// get character
+	or a;								// null terminator?
+	jr nz, printable_chr_2;				// jump if not
+	ld a, ' ';							// else print a space
+	jr pr_fn_chr_2;						// immediate jump
 
-files14:
-	ld a, ' ';							// 
-	rst print_a;						// 
-	ld hl, (f_date);					// 
-	call files27;						// 
-	ld a, $0d;							// 
-	rst print_a;						// 
-	jr files9;							// 
+printable_chr_2:
+	call alpha;							// test alpha
+	jr nc, pr_ch_na2;					// jump if non-alpha
+	res 5,a;							// make upper case
 
-files15:
-	ld a, $0d;							// 
-	rst print_a;						// 
-	ld a, (handle);						// 
+pr_ch_na2:
+	inc hl;								// next location
+	cp ' ';								// printable character?
+	jr nc, pr_fn_chr_2;					// jump if so
+	ld a, '?';							// else substitute a question mark
+
+pr_fn_chr_2:
+;	rst print_a;						// print character
+	call print_f;
+	djnz pr_filename;					// loop until all 12 are done
+	ld b, 8;							// count
+
+pr_spaces:
+	ld a, ' ';							// space
+	rst print_a;						// print it
+	djnz pr_spaces;						// loop until done
+	jr read_files_2;					// do next entry
+
+last_entry:
+	ld a, ctrl_enter;					// carriage return
+	rst print_a;						// print it
+	ld a, (handle);						// get folder handle
 	rst divmmc;							// issue a hookcode
-	defb f_close;						// 
-	ret;								// 
+	defb f_close;						// close it
+	ret;								// end of subroutine
 
-files16:
-	ld a, (hl);							// 
-	or a;								// 
-	ret z;								// 
-	cp $0d;								// 
-	ret z;								// 
-	cp ':';								// 
-	ret;								// 
+print_f:
+	cp '_';								// test for underscore
+	jr nz, no_;							// jump if not
+	ld a, ' ';							// substitute space
 
-files17:
-	call files16;						// 
-	ret z;								// 
-	cp ' ';								// 
-	ret nz;								// 
-	inc hl;								// 
-	jr files17;							// 
-
-files18:
-	ld a, c;							// 
-	or b;								// 
-	ret z;								// 
-	call files17;						// 
-	jr nz, files19;						// 
-	xor a;								// 
-	ld (de), a;							// 
-	ret;								// 
-
-files19:
-	push de;							// 
-
-files20:
-	call files16;						// 
-	jr z, files21;						// 
-	cp ' ';								// 
-	jr z, files21;						// 
-	dec bc;								// 
-	ld (de), a;							// 
-	ld a, c;							// 
-	or b;								// 
-	jr z, files21;						// 
-	inc hl;								// 
-	inc de;								// 
-	jr files20;							// 
-
-files21:
-	xor a;								// 
-	ld (de), a;							// 
-	pop de;								// 
-	inc a;								// 
-	ret;								// 
-
-files22:
-	call files16;						// 
-	ret z;								// 
-	sub '0';							// 
-	ret c;								// 
-	cp $0a;								// 
-	ccf; 								// 
-	ret c;								// 
-	push hl;							// 
-	ld l, e;							// 
-	ld h, d;							// 
-	add hl, hl;							// 
-	jr c, files23;						// 
-	add hl, hl;							// 
-	jr c, files23;						// 
-	add hl, de;							// 
-	jr c, files23;						// 
-	add hl, hl;							// 
-	jr c, files23;						// 
-	ld e, a;							// 
-	ld d, 0;							// 
-	add hl, de;							// 
-	jr c, files23;						// 
-	ex de, hl;							// 
-	pop hl;								// 
-	inc hl;								// 
-	jr files22;							// 
-
-files23:
-	pop hl;								// 
-	ret;								// 
-
-files24:
-	ld a, (hl);							// 
-	or a;								// 
-	ret z;								// 
-	rst print_a;						// 
-	inc hl;								// 
-	jr files24;							// 
-
-files25:
-	ld a, c;							// 
-	or b;								// 
-	ret z;								// 
-	ld a, (hl);							// 
-	rst print_a;						// 
-	dec bc;								// 
-	inc hl;								// 
-	jr files25;							// 
-	ld b, a;							// 
-	and $f0;							// 
-	rrca;								// 
-	rrca;								// 
-	rrca;								// 
-	rrca;								// 
-	call files26;						// 
-	rst print_a;						// 
-	ld a, b;							// 
-	and $0f;							// 
-	call files26;						// 
-	rst print_a;						// 
-	ld a, ' ';							// 
-	rst print_a;						// 
-	ret;								// 
-
-files26:
-	add a, '0';							// 
-	cp ':';								// 
-	ret c;								// 
-	add a, 7;							// 
-	ret;								// 
-
-files27:
-	ld a, l;							// 
-	and $1f;							// 
-	call files28;						// 
-	ld a, '.';							// 
-	rst print_a;						// 
-	ld a, l;							// 
-	srl h;								// 
-	rla;								// 
-	rla;								// 
-	rla;								// 
-	rla;								// 
-	and $0f;							// 
-	call files28;						// 
-	ld a, '.';							// 
-	rst print_a;						// 
-	ld l, h;							// 
-	ld h, 0;							// 
-	ld de, $07bc;						// 
-	add hl, de;							// 
-	call files31;						// 
-	ret;								// 
-
-files28:
-	ld b, 0;							// 
-
-files29:
-	sub $0a;							// 
-	jr c, files30;						// 
-	inc b;								// 
-	jr files29;							// 
-
-files30:
-	ld c, a;							// 
-	ld a, b;							// 
-	add a, '0';							// 
-	rst print_a;						// 
-	ld a, c;							// 
-	add a, ':';							// 
-	rst print_a;						// 
-	ret;								// 
-
-files31:
-	ld de, $64;							// 
-	xor a;								// 
-
-files32:
-	sbc hl, de;							// 
-	jr c, files33;						// 
-	inc a;								// 
-	jr files32;							// 
-
-files33:
-	add hl, de;							// 
-	call files28;						// 
-	ld a, l;							// 
-	call files28;						// 
-	ret;								// 
-
-files34:
-	push hl;							// 
-	push de;							// 
-	ld b, 4;							// 
-	ex de, hl;							// 
-	or a;								// 
-
-files35:
-	ld a, (de);							// 
-	adc a, (hl);						// 
-	ld (de), a;							// 
-	inc de;								// 
-	inc hl;								// 
-	djnz files35;						// 
-	pop de;								// 
-	pop hl;								// 
-	ret;								// 
-
-files36:
-	ld b, 4;							// 
-	push hl;							// 
-	push de;							// 
-	ex de, hl;							// 
-	or a;								// 
-
-files37:
-	ld a, (de);							// 
-	sbc a, (hl);						// 
-	ld (de), a;							// 
-	inc de;								// 
-	inc hl;								// 
-	djnz files37;						// 
-	pop de;								// 
-	pop hl;								// 
-	ret;								// 
-
-files38:
-	ld b, 0;							// 
-	ld de, fdata1;						// 
-	call files40;						// 
-	ld de, fdata2;						// 
-	call files40;						// 
-	ld de, fdata3;						// 
-	ld a, b;							// 
-	or a;								// 
-	jr nz, files39;						// 
-	inc b;								// 
-
-files39:
-	call files40;						// 
-	ld de, fdata4;						// 
-	call files40;						// 
-	ld de, fdata5;						// 
-	call files40;						// 
-	ld de, fdata6;						// 
-	call files40;						// 
-	ld de, fdata7;						// 
-	call files40;						// 
-	ld de, fdata8;						// 
-	call files40;						// 
-	ld de, fdata9;						// 
-	call files40;						// 
-	ld b, 2;							// 
-	ld de, fdata10;						// 
-
-files40:
-	ld c, '/';							// 
-	push bc;							// 
-
-files41:
-	inc c;								// 
-	call files36;						// 
-	jr nc, files41;						// 
-	call files34;						// 
-	ld a, c;							// 
-	pop bc;								// 
-	ld c, a;							// 
-	ld a, b;							// 
-	or a;								// 
-	jr z, files44;						// 
-	dec a;								// 
-	jr z, files46;						// 
-
-files42:
-	ld a, c;							// 
-
-files43:
-	rst print_a;						// 
-	ret;								// 
-
-files44:
-	ld a, c;							// 
-	cp '0';								// 
-	ret z;								// 
-
-files45:
-	ld b, 2;
-	jr files42;							// 
-
-files46:
-	ld a, c;							// 
-	cp '0';								// 
-	jr nz, files45;						// 
-	ld a, ' ';							// 
-	jr files43;							// 
-
-fdata1:
-	defb $00, $ca, $9a, $3b;			// 
-
-fdata2:
-	defb $00, $e1, $f5, $05;			// 
-
-fdata3:
-	defb $80, $96, $98, $00;			// 
-
-fdata4:
-	defb $40, $42, $0f, $00;			// 
-
-fdata5:
-	defb $a0, $86, $01, $00;			// 
-
-fdata6:
-	defb $10, $27, $00, $00;			// 
-
-fdata7:
-	defb $e8, $03, $00, $00;			// 
-
-fdata8:
-	defb $64, $00, $00, $00;			// 
-
-fdata9:
-	defb $0a, $00, $00, $00;			// 
-
-fdata10:
-	defb $01, $00, $00, $00;			// 
-
-rh_msg:
-	defb "RH";							// 
-
-dir_msg:
-	defb "<DIR>", 0;					// 
-
-folder_path_buffer:
-	defb 0, 0, 0;						// 
+no_:
+	rst print_a;						// print it
+	ret;								// return
 
 ;	// last byte
 org $5bb9;
