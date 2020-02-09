@@ -154,7 +154,7 @@ initial:
 	ld a, 2;							// channel S
 	call chan_open;						// open it
 	ld de, copyright;					// copyright message
-	call po_msg;						// print it
+;	call po_msg;						// print it
 	xor a;								// LD A, 0; channel K
 	call chan_open;						// open it
 	ld de, ready;						// ready message

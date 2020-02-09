@@ -436,7 +436,7 @@ po_char:
 	ld c, a;							// put it back in C
 	ex af, af';							// restore character
 	ld hl, $d800;						// base address of character map
-	ld de, 80;							// 40 characters per row
+	ld de, 80;							// 80 characters per row
 	dec b;								// reduce range (0 to 23)
 	jr z, add_columns;					// jump if row zero
 	
@@ -448,8 +448,15 @@ add_columns:
 	add hl, bc;							// Add offset in character map to HL
 	bit 0, (iy + _vdu_flag);			// lower screen?
 	jr z, write_char;					// jump if not
-	ld de, 1760;						// 22 row offset
-	add hl, de;							// add it
+
+	ld b, (iy + _df_sz);				// number of rows in lower display
+	ld de, 80;							// 80 characters per row
+	ld hl, $df80 + 80;					// end of character map + 80 (line 0)
+
+sbc_lines:
+	sbc hl, de;							// subtract 80 characters for each row
+	djnz sbc_lines;						// B holds line count (zero on loop exit)
+	add hl, bc;							// add column offset
 	
 write_char:
 	ld e, %00011111;					// ROM 1, VRAM 1, HOME 7
@@ -588,17 +595,17 @@ po_stp_asciiz:
 
 ;	// SpectraNet entry point
 ;	org $c0a;
-po_msg:
-	push hl;							// stack last entry
-	ld h, 0;							// zero high byte
-	ex (sp), hl;						// to suppress trailing spaces
-	jr po_table;						// immediate jump
+;po_msg:
+;	push hl;							// stack last entry
+;	ld h, 0;							// zero high byte
+;	ex (sp), hl;						// to suppress trailing spaces
+;	jr po_table;						// immediate jump
 
 po_tokens:
 	ld de, token_table;					// address token table
 	push af;							// stack code
-
-po_table:
+;
+;po_table:
 	call po_search;						// locate required entry
 	jr c, po_each;						// print message or token
 	bit 0, (iy + _flags);				// print a space
@@ -820,6 +827,16 @@ cl_scroll:
 	ld bc, (oldsp);						// restore counter
 	ld (oldsp), sp;						// store SP
 	ld sp, tstack;						// point to temporary stack
+
+	push bc;							// stack both
+	push hl;							// counters
+	ld hl, $d800 + 80;					// character map + one line
+	ld de, $d800;						// start of character map
+	ld bc, 1840;						// 80x24 characters
+	ldir;								// scroll character map
+	pop hl;								// unstack both
+	pop bc;								// counters
+
 	ei;									// interrupts on
 	call cl_addr;						// get start address of row
 	ld c, 8;							// eight pixels per row
@@ -886,6 +903,26 @@ cl_line:
 	ld (oldsp), sp;						// store SP
 	ld sp, tstack;						// point to temporary stack
 	ei;									// interrupts on
+
+	push bc;							// store line count
+	ld hl, 0;							// zero character count
+	ld de, 80;							// 80 characters per line
+
+total_chars:
+	add hl, de;							// add 80 to count per line
+	djnz total_chars;					// loop until done
+
+	dec hl;								// reduce count by one
+	ld c, l;							// HL
+	ld b, h;							// to BC
+
+	ld hl, $df7f;						// end of character map
+	ld de, $df7e;						// destination
+	ld (hl), 0;							// clear last character
+	lddr;								// clear lines from end
+
+	pop bc;								// restore count
+
 	call cl_addr;						// start address for row to HL
 	ld c, 8;							// eight pixel rows
 

@@ -36,16 +36,55 @@ c_call:
 ;	// COLOR command
 ;	// entered with PEN and PAPER on calculator stack
 color:
-	ld a, 31;							// background
-	call col_lookup;					// get background
-	ld a, 24;							// foreground
+	call fp_to_a;						// background color to A
+	cp 16;								// higher than 15?
+	jr nc, bad_color;					// jump if out of range
+	push af;							// stack background
+	call fp_to_a;						// foreground color to A
+	pop bc;								// unstack background
+	cp 16;								// higher than 15?
 
-col_lookup:
+bad_color:
+	jp nc, report_bad_fn_call;			// jump if out of range
+	rlca;								// move low
+	rlca;								// nibble
+	rlca;								// to high
+	rlca;								// nibble
+	add a, b;							// restore A
+	ld (attr_p), a;						// set permanent attribute
+
+set_color:
+	ld a, 25;							// background (blue if no ULAplus)
 	ld bc, $bf3b;						// register select
 	out (c),a;							// set it
-	call fp_to_a;						// color to A
+	ld a, (attr_p);						// get attributes
+	and %00001111;						// background only
+	call col_lookup;					// get background
+	ld a, 22;							// bright ink 6 (Uno implementation)
+	ld bc, $bf3b;						// register select
+	out (c),a;							// set it
+	ld a, (attr_p);						// get attributes
+	and %11110000;						// foreground only
+	rrca;								// move high
+	rrca;								// nibble
+	rrca;								// to low
+	rrca;								// nibble
+	call col_lookup;					// get background
+
+	ld bc, $ff3b;						// data select
+	in a, (c);							// get foreground color
+	ex af, af';							// store it
+	ld b, $bf;							// register select
+	ld a, 30;							// foreground (yellow if no ULAplus)
+	out (c), a;							// set it
+	ld b, $ff;							// data select
+	ex af, af';							// restore palette value
+	out (c), a;							// set foreground color for Uno
+	ret;								// end of subroutine
+
+col_lookup:
 	ld h, $df;							// start of CLUT3 (all 15 colors in order)
-	add a, $e0;							// add offset (0-15) FIXME - not validated
+	add a, $e0;							// add offset (0-15)
 	ld l, a;							// $dfe0 + offset
 	ld bc, paging;						// get ready to page
 	ld a, %0011111;						// ROM1, VRAM1, HOME7
@@ -156,6 +195,8 @@ locate:
 ; 	// PALETTE command
 palette:
 	call two_param;						// get parameters
+	rlca;								// BGR value
+	rlca;								// to GRB
 	ld e, a;							// data to E
 	ld a, b;							// was BC less
 	and a;								// than 256?
@@ -171,8 +212,9 @@ palette:
 	add a, 16;							// next
 	call set_pal;						// 3rd entry
 	add a, 8;							// next
-	jr set_pal;							// 4th entry
-	
+	call set_pal;						// 4th entry
+	jr pal_buf;							// immediate jump
+
 col_upper:
 	and %00000111;						// keep only lowest three bits_zero
 	add a, 16;							// adjust start value
@@ -182,7 +224,36 @@ col_upper:
 	add a, 8;							// next
 	call set_pal;						// 3rd entry
 	add a, 8;							// next
-	
+	call set_pal;						// 4th entry
+
+pal_buf:
+	ld a, %00011111;					// ROM 1, VID 1, RAM 7
+	ld bc, paging;						// HOME bank paging
+	di;									// interrupts off
+	out (c), a;							// set it
+
+;	// read palette back into buffer in HOME 7
+	ld c, $3b;							// ULAplus port
+	ld de, $ffbf;						// d = data, e = register
+	ld hl, $dfff;						// last byte of palette map
+	ld a, 64;							// becomes 63	
+
+read_pal:
+	dec a;								// next register
+	ld b, e;							// register port
+	out (c), a;							// select register
+	ld b, d;							// data port
+	ind;								// in (hl), bc; dec b; dec hl
+	and a;								// was that the last register?
+	jr nz, read_pal;					// set all 64 entries
+
+	ld a, %00011000;					// ROM 1, VID 1, RAM 0
+	ld bc, paging;						// HOME bank paging
+	out (c), a;							// set it
+	ei;									// interrupts on
+
+	jp set_color;						// set hi-res colors
+
 set_pal:
 	ld bc, $bf3b;						// address I/O register
 	out (c), a;							// set it
