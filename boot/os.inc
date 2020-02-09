@@ -1,25 +1,25 @@
-; UnoDOS 3 - An operating system for the divMMC media interface.
-; Copyright (c) 2017-2019 Source Solutions, Inc.
+;	// UnoDOS 3 - An operating system for the divMMC SD card interface.
+;	// Copyright (c) 2017-2019 Source Solutions, Inc.
 
-;	UnoDOS 3 is free software: you can redistribute it and/or modify
-;	it under the terms of the Lesser GNU General Public License as published by
-;	the Free Software Foundation, either version 3 of the License, or
-;	(at your option) any later version.
-;
-;	UnoDOS 3 is distributed in the hope that it will be useful,
-;	but WITHOUT ANY WARRANTY; without even the implied warranty of
-;	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;	GNU General Public License for more details.
-;
-;	You should have received a copy of the GNU Lesser General Public License
-;	along with UnoDOS 3.  If not, see <http://www.gnu.org/licenses/>.
+;	// UnoDOS 3 is free software: you can redistribute it and/or modify
+;	// it under the terms of the GNU General Public License as published by
+;	// the Free Software Foundation, either version 3 of the License, or
+;	// (at your option) any later version.
+;	// 
+;	// UnoDOS 3 is distributed in the hope that it will be useful,
+;	// but WITHOUT ANY WARRANTY; without even the implied warranty o;
+;	// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+;	// GNU General Public License for more details.
+;	// 
+;	// You should have received a copy of the GNU General Public License
+;	// along with UnoDOS 3. If not, see <http://www.gnu.org/licenses/>.
 
 ; 	// This source is compatible with Zeus
 ;	// (http://www.desdes.com/products/oldfiles)
 
 
 ;	// VERSION
-	version equ "UnoDOS 3 [Version 3.0.90223]"
+	version equ "UnoDOS 3 [Version 3.0.90625]"
 
 
 ;	// divIDE / divMMC trap addresses
@@ -258,6 +258,9 @@
 ;										// On return BCDE=current file pointer.
 ;										// Does not currently return bytes
 ;										// successfully sought.
+;										// NOTE: bug report - you must read/write
+;										//       at least one byte after opening
+;										//       a file before you do a seek.
 
 	f_fgetpos equ fsys_base + 8;		// $a0	and b
 ;										// Get current file pointer. A = handle.

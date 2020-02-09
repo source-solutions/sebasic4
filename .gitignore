@@ -1,3 +1,9 @@
 /asmdoc/perl
 .DS_Store
 23.bin
+basic.rom
+boot.rom
+unodos-0.sys
+unodos-1.sys
+unodos3.rom
+pasmo.exe
