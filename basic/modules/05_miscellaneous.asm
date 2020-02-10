@@ -176,21 +176,38 @@ c_error:
 	ld l, a;							// error to A
 	jp error_3;							// generate error message
 
-;	// LOCATE command <line>,<column> (counts from 1)
+;	// LOCATE command <row>,<column> (counts from 1)
 locate:
 	fwait();							// enter calculator
 	fxch();								// swap values
 	fce();								// exit calculator
+
+	ld a, 2;							// select upper screen
+	call chan_open;						// open channel
+
 	call stk_to_bc;						// column to C, row to B
-	ld a, 81;							// left most
-	dec c;								// valid range is 1 to 80
+
+	ld a, c;							// get column
+	cp 81;								// in range?
+	jr z, loc_err;						// error if not
+	ld a, b;							// get row
+	cp 23;								// upper screen?
+	jr z, loc_err;						// jump if not
+
+	ld a, 82;							// left most
 	sub c;								// calculate column
-	ld c, a;							// and store it
-	ld a, 24;							// bottom row
-	dec b;								// valid range is 1 to 24
+	jr c, loc_err;						// jump if error
+	ld c, a;							// else store it
+
+	ld a, 25;							// bottom row
 	sub b;								// calculate row
-	ld b, a;							// and store it
+	jr c, loc_err;						// jump if error
+	ld b, a;							// else store it
 	jp cl_set;							// exit via cl_set
+
+loc_err:
+	rst error;
+	defb out_of_screen;
 
 ; 	// PALETTE command
 palette:

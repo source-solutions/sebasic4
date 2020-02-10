@@ -36,7 +36,7 @@
 
 	include "../boot/os.inc";				// label definitions
 
-	org $4600;
+	org $4800;
 
 run_app:
 	call unstack_z;						// return if checking syntax
