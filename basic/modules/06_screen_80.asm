@@ -713,6 +713,7 @@ po_scr_3:
 	ret;
 
 report_break:
+	call flush_kb;						// clear keyboard buffer
 	rst error;
 	defb break;
 

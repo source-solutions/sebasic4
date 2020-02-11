@@ -25,8 +25,8 @@ copyright:
 	defb "SE BASIC IV 4.2 Cordelia", ctrl_enter;
 	defb "Copyright (C)2017 Source Solutions, Inc.", ctrl_enter;
 	defb ctrl_enter;
-;	defb "Release 200214", ctrl_enter;
-	defb "Build: ", TIMESTR, ctrl_enter;
+	defb "Release 200214", ctrl_enter;
+;	defb "Build: ", TIMESTR, ctrl_enter;
 	defb ctrl_enter, 0;
 
 bytes_free:

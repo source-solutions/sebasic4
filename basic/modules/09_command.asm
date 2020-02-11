@@ -98,8 +98,9 @@ separator:
 stmt_ret:
 	call break_key;						// break?
 	jr c, stmt_r_1;						// jump if not
-	rst error;							// else
-	defb break;							// error
+;	rst error;							// else
+;	defb break;							// error
+	jp report_break;					// clear keyboard buffer and report break
 
 stmt_r_1:
 	bit 7, (iy + _nsppc);				// statement jump required?
@@ -1220,8 +1221,9 @@ in_stop:
 	call unstack_z;						// return if checking syntax
 
 stop:
-	rst error;							// then
-	defb break;							// error
+;	rst error;							// then
+;	defb break;							// error
+	jp report_break;					// clear keyboard buffer and report break
 
 in_chan_k:
 	ld hl, (curchl);					// base address of current channel
