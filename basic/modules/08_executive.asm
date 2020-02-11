@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2019 Source Solutions, Inc.
+;	// Copyright (c) 1999-2020 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -53,22 +53,8 @@ new:
 start_new:;
 	ex af, af';							// store A
 
-	ld a, %00110110;					// yellow on blue, hi-res mode
+	ld a, %00110110;					// yellow on blue (with no ULAplus), hi-res mode
 	out (scld), a;						// set it
-
-;	ld de, $ffbf;						// d=data, e=reg
-;	ld a, 24;							// foreground
-;	ld bc, $bf3b;						// register select
-;	out (c), a;							// select it
-;	ld b, d;							// data select
-;	ld a, %10110110;					// light gray
-;	out (c),a;							// set it
-;	ld b, e;							// register select
-;	ld a, 31;							// background
-;	out (c), a;							// select it
-;	ld a, %00000010;					// blue
-;	ld b, d;							// data select
-;	out (c),a;							// set it
 
 	ld bc, paging;						// HOME bank paging
 	ld a, %00011000;					// ROM 1, FBUFF 1, HOME 0
@@ -150,11 +136,47 @@ initial:
 	ldir;								// copy initial streams table
 	ld (iy + _df_sz), 2;				// set lower display size
 	call init_path;						// initialize path
+
+	ld de, $ffbf;						// d=data, e=reg
+	ld a, 30;							// foreground (ULAplus)
+	ld bc, $bf3b;						// register select
+	out (c), a;							// select it
+	ld b, d;							// data select
+	ld a, %10110110;					// light gray
+	out (c),a;							// set it
+
+	ld a, 22;							// foreground (Uno)
+	ld b, e;							// register select
+	out (c), a;							// select it
+	ld b, d;							// data select
+	ld a, %10110110;					// light gray
+	out (c),a;							// set it
+
+;	ld a, 25;							// background
+;	ld b, e;							// register select
+;	out (c), a;							// select it
+;	ld a, %00000010;					// blue
+;	ld b, d;							// data select
+;	out (c),a;							// set it
+
 	call cls;							// clear screen
+	call set_min;						// set up workspace
 	ld a, 2;							// channel S
 	call chan_open;						// open it
 	ld de, copyright;					// copyright message
-	call po_msg;						// print it
+	call po_asciiz_0;					// print it
+
+	ld hl, (ramtop);					// get top of BASIC RAM
+	ld de, (prog);						// get bottom of BASIC RAM
+	sbc hl, de;							// subtract bottom from top
+	ld b, h;							// copy result
+	ld c, l;							// to BC
+	call stack_bc;						// stack free RAM
+	call print_fp;						// output value
+
+	ld de, bytes_free;					// bytes free message
+	call po_asciiz_0;					// print it
+
 	xor a;								// LD A, 0; channel K
 	call chan_open;						// open it
 	ld de, ready;						// ready message
@@ -868,7 +890,7 @@ out_curs:
 	and a;								// correct
 	sbc hl, de;							// position?
 	ret nz;								// return if not
-	ld a, ' ';							// use space as cursor
+	ld a, '_';							// use underline as cursor (for ncurses)
 	exx;								// alternate register set
 	ld hl, p_flag;						// address sysvar
 	ld d, (hl);							// p_flag to D

@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2019 Source Solutions, Inc.
+;	// Copyright (c) 1999-2020 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -87,7 +87,7 @@ bc_1_space:
 	push hl;							// stack HL (return from divMMC ROM)
 	ld hl, frame;						// get current frame
 	inc (hl);							// increment it
-	ld a, 50;							// has one second elapsed? (change to 60 for 60Hz machines)
+	ld a, 60;							// has one second elapsed? (change to 50 for 50Hz machines)
 	cp (hl);							// test it
 	jr nz, key_int;						// jump if no rollover
 	ld (hl), 0;							// restart frame counter

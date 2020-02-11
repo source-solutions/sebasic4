@@ -1,4 +1,4 @@
-;	// SE Basic IV 4.2 Cordelia
+;	// SE Basic IV 4.2 Cordelia - A classic BASIC interpreter for the Z80 architecture.
 ;	// Copyright (c) 1999-2020 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
@@ -13,3 +13,12 @@
 ;	// 
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
+
+	output_bin "../bin/FIRMWA~1.BIN",$6000,40962
+
+    org $6000
+    import_bin "../ChloeVM.app/Contents/Resources/UnoDOSIII.rom";
+    import_bin "../ChloeVM.app/Contents/Resources/se.rom";
+
+    defb XOR_MEM($6000, $a000)
+    defb SUM_MEM($6000, $a000)

@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2019 Source Solutions, Inc.
+;	// Copyright (c) 1999-2020 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -276,7 +276,7 @@ fp_sgn_2:
 	pop de;								// unstack stkend
 	ret;								// end of subroutine
 
-fp_in:
+fp_inp:
 	call find_int2;						// last value to BC
 	in a, (c);							// get signal
 	jr in_pk_stk;						// stack result
