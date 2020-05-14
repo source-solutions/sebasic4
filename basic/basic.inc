@@ -1,4 +1,4 @@
-;	// Definitions file for basic.asm
+;	// SE Basic IV 4.2 Cordelia - A classic BASIC interpreter for the Z80 architecture.
 ;	// Copyright (c) 1999-2020 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
@@ -341,7 +341,7 @@ fgt macro(n);							// get (mem 0-5)
 	op_mod			equ tk_mod;
 	op_oct			equ '@';
 	op_or			equ '|';
-	op_xor			equ '^';
+	op_xor			equ tk_xor;
 
 
 ;	// tokens
@@ -352,7 +352,7 @@ fgt macro(n);							// get (mem 0-5)
 	tk_bin_str		equ $84;
 	tk_oct_str		equ $85;
 	tk_hex_str		equ $86;
-	tk_using		equ $87;
+	tk_spc			equ $87;
 	tk_tab			equ $88;
 	tk_val_str		equ $89;
 	tk_asc			equ $8a;
@@ -393,8 +393,8 @@ fgt macro(n);							// get (mem 0-5)
 	tk_copy			equ $ad;
 	tk_open			equ $ae;
 	tk_close		equ $af;
-	tk_dload		equ $b0;
-	tk_dsave		equ $b1;
+	tk_while		equ $b0;
+	tk_wend			equ $b1;
 	tk_sound		equ $b2;
 	tk_files		equ $b3;
 	tk_kill			equ $b4;
@@ -436,13 +436,13 @@ fgt macro(n);							// get (mem 0-5)
 	tk_clear		equ $d8;
 	tk_return		equ $d9;
 	tk_color		equ $da;
-	tk__db			equ $db;
-	tk__dc			equ $dc;
-	tk__dd			equ $dd;
-	tk__de			equ $de;
-	tk__df			equ $df;
-	tk__e0			equ $e0;
-	tk__e1			equ $e1;
+	tk_tron			equ $db;
+	tk_troff		equ $dc;
+	tk_on			equ $dd;
+	tk_renum		equ $de;
+	tk_auto			equ $df;
+	tk_screen		equ $e0;
+	tk_xor			equ $e1;
 	tk__e2			equ $e2;
 	tk__e3			equ $e3;
 	tk__e4			equ $e4;
@@ -572,14 +572,14 @@ fgt macro(n);							// get (mem 0-5)
 	k_tail		equ kstate - 1;		// (iy - $3b)	pointer to tail of keyboard buffer
 	kstate		equ $5c00;			// (iy - $3a)	key state 0 to 3
 	kstate_4	equ	kstate + 4;		// (iy - $36)	key state 4 to 7
-	last_k		equ	kstate + 8;		// (iy - $32)	NOT USED (byte)
-	repdel		equ	last_k + 1;		// (iy - $31)	time in seconds (50th PAL / 60th NTSC) before key repeats
-	repper		equ	repdel + 1;		// (iy - $30)	delay in seconds (50th PAL / 60th NTSC) between key repeats
-	defadd		equ	repper + 1;		// (iy - $2f)	address of arguments during user defined funciton evaluation 
-	defadd_h	equ	defadd + 1;		// (iy - $2e)	high byte of defadd
-	k_data		equ	defadd + 2;		// (iy - $2d)	NOT USED (byte)
-	vdu_data	equ	k_data + 1;		// (iy - $2c)	NOT USED (word)
-	strms		equ	vdu_data + 2;	// (iy - $2a)	address of channels attached to streams
+	repdel		equ	kstate + 8;		// (iy - $32)	time in seconds (50th PAL / 60th NTSC) before key repeats
+	repper		equ	repdel + 1;		// (iy - $31)	delay in seconds (50th PAL / 60th NTSC) between key repeats
+	defadd		equ	repper + 1;		// (iy - $30)	address of arguments during user defined funciton evaluation 
+	defadd_h	equ	defadd + 1;		// (iy - $2f)	high byte of defadd
+	onerr		equ defadd + 2;		// (iy - $2e)	line to jump to on error
+	onerr_h		equ onerr + 1;		// (iy - $2d)	high byte of onerr
+	maskadd		equ	onerr + 2;		// (iy - $2c)	address of custom IM1 rotuine
+	strms		equ	maskadd + 2;	// (iy - $2a)	address of channels attached to streams
 	strms_fe	equ	strms + 2;		// (iy - $28)
 	strms_ff	equ	strms + 4;		// (iy - $26)
 	strms_00	equ	strms + 6;		// (iy - $24)
@@ -605,23 +605,23 @@ fgt macro(n);							// get (mem 0-5)
 
 	flags		equ	err_nr + 1;		// (iy + $01)
 ;	// 0: Set to suppress a leading space
-;	// 1: NOT USED (set if ZX Printer is in use)
-;	// 2: NOT USED (1='L' mode, 0='K' mode. temporary value)
-;	// 3: NOT USED (1='L' mode, 0='K' mode)
-;	// 4: NOT USED (1=128 BASIC, 0=48 BASIC)
-;	// 5: NOT USED (set if a new key has been pressed)
+;	// 1: RESERVED (set if ZX Printer is in use)
+;	// 2: RESERVED (1='L' mode, 0='K' mode. temporary value)
+;	// 3: RESERVED (1='L' mode, 0='K' mode)
+;	// 4: RESERVED (1=128 BASIC, 0=48 BASIC)
+;	// 5: RESERVED (set if a new key has been pressed)
 ;	// 6: Set if scanning result is numeric
 ;	// 7: Reset if checking syntax
 
 	vdu_flag	equ	flags + 1;		// (iy + $02)
 ;	// 0: Set if lower screen in use.
-;	// 1: NOT USED
-;	// 2: NOT USED
+;	// 1: RESERVED
+;	// 2: RESERVED
 ;	// 3: Set if edit key has been pressed
 ;	// 4: Set if an automatic listing
 ;	// 5: Set if lower screen to be cleared
-;	// 6: NOT USED
-;	// 7: NOT USED
+;	// 6: RESERVED
+;	// 7: RESERVED
 
 	err_sp		equ	vdu_flag + 1;	// (iy + $03)
 	list_sp		equ	err_sp + 2;		// (iy + $05)
@@ -653,7 +653,7 @@ fgt macro(n);							// get (mem 0-5)
 
 	flags2		equ	mem + 2;		// (iy + $30)
 ;	// 0: Set if main screen to be cleared
-;	// 1: NOT USED (State of ZX printer buffer)
+;	// 1: Set if 40 column mode in use (State of ZX printer buffer)
 ;	// 2: Set if a ':' is within quotes
 ;	// 3: Set if caps lock on
 ;	// 4: Set if 'K' channel is use
@@ -667,14 +667,14 @@ fgt macro(n);							// get (mem 0-5)
 	osppc		equ	oldppc + 2;		// (iy + $36)
 
 	flagx		equ	osppc + 1;		// (iy + $37)
-;	// 0 - Set if handling a simple string
-;	// 1 - Set if handling a new variable
+;	// 0: Set if handling a simple string
+;	// 1: Set if handling a new variable
 ;	// 2: NOT USED
 ;	// 3: NOT USED
 ;	// 4: NOT USED
-;	// 5 - Set if in input mode
-;	// 6 : NOT USED
-;	// 7 - Set if handling INPUT LINE
+;	// 5: Set if in input mode
+;	// 6: NOT USED
+;	// 7: Set if handling INPUT LINE
 
 	strlen		equ	flagx + 1;		// (iy + $38)	length of string type destination in assignment
 	t_addr		equ	strlen + 2;		// (iy + $3a)	address of next item in syntax table
@@ -742,13 +742,13 @@ fgt macro(n);							// get (mem 0-5)
 	_k_tail		equ $3b;
 	_kstate		equ $3a;
 	_kstate_4	equ $36;
-	_last_k		equ $32;
-	_repdel		equ $31;
-	_repper		equ $30;
-	_defadd		equ $2f;
-	_defadd_h	equ $2e;
-	_k_data		equ $2d;
-	_vdu_data	equ $2c;
+	_repdel		equ $32;
+	_repper		equ $31;
+	_defadd		equ $30;
+	_defadd_h	equ $2f;
+	_onerr		equ $2e;
+	_onerr_h	equ $2d;
+	_maskadd	equ $2c;
 	_strms		equ $2a;
 	_strms_fe	equ $28;
 	_strms_ff	equ $26;

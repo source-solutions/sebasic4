@@ -182,5 +182,3 @@ mute_ay:
 	ld b, d;							// AY data port
 	out (c), e;							// AY off;
 	ret;								// end of subroutine
-
-

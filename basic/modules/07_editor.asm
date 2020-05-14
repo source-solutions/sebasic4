@@ -14,9 +14,6 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
-; FIXME - column width should be a system variable
-; so the editor can work in 80 and 40 column modes        
-
 	org $0f60;
 editor:
 	ld hl, (err_sp);					// get current error pointer
@@ -101,11 +98,11 @@ ed_right:
 	jr ed_cur;							// immediate jump
 
 ed_down:
-	ld b, 80;							// 80 characters
+	call get_cols;						// column width to B
 
 ed_down_1:
 	call ed_right;						// move cursr right
-	djnz ed_down_1;						// 80 times
+	djnz ed_down_1;						// by column width
 	ret;								// end of subroutine
 
 ed_up:
@@ -113,7 +110,7 @@ ed_up:
 	ld de, (k_cur);						// sysvar to DE
 	and a;								// prepare for subtraction
 	sbc hl, de;							// subtract
-	ld b, 80;							// 80 characters per row
+	call get_cols;						// column width to B
 	ld hl, (e_ppc);						// sysvar to HL
 	ex de, hl;							// swap pointers
 
@@ -351,6 +348,13 @@ set_de:
 	ret c;								// return if intended
 	ld hl, (stkbot);					// stkbot to HL
 	ret;								// end of subroutine
+
+get_cols:
+	ld b, 80;							// assume 80 columns
+	bit 1, (iy + _flags2);				// test for 40 column mode
+	ret z;								// return if not
+	ld b, 40;							// 40 columns
+	ret;								// done
 
 ;	// UnoDOS 3 entry point
 	org $11a7

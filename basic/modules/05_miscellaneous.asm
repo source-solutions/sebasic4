@@ -99,6 +99,8 @@ col_lookup:
 	ei;									// interrupts back on
 	ret;								// end of subroutine
 
+; 	// FIXME - delete should accept:    x   x,y   ,y   x,   
+
 ;	// DELETE command
 delete:
 	call get_line;						// get a valid line number
@@ -121,7 +123,12 @@ get_line:
 ;	// EDIT command
 edit:
 	call get_line;						// get a valid line number
-	ld (e_ppc), bc;						// make it the current line
+	ld a, c;							// test
+	or b;								// for zero
+	jr z, edit_1;						// use current line if so
+	ld (e_ppc), bc;						// else make it the current line
+
+edit_1:
 	res	5, (iy + _flagx);				// signal line editing mode
 	ld hl, (e_ppc);						// line number to HL
 	call line_addr;						// get line address
@@ -148,27 +155,12 @@ edit:
 	call out_line;						// print the line
 	inc (iy + _e_ppc);					// FIXME - remove after autolist removed
 	ld hl, (e_line);					// start of line to HL
-	inc hl;								// skip line number and address
-	inc hl;								// FIXME - replace with call to number_1
-	inc hl;								// 
-	inc hl;								// 
 	ld (k_cur), hl;						// store it in k_kur
 	pop hl;								// unstack former channel address
 	call chan_flag;						// set flags
 	ld sp, (err_sp);					// move stack
 	pop af;								// drop address
 	jp main_2;							// immediate jump
-
-;	// LIST command
-c_list:
-	exx;								// alternate register set
-	ld hl, (flags);						// store flags
-	exx;								// main register set
-	call list;							// do list
-	exx;								// alternate register set
-	ld (flags), hl;						// restore flags
-	exx;								// main register set
-	ret;								// end of subroutine
 
 ;	// ERROR command
 c_error:
@@ -187,6 +179,19 @@ locate:
 
 	call stk_to_bc;						// column to C, row to B
 
+	bit 1, (iy + _flags2);				// test for 40 column mode
+	jr z, loc_80;						// jump if not
+
+	ld a, c;							// get column
+	cp 41;								// in range?
+	jr z, loc_err;						// error if not
+	ld a, b;							// get row
+	cp 23;								// upper screen?
+	jr z, loc_err;						// jump if not
+	ld a, 42;							// left most
+	jr loc_40;							// immedaite jump
+
+loc_80:
 	ld a, c;							// get column
 	cp 81;								// in range?
 	jr z, loc_err;						// error if not
@@ -195,6 +200,8 @@ locate:
 	jr z, loc_err;						// jump if not
 
 	ld a, 82;							// left most
+
+loc_40:
 	sub c;								// calculate column
 	jr c, loc_err;						// jump if error
 	ld c, a;							// else store it
@@ -290,12 +297,105 @@ troff:
 
 ;	// ON command
 c_on:
-	ret
+	rst get_char;						// first character
+	cp tk_error;						// ERROR token?
+	jr z, on_error;						// jump if so
+	rst error;							// else error
+	defb syntax_error;					// FIXME: add ON n handler
 
-;	// RENUM command
-renum:
-	ret
+on_error:
+	rst next_char;						// first character
+	cp tk_goto;							// GOTO?
+	jr z, onerr_goto;					// jump if so
+	cp tk_cont;							// CONTINUE?
+	jr z, onerr_cont;					// jump if so
+	cp tk_stop;							// STOP?
+	jr z, onerr_stop;					// jump if so
+	rst error;							// else
+	defb syntax_error;					// error
+
+onerr_goto:
+	rst next_char;						// next character
+	call expt_1num;						// expect number
+	call check_end;						// expect end of line
+	call find_line;						// get line number
+	call unstack_z;						// return if checking syntax
+	ld (onerr), bc;						// set on error address
+	ret;								// done
+
+onerr_cont:
+	rst next_char;						// next character
+	call check_end;						// expect end of line
+	call unstack_z;						// return if checking syntax
+	ld a, $fe;							// signal on err continue
+
+onerr_exit:
+	ld (onerr_h), a;					// set on err flag
+	ret;								// end of subroutine
+
+onerr_stop:
+	call onerr_cont;					// expect end of line
+	ret z;								// return if checking syntax
+	inc a;								// signal on err stop
+	jr onerr_exit;						// immediate jump
+
+;	// ON ERROR handler
+onerr_test:
+	cp ok;								// no error?
+	ret z;								// return if so
+	cp break;							// BREAK?
+	ret z;								// return if so
+	ld hl, (onerr);						// get flag or line number
+	ld a, h;							// flag to H
+	cp $ff;								// on error stop?
+	ret	z;								// return if so
+	cp $fe;								// on error continue?
+	jr z, onerr_test_1;					// jump if so
+	ld (newppc), hl;					// store line to jump to in newppc
+	ld (iy + _nsppc), 0;				// clear statement number
+
+onerr_test_1:
+	ld (iy + _err_nr), ok;				// signal no error
+	pop	hl;								// discard return address
+	ld hl, main_4;						// make main-4
+	push hl;							// new return address
+	jp stmt_r_1;						// immediate jump
+
+;	// SCREEN command
+screen:
+	call test_0_or_1;					// get variable
+	and a;								// test for zero
+;	jr nz, screen_1;					// jump for 40 column
+
+screen_0:
+	res 1, (iy + _flags2);				// signal 80 columns
+	ld a, %00110110;					// yellow on blue (with no ULAplus), hi-res mode
+	out (scld), a;						// set it
+	jp cls;								// exit via CLS 80
+
+screen_1:
+	set 1, (iy + _flags2);				// signal 40 columns
+;	ld a, %00000010;					// lo-res mode
+;	out (scld), a;						// set it
+;	jp s40_cls;							// exit via CLS 40
+
+; 	// TEST 0 OR 1 subroutine
+test_0_or_1:
+	call find_int1;						// get variable
+	cp 2;								// 0 or 1?
+	ret c;								// return if so
+	pop af;								// else drop return address
+	rst error;							// and call
+	defb illegal_function_call;			// error handler
 
 ;	// AUTO command
 auto:
+	ret
+
+;	// WHILE command
+c_while:
+	ret
+
+;	// WEND command
+c_wend:
 	ret

@@ -193,7 +193,7 @@ k_enter:
 	ret z;								// return if not
 	bit 5, b;							// shift?
 	ret nz;								// return if so
-	ld a, 'Z';							// make it tab
+	ld a, 'E';							// make it E
 	ret;								// done
 
 k_space:
@@ -201,7 +201,7 @@ k_space:
 	ret z;								// return if not
 	bit 5, b;							// shift?
 	ret nz;								// return if so
-	ld a, 'X';							// make it tab
+	ld a, 'S';							// make it S
 	ret;								// done
 
 k_digit:

@@ -89,14 +89,14 @@ bc_1_space:
 	inc (hl);							// increment it
 	ld a, 60;							// has one second elapsed? (change to 50 for 50Hz machines)
 	cp (hl);							// test it
-	jr nz, key_int;						// jump if no rollover
+	jr nz, user_im1;					// jump if no rollover
 	ld (hl), 0;							// restart frame counter
 	call rollover;						// update first byte of time_t
 	call rollover;						// update second byte of time_t
 	call rollover;						// update third byte of time_t
 	inc l;								// update fourth byte of time_t
 	inc (hl);							// increment fourth byte
-	jp key_int;							// read keyboard
+	jp user_im1;						// test for user IM1 routine
 
 	org $0053;
 error_2:
@@ -115,7 +115,7 @@ rollover:
 	inc (hl);							// increment first byte
 	ret z;								// return with rollover
 	pop af;								// drop return address
-	jp key_int;							// immedaite jump
+	jp user_im1;						// immedaite jump
 
 	org $0066;
 nmi:
@@ -162,6 +162,12 @@ skips:
 	scf;								// set carry flag
 	ld (ch_add), hl;					// put new character address in ch_add
 	ret;								// end of skip_over
+
+user_im1:
+	ld hl, (maskadd);					// put value of maskadd in HL
+	ld a, l;							// test for
+	or h;								// zero
+	call nz, call_jump;					// call routine if not
 
 key_int:
 	push de;							// stack DE

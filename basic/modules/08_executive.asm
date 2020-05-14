@@ -103,7 +103,7 @@ initial:
 	ei;									// interrupts on
 	ld a, (chans);						// coming from
 	and a;								// start or new?
-;	ld (iy + _on_err_flag_h), 255;		// signal on error stop
+	ld (iy - _onerr_h), 255;			// signal on error stop
 	ld a, break + 1;					// prepare error
 	jp nz, main_g;						// jump if NMI Break
 	ld bc, 21;							// byte count
@@ -180,7 +180,13 @@ initial:
 	xor a;								// LD A, 0; channel K
 	call chan_open;						// open it
 	ld de, ready;						// ready message
+
+	set 2, (iy + _flags2);				// signal do not print tokens
+
 	call po_asciiz_0;					// print it
+
+	set 3, (iy + _flags2);				// enable CAPS LOCK
+
 	jp main_1;							// immediate jump
 
 main_exec:
@@ -201,7 +207,7 @@ main_2:
 	jr z, main_4;						// jump if not
 	ld hl, (e_line);					// address error
 	call remove_fp;						// remove floating point forms
-	ld (iy + _err_nr), 255;				// reset error
+	ld (iy + _err_nr), ok;				// reset error
 	jr main_2;							// jump back
 
 main_3:
@@ -224,10 +230,10 @@ main_3:
 	call line_run;						// interpret line
 
 main_4:
-;	ld a, (err_nr);						// error number to A
-;	call on_error_test;					// test for ON ERROR
-	ld a, (err_nr);						// error number again
-	inc a;								// 
+	ld a, (err_nr);						// error number to A
+	call onerr_test;					// test for ON ERROR
+	ld a, (err_nr);						// get error number again
+	inc a;								// increment it
 
 main_g:
 	push af;							// stack report code
@@ -546,6 +552,27 @@ set_stk:
 	pop hl;								// unstack stkend
 	ret;								// end of subroutine
 
+test_trace:
+	bit 7, (iy + _flags);				// checking syntax?
+	jr z, set_work;						// jump if so
+	bit 7, (iy + _flags2);				// or trace off?
+	jr z, set_work;						// jump if so
+	ld bc, (ppc);						// is it
+	and b;								// a direct command?
+	jr nz, set_work;					// jump if so
+	push af;							// store A
+	ld hl, vdu_flag;					// address VDU flag
+	ld d, (hl);							// get a copy in D
+	res 0, (hl);						// clear bit 0 of VDU flag
+	ld a, '[';
+	rst print_a;						// print it
+	call out_num_1;						// the line number
+	ld a, ']';
+	rst print_a;						// print it
+	pop af;								// restore A
+	ld (iy + _vdu_flag), d;				// restore VDU flag
+	jr set_work;						// immediate jump
+
 indexer_0:
 	ld c, a;							// A to
 	ld b, 0;							// BC
@@ -759,36 +786,87 @@ auto_l_4:
 	ret;								// end of subroutine
 
 list:
+	ld hl, (flags);						// get flags
+	push hl;							// stack flags
+	call list_1;						// do list
+	pop hl;								// unstack flags
+	ld (flags), hl;						// restore flags
+	ret;								// end of subroutine
+
+list_1:
 	ld a, 2;							// use stream #2
 	ld (iy + _vdu_flag), 0;				// signal normal listing
 	call syntax_z;						// checking syntax?
 	call nz, chan_open;					// open channel if not
 	rst get_char;						// get character
 	call str_alter;						// change stream?
-	jr c, list_4;						// jump if unchanged
-	rst get_char;						// current character
+	jr c, list_2;						// jump if unchanged
+	rst get_char;						// get character
 	cp ';';								// semi-colon?
-	jr z, list_2;						// jump if so
-	cp ',';								// comma?
-	jr nz, list_3;						// jump if not
+	jr nz, list_9;						// jump if not
+	rst next_char;						// next character
 
 list_2:
-	rst next_char;						// next character
-	call expt_1num;						// expecting a number
-	jr list_5;							// immediate jump
+	rst get_char;						// get character
+	cp ':';								// colon?
+	jr z, list_9;						// jump if so
+	cp ctrl_enter;						// enter?
+	jr z, list_9;						// jump if so
+	cp ',';								// comma?
+	jr z, list_3;						// jump if so
+	call expt_1num;						// get number
+	jr list_4;							// immediate jump
 
 list_3:
 	call use_zero;						// default start at zero
-	jr list_5;							// get current character
+	rst get_char;						// get character
 
 list_4:
+	cp ',';								// comma?
+	jr nz, list_6;						// jump if not
+	rst next_char;						// next character
 	call fetch_num;						// get number
+	call check_end;						// check end of statement
+	call find_line;						// also performs LD A, B
+	or c;								// both zero?
+	jr nz, list_5;						// jump if not
+	ld bc, $4000;						// else BC = 16384
 
 list_5:
+	ld (t_addr), bc;					// BC to temporary pointer to parameter table
+	call find_line;						// valid line number to HL and BC
+	ld (strlen), bc;					// BC to string length
+	jr list_7;							// immediate jump
+
+list_6:
 	call check_end;						// check end of statement
 	call find_line;						// valid line number to HL and BC
-	ld (e_ppc), hl;						// strlent to e_ppc
+	ld (strlen), bc;					// BC to string length
+	ld (t_addr), bc;					// BC to temporary pointer to parameter table
+
+list_7:
+	ld hl, (strlen);					// string length to HL
+	ld (e_ppc), hl;						// strlen to e_ppc
 	call line_addr;						// get address of line number
+
+list_8:
+	ld de, 0;							// clear DE
+	res 7, (iy + _flags);				// force edit mode
+	call out_line;						// print a BASIC line
+	rst print_a;						// print carriage return
+	ld bc, (t_addr);					// emporary pointer to parameter table to BC
+	call cp_lines;						// match or line after
+	jr c, list_8;						// jump
+	jr z, list_8;						// if so
+	ret;								// else done
+
+list_9:
+	call check_end;						// check end of statement
+	ld bc, 16383;						// last possible line
+	ld (t_addr), bc;					// BC to temporary pointer to parameter table
+	ld bc, 0;							// cleasr BC
+	ld (strlen), bc;					// clear string length
+	jr list_7;							// immediate jump
 
 list_all:
 	ld e, 1;							// current line not yet printed
@@ -813,14 +891,6 @@ list_all_2:
 	jr list_all_2;						// immediate jump
 
 out_line:
-	ld bc, (e_ppc);						// current line to BC
-	call cp_lines;						// match or line after
-	ld d, '>';							// '>' cursor
-	jr z, out_line1;					// jump with match
-	ld de, 0;							// suppress line cursor
-	rl e;								// carry to E
-
-out_line1:
 	ld (iy + _breg), e;					// store line marker
 	ld a, (hl);							// most significant byte of line number to A
 	cp $40;								// in range? (0 to 16383)
@@ -831,11 +901,7 @@ out_line1:
 	inc hl;								// point to
 	inc hl;								// first
 	inc hl;								// command
-	res 0, (iy + _flags);				// suppress leading space
-	ld a, d;							// get cursor
-	and a;								// zero?
-	jr z, out_line3;					// jump if so
-	rst print_a;						// print '>' cursor
+	jr out_line3;						// immediate jump
 
 out_line2:
 	set 0, (iy + _flags);				// suppress leading space
@@ -875,13 +941,11 @@ number:
 	cp ctrl_number;						// hidden number marker?
 	ret nz;								// return if not
 	inc hl;								// advance pointer six times
-
-number_1:
-	inc hl;								// called from
-	inc hl;								// the EDIT
-	inc hl;								// command to
-	inc hl;								// advance pointer
-	inc hl;								// five times
+	inc hl;
+	inc hl;
+	inc hl;
+	inc hl;
+	inc hl;
 	ld a, (hl);							// code to A
 	ret;								// end of subroutine
 
@@ -1127,7 +1191,8 @@ out_num_2:
 	ld e, (hl);							// DE
 	push hl;							// stack HL
 	ex de, hl;							// number to HL
-	ld e, ' ';							// leading space
+;	ld e, ' ';							// leading space
+	ld e, $ff;							// don't print leading spaces
 
 out_num_3:
 	ld bc, -10000;						// fist digit

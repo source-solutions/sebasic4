@@ -558,9 +558,13 @@ sf_value:
 
 fn_skpovr:
 	inc hl;								// next code
+
+fn_skpovr_1:
 	ld a, (hl);							// code to A
-	cp ' ' + 1;							// > space?
-	jr c, fn_skpovr;					// jump if so
+;	cp ' ' + 1;							// > space?
+;	jr c, fn_skpovr;					// jump if so
+	cp ' ';
+	jr z, fn_skpovr;
 	ret;								// end of subroutine
 
 look_vars:

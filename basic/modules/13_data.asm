@@ -19,14 +19,14 @@
 
 	org $3d00
 copyright:
-	defb "CHLOE 280SE 512K Microcomputer", ctrl_enter;
-	defb "Copyright (C)1999 Chloe Corporation.", ctrl_enter;
+	defb "CHLOE 280SE 512K Personal Color Computer", ctrl_enter;
+	defb "Copyright (C)1999 Chloe Corporation", ctrl_enter;
 	defb ctrl_enter;
 	defb "SE BASIC IV 4.2 Cordelia", ctrl_enter;
 	defb "Copyright (C)2017 Source Solutions, Inc.", ctrl_enter;
 	defb ctrl_enter;
-	defb "Release 200214", ctrl_enter;
-;	defb "Build: ", TIMESTR, ctrl_enter;
+;	defb "Release 200523", ctrl_enter;
+ 	defb "Build", TIMESTR, ctrl_enter;
 	defb ctrl_enter, 0;
 
 bytes_free:
@@ -61,6 +61,14 @@ semi_tone:
 ;	defb $89, $69, $14, $f6, $23;		// A#
 ;	defb $89, $76, $f1, $10, $03;		// B
 
+;	// used in 05_miscellaneous
+renum_tbl:
+	defb tk_restore;
+	defb tk_goto;
+	defb tk_gosub;
+	defb tk_list;
+	defb tk_run;
+
 ;	// used in 06_screen_80
 ;	// deals with virtual columns that cross real columns and display files
 rtable:
@@ -87,25 +95,25 @@ init_chan:
 	defb 'K';							// channel
 	defw print_out, report_bad_io_dev;	// screen
 	defb 'S';							// channel
-	defw add_char, report_bad_io_dev;	// workspace
+	defw detokenizer, report_bad_io_dev;// workspace
 	defb 'R';							// channel
 	defb end_marker;					// no more channels
 
 ;	// used in 10_expression
 tbl_of_ops:
-	defb '+', $cf;						// +
-	defb '-', $c3;						// -
-	defb '*', $c4;						// *
-	defb '/', $c5;						// /
-	defb '^', $c6;						// ^
-	defb '=', $ce;						// =
-	defb '>', $cc;						// >
-	defb '<', $cd;						// <
-	defb tk_l_eql, $c9;					// <=
-	defb tk_gr_eq, $ca;					// >=
-	defb tk_neql, $cb;					// <>
-	defb tk_or, $c7;					// OR
-	defb tk_and, $c8;					// AND
+	defb '+', $cf;						// +	%11000000 + fadd
+	defb '-', $c3;						// -	%11000000 + fsub
+	defb '*', $c4;						// *	%11000000 + fmul
+	defb '/', $c5;						// /	%11000000 + fdiv
+	defb '^', $c6;						// ^	%11000000 + fexp
+	defb '=', $ce;						// =	%11000000 + fcp(_eq)
+	defb '>', $cc;						// >	%11000000 + fcp(_gt)
+	defb '<', $cd;						// <	%11000000 + fcp(_lt)
+	defb tk_l_eql, $c9;					// <=	%11000000 + fcp(_le)
+	defb tk_gr_eq, $ca;					// >=	%11000000 + fcp(_ge)
+	defb tk_neql, $cb;					// <>	%11000000 + fcp(ne)
+	defb tk_or, $c7;					// OR	%11000000 + fbor
+	defb tk_and, $c8;					// AND	%11000000 + fband
 	defb 0;								// null terminator
 
 tbl_priors:
@@ -204,7 +212,30 @@ tbl_addrs:
 dir_msg:
 	defb "<DIR>   ", 0;
 
+;	// used in 14_screen_40
+;	// attributes are stored internally with the foreground in the high nibble and the background in the low nibble
+;	// this table converts an attribute to its 64-color equivalent in the default palette.
+;	org $3f00
+attributes:
+	defb $00, $08, $10, $18, $20, $28, $30, $38, $80, $88, $90, $98, $a0, $a8, $b0, $b8; background 0-15, foreground 0
+	defb $01, $09, $11, $19, $21, $29, $31, $39, $81, $89, $91, $99, $a1, $a9, $b1, $b9; background 0-15, foreground 1
+	defb $02, $0a, $12, $1a, $22, $2a, $32, $3a, $82, $8a, $92, $9a, $a2, $aa, $b2, $ba; background 0-15, foreground 2
+	defb $03, $0b, $13, $1b, $23, $2b, $33, $3b, $83, $8b, $93, $9b, $a3, $ab, $b3, $bb; background 0-15, foreground 3
+	defb $04, $0c, $14, $1c, $24, $2c, $34, $3c, $84, $8c, $94, $9c, $a4, $ac, $b4, $bc; background 0-15, foreground 4
+	defb $05, $0d, $15, $1d, $25, $2d, $35, $3d, $85, $8d, $95, $9d, $a5, $ad, $b5, $bd; background 0-15, foreground 5
+	defb $06, $0e, $16, $1e, $26, $2e, $36, $3e, $86, $8e, $96, $9e, $a6, $ae, $b6, $be; background 0-15, foreground 6
+	defb $07, $0f, $17, $1f, $27, $2f, $37, $3f, $87, $8f, $97, $9f, $a7, $af, $b7, $bf; background 0-15, foreground 7
+	defb $40, $48, $50, $58, $60, $68, $70, $78, $c0, $c8, $d0, $d8, $e0, $e8, $f0, $f8; background 0-15, foreground 8
+	defb $41, $49, $51, $59, $61, $69, $71, $79, $c1, $c9, $d1, $d9, $e1, $e9, $f1, $f9; background 0-15, foreground 9
+	defb $42, $4a, $52, $5a, $62, $6a, $72, $7a, $c2, $ca, $d2, $da, $e2, $ea, $f2, $fa; background 0-15, foreground 10
+	defb $43, $4b, $53, $5b, $63, $6b, $73, $7b, $c3, $cb, $d3, $db, $e3, $eb, $f3, $fb; background 0-15, foreground 11
+	defb $44, $4c, $54, $5c, $64, $6c, $74, $7c, $c4, $cc, $d4, $dc, $e4, $ec, $f4, $fc; background 0-15, foreground 12
+	defb $45, $4d, $55, $5d, $65, $6d, $75, $7d, $c5, $cd, $d5, $dd, $e5, $ed, $f5, $fd; background 0-15, foreground 13
+	defb $46, $4e, $56, $5e, $66, $6e, $76, $7e, $c6, $ce, $d6, $de, $e6, $ee, $f6, $fe; background 0-15, foreground 14
+	defb $47, $4f, $57, $5f, $67, $6f, $77, $7f, $c7, $cf, $d7, $df, $e7, $ef, $f7, $ff; background 0-15, foreground 15
+
 ;	// the remaining part of BASIC exists in RAM and can therefore be modified by the user
+
 	org $4000
 
 ;	// used in 06_screen_80
@@ -288,7 +319,7 @@ token_table:
 
 ;	// functions
 	dbtb "RND", "INKEY$", "PI", "FN";
-	dbtb "BIN$", "OCT$", "HEX$", "USING";
+	dbtb "BIN$", "OCT$", "HEX$", "SPC";
 	dbtb "TAB", "VAL$", "ASC", "VAL";
 	dbtb "LEN", "SIN", "COS", "TAN";
 	dbtb "ASIN", "ACOS", "ATAN", "LOG";
@@ -301,8 +332,8 @@ token_table:
 
 ;	// commands
 	dbtb "DEF FN", "BLOAD", "BSAVE", "CHDIR";
-	dbtb "COPY", "OPEN #", "CLOSE #", "DLOAD";
-	dbtb "DSAVE", "SOUND", "FILES", "KILL";
+	dbtb "COPY", "OPEN #", "CLOSE #", "WHILE";
+	dbtb "WEND", "SOUND", "FILES", "KILL";
 	dbtb "LOAD", "MKDIR", "NAME", "RMDIR";
 	dbtb "SAVE", "OUT", "LOCATE", "END";
 	dbtb "STOP", "READ", "DATA", "RESTORE";
@@ -315,8 +346,8 @@ tk_ptr_rem:
 	dbtb "DELETE", "RUN", "EDIT", "RANDOMIZE";
 	dbtb "IF", "CLS", "CALL", "CLEAR"
 	dbtb "RETURN", "COLOR", "TRON", "TROFF"
-	dbtb "ON", "RENUM", "AUTO", "_E0";
-	dbtb "_E1", "_E2", "_E3", "_E4"
+	dbtb "ON", "RENUM", "AUTO", "SCREEN";
+	dbtb "XOR", "_E2", "_E3", "_E4"
 	dbtb "_E5", "_E6", "_E7", "_E8";
 	dbtb "_E9", "_EA", "_EB", "_EC";
 	dbtb "_ED", "_EE", "_EF", "_F0";
@@ -337,8 +368,8 @@ offst_tbl:
 	defw p_copy;						// d6
 	defw p_open;						// b0
 	defw p_close;						// b4
-	defw p_dload;						// 9b (CLOAD)
-	defw p_dsave;						// 9a (CSAVE)
+	defw p_while;						// 
+	defw p_wend;						// 
 	defw p_sound;						// c4
 	defw p_files;						// b7
 	defw p_kill;						// d4
@@ -385,7 +416,7 @@ offst_tbl:
 	defw p_on;							// 95
 	defw p_renum;						// aa
 	defw p_auto;						// a9
-	defw p__e0;							// 
+	defw p_screen;						// c5
 	defw p__e1;							// 
 	defw p__e2;							// 
 	defw p__e3;							// 
@@ -446,13 +477,13 @@ p_close:
 	defb num_exp_no_f_ops;
 	defw close;
 
-p_dload:
-	defb str_exp_no_f_ops;
-	defw dload;
+p_while:
+	defb var_syn;
+	defw c_while;
 
-p_dsave:
-	defb str_exp_no_f_ops;
-	defw dsave;
+p_wend:
+	defb no_f_ops;
+	defw c_wend;
 
 p_sound:
 	defb two_c_s_num_no_f_ops;
@@ -556,7 +587,7 @@ p_palette:
 
 p_list:
 	defb var_syn;
-	defw c_list;
+	defw list;
 
 p_let:
 	defb var_rqd, '=', expr_num_str;
@@ -578,7 +609,7 @@ p_print:
 	defw print;
 
 p_delete:
-	defb num_exp, tk_to, num_exp_no_f_ops;
+	defb num_exp, ',', num_exp_no_f_ops;
 	defw delete;
 
 p_run:
@@ -586,7 +617,7 @@ p_run:
 	defw run;
 
 p_edit:
-	defb num_exp_no_f_ops;
+	defb num_exp_0;
 	defw edit;
 
 p_randomize:
@@ -626,20 +657,20 @@ p_troff:
 	defw troff;
 
 p_on:
-	defb no_f_ops;
+	defb var_syn;
 	defw c_on;
 
 p_renum:
-	defb no_f_ops;
+	defb var_syn;
 	defw renum;
 
 p_auto:
 	defb no_f_ops;
 	defw auto;
 
-p__e0:
-	defb no_f_ops;
-	defw rem;
+p_screen:
+	defb num_exp_no_f_ops;
+	defw screen;
 
 p__e1:
 	defb no_f_ops;
