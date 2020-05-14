@@ -147,7 +147,7 @@ edit_1:
 	ld hl, (curchl);					// get current channel
 	ex (sp), hl;						// swap with address of line
 	push hl;							// stack it
-	ld a, 255;							// channel R
+	ld a, $ff;							// channel W
 	call chan_open;						// open it
 	pop hl;								// address of line
 	dec hl;								// suppress cursor

@@ -85,7 +85,7 @@ rtable:
 init_strm:
 	defb $01, $00;						// stream $fd, channel K
 	defb $06, $00;						// stream $fe, channel S
-	defb $0b, $00;						// stream $ff, channel R
+	defb $0b, $00;						// stream $ff, channel W
 	defb $01, $00;						// stream $00, channel K
 	defb $01, $00;						// stream $01, channel K
 	defb $06, $00;						// stream $02, channel S
@@ -96,7 +96,7 @@ init_chan:
 	defw print_out, report_bad_io_dev;	// screen
 	defb 'S';							// channel
 	defw detokenizer, report_bad_io_dev;// workspace
-	defb 'R';							// channel
+	defb 'W';							// channel
 	defb end_marker;					// no more channels
 
 ;	// used in 10_expression

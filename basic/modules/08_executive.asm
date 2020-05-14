@@ -386,6 +386,57 @@ call_sub:
 	exx;								// main register set
 	ret;								// end of subroutine
 
+;	// channels
+
+	org $1500;							// fixme - temporary address until routines complete
+
+op_str_lu:
+	defb 'K', open_k - 1 - $;			// keyboard
+	defb 'S', open_s - 1 - $;			// screen
+	defb 0;								// null terminator
+
+open_k:
+	ld e, 1;							// data bytes 1, 0
+	jr open_end;						// immediate jump
+
+open_s:
+	ld e, 6;							// data bytes 6, 0
+	jr open_end;						// immediate jump
+
+open_end:
+	dec bc;								// reduce length
+	ld a, c;							// single
+	or b;								// character?
+	jp nz, report_undef_chan;			// error if not
+	ld d, a;							// clear D
+	pop hl;								// unstack HL
+	ret;								// end of subroutine
+
+cl_str_lu:
+	defb 'K', close_str - 1 - $;		// keyboard
+	defb 'S', close_str - 1 - $;		// screen
+	defb 0;								// null termniator
+
+close_str:
+	pop hl;								// unstack channel information pointer
+	ret;								// end of routine
+
+chn_cd_lu:
+	defb 'K', chan_k - 1 - $;			// keyboard
+	defb 'S', chan_s - 1 - $;			// screen
+	defb 0;								// null terminator
+
+chan_k:
+	set 4, (iy + _flags2);				// signal using channel K
+	set 0, (iy + _vdu_flag);			// signal lower screen
+	xor a;								// clear A
+	ret;								// end of subroutine
+
+chan_s:
+	res 0, (iy + _vdu_flag);			// signal main screen
+	xor a;								// clear A
+	ret;								// end of subroutine
+
 	org $15ff
 chan_open_fe:
 	ld a, 254;							// open channel $fe
@@ -428,22 +479,6 @@ chan_flag:
 	ld d, 0;							// to DE
 	add hl, de;							// address of routine
 	jp (hl);							// immediate jump
-
-chn_cd_lu:
-	defb 'K', chan_k - 1 - $;			// keyboard
-	defb 'S', chan_s - 1 - $;			// screen
-	defb 0;								// null terminator
-
-chan_k:
-	set 4, (iy + _flags2);				// signal using channel K
-	set 0, (iy + _vdu_flag);			// signal lower screen
-	xor a;								// clear A
-	ret;								// end of subroutine
-
-chan_s:
-	res 0, (iy + _vdu_flag);			// signal main screen
-	xor a;								// clear A
-	ret;								// end of subroutine
 
 make_room:
 	push hl;							// stack pointer
@@ -629,15 +664,6 @@ close_2:
 	call indexer_0;						// get offset
 	jp (hl);							// immediate jump
 
-cl_str_lu:
-	defb 'K', close_str - 1 - $;		// keyboard
-	defb 'S', close_str - 1 - $;		// screen
-	defb 0;								// null termniator
-
-close_str:
-	pop hl;								// unstack channel information pointer
-	ret;								// end of routine
-
 str_data:
 	call find_int1;						// get stream number
 	cp 16;								// in range (0 to 15)?
@@ -710,28 +736,6 @@ open_3:
 	add hl, bc;							// real address to HL
 	pop bc;								// unstack length
 	jp (hl);							// immediate jump
-
-op_str_lu:
-	defb 'K', open_k - 1 - $;			// keyboard
-	defb 'S', open_s - 1 - $;			// screen
-	defb 0;								// null terminator
-
-open_k:
-	ld e, 1;							// data bytes 1, 0
-	jr open_end;						// immediate jump
-
-open_s:
-	ld e, 6;							// data bytes 6, 0
-	jr open_end;						// immediate jump
-
-open_end:
-	dec bc;								// reduce length
-	ld a, c;							// single
-	or b;								// character?
-	jr nz, report_undef_chan;			// error if not
-	ld d, a;							// clear D
-	pop hl;								// unstack HL
-	ret;								// end of subroutine
 
 auto_list:
 	ld (iy + _vdu_flag), 16;			// signal automatic listing

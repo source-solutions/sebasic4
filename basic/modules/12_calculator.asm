@@ -582,7 +582,7 @@ fp_str_str:
 	push hl;							// stack it
 	ld hl, (curchl);					// get current channel
 	push hl;							// stack it
-	ld a, $ff;							// channel R
+	ld a, $ff;							// channel W
 	call chan_open;						// open it
 	call print_fp;						// print last value
 	pop hl;								// unstack current channel
