@@ -457,7 +457,7 @@ sf_argmt1:
 	dec hl;								// step back
 
 sf_fnd_df:
-	ld de, $00ce;						// search for DEF FN
+	ld de, tk_def_fn;					// search for DEF FN
 	push bc;							// stack name and string status
 	call look_prog;						// search program
 	pop bc;								// unstack name and status
