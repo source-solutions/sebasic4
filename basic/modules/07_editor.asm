@@ -14,6 +14,9 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
+;	// --- EDITOR ROUTINES -----------------------------------------------------
+
+;	// line editor
 	org $0f60;
 editor:
 	ld hl, (err_sp);					// get current error pointer
@@ -33,6 +36,7 @@ ed_loop:
 	cp 21;								// printable character?
 	jr c, ed_keys;						// jump with control keys
 
+;	// add character subroutine
 ;	// UnoDOS 3 entry point
 	org $0f81
 add_char:
@@ -63,6 +67,7 @@ ed_keys:
 	ld hl, (k_cur);						// sysvar to HL
 	ret;								// indirect hump
 
+;	// editing keys table
 ed_keys_t:
 	defb ed_tab - $;					// $07
 	defb ed_left - $;					// $08
@@ -79,10 +84,12 @@ ed_keys_t:
 	defb ed_pg_dn - $;					// $13
 	defb ed_ins - $;					// $14
 
+;	// tab editing subroutine
 ed_tab:
 	ld a, 6;							// tab stop
 	jp add_char;						// immedaite jump
 
+;	// cursor left editing subroutine
 ed_left:
 	call ed_edge;						// move cursor
 
@@ -90,6 +97,7 @@ ed_cur:
 	ld (k_cur), hl;						// set sysvar
 	ret;								// end of subroutine
 
+;	// cursor right editing subroutine
 ed_right:
 	ld a, (hl);							// get current character
 	cp ctrl_enter;						// test for carriage return
@@ -97,6 +105,7 @@ ed_right:
 	inc hl;								// advance cursor position
 	jr ed_cur;							// immediate jump
 
+;	// cursor down editing subroutine
 ed_down:
 	call get_cols;						// column width to B
 
@@ -105,6 +114,7 @@ ed_down_1:
 	djnz ed_down_1;						// by column width
 	ret;								// end of subroutine
 
+;	// cursor up editing subroutine
 ed_up:
 	ld hl, (e_line);					// sysvar to HL
 	ld de, (k_cur);						// sysvar to DE
@@ -121,14 +131,17 @@ ed_up_1:
 	djnz ed_up_1;						// loop until done
 	ret;								// end of subroutine
 
+;	// backspace editing subroutine
 ed_backspace:
 	call ed_edge;						// cursor left
 	ld bc, 1;							// one character
 	jp reclaim_2;						// immediate jump
 
+;	// ignore editing subroutine
 ed_ignore:
 	call wait_key;						// ignore one key
 
+;	// enter editing subroutine
 ed_enter:
 	pop hl;								// discard ed_loop
 	pop hl;								// and ed_error return addresses
@@ -141,6 +154,7 @@ ed_done:
 	ld sp, hl;							// swap pointers
 	ret;								// indirect jump
 
+;	// symbol editing subroutine
 ed_symbol:
 	bit 7, (iy + _flagx);				// input line?
 	jr z, ed_enter;						// jump if not
@@ -148,6 +162,7 @@ ed_symbol:
 ed_graph:
 	jp add_char;						// immediate jump
 
+;	// clr home editing subroutine
 ed_clr_home:
 	ld hl, (e_ppc);						// line number to HL
 	bit 5, (iy + _flagx);				// test mode
@@ -156,6 +171,7 @@ ed_clr_home:
 	ld (k_cur), hl;						// store it in k_kur
 	ret;								// end of subroutine
 
+;	// clear SP subroutine
 clear_sp:
 	push hl;							// stack pointer to space
 	call set_hl;						// DE to first character, HL to last
@@ -166,11 +182,13 @@ clear_sp:
 	pop hl;								// unstack pointer
 	ret;								// end of subroutine
 
+;	// end editing subroutine
 ed_end:
 	call ed_right;						// move cursor right
 	ret z;								// return if end reached?
 	jr ed_end;							// move again
 
+;	// page up editing subroutine
 ed_pg_up:
 	bit 5, (iy + _flagx);				// input mode?
 	ret nz;								// return if so
@@ -182,6 +200,7 @@ ed_pg_up:
 	call ln_store;						// store line number
 	jr ed_list;							// immediate jump
 
+;	// page down editing subroutine
 ed_pg_dn:
 	bit 5, (iy + _flagx);				// input mode?
 	ret nz;								// return if so
@@ -196,6 +215,7 @@ ed_list:
 ed_ins:
 	ret;								// FIXME - stub for INSERT key
 
+;	// edge editing subroutine
 ed_edge:
 	scf;								// set carry flag
 	call set_de;						// DE points to e_line or worksp
@@ -220,12 +240,14 @@ ed_edge_1:
 	jr c, ed_edge_1;					// use updated pointer on next loop
 	ret;								// end of subroutine
 
+;	// error editing subroutine
 ed_error:
 	bit 4, (iy + _flags2);				// channel K?
 	jp z, ed_done;						// jump if not
 	call bell;							// sound rasp
 	jp ed_again;						// immediate jump
 
+;	// keyboard input subroutine
 key_input:
 	bit 3, (iy + _vdu_flag);			// screen mode changed?
 	call nz, ed_copy;					// copy line if so
@@ -277,6 +299,7 @@ key_done2:
 	scf;								// set carry flag
 	ret;								// end of subroutine
 
+;	// lower screen copying subroutine
 ed_copy:
 	res 3, (iy + _vdu_flag);			// signal mode not changed
 	res 5, (iy + _vdu_flag);			// signal lower screen clearing not required
@@ -335,11 +358,13 @@ ed_c_end:
 	ld (iy + _x_ptr_h), 0;				// clear x_ptr
 	ret;								// end of subroutine
 
+;	// set HL subroutine
 set_hl:
 	ld hl, (worksp);					// HL to last location
 	dec hl;								// of editing area
 	and a;								// clear carry flag
 
+;	// set DE subroutine
 set_de:
 	ld de, (e_line);					// start of editing area to DE
 	bit 5, (iy + _flagx);				// edit mode?
@@ -356,6 +381,7 @@ get_cols:
 	ld b, 40;							// 40 columns
 	ret;								// done
 
+;	// remove floating point subroutine
 ;	// UnoDOS 3 entry point
 	org $11a7
 remove_fp:

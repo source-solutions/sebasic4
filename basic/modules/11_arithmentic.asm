@@ -14,6 +14,9 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
+;	// --- ARITHMETIC ROUTINES -------------------------------------------------
+
+;	// E format to floating point subroutine
 fp_e_to_fp:
 	rlca;								// copy bit
 	rrca;								// 7 to carry
@@ -65,6 +68,7 @@ e_end:
 	fce();								// x * 10^m
 	ret;								// end of subroutine
 
+;	// integer fetch subroutine
 int_fetch:
 	inc hl;								// point to sign byte
 	ld c, (hl);							// copy to C
@@ -80,6 +84,7 @@ int_fetch:
 	ld d, a;							// high byte to D
 	ret;								// end of subroutine
 
+;	// integer store subroutine
 int_store:
 	push hl;							// stack pointer to first byte
 	inc hl;								// point to next byte
@@ -101,6 +106,7 @@ int_store:
 	ld (hl), a;							// A to first byte
 	ret;								// end of subroutine
 
+;	// floating point to BC subroutine
 fp_to_bc:
 	fwait();							// stkend_5 
 	fce();								// to HL
@@ -132,6 +138,7 @@ fp_to_bc_delete:
 	pop de;								// pointers
 	ret;								// end of subroutine
 
+;	// log (2^A) subroutine
 log_2_a:
 	ld d, a;							// store integer
 	rla;								// in five byte form
@@ -149,6 +156,7 @@ log_2_a:
 	fint();								// int log (2^x)
 	fce();								// exit calculator
 
+;	// floating point to A subroutine
 fp_to_a:
 	call fp_to_bc;						// last value on calc stack to BC
 	ret c;								// return if out of range
@@ -164,6 +172,7 @@ fp_a_end:
 	pop af;								// unstack result and flags
 	ret;								// end of subroutine
 
+;	// print a floating-point number subroutine
 print_fp:
 	fwait();							// enter calculator
 	fmove();							// x, x
@@ -494,6 +503,7 @@ pf_e_sign:
 	ld b, 0;							// exponent to BC
 	jp out_num_1;						// immediate jump
 
+;	// CA = 10 * A + C subroutine
 ca_10a_plus_c:
 	ld l, a;							// A
 	ld h, 0;							// to HL
@@ -539,6 +549,7 @@ neg_byte:
 	pop bc;								// unstack exponent
 	ret;								// end of subroutine
 
+;	// fetch two numbers subroutine
 fetch_two:
 	push hl;							// stack HL
 	push af;							// and AF
@@ -576,6 +587,7 @@ fetch_two:
 	pop hl;								// and HL
 	ret;								// end of subroutine
 
+;	shift addend subroutine
 shift_fp:
 	and a;								// no exponent difference?
 	ret z;								// return if so
@@ -610,6 +622,7 @@ zeros_4_5:
 	ld de, $0000;						// clear DE
 	ret;								// end of subroutine
 
+;	// add back subroutine
 add_back:
 	inc e;								// add carry to rightmost byte
 	ret nz;								// return if no overflow
@@ -624,11 +637,13 @@ all_added:
 	exx;								// main register set
 	ret;								// end of subroutine
 
+;	// subtraction operation
 fp_subtract:
 	ex de, hl;							// swap pointers
 	call fp_negate;						// negate number to be subtracted
 	ex de, hl;							// restore pointers
 
+;	// addition operation
 fp_addition:
 	ld a, (de);							// first byte of
 	or (hl);							// both numbers zero?
@@ -775,6 +790,7 @@ go_nc_mlt:
 	xor a;								// clear carry flag
 	jp test_norm;						// immediate jump
 
+;	// the HL = HL * DE subroutine
 hl_hl_x_de:
 	push bc;							// stack BC
 	ld b, 16;							// 16-bit multiplication
@@ -798,6 +814,7 @@ hl_end:
 	pop bc;								// unstack BC
 	ret;								// end of subroutine
 
+;	// prepare to multiply or divide subroutine
 prep_m_d:
 	call test_zero;						// zero?
 	ret c;								// return if so with carry set
@@ -807,6 +824,7 @@ prep_m_d:
 	dec hl;								// point to exponen
 	ret;								// end of subroutine
 
+;	// multiplication operation
 fp_multiply:
 	ld a, (de);							// first bytes of
 	or (hl);							// both numbers zero?
@@ -1010,6 +1028,7 @@ report_overflow_2:
 	rst error;
 	defb overflow;
 
+;	// division operation
 fp_division:
 	call re_st_two;						// convert to full floating point form
 	ex de, hl;							// swap pointers
@@ -1095,6 +1114,7 @@ count_one:
 	sub c;								// to A
 	jp divn_expt;						// immediate jump
 
+;	// integer truncation towards zero subroutine
 fp_truncate:
 	ld a, (hl);							// exponent to A
 	and a;								// zero
@@ -1183,12 +1203,14 @@ ix_end:
 	pop de;								// stack end to DE
 	ret;								// end of subroutine
 
+;	// restack two subroutine
 re_st_two:
 	call restk_sub;						// perform re-stack twice
 
 restk_sub:
 	ex de, hl;							// swap pointers
 
+;	// restack subroutine
 fp_re_stack:
 	ld a, (hl);							// first byte to A
 	and a;								// large integer?

@@ -17,6 +17,8 @@
 ;	// addresses $3d00 to $3fff are trapped by the divIDE / divMMC hardware
 ;	// these addresses must not contain code or when the PC is in this range, paging will take place.
 
+;	// --- DATA TABLES ---------------------------------------------------------
+
 	org $3d00
 copyright:
 	defb "CHLOE 280SE 512K Personal Color Computer", ctrl_enter;
@@ -201,7 +203,7 @@ tbl_addrs:
 	defw fp_get_argt;
 	defw fp_truncate;
 	defw fp_calc_2;
-	defw fp_e_to_fp;
+	defw fp_hex_str;
 	defw fp_re_stack;
 	defw fp_series_xx;
 	defw fp_stk_const_xx;
@@ -470,7 +472,7 @@ p_copy:
 	defw copy;
 
 p_open:
-	defb num_exp, ',', str_exp_no_f_ops;
+	defb num_exp, ',', str_exp, var_syn;
 	defw open;
 
 p_close:
@@ -519,7 +521,7 @@ p_save:
 
 p_out:
 	defb two_c_s_num_no_f_ops;
-	defw fn_out;
+	defw c_out;
 
 p_locate:
 	defb two_c_s_num_no_f_ops;
