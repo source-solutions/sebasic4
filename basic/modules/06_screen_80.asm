@@ -639,7 +639,10 @@ po_each:
 
 po_tr_sp:
 	ld a, d;							// offset to A
-	cp 3;								// RND, INKEY$ or PI?
+;	cp 3;								// RND, INKEY$ or PI? 
+	cp 3;								// FN?
+	jr z, po_sv_sp;						// jump if so
+	cp 7;								// RND, INKEY$, PI, FN, BIN$, OCT$, HEX$
 	ret c;								// return if so
 
 po_sv_sp:
