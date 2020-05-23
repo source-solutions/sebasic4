@@ -14,8 +14,11 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
+;	// --- BASIC LINE AND COMMAND INTERPRETATINO -------------------------------
+
 	org $1ae0
 
+;	// BASIC main parser
 line_scan:
 	res 7, (iy + _flags);				// signal checking syntax
 	call e_line_no;						// point to first code after a line number
@@ -25,11 +28,12 @@ line_scan:
 	ld (err_nr), a;						// set err_nr to OK
 	jr stmt_l_1;						// immediate jump
 
+;	// statement loop
 stmt_loop:
 	rst next_char;						// get next character
 
 stmt_l_1:
-	call set_work;						// handle trace and clear workspace
+	call test_trace;					// handle trace and clear workspace
 	inc (iy + _subppc);					// increase subppc each time around
 	jp m, report_syntax_err;			// error if more than 127 statements
 	rst get_char;						// get current character
@@ -88,6 +92,7 @@ get_param:
 	dec b;								// LD B, 255
 	ret;								// indirect jump
 
+;	// separator subroutine
 separator:
 	rst get_char;						// get current character
 	cp c;								// compare with entry
@@ -95,6 +100,7 @@ separator:
 	rst next_char;						// get next character
 	ret;								// end of subroutine
 
+;	// statement return subroutine
 stmt_ret:
 	call break_key;						// break?
 	jr c, stmt_r_1;						// jump if not
@@ -109,6 +115,7 @@ stmt_r_1:
 	bit 7, h;							// statement in editing area?
 	jr z, line_new;						// jump if not
 
+;	// run line entry point
 line_run:
 	ld hl, -2;							// line in editing area
 	ld (ppc), hl;						// store in sysvar
@@ -119,6 +126,7 @@ line_run:
 	ld a, (nsppc);						// number of next statement to A
 	jr next_line;						// immediate jump
 
+;	// new line subroutine 
 line_new:
 	call line_addr;						// get starting address
 	ld a, (nsppc);						// statement number to A
@@ -129,15 +137,19 @@ line_new:
 	and %11000000;						// end of program?
 	jr z, line_use;						// jump if not
 
+;	// END command
+;	// FIXME - END should close all files and streams
 c_end:
 	ld bc, -2;							// line zero
 	ld (ppc), bc;						// set line number
 	ld l, ok;							// error to A
 	jp error_3;							// generate error message
 
+;	// REM command
 rem:
 	pop af;								// discard statement return address
 
+;	// line end subroutine
 line_end:
 	call unstack_z;						// return if checking syntax
 	ld hl, (nxtlin);					// get address
@@ -146,6 +158,7 @@ line_end:
 	ret nz;								// return if so
 	xor a;								// signal statement zero
 
+;	// line use routine
 line_use:
 	cp 1;								// signal
 	adc a, 0;							// statement one
@@ -161,6 +174,7 @@ line_use:
 	add hl, de;							// first character to DE
 	inc hl;								// start of line after to HL
 
+;	// next line routine
 next_line:
 	ld (nxtlin), hl;					// set next line
 	ex de, hl;							// swap pointers
@@ -179,12 +193,14 @@ report_stmt_msng:
 	rst error;							// else
 	defb statement_missing;				// error
 
+;	// check end subroutine
 check_end:
 	call syntax_z;						// checking syntax?
 	ret nz;								// return if not
 	pop bc;								// discard scan_loop and
 	pop bc;								// stmt_ret return addresses
 
+;	// statement next subroutine
 stmt_next:
 	rst get_char;						// get current character
 	cp ctrl_enter;						// carriage return
@@ -194,6 +210,7 @@ stmt_next:
 	rst error;							// else
 	defb syntax_error;					// error
 
+;	// command class table
 class_tbl:
 	defb class_00 - $;					// no operands
 	defb class_01 - $;					// a variable must follow
@@ -208,6 +225,7 @@ class_tbl:
 	defb class_0a - $;					// an expression must follow
 	defb class_0b - $;					// class_0a with no furhter operands
 
+;	// command classes 0, 1, 3, 5, 7, 9, B
 class_07:
 	call class_06;						// a number must follow
 	jr class_00;						// no futher operands
@@ -241,6 +259,7 @@ class_05:
 class_01:
 	call look_vars;						// variable exists?
 
+;	// variable in assignment subroutine
 var_a_1:
 	ld (iy + _flagx), 0;				// clear flagx
 	jr nc, var_a_2;						// jump if variable exists
@@ -268,12 +287,14 @@ var_a_3:
 	ld (dest), hl;						// and destination
 	ret;								// end of subroutine
 
+;	// command class 2
 class_02:
 	pop bc;								// discard scan_loop return address
 	call val_fet_1;						// make assignment
 	call check_end;						// next statement if checking syntax
 	ret;								// indirect jump to stmt-ret in runtime
 
+;	// fetch a value subroutine
 val_fet_1:
 	ld a, (flags);						// address system variable
 
@@ -289,6 +310,7 @@ val_fet_2:
 	jp nz, let;							// jump if not
 	ret;								// else return
 
+;	// command class 4
 class_04:
 	call look_vars;						// find variable
 	push af;							// stack AF
@@ -299,9 +321,11 @@ class_04:
 	pop af;								// unstack AF
 	jr var_a_1;							// immediate jump
 
+;	// expect numeric / string expression subroutine
 next_2num:
 	rst next_char;						// advance ch_add
 
+;	// command class 8 / expect two numbers subroutine
 class_08:
 expt_2num:
 	call expt_1num;						// get expression
@@ -311,6 +335,7 @@ expt_2num:
 expt_num:
 	rst next_char;						// advance ch_add
 
+;	// command class 6 / expect one number subroutine
 class_06:
 expt_1num:
 	call scanning;						// evaluate expression
@@ -321,6 +346,7 @@ report_syntax_err:
 	rst error;							// ekse
 	defb syntax_error;					// error
 
+;	// command class A / expect string expression subroutine
 ;	// UnoDOS 3 entry point
 	org $1c8c
 class_0a:
@@ -330,12 +356,14 @@ expt_exp:
 	ret z;								// return if so
 	jr report_syntax_err;				// else error
 
+;	// fetch a number subroutine
 fetch_num:
 	cp ctrl_enter;						// carriage return?
 	jr z, use_zero;						// jump if so
 	cp ':';								// colon?
 	jr nz, expt_1num;					// jump if not
 
+;	// use zero subroutine
 use_zero:
 	call unstack_z;						// return if checking syntax
 	fwait();							// enter calculator
@@ -343,6 +371,7 @@ use_zero:
 	fce();								// exit calculator
 	ret;								// end of subroutine
 
+;	// IF command
 c_if:
 	pop bc;								// discard stmt-ret return address
 	call syntax_z;						// checking syntax
@@ -357,6 +386,7 @@ c_if:
 if_1:
 	jp stmt_l_1;						// next statement
 
+;	// FOR command
 c_for:
 	cp tk_step;							// step token?
 	jr nz, f_use_1;						// jump if not
@@ -447,6 +477,7 @@ report_for_wo_next:
 	rst error;
 	defb for_without_next;
 
+;	// look program subroutine
 look_prog:
 	ld a, (hl);							// current character
 	cp ':';								// colon?
@@ -480,6 +511,7 @@ look_p_2:
 	ret nc;								// return with occurence
 	jr look_p_1;						// immediate jump
 
+;	// NEXT command
 c_next:
 	bit 1, (iy + _flagx);				// variable found
 	jp nz, report_undef_var;			// jump if not
@@ -512,6 +544,7 @@ report_next_wo_for:
 	rst error;
 	defb next_without_for;
 
+;	// next loop subroutine
 next_loop:
 	fwait();							// enter calculator
 	fgt(1);								// l
@@ -534,6 +567,7 @@ next_2:
 	scf;								// set carry flag
 	ret;								// end of subroutine
 
+;	// READ command
 read_3:
 	rst next_char;						// next character
 
@@ -569,6 +603,7 @@ read_2:
 	call check_end;						// ext statement if checking syntax
 	ret;								// end of routine
 
+;	// DATA command
 data:
 	call syntax_z;						// checking syntax?
 	jr nz, data_2;						// jump if so
@@ -583,12 +618,14 @@ data_1:
 data_2:
 	ld a, tk_data;						// data
 
+;	// pass by subroutine
 pass_by:
 	ld b, a;							// token to B
 	cpdr;								// back to find token
 	ld de, $0200;						// find following statement (D - 1)
 	jp each_stmt;						// immediate jump
 
+;	// RESTORE command
 restore:
 	call find_line;						// valid line number to HL and BC
 
@@ -600,6 +637,7 @@ rest_run:
 	ld (datadd), hl;					// and store in dat_add
 	ret;								// end of routine
 
+;	// RANDOMIZE command
 randomize:
 	call find_int2;						// get operand
 	ld a, c;							// is it
@@ -611,11 +649,13 @@ rand_1:
 	ld (seed), bc;						// result to seed
 	ret;								// end of routine
 
+;	// CONT command
 cont:
 	ld hl, (oldppc);					// line number to HL
 	ld d, (iy + _osppc);				// statement number to D
 	jr goto_2;							// immediate jump
 
+;	// find line subroutine
 find_line:
 	call find_int2;						// line number to BC
 	ld l, c;							// resault
@@ -628,25 +668,29 @@ report_undef_ln_no:
 	rst error;							// else
 	defb undefined_line_number;			// error
 
+;	// GOTO command
 goto:
 	call find_line;						// valid line number to HL and BC
 	ld d, 0;							// zero statement
 
 goto_2:
 	ld (newppc), hl;					// store line number
-	ld (iy + $0a), d;					// store statement number
+	ld (iy + _nsppc), d;				// store statement number
 	ret;								// end of routine
 
-fn_out:
+;	// OUT command
+c_out:
 	call two_param;						// get operands
 	out (c), a;							// perform out
 	ret;								// end of routine
 
+;	// POKE command
 poke:
 	call two_param;						// get operands
 	ld (bc), a;							// store A in address BC
 	ret;								// end of routine
 
+;	// two parameters subroutine
 two_param:
 	call fp_to_a;						// first parameter
 	jr c, report_overflow;				// error if out of range
@@ -659,6 +703,7 @@ two_p_1:
 	pop af;								// unstack first parameter
 	ret;								// end of subroutine
 
+;	// find integer subroutine
 find_int1:
 	call fp_to_a;						// value on calculator stack to A
 	jr find_i_1;						// immediate jump
@@ -674,17 +719,22 @@ report_overflow:
 	rst error;							// else
 	defb overflow;						// error
 
+;	// RUN command
 run:
 	rst get_char;						// get character
 	cp ctrl_enter;						// test for carriage return
 	jr z, run_zero;						// jump if so
 	cp ':';								// test for next statement
 	jr z, run_zero;						// jump if so
+
+;	FIXME: replace this with call to expt_exp?
+
 	call scanning;						// evaluate expression
 	bit 6, (iy + _flags);				// string or numeric?
 	call nz, unstack_z;					// return now if checking syntax
 	jp z, run_app;						// jump if string
 
+;	// RUN <line> command
 c_run:
 	call goto;							// set newppc
 	ld bc, 0;							// restore value
@@ -701,6 +751,7 @@ var_end_hl:
 	dec hl;								// to HL
 	ret;								// end of subroutine
 
+;	// CLEAR command
 clear:
 	call find_int2;						// get operand
 
@@ -745,6 +796,7 @@ clear_2:
 	ex de, hl;							// stmt_ret address to HL
 	jp (hl);							// immediate jump
 
+;	// GOSUB command
 gosub:
 	pop de;								// stmt_ret address to DE
 	ld h, (iy + _subppc);				// get statement number
@@ -759,6 +811,7 @@ gosub:
 	call goto;							// set newppc and nsppc
 	ld bc, 20;							// 20 bytes required
 
+;	// test room subroutine
 test_room:
 	ld hl, (stkend);					// stack end to HL
 	add hl, bc;							// add value in BC
@@ -781,6 +834,7 @@ report_oo_mem:
 ;	ld b, h;
 ;	ret;
 
+;	// RETURN command
 return:
 	pop bc;								// stmt-ret address to BC
 	pop hl;								// error address to HL
@@ -801,6 +855,7 @@ report_ret_wo_gosub:
 	rst error;							// then
 	defb return_without_gosub;			// error
 
+;	// WAIT command
 wait:
 	call flush_kb;						// signal no key
 	call find_int2;						// jump here from entry point to get operand
@@ -828,6 +883,7 @@ wait_end:
 	call flush_kb;						// signal no key
 	ret;								// end of routine
 
+;	break key subroutine
 break_key:
 	ld a, $7f;							// high byte of I/O address
 	in a, (ula);						// read byte
@@ -838,6 +894,8 @@ break_key:
 	rra;								// set carry if shift pressed
 	ret;								// end of subroutine
 
+;	// DEF FN command
+;	// FIXME: extend DEF functionality
 def_fn:
 	call syntax_z;						// checking syntax?
 	jr z, def_fn_1;						// jump if not
@@ -903,12 +961,14 @@ def_fn_7:
 	jp nz, report_syntax_err;			// jump if not
 	call check_end;						// next statement if checking syntax
 
+;	exit when checking syntax subroutine
 unstack_z:
 	call syntax_z;						// checking syntax
 	pop hl;								// return address to HL
 	ret z;								// return if not in runtime
 	jp (hl);							// else immediate jump
 
+;	// PRINT command
 print:
 	ld a, 2;							// channel S
 
@@ -925,7 +985,7 @@ print_2:
 	jr z, print_4;						// jump if so
 
 print_3:
-	call pr_posn_1 ;					// position controls?
+	call pr_posn_1;						// position controls?
 	jr z, print_3;						// loop if so
 	call pr_item_1;						// single print item
 	call pr_posn_1;						// more position controls?
@@ -935,38 +995,38 @@ print_4:
 	cp ')';								// closing parenthesis?
 	ret z;								// return if so
 
+;	// print carraige return subroutine
 print_cr:
 	call unstack_z;						// return if checking syntax
 	ld a, ctrl_enter;					// carriage return
 	rst print_a;						// print it
 	ret;								// end of subroutine
 
+;	// print items subroutine
 pr_item_1:
 	rst get_char;						// get current character
-;	cp tk_using;
-;	jr nz, pr_item_2;
-;	call next_2num;
-;	call unstack_z;
-;	call stk_to_bc;
-;	ld a, ctrl_at;
-;	jr pr_at_tab;
-;
-;pr_item_2:
-;	cp tk_tab;
-;	jr nz, pr_item_3;
-;	rst next_char;
-;	call expt_1num;
-;	call unstack_z;
-;	call find_int2;
-;	ld a, ctrl_tab;
-;
-;pr_at_tab:
-;	rst print_a;
-;	ld a, c;
-;	rst print_a;
-;	ld a, b;
-;	rst print_a;
-;	ret;
+	cp tk_spc;							// is it SPC?
+	jr nz, pr_item_2;					// jump if not
+	rst next_char;						// next character
+	call expt_1num;						// expect one number
+	call unstack_z;						// return if checking syntax
+	call find_int1;						// get number
+	ld d, a;							// number to D
+	jp po_space;						// immediate jump
+
+pr_item_2:
+	cp tk_tab;							// is it TAB?
+	jr nz, pr_item_3;					// jump if not
+	rst next_char;						// next character
+	call expt_1num;						// expect one number
+	call unstack_z;						// return if checking syntax
+	call find_int1;						// get number
+	call po_fetch;						// get line/column
+	ld c, a;							// tab position to C
+	ld a, 82;							// offset
+	sub c;								// calculate new position
+	ld c, a;							// store it in C
+	jp cl_set;							// update screen position
 
 pr_item_3:
 	call str_alter;						// stream change?
@@ -987,6 +1047,7 @@ pr_string:
 	rst print_a;						// print it
 	jr pr_string;						// loop until done
 
+;	// end of printing subroutine
 pr_end_z:
 	cp ')';								// closing parenthesis
 	ret z;								// return if so
@@ -999,6 +1060,7 @@ pr_st_end:
 	cp ':';								// colon?
 	ret;								// end of subroutine
 
+;	// print position subroutine
 pr_posn_1:
 	rst get_char;						// get current character
 	cp ';';								// semi-colon?
@@ -1026,6 +1088,7 @@ pr_posn_4:
 	cp a;								// clear zero flag
 	ret;								// end of subroutine
 
+;	// alter stream subroutine
 str_alter:
 	cp '#';								// number sign?
 	scf;								// set carry flag
@@ -1043,6 +1106,7 @@ str_alter_1:
 	and a;								// clear carry flag
 	ret;								// end of subroutine
 
+;	// INPUT command
 input:
 	call syntax_z;						// checking syntax?
 	jr z, input_1;						// jump if so
@@ -1059,6 +1123,12 @@ input_1:
 	cp b;								// current position above lower screen?
 	jr c, input_2;						// jump if so
 	ld c, 81;							// leftmost position
+
+	bit 1, (iy + _flags2);				// test for 40 column mode
+	jr z, input_1a;						// jump if not
+	ld c, 41;							// leftmost position
+
+input_1a:	
 	ld b, a;							// set print position to top of lower screen
 
 input_2:
@@ -1203,6 +1273,7 @@ in_next_2:
 	jp z, in_item_1;					// loop until done
 	ret;								// end of subroutine
 
+;	// in assign subroutine
 in_assign:
 	ld hl, (worksp);					// first location of workspace
 	ld (ch_add), hl;					// set ch_add to point to it
@@ -1220,11 +1291,13 @@ in_assign:
 in_stop:
 	call unstack_z;						// return if checking syntax
 
+;	// STOP command
 stop:
 ;	rst error;							// then
 ;	defb break;							// error
 	jp report_break;					// clear keyboard buffer and report break
 
+;	// in channel K subroutine
 in_chan_k:
 	ld hl, (curchl);					// base address of current channel
 	inc hl;								// high byte of output routine
@@ -1235,6 +1308,7 @@ in_chan_k:
 	cp 'K';								// K?
 	ret;								// end of subroutine
 
+;	// calculator stack to BC subroutine
 stk_to_bc:
 	call stk_to_a;						// first number to A
 	ld b, a;							// store in B
@@ -1246,10 +1320,356 @@ stk_to_bc:
 	ld c, a;							// second number to C
 	ret;								// end of subroutine
 
+;	// calculator stack to A subroutine
 stk_to_a:
 	call fp_to_a;						// last value to A
 	jp c, report_overflow;				// error if out of range
 	ld c, 1;							// positive sign to C
 	ret z;								// return if positive
 	ld c, 255;							// negative sign to C
+	ret;								// end of subroutine
+
+;	// RENUM command
+renum:
+	ld hl, (stkend);					// value on stack end to HL
+	ld b, 2;							// two values required
+	cp ctrl_enter;						// carriage return?
+	jr z, renum_1;						// jump if so
+	cp ':';								// next statement?
+	jr z, renum_1;						// jump if so
+	call expt_1num;						// number expected
+	ld b, 1;							// one value required
+
+renum_param:
+	rst get_char;						// get next character
+	cp ',';								// comma?
+	jr nz, renum_1;						// jump if not
+	push bc;							// stack BC
+	call expt_num;						// test for final number
+	pop bc;								// unstack BC
+	djnz renum_param;					// loop for additional parameters
+
+renum_1:
+	call check_end;						// end of line?
+	ld a, b;							// B to A
+	cp 2;								// two values required?
+	jr z, line_10;						// jump if so
+	cp 1;								// one value required?
+	jr z, step_10;						// jump if so
+	jr renum_2;							// immediate jump
+
+renum_error:
+	rst error;
+	defb syntax_error;
+
+line_10:
+	fwait();							// stack
+	fstk10();							// 10 as
+	fce();								// first line
+
+step_10:
+	fwait();							// stack
+	fstk10();							// 10 as
+	fce();								// step
+
+renum_2:
+	fwait();							// enter calculator
+	fst(1);								// store step in mem-1
+	fdel();								// remove it
+	fst(0);								// store start in mem-0
+	fdel();								// remove it
+	fce();								// exit calulator
+	ld hl, (vars);						// start of variables to HL
+	ld de, (prog);						// start of program to DE
+	or a;								// is there a program
+	sbc hl, de;							// to renumber?
+	ret z;								// return if not
+	call lines_to_de;					// get line count
+	ld hl, (mem_1_2);					// get increment
+	ld a, l;							// is increment
+	or h;								// zero?
+	jr z, renum_error;					// error if no increment
+	call hl_hl_x_de;					// call hl=hl*de
+	jr c, renum_error;					// error with overflow
+	ex de, hl;							// offset of last number from first number
+	ld hl, (mem_0_2);					// get new first line number
+	add hl, de;							// new last line number
+	ld de, 16384;						// max line number is 16383
+	or a;								// compare
+	sbc hl, de;							// in range?
+	jr nc, renum_error;					// error if not
+	ld hl, (prog);						// first line address
+
+renum_3:
+	call next_one;						// get next line address
+	inc hl;								// point to
+	inc hl;								// line length
+	ld (mem_4_3), hl;					// store it
+	inc hl;								// point to
+	inc hl;								// command address
+	ld (mem_2), de;						// store it
+
+renum_4:
+	ld a, (hl);							// get character
+	call number;						// skip floating point if required
+	cp ctrl_enter;						// carriage return?
+	jr z, renum_5;						// jump if so
+	call renum_line;					// parse line
+	jr renum_4;							// loop until done
+
+renum_5:
+	ld de, (mem_2);						// get next line address
+	ld hl, (vars);						// get end of program
+	and a;								// test for
+	sbc hl, de;							// end of program
+	ex de, hl;							// start of current line to HL
+	jr nz, renum_3;						// loop until end reached
+	call lines_to_de;					// get number of lines in DE
+	ld b, d;							// transfer
+	ld c, e;							// to BC
+	ld de, 0;							// clear DE
+	ld hl, (prog);						// first line address to HL
+
+renum_6:
+	push bc;							// stack number of lines to update
+	push de;							// stack index of current line
+	push hl;							// stack current line address
+	ld hl, (mem_1_2);					// get increment
+	call hl_hl_x_de;					// calculate offset
+	ld de, (mem_0_2);					// get new first line number
+	add hl, de;							// combine to produce
+	ex de, hl;							// current line number in DE
+	pop hl;								// unstack current address
+	ld (hl), d;							// store
+	inc hl;								// new
+	ld (hl), e;							// line
+	inc hl;								// number
+	ld c, (hl);							// get
+	inc hl;								// new
+	ld b, (hl);							// line
+	inc hl;								// length
+	add hl, bc;							// point to next line
+	pop de;								// unstack index
+	inc de;								// increment it
+	pop bc;								// unstack line count
+	dec bc;								// reduce it
+	ld a, c;							// no more
+	or b;								// lines?
+	jr nz, renum_6;						// loop until done
+	ret;								// exit
+
+renum_line:
+	inc hl;								// point to next character
+	ld (mem_4_1), hl;					// store it
+	ex de, hl;							// next character address to DE
+	ld bc, 5;							// five tokens may be followed by a line
+	ld hl, renum_tbl;					// table of tokens
+	cpir;								// match found?
+	ex de, hl;							// next character address to HL
+	ret nz;								// return if no match
+	ld c, 0;							// BC = 0
+
+renum_line_1:
+	ld a, (hl);							// get next character
+	cp ' ';								// space?
+	jr z, renum_line_3;					// jump if so
+	call numeric;						// digit?
+	jr nc, renum_line_3;				// jump if so
+	cp '.';								// decimal point?
+	jr z, renum_line_3;					// jump if so
+	cp ctrl_number;						// hidden number?
+	jr z, renum_line_4;					// jump if so
+	or %00100000;						// make lower case
+	cp 'e';								// exponent?
+	jr nz, renum_line_2;				// jump if not
+	ld a, c;							// digits
+	or b;								// found?
+	jr nz, renum_line_3;				// jump if so
+
+renum_line_2:
+	ld hl, (mem_4_1);					// address next character
+	ret;								// return
+
+renum_line_3:
+	inc bc;								// increment number digit count
+	inc hl;								// point to next character
+	jr renum_line_1;					// jump to parse character
+
+renum_line_4:
+	ld (mem_2_2), bc;					// number of digits in old reference
+	push hl;							// stack current character address
+	call number;						// skip floating point representation
+	call fn_skpovr_1;					// skip spaces
+	ld a, (hl);							// get new character
+	pop hl;								// unstack current character address
+	cp ':';								// next statement?
+	jr z, renum_line_5;					// jump if so
+	cp ctrl_enter;						// end of line?
+	ret nz;								// return if not
+
+renum_line_5:
+	inc hl;								// point to next character
+	call stack_num;						// floating point number to calculator stack
+	call fp_to_bc;						// line number to BC
+	ld h, b;							// BC
+	ld l, c;							// to HL
+	call line_addr;						// get line address
+	jr c, renum_line_6;					// jump if line number too large
+	jr z, renum_line_7;					// jump if line exists
+	ld a, (hl);							// end of
+	and %11000000;						// of BASIC?
+	jr z, renum_line_7;					// jump if not
+
+renum_line_6:
+	ld hl, 16383;						// use line 16383
+	jr renum_line_8;					// immediate jump
+
+renum_line_7:
+	ld (mem_3_4), hl;					// store referenced line address
+	call count_to_de;					// number of previous lines to DE
+	ld hl, (mem_1_2);					// get increment
+	call hl_hl_x_de;					// HL * DE to HL
+	ld de, (mem_0_2);					// get stating line number
+	add hl, de;							// new referenced line number to HL
+
+renum_line_8:
+	ld de, mem_2_4;						// temporary buffer
+	push hl;							// stack line number
+	call ln_to_str;						// create string representation
+	ld e, b;							// number of digits
+	inc e;								// in line number
+	ld d, 0;							// to DE
+	push de;							// stack it
+	push hl;							// stack address of first non-zero
+	ld h, d;							// LD H, 0
+	ld l, e;							// number of digits in new line number to HL
+	ld bc, (mem_2_2);					// number of digits in old line number to BC
+	or a;								// prepare for subtraction
+	sbc hl, bc;							// number of digits changed?
+	ld (mem_2_2), hl;					// store difference
+	jr z, renum_line_10;				// jump if same length
+	jr c, renum_line_9;					// jump if fewer digits than old
+	ld b, h;							// additional space
+	ld c, l;							// required to BC
+	ld hl, (mem_4_1);					// start address of old line number
+	call make_room;						// make space
+	jr renum_line_10;					// immediate jump
+
+renum_line_9:
+	dec bc;								// for each additional digit in old line
+	dec e;								// reduce number in new line
+	jr nz, renum_line_9;				// loop until done
+	ld hl, (mem_4_1);					// start address of old line number
+	call reclaim_2;						// remove excess bytes
+
+renum_line_10:
+	ld de, (mem_4_1);					// start address of old line number
+	pop hl;								// unstack address of first non-zero
+	pop bc;								// unstack digits in new line number
+	ldir;								// copy new line number into place
+	ex de, hl;							// address after line number text to HL
+	ld (hl), 14;						// store hidden number marker
+	pop bc;								// unstack new line number
+	inc hl;								// address of next position in line to HL
+	push hl;							// stack it
+	call stack_bc;						// put it on the calculator stack
+	pop de;								// unstack next position in line
+	ld bc, 5;							// five bytes
+	ldir;								// copy them
+	ex de, hl;							// address of character after fp to HL
+	push hl;							// stack it
+	call fp_to_bc;						// remove from calculator stack
+	ld hl, (mem_4_3);					// address of current line's byte length
+	push hl;							// stack it
+	ld e, (hl);							// existing length
+	inc hl;								// of current line
+	ld d, (hl);							// to DE
+	ld hl, (mem_2_2);					// change in line length
+	add hl, de;							// new length of
+	ex de, hl;							// current line to DE
+	pop hl;								// unstack address of current line's length
+	ld (hl), e;							// store
+	inc hl;								// new
+	ld (hl), d;							// length
+	ld hl, (mem_2);						// next line
+	ld de, (mem_2_2);					// change in length of current line
+	add hl, de;							// new address of next line
+	ld (mem_2), hl;						// store it
+	pop hl;								// unstack address of character after fp
+	ret;								// end of subroutine
+
+lines_to_de:
+	ld hl, (vars);						// get variables address
+	ld (mem_3_4), hl;					// store it
+	jr lines_to_de_1;					// immediate jump
+
+count_to_de:
+	ld hl, (prog);						// start of program
+	ld de, (mem_3_4);					// end address
+	or a;								// prepare for subtraction
+	sbc hl, de;							// program present?
+	jr z, lines_to_de_4;				// jump if no program
+
+lines_to_de_1:
+	ld hl, (prog);						// start address of program
+	ld bc, 0;							// initialize counter
+
+lines_to_de_2:
+	push bc;							// stack counter
+	call next_one;						// get address of next line
+	ld hl, (mem_3_4);					// end address
+	and a;								// prepare for subtraction
+	sbc hl, de;							// end reached?
+	jr z, lines_to_de_3;				// jump if so
+	ex de, hl;							// address of current line to HL
+	pop bc;								// unstack line number count
+	inc bc;								// increment it
+	jr lines_to_de_2;					// immediate jump
+
+lines_to_de_3:
+	pop de;								// unstack number of lines
+	inc de;								// increment it
+	ret;								// and return
+
+lines_to_de_4:
+	ld de, 0;							// no program found
+	ret;								// so return
+
+ln_to_str:
+	push de;							// store buffer address
+	ld bc, -10000;						// insert
+	call insert_dgt;					// ten-thousands
+	ld bc, -1000;						// insert
+	call insert_dgt;					// thousands
+	ld bc, -100;						// insert
+	call insert_dgt;					// hundreds
+	ld c, -10;							// insert
+	call insert_dgt;					// tens
+	ld a, l;							// insert
+	add a, '0';							// ones
+	ld (de), a;							// store in buffer
+	inc de;								// point to next position
+	ld b, 4;							// skip four leading zeros
+	pop hl;								// unstack start address
+
+ln_to_str_1:
+	ld a, (hl);							// get character
+	cp '0';								// leading zero?
+	ret nz;								// return if not
+	ld (hl), ' ';						// replace with space
+	inc hl;								// next location
+	djnz ln_to_str_1;					// loop until done
+	ret;								// end of subroutine
+
+insert_dgt:
+	xor a;								// LD A, 0
+
+insert_dgt_1:
+	add hl, bc;							// add negative value
+	inc a;								// overflow?
+	jr c, insert_dgt_1;					// jump if not
+	sbc hl, bc;							// undo last step
+	add a, '0' - 1;						// convert to ASCII
+	ld (de), a;							// store in buffer
+	inc de;								// next location
 	ret;								// end of subroutine

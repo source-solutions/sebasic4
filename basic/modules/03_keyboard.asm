@@ -17,6 +17,9 @@
 ;	// keyboard routines are called during maskable interrupt and avoid
 ;	// use of IY because the maskable interrupt routine does not stack it
 
+;	// --- KEYBOARD ROUTINES ---------------------------------------------------
+
+;	// keyboard scanning subroutine
 key_scan:
 	ld bc, $fefe;						// B = counter, C = port
 	ld de, $ffff;						// set DE to no key
@@ -59,6 +62,7 @@ key_done:
 	cp 24;								// check for shift + symbol
 	ret;								// end of subroutine
 
+;	// keyboard subroutine
 keyboard:
 	call key_scan;						// get key pair in DE
 	ret nz;								// return if no key
@@ -120,6 +124,7 @@ k_end:
 	ld (iy - _k_head), a;				// new head pointer to sysvar
 	ret;								// end of subroutine
 
+;	// repeating key subroutine
 k_repeat:
 	inc hl;								// set 5 call counter
 	ld (hl), 5;							// to 5
@@ -132,6 +137,7 @@ k_repeat:
 	ld a, (hl);							// get code
 	jr k_end;							// immediate jump
 
+;	// key test subroutine
 k_test:
 	ld b, d;							// copy shift byte
 	ld a, e;							// move key number
@@ -164,6 +170,7 @@ k_set_7:
 	or %10000000;						// set high bit
 	ret;								// end of subroutine
 
+;	// keyboard decoding subroutine
 k_decode:
 	ld a, e;							// copy main code
 
@@ -193,7 +200,7 @@ k_enter:
 	ret z;								// return if not
 	bit 5, b;							// shift?
 	ret nz;								// return if so
-	ld a, 'Z';							// make it tab
+	ld a, 'E';							// make it E
 	ret;								// done
 
 k_space:
@@ -201,7 +208,7 @@ k_space:
 	ret z;								// return if not
 	bit 5, b;							// shift?
 	ret nz;								// return if so
-	ld a, 'X';							// make it tab
+	ld a, 'S';							// make it S
 	ret;								// done
 
 k_digit:
@@ -220,6 +227,7 @@ k_look_up:
 	ld	a, (hl);						// get character
 	ret;								// end of subroutine
 
+;	// flush keyboard buffer subroutine
 flush_kb:
 	ld hl, k_head;						// point to sysvar;
 	ld a, (hl);							// pointer to A

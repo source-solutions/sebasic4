@@ -14,6 +14,7 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
+;	// --- FILE HANDLING ROUTINES ----------------------------------------------
 
 ; 	// MS-DOS records file dates and times as packed 16-bit values.
 ;	// An MS-DOS date has the following format:
@@ -36,7 +37,7 @@
 
 	include "../boot/os.inc";				// label definitions
 
-	org $4800;
+	org $5000;
 
 run_app:
 	call unstack_z;						// return if checking syntax
@@ -375,48 +376,48 @@ write_chunk:
 	jp c, report_file_not_found;		// jump if error
 	ret;								// else done
 
-dload:
-	call unstack_z;						// return if checking syntax
-	call get_path;						// path to buffer
-	ld ix, $5a00;						// pointer to path
+; dload:
+; 	call unstack_z;						// return if checking syntax
+; 	call get_path;						// path to buffer
+; 	ld ix, $5a00;						// pointer to path
 
-	call f_open_read_ex;				// open file for reading
-	call f_get_stats;					// get program length
+; 	call f_open_read_ex;				// open file for reading
+; 	call f_get_stats;					// get program length
 
-;	// remove garbage
-	ld de, (vars);						// VARS to DE
-	call var_end_hl;					// varaibles end marker location to HL
-	call reclaim_1;						// reclaim varibales area
+; ;	// remove garbage
+; 	ld de, (vars);						// VARS to DE
+; 	call var_end_hl;					// varaibles end marker location to HL
+; 	call reclaim_1;						// reclaim varibales area
 
-;	// make space
-	ld bc, (f_size);					// length of data to BC
-	push hl;							// save PROG
-	push bc;							// save length
-	call make_room;						// make space for data
+; ;	// make space
+; 	ld bc, (f_size);					// length of data to BC
+; 	push hl;							// save PROG
+; 	push bc;							// save length
+; 	call make_room;						// make space for data
 	
-;	// load data
-	ld a, (handle);						// restore handle
-	pop bc;								// restore length
-	pop ix;								// restore PROG
+; ;	// load data
+; 	ld a, (handle);						// restore handle
+; 	pop bc;								// restore length
+; 	pop ix;								// restore PROG
 
-	jp f_read_in;						// load data
+; 	jp f_read_in;						// load data
 
-dsave:
-	call unstack_z;						// return if checking syntax
-	call get_path;						// path to buffer
-	ld ix, $5a00;						// pointer to path
-	call f_open_write_al;				// open file for writing
+; dsave:
+; 	call unstack_z;						// return if checking syntax
+; 	call get_path;						// path to buffer
+; 	ld ix, $5a00;						// pointer to path
+; 	call f_open_write_al;				// open file for writing
 
-;	// get data length
- 	ld hl, (e_line);					// end of variables to HL
- 	ld de, (vars);						// start of variables to DE
- 	sbc hl, de;							// get program length
-	ld ixh, d;							// start of variables to
-	ld ixl, e;							// IX
-	ld c, l;							// length of variables to
-	ld b, h;							// BC
+; ;	// get data length
+;  	ld hl, (e_line);					// end of variables to HL
+;  	ld de, (vars);						// start of variables to DE
+;  	sbc hl, de;							// get program length
+; 	ld ixh, d;							// start of variables to
+; 	ld ixl, e;							// IX
+; 	ld c, l;							// length of variables to
+; 	ld b, h;							// BC
 
-	jp f_write_out;						// save data
+; 	jp f_write_out;						// save data
 
 kill:
 	call unstack_z;						// return if checking syntax

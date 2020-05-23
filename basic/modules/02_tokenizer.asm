@@ -14,6 +14,9 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
+;	// --- TOKENIZER AND DETOKENIZER ROUTINES ----------------------------------
+
+;	// tokenizer routine
 tokenizer:
 	res 7, (iy + _flags);				// force edit mode
 	set 7, (iy + _err_nr);				// set no error
@@ -174,4 +177,92 @@ tokenizer_17:
 	ret nc;								// return if non-alpha
 	res 5,a;							// make upper case
 	set 7, c;							// set flag if alpha
+	ret;								// end of subroutine
+
+;	// detokenizer routine
+;	// FIXME: remove redundant code (mainly control code handling)
+detokenizer:
+	bit 2, (iy + _flags);				// was detokenized character a control code?
+	jr nz, detokenizer_3;				// jump if not
+	cp 21;								// range 0 to 21?
+	jr nc, detokenizer_1;				// jump if not
+	cp 15;								// range 0 to 14?
+	jr c, detokenizer_1;				// jump if so
+	set 2, (iy + _flags);				// signal control code found
+	jr detokenizer_4;					// immediate jump
+
+detokenizer_1:
+	cp 6;								// extended tokens?
+	jr c, detokenizer_2;				// jump if range is 0 to 5
+
+    bit 2, (iy + _flags2);				// in quotes?
+    jr nz, detokenizer_4;				// jump if so
+
+	cp tk_rnd;							// normal tokens?
+	jr c, detokenizer_4;				// jump if not
+
+detokenizer_2:
+	exx;								// alternate register set
+	push de;							// stack DE'
+	exx;								// main register set
+	call detokenizer_5;					// do detokenization
+	exx;								// alternate register set
+	pop de;								// unstack DE'
+	exx;								// main register set
+	ret;								// return
+
+detokenizer_3:
+	res 2, (iy + _flags);				// signal no control code
+
+detokenizer_4:
+	jp add_char;						// immediate jump
+
+detokenizer_5:
+	push de;							// store edit buffer destination
+	pop ix;								// in IX
+	sub tk_rnd;							// reduce range
+	ld de, token_table - 1;				// base address of token table
+	push af;							// stack token (0 to 127)
+	call po_search;						// locate entry
+	jr c, detokenizer_6;				// insert token in edit line
+	ld a, ' ';							// insert
+	bit 0, (iy + _flags);				// leading space
+	call z, detokenizer_8;				// if required
+
+detokenizer_6:
+	ld a, (de);							// get code
+	and %01111111;						// cancel inverted bit
+	call detokenizer_8;					// insert it
+	ld a, (de);							// get code
+	inc de;								// advance pointer
+	add a, a;							// inverted bit to carry flag
+	jr nc, detokenizer_6;				// loop until done
+	pop de;								// unstack token in D (0 to 96)
+	cp '$';								// FIXME: was 72 but that added extra spaces
+	jr z, detokenizer_7;				// jump if so
+	cp 130;								// last character less than 'A'?
+	ret c;								// return if so
+
+detokenizer_7:
+	ld a, d;							// offset to A
+	cp tk_then - $80;					// is it THEN?
+	ret z;								// return if so
+	cp tk_on - $80;						// is it ON?
+	ret z;								// return if so
+	cp tk_error - $80;					// is it ERROR?
+	ret z;								// return if so
+	cp tk__ff - $80;					// last code?
+	ret z;								// return if so
+	cp tk_fn - $80;						// RND, INKEY$ or PI?
+	ret c;								// return if so
+	ld a, ' ';							// otherwise insert trailing space
+
+detokenizer_8:
+	push de;							// stack DE
+	push ix;							// IX
+	pop de;								// to DE
+	rst print_a;						// insert one character
+	push de;							// DE
+	pop ix;								// to IX
+	pop de;								// unstack DE
 	ret;								// end of subroutine

@@ -14,27 +14,23 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
+;	// --- 80 COLUMN SCREEN HANDLING ROUTINES ----------------------------------
+
 ;	// FRAME BUFFER
 ;	//
-;	// $FFFF +------------+ 65535
-;	//       | Font       |
-;	// $F800 +------------+ 63488
-;	//       | Attribute  |
-;	//       | Map or Odd |
-;	//       | Columns    |
-;	// $E000 +------------+ 57344
-;	//       | Palette    |
-;	// $DFC0 +------------+ 57280
-;	//       | Temporary  |
-;	//       | stack      |
-;	// $DF80 +------------+ 57216
-;	//       | Character  |
-;	//       | map        |
-;	// $D800 +------------+ 55296
-;	//       | Bitmap     |
-;	//       | or Even    |
-;	//       | Columns    |
-;	// $C000 +------------+ 49152
+;	// $FFFF +---------------+ 65535
+;	//       | font          |
+;	// $F800 +---------------+ 63488
+;	//       | odd columns   |
+;	// $E000 +---------------+ 57344
+;	//       | palette       |
+;	// $DFC0 +---------------+ 57280
+;	//       | temp stack    |
+;	// $DF80 +---------------+ 57216
+;	//       | character map |
+;	// $D800 +---------------+ 55296
+;	//       | even columns  |
+;	// $C000 +---------------+ 49152
 
 ;	// 368 BYTES to PRINT_OUT
 
@@ -55,14 +51,14 @@ pos_0:
 
 pos_0a:
 	ld a, (de);							// read byte at destination
-	bit 0, (iy+$57);					// over?
-	jr nz, over_0;						//
+	bit 0, (iy + _p_flag);				// over?
+	jr nz, over_0;						// jump if so
 	and %00000011;						// mask area used by new character
 
 over_0:
-	bit 2, (iy+$57);					// inverse?
-	jr z, inverse_0;					//
-	xor %11111100;						//
+	bit 2, (iy + _p_flag);				// inverse?
+	jr z, inverse_0;					// jump if not
+	xor %11111100;						// invert
 
 inverse_0:
 	ld c, (hl);							// get character from font
@@ -72,21 +68,21 @@ inverse_0:
 	inc d;								// point to next screen location
 	inc l;								// point to next font data
 	djnz pos_0a;						// loop 8 times
-	jp pr_all_f;						//
+	jp pr_all_f;						// immedaite jump
 
 pos_1:
 	ld b, 8;							// 8 bytes to write
 
 pos_1a:
 	ld a, (de);							// read byte at destination
-	bit 0, (iy+$57);					// over?
-	jr nz, over_1;						//
+	bit 0, (iy + _p_flag);				// over?
+	jr nz, over_1;						// jump if so
 	and %11111100;						// mask area used by new character
 
 over_1:
-	bit 2, (iy+$57);					// inverse?
-	jr z, inverse_1;					//
-	xor %00000011;						//
+	bit 2, (iy + _p_flag);				// inverse?
+	jr z, inverse_1;					// jump if not
+	xor %00000011;						// invert
 
 inverse_1:
 	ld c, (hl);							// get character from font
@@ -99,14 +95,14 @@ inverse_1:
 	ld (de), a;							// write it back
 	set 5, d;							// DE now points to SCREEN_2
 	ld a, (de);							// read byte at destination
-	bit 0, (iy+$57);					// over?
-	jr nz, over_1a;						//
+	bit 0, (iy + _p_flag);				// over?
+	jr nz, over_1a;						// jump if so
 	and %00001111;						// mask area used by new character
 
 over_1a:
-	bit 2, (iy+$57);					// inverse?
-	jr z, inverse_1a;					//
-	xor %11110000;						//
+	bit 2, (iy + _p_flag);				// inverse?
+	jr z, inverse_1a;					// jump if not
+	xor %11110000;						// invert
 
 inverse_1a:
 	ld c, (hl);							// get character from font
@@ -119,7 +115,7 @@ inverse_1a:
 	inc d;								// point to next screen location
 	inc l;								// point to next font data
 	djnz pos_1a;						// loop 8 times
-	jp pr_all_f;						//
+	jp pr_all_f;						// immedaite jump
 
 pos_2:
 	ld b, 8;							// 8 bytes to write
@@ -127,14 +123,14 @@ pos_2:
 pos_2a:
 	set 5, d;							// DE now points to SCREEN_2
 	ld a, (de);							// read byte at destination
-	bit 0, (iy+$57);					// over?
-	jr nz, over_2;						//
+	bit 0, (iy + _p_flag);				// over?
+	jr nz, over_2;						// jump if so
 	and %11110000;						// mask area used by new character
 
 over_2:
-	bit 2, (iy+$57);					// inverse?
-	jr z, inverse_2;					//
-	xor %00001111;						//
+	bit 2, (iy + _p_flag);				// inverse?
+	jr z, inverse_2;					// jump if not
+	xor %00001111;						// invert
 
 inverse_2:
 	ld c, (hl);							// get character from font
@@ -146,14 +142,14 @@ inverse_2:
 	res 5, d;							// restore pointer to SCREEN_1
 	inc de;								//
 	ld a, (de);							// read byte at destination
-	bit 0, (iy+$57);					// over?
-	jr nz, over_2a;						//
+	bit 0, (iy + _p_flag);				// over?
+	jr nz, over_2a;						// jump if so
 	and %00111111;						// mask area used by new character
 
 over_2a:
-	bit 2, (iy+$57);					// inverse?
-	jr z, inverse_2a;					//
-	xor %11000000;						//
+	bit 2, (iy + _p_flag);				// inverse?
+	jr z, inverse_2a;					// jump if not
+	xor %11000000;						// invert
 
 inverse_2a:
 	ld c, (hl);							// get character from font
@@ -168,7 +164,7 @@ inverse_2a:
 	inc l;								// point to next font data
 	dec de;								// adjust screen pointer
 	djnz pos_2a;						// loop 8 times
-	jp pr_all_f;						//
+	jp pr_all_f;						// immedaite jump
 
 pos_7:
 	inc de;								// DE now points to SCREEN_2 + 1
@@ -180,14 +176,14 @@ pos_3:
 
 pos_3a:
 	ld a, (de);							// read byte at destination
-	bit 0, (iy+$57);					// over?
-	jr nz, over_3;						//
+	bit 0, (iy + _p_flag);				// over?
+	jr nz, over_3;						// jump if so
 	and %11000000;						// mask area used by new character
 
 over_3:
-	bit 2, (iy+$57);					// inverse?
-	jr z, inverse_3;					//
-	xor %00111111;						//
+	bit 2, (iy + _p_flag);				// inverse?
+	jr z, inverse_3;					// jump if not
+	xor %00111111;						// invert
 
 inverse_3:
 	ld c, (hl);							// get character from font
@@ -206,14 +202,14 @@ pos_5:
 pos_5a:
 	set 5, d;							// DE now points to SCREEN_2
 	ld a, (de);							// read byte at destination
-	bit 0, (iy+$57);					// over?
-	jr nz, over_5;						//
+	bit 0, (iy + _p_flag);				// over?
+	jr nz, over_5;						// jump if so
 	and %11111100;						// mask area used by new character
 
 over_5:
-	bit 2, (iy+$57);					// inverse?
-	jr z, inverse_5;					//
-	xor %00000011;						//
+	bit 2, (iy + _p_flag);				// inverse?
+	jr z, inverse_5;					// jump if not
+	xor %00000011;						// invert
 
 inverse_5:
 	ld c, (hl);							// get character from font
@@ -227,14 +223,14 @@ inverse_5:
 	res 5, d;							// restore pointer to SCREEN_1
 	inc de;								//
 	ld a, (de);							// read byte at destination
-	bit 0, (iy+$57);					// over?
-	jr nz, over_5a;						//
+	bit 0, (iy + _p_flag);				// over?
+	jr nz, over_5a;						// jump if so
 	and %00001111;						// mask area used by new character
 
 over_5a:
-	bit 2, (iy+$57);					// inverse?
-	jr z, inverse_5a;					//
-	xor %11110000;						//
+	bit 2, (iy + _p_flag);				// inverse?
+	jr z, inverse_5a;					// jump if not
+	xor %11110000;						// invert
 
 inverse_5a:
 	ld c, (hl);							// get character from font
@@ -247,7 +243,7 @@ inverse_5a:
 	inc l;								// point to next font data
 	dec de;								// adjust screen pointer
 	djnz pos_5a;						// loop 8 times
-	jp pr_all_f;						//
+	jp pr_all_f;						// immedaite jump
 
 pos_6:
 	inc de;								// next column
@@ -256,14 +252,14 @@ pos_6:
 
 pos_6a:
 	ld a, (de);							// read byte at destination
-	bit 0, (iy+$57);					// over?
-	jr nz, over_6;						//
+	bit 0, (iy + _p_flag);				// over?
+	jr nz, over_6;						// jump if so
 	and %11110000;						// mask area used by new character
 
 over_6:
-	bit 2, (iy+$57);					// inverse?
-	jr z, inverse_6;					//
-	xor %00001111;						//
+	bit 2, (iy + _p_flag);				// inverse?
+	jr z, inverse_6;					// jump if not
+	xor %00001111;						// invert
 
 inverse_6:
 	ld c, (hl);							// get character from font
@@ -274,14 +270,14 @@ inverse_6:
 	ld (de), a;							// write it back
 	set 5, d;							// DE now points to SCREEN_2
 	ld a, (de);							// read byte at destination
-	bit 0, (iy+$57);					// over?
-	jr nz, over_6a;						//
+	bit 0, (iy + _p_flag);				// over?
+	jr nz, over_6a;						// jump if so
 	and %00111111;						// mask area used by new character
 
 over_6a:
-	bit 2, (iy+$57);					// inverse?
-	jr z, inverse_6a;					//
-	xor %11000000;						//
+	bit 2, (iy + _p_flag);				// inverse?
+	jr z, inverse_6a;					// jump if not
+	xor %11000000;						// invert
 
 inverse_6a:
 	ld c, (hl);							// get character from font
@@ -296,13 +292,16 @@ inverse_6a:
 	inc d;								// point to next screen location
 	inc l;								// point to next font data
 	djnz pos_6a;						// loop 8 times
-	jp pr_all_f;						//
+	jp pr_all_f;						// immedaite jump
 
 ;	// don't print anything when booting esxDOS (prevents paging during boot)
 	org $09f4;
 	ret;								// immediate return
 
+;	// print out routines
 print_out:
+;	bit 1, (iy + _flags2);				// test for 40 column mode
+;	jp nz, s40_print_out;				// jump if so
 	call po_fetch;						// current print position
 	cp 16;								// characters from 16d are printable
 	jp nc, po_able;						// jump if so
@@ -331,6 +330,7 @@ ctlchrtab:
 	defb po_quest - $;					// 14, extend
 	defb po_quest - $;					// 15, graphics
 
+;	// cursor left subroutine
 po_back_1:
 	inc c;								// move column left
 	ld a, 82;							// left side
@@ -346,6 +346,7 @@ po_back_1:
 po_back_3:
 	jp cl_set;							// indirect return
 
+;	// cursor right subroutine
 po_right:
 	ld hl, p_flag;						// point to sysvar
 	ld d, (hl);							// sysvar to D
@@ -354,28 +355,31 @@ po_right:
 	ld (hl), d;							// restore sysvar
 	ret;								// end of subroutine
 
+;	// carriage return subroutine
 po_enter:
 	ld c, 81;							// left column
 	call po_scr;						// scroll if required
 	dec b;								// down a line
 	jp cl_set;							// indirect return
 
+;	// print a question mark subroutine
+po_quest:
+	ld a, '?';							// change character
+	jr po_able;							// print it
+
+;	// print comma subroutine
 po_comma:
 	ld a, c;							// current column
 	dec a;								// move right
 	dec a;								// twice
 	and %00010000;						// test
-	jr po_fill;							// indirect return
-
-po_quest:
-	ld a, '?';							// change character
-	jr po_able;							// print it
+;	jr po_fill;							// indirect return
 
 po_fill:
 	call po_fetch;						// current position
 	add a, c;							// add column
 	dec a;								// number of spaces
-	and 31;								// 16 characters per column
+	and %00000111;						// modulo 8 (gives 5/10 tabs in 40/80 column mode)
 	ret z;								// return if zero
 	set 0, (iy + _flags);				// no leading space
 	ld d, a;							// use 0 as counter
@@ -386,9 +390,14 @@ po_space:
 	jr nz, po_space;					// until
 	ret;								// done
 
+;po_tab:
+;	call po_fetch;
+
+;	// printable character codes
 po_able:
 	call po_any;						// print character and continue
 
+;	// position store subroutine
 po_store:
 	bit 0, (iy + _vdu_flag);			// test for lower screen
 	jr nz, po_st_e;						// jump if so
@@ -402,6 +411,7 @@ po_st_e:
 	ld (echo_e), bc;					// screen
 	ret;								// end of subroutine
 
+;	// position fetch suvroutine
 po_fetch:
 	ld hl, (df_cc);						// get main
 	ld bc, (s_posn);					// screen values
@@ -411,6 +421,7 @@ po_fetch:
 	ld hl, (df_ccl);					// screen values
 	ret;								// and return
 
+;	// print any character subroutine
 po_any:
     bit 7, (iy + _flags);				// runtime?
     jr nz, po_char;						// jump if so
@@ -435,7 +446,7 @@ po_char:
 	sub c;								// range 0 to 79
 	ld c, a;							// put it back in C
 	ex af, af';							// restore character
-	ld hl, $d800;						// base address of character map
+	ld hl, char_map;					// base address of character map
 	ld de, 80;							// 80 characters per row
 	dec b;								// reduce range (0 to 23)
 	jr z, add_columns;					// jump if row zero
@@ -459,13 +470,12 @@ sbc_lines:
 	add hl, bc;							// add column offset
 	
 write_char:
-	ld e, %00011111;					// ROM 1, VRAM 1, HOME 7
 	ld bc, paging;						// paging address
+	ld de, $181f;						// ROM 1, VRAM 1, D = HOME 0, E = HOME 7 
 	di;									// interrupts off
-	out (c), e;							// switch page
+	out (c), e;							// page framebuffer in
 	ld (hl), a;							// write character to map
-	ld e, %00011000;					// ROM 1, VRAM 1, HOME 0
-	out (c), e;							// switch page
+	out (c), d;							// page framebuffer out
 	ei;									// interrupts on
 	pop hl;								// restore screen address
 ;	// character map code ends
@@ -490,6 +500,7 @@ po_char_3:
 	ex de, hl;							// base address to DE
 	pop bc;								// unstack current position
 
+;	// print all characters subroutine
 pr_all:
 	ld a, c;							// get column number
 	dec a;								// move it right one position
@@ -563,8 +574,10 @@ pr_all_f:
 	dec c;								// move right
 	ret;								// return via po_store
 
+;	// message printing subroutine
 po_asciiz_0:
 	xor a;								// select first message
+	set 2, (iy + _flags2);				// signal do not print tokens (for example, scroll during LIST)
 	set 5, (iy + _vdu_flag);			// signal lower screen to be cleared
 
 ;	// message number in A, start of table in DE
@@ -593,19 +606,18 @@ po_stp_asciiz:
 	ret;								// return with pointer to message in DE
 ;	// end of ASCIIZ printing
 
-;	// SpectraNet entry point
-;	org $c0a;
-;po_msg:
-;	push hl;							// stack last entry
-;	ld h, 0;							// zero high byte
-;	ex (sp), hl;						// to suppress trailing spaces
-;	jr po_table;						// immediate jump
+; ;	// SpectraNet entry point
+; ;	org $c0a;
+; ;po_msg:
+; ;	push hl;							// stack last entry
+; ;	ld h, 0;							// zero high byte
+; ;	ex (sp), hl;						// to suppress trailing spaces
+; ;	jr po_table;						// immediate jump
 
+;	// token printing subroutine
 po_tokens:
 	ld de, token_table;					// address token table
 	push af;							// stack code
-;
-;po_table:
 	call po_search;						// locate required entry
 	jr c, po_each;						// print message or token
 	bit 0, (iy + _flags);				// print a space
@@ -633,6 +645,7 @@ po_tr_sp:
 po_sv_sp:
 	ld a, ' ';							// print trailing space
 
+;	// print save subroutine
 po_save:
 	push de;							// stack DE
 	exx;								// preserve HL and BC
@@ -641,6 +654,7 @@ po_save:
 	pop de;								// unstack DE
 	ret;								// end of subroutine
 
+;	// table search subroutine
 po_search:
 	ex de, hl;							// base address to HL
 	push af;							// stack entry number
@@ -660,6 +674,7 @@ po_step:
 	sub 'A';							// test against letter, leading space if so
 	ret;								// end of subroutine
 
+;	// test for scroll subroutine
 po_scr:
 	ld de, cl_set;						// put sysvar
 	push de;							// on the stack
@@ -751,6 +766,7 @@ po_scr_4b:
 	pop bc;								// unstack line and column numbers
 	ret;								// end of subroutine
 
+;	// CLS command
 	org $0d67;
 cls:
 	set 0, (iy + _flags);				// suppress leading space
@@ -760,7 +776,7 @@ cls:
 	call cl_all;						// clear whole display
 
 ;	// UnoDOS 3 entry point
-	org $0d6e;
+ 	org $0d6e;
 cls_lower:
 	ld hl, vdu_flag;					// address sysvar
 	ld b, (iy + _df_sz);				// get address
@@ -788,6 +804,7 @@ cl_chan_a:
 	ld bc, $1751;						// row 23, column 81
 	jr cl_set;							// immediate jump
 
+;	// clear whole display area subroutine
 cl_all:
 	res 0, (iy + _flags2);				// signal screen is clear
 	call cl_chan;						// house keeping tasks
@@ -802,6 +819,7 @@ cl_all:
 	ld (iy + _scr_ct), 1;				// reset scroll count
 	ld bc, $1851;						// row 24, column 81
 
+;	// clear set subroutine
 cl_set:
 	ld a, b;							// row to A
 	bit 0, (iy + _vdu_flag);			// main display?
@@ -816,6 +834,7 @@ cl_set_1:
 	pop bc;								// unstack row and column
 	jp po_store;						// immediate jump
 
+;	// scrolling subroutine
 cl_sc_all:
 	ld b, 23;							// entry point after scroll message
 
@@ -831,9 +850,9 @@ cl_scroll:
 
 	push bc;							// stack both
 	push hl;							// counters
-	ld hl, $d800 + 80;					// character map + one line
-	ld de, $d800;						// start of character map
-	ld bc, 1840;						// 80x24 characters
+	ld hl, char_map + 80;				// character map + one line
+	ld de, char_map;					// start of character map
+	ld bc, 1840;						// 80 x 23 characters
 	ldir;								// scroll character map
 	pop hl;								// unstack both
 	pop bc;								// counters
@@ -884,15 +903,16 @@ cl_scr_3:
 	jr nz, cl_scr_1;					// loop until done
 	ld b, 1;							// one line
 
+	ld a, %00011000;					// ROM 1, VRAM 1, HOME 0
 	di;									// interrupts off
 	ld sp, (oldsp);						// restore original stack
 	ld (oldsp), bc;						// temporarily store BC
 	ld bc, paging;						// page out VRAM
-	ld a, %00011000;					// ROM 1, VRAM 1, HOME 0
 	out (c), a;							// do paging
 	ei;									// interrupts on
 	ld bc, (oldsp);						// restore BC
 
+;	// clear lines subroutine
 cl_line:
 	push bc;
 	ld (oldsp), bc;						// temporarily store BC
@@ -965,8 +985,10 @@ cl_line_2:
 	inc de;								// increment DE
 	ld bc, paging;						// page out VRAM
 	ld a, %00011000;					// ROM 1, VRAM 1, HOME 0
+	di;									// interrupts off
 	out (c), a;							// set it
 	ld sp, (oldsp);						// restore stack pointer
+	ei;									// interrupts on
 	pop bc;								// unstack BC
 	ret;								// end of subroutine
 
@@ -991,6 +1013,7 @@ cls_2nd:
 	ldir;								// wipe bytes
 	ret;								// end of subroutine
 
+;	// clear address subroutine
 cl_addr:
 	ld a, 24;							// reverse line
 	sub b;								// number
@@ -1004,5 +1027,5 @@ cl_addr:
 	and %00011000;						// 64 + 8 * INT (A / 8)
 	or $c0;								// top 16K of RAM
 	ld h, a;							// most significant byte to H
-;	inc hl;								// skip first 16 pixels
+;	inc hl;								// (not needed in 80 column mode) skip first 16 pixels
 	ret;								// end of subroutine

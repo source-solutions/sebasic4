@@ -1,0 +1,76 @@
+### language (number = required code page)
+
+## deutsch
+# ln=DE-1252
+
+## english (US)
+# ln=EN-US 
+
+## español
+# ln=ES-1252
+
+## français
+ln=FR-1252
+
+## italiana
+# ln=IT
+
+## magyar
+# ln=HU-1250
+
+## nederlands
+# ln=NL
+
+## português (Portugal)
+# ln=PT-1252
+
+## suomi
+# ln=FI=1252
+
+## türk
+# ln=TR-1254
+
+## ελληνικά
+# ln=GR-1253
+
+## русский
+# ln=RU-1251
+
+## українська
+# ln=UA-1251
+
+
+### code page (8-bit system font)
+
+## Cyrillic
+# cp=1251-CYR
+
+## Greek
+# cp=1253-GRE
+
+## Hebrew
+# cp=1255-HEB
+
+## Japanese (MSX 2+)
+# cp=MSX2PLUS
+
+## Latin 1 / Western European
+cp=1252-EUW
+
+## Latin 2 / Central European
+# cp=1250-EUC
+
+## Turkish
+# cp=1254-TUR
+
+## Atari 8-bit
+# cp=ATASCII
+
+## Atari ST
+# cp=ATARI-ST
+
+## Commodore 8=bit
+# cp=PETSCII
+
+## IBM PC US
+# cp=0437-IBM

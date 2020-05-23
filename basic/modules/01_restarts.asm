@@ -14,23 +14,25 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
+;	// --- RESTART ROUTINES ----------------------------------------------------
+
+;	// cold restart
 	org $0000;
-;start
 	di;									// interrupts off
 	xor a;								// LD A, 0
 	ld bc, paging;						// HOME bank paging
 	out (c), a;							// ROM 0, RAM 0, VIDEO 0, paging enabled
 	nop;								// enter ROM 0 beofer hitting RST 8 trap
 
+;	// error restart
 	org $0008;
-;error
 	ld hl, (ch_add);					// address of current character
 	ld (x_ptr), hl;						// to error pointer
 	jr error_2;							// then jump
 
+;	// print_a restart
 ;	// UnoDOS 3 entry point
 	org $0010;
-;print_a
 	jp print_a_2;						// immediate jump
 
 ;	// this is the point where ROM 0 hands control back to ROM 1
@@ -40,9 +42,9 @@ from_rom0:
 	xor a;								// LD A, 0
 	jp start_new;						// deal with a cold start
 
+;	// get_char restart
 ;	// UnoDOS 3 entry point
 	org $0018;
-;get_char
 jp_get_char:
 	ld hl, (ch_add);					// put address of current character
 	ld a, (hl);							// in A
@@ -52,9 +54,9 @@ test_char:
 	call skip_over;						// check for printable character
 	ret nc;								// return if so
 
+;	// next_char restart
 ;	// UnoDOS 3 entry point
 	org $0020;
-;next_char
 	call ch_add_plus_1;					// increment current character address
 	jr test_char;						// then jump
 
@@ -62,8 +64,8 @@ test_char:
 ver_num:
 	defb "420";							// version number (example: 4.2.0)
 
+;	// calc restart
 	org $0028;
-;calc
 	jp calculate;						// immediate jump
 
 	org $002b;
@@ -74,30 +76,31 @@ ident:
 bc_1_space:
 	ld bc, 1;							// create one free location in workspace
 
+;	// bc_spaces restart
 	org $0030;
-;bc_spaces
 	push bc;							// store number of spaces to create
 	ld hl, (worksp);					// get address of workspace
 	push hl; 							// and store it
 	jp reserve;							// then jump
 
+;	// mask_int;	
 	org $0038;
-;mask_int;	
 	push af;							// stack AF (intercepted by divMMC hardware)
 	push hl;							// stack HL (return from divMMC ROM)
 	ld hl, frame;						// get current frame
 	inc (hl);							// increment it
 	ld a, 60;							// has one second elapsed? (change to 50 for 50Hz machines)
 	cp (hl);							// test it
-	jr nz, key_int;						// jump if no rollover
+	jr nz, user_im1;					// jump if no rollover
 	ld (hl), 0;							// restart frame counter
 	call rollover;						// update first byte of time_t
 	call rollover;						// update second byte of time_t
 	call rollover;						// update third byte of time_t
 	inc l;								// update fourth byte of time_t
 	inc (hl);							// increment fourth byte
-	jp key_int;							// read keyboard
+	jp user_im1;						// test for user IM1 routine
 
+;	// error routine
 	org $0053;
 error_2:
 	pop hl;								// return location holds error number
@@ -109,14 +112,16 @@ error_3:
 	ld sp, (err_sp);					// put value of err_sp in SP
 	jp set_stk;							// then jump
 
+;	// increment counter subroutine
 	org $005f;
 rollover:
 	inc l;								// address next byte of time_t
 	inc (hl);							// increment first byte
 	ret z;								// return with rollover
 	pop af;								// drop return address
-	jp key_int;							// immedaite jump
+	jp user_im1;						// immedaite jump
 
+;	// non-maskable interrupt
 	org $0066;
 nmi:
 	push hl;							// stack HL 
@@ -134,6 +139,7 @@ no_nmi:
 	pop hl;								// unstack HL
 	retn;								// end of nmi
 
+;	// increment character address subroutine
 ch_add_plus_1:
 	ld hl, (ch_add);					// get current character address
 
@@ -145,6 +151,7 @@ temp_ptr2:
 	ld a, (hl);							// copy character at current address to A
 	ret;								// end of ch_add_plus_1
 
+;	// skip over characters subroutine
 skip_over:
 	cp ' ';								// test for space or higher
 	scf;								// set carry flag
@@ -162,6 +169,13 @@ skips:
 	scf;								// set carry flag
 	ld (ch_add), hl;					// put new character address in ch_add
 	ret;								// end of skip_over
+
+;	// user IM1 subroutine
+user_im1:
+	ld hl, (maskadd);					// put value of maskadd in HL
+	ld a, l;							// test for
+	or h;								// zero
+	call nz, call_jump;					// call routine if not
 
 key_int:
 	push de;							// stack DE

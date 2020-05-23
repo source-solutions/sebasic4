@@ -686,7 +686,7 @@ config:
 	out (c),a;							// select it
 	inc b;								// LD BC, uno_dat
 	in a, (c);							// get current value
-	and %10111111;						// 14MHz mode
+	or %11000000;						// 28MHz mode
 	out (c),a;							// set it
 
 ;	// switch ROMs
@@ -895,34 +895,34 @@ eof:
 	ret;			                	// return
 
 cf_path:
-	defb "/system/config.sys", 0;		// null terminated path to config.sys file
+	defb "/SYSTEM/CONFIG.SYS", 0;		// null terminated path to config.sys file
 
 cp_path:
-	defb "/system/fonts/";				// path for language files
+	defb "/SYSTEM/FONTS/";				// path for language files
 
 cp_file:
-	defb "filename";					// filename
+	defb "FILENAME";					// filename
 
 cp_ext:
-	defb ".cp", 0;						// extension and null terminator
+	defb ".CP", 0;						// extension and null terminator
 
 kb_path:
-	defb "/system/keyboard.s/";			// path for language files (dot required for emulator only)
+	defb "/SYSTEM/KEYBOARD.S/";			// path for language files (dot required for emulator only)
 
 kb_file:
-	defb "filename";					// filename
+	defb "FILENAME";					// filename
 
 kb_ext:
-	defb ".kb", 0;						// extension and null terminator
+	defb ".KB", 0;						// extension and null terminator
 
 ln_path:
-	defb "/system/language.s/";			// path for language files (dot required for emulator only)
+	defb "/SYSTEM/LANGUAGE.S/";			// path for language files (dot required for emulator only)
 
 ln_file:
-	defb "filename";					// filename
+	defb "FILENAME";					// filename
 
 ln_ext:
-	defb ".ln", 0;						// extension and null terminator
+	defb ".LN", 0;						// extension and null terminator
 
 cp_def:
 	defb "cp=", 0;	           	    	// codepage
