@@ -564,6 +564,7 @@ pr_all_f:
 
 po_asciiz_0:
 	xor a;								// select first message
+	set 2, (iy + _flags2);				// signal do not print tokens (for example, scroll during LIST)
 	set 5, (iy + _vdu_flag);			// signal lower screen to be cleared
 
 ;	// message number in A, start of table in DE

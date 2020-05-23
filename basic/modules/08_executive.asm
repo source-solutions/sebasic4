@@ -181,8 +181,6 @@ initial:
 	call chan_open;						// open it
 	ld de, ready;						// ready message
 
-	set 2, (iy + _flags2);				// signal do not print tokens
-
 	call po_asciiz_0;					// print it
 
 	set 3, (iy + _flags2);				// enable CAPS LOCK
