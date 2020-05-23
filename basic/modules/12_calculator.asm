@@ -56,20 +56,22 @@ re_entry:
 scan_ent:
 	push hl;							// stack it
 	and a;								// test A
-	jp p, first_3d;						// jump with 0 to 61
+	jp p, first_3f;						// jump with 0 to 61
 	ld d, a;							// literal to D
 	and %01100000;						// preserve bit 5 and 6
 	rrca;								// shift
 	rrca;								// right
 	rrca;								// into
 	rrca;								// bit 1 and 2
-	add a, 124;							// offsets 62 to 65
+
+	add a, 128;							// offsets 64 to 68
+
 	ld l, a;							// L holds doubled offset
 	ld a, d;							// get parameter
 	and %00011111;						// from bits 0 to 4
 	jr ent_table;						// address routine
 
-first_3d:
+first_3f:
 	cp 24;								// unary operation?
 	jr nc, double_a;					// jump if so
 	exx;								// main register set
@@ -1230,4 +1232,12 @@ hexs_4:
 	add a, '0';							// offset to ASCII zero
 	ld (de), a;							// store character
 	inc de;								// next position
+	ret;
+
+;	// new function 1
+fp_new_fn_1:
+	ret;
+
+;	// new function 2
+fp_new_fn_2:
 	ret;
