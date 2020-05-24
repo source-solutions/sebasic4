@@ -122,12 +122,11 @@ tbl_priors:
 
 ;	// used in 12_calculator
 constants:
-	pi equ 3.14159265358979
-	df 0;								// int
-	df 1;								// int
-	df 0.5;								// float
-	df pi / 2;							// float
-	df 10;								// int
+	defb $00, $00, $00, $00, $00;		// 0
+	defb $00, $00, $01, $00, $00;		// 1
+	defb $80, $00, $00, $00, $00;		// 0.5
+	defb $81, $49, $0f, $da, $a2;		// pi / 2 (pi = 3.14159265358979)
+	defb $00, $00, $0a, $00, $00;		// 10
 
 tbl_addrs:
 	defw fp_jump_true;
