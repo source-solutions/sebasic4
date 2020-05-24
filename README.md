@@ -16,7 +16,7 @@ The emulator is _ZEsarUX_.
 * Build the emulator: https://github.com/chernandezba/zesarux
 * Modify the `task.json` file in the `.vscode` folder to 
 
-### macOS
+### macOS (not Catalina)
 
 1. Install _HomeBrew_ (https://brew.sh/):
 
