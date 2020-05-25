@@ -16,13 +16,77 @@
 
 ;	// --- MISCELLANEOUS ROUTINES ----------------------------------------------
 
-	org $04c6;
-load_trap:
-	ret;								// must never call this address
+;	// PC must not hit $04c6 (load trap) or $0562 (save trap)
 
-	org $0562;
-save_trap:
-	ret;								// must never call this address
+;	org $04c6;
+;load_trap:
+;	ret;								// must never call this address
+
+;	org $0562;
+;save_trap:
+;	ret;								// must never call this address
+
+;	// VECTOR table of addresses
+	org $04c4;
+
+	jp $c900;							// $34 - ($04c6 must never be called)
+	jp $ffff;							// $33
+	jp $ffff;							// $32
+	jp $ffff;							// $31
+	jp $ffff;							// $30
+
+	jp $ffff;							// $2f
+	jp $ffff;							// $2e
+	jp $ffff;							// $2d
+	jp $ffff;							// $2c
+	jp $ffff;							// $2b
+	jp $ffff;							// $2a
+	jp $ffff;							// $29
+	jp $ffff;							// $28
+	jp $ffff;							// $27
+	jp $ffff;							// $26
+	jp $ffff;							// $25
+	jp $ffff;							// $24
+	jp $ffff;							// $23
+	jp $ffff;							// $22
+	jp $ffff;							// $21
+	jp $ffff;							// $20
+
+	jp $ffff;							// $1f
+	jp $ffff;							// $1e
+	jp $ffff;							// $1d
+	jp $ffff;							// $1c
+	jp $ffff;							// $1b
+	jp $ffff;							// $1a
+	jp $ffff;							// $19
+	jp $ffff;							// $18
+	jp $ffff;							// $17
+	jp $ffff;							// $16
+	jp $ffff;							// $15
+	jp $ffff;							// $14
+	jp $ffff;							// $13
+	jp $ffff;							// $12
+	jp $ffff;							// $11
+	jp $ffff;							// $10
+
+	jp $ffff;							// $0f
+	jp $ffff;							// $0e
+	jp $ffff;							// $0d
+	jp $ffff;							// $0c
+	jp $ffff;							// $0b
+	jp $ffff;							// $0a
+	jp $ffff;							// $09
+	jp $ffff;							// $08
+	jp $ffff;							// $07
+	jp $ffff;							// $06
+	jp $ffff;							// $05
+	jp $ffff;							// $04
+	jp $ffff;							// $03
+	jp $ffff;							// $02
+	jp $ffff;							// $01
+	jp $c900;							// $00 - ($0562 must never be called)
+
+	org $0563
 
 ;;	// CALL command
 c_call:
