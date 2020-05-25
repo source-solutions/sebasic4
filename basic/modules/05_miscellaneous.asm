@@ -29,64 +29,67 @@
 ;	// VECTOR table of addresses
 	org $04c4;
 
-	jp $c900;							// $34 - ($04c6 must never be called)
-	jp $ffff;							// $33
-	jp $ffff;							// $32
-	jp $ffff;							// $31
-	jp $ffff;							// $30
+;	// UnoDOS 3 entry points (these addresses should never change)
+;	// FIXME: as these are fixed addresses they can be replaced later on
+;	// but provide a useful check that these points have not moved
+	jp print_a_2;						// RST $10 - print character in A ($04c6 must never be called)
+	jp jp_get_char;						// RST $18 - get character 
+	jp $20;								// RST $20 - next character
+	jp cls_lower;						// clear lower screen
+	jp add_char;						// add character
+	jp remove_fp;						// remove floating point from line
+	jp chan_open;						// open a channel
+	jp set_min;							// set up workspace
+	jp set_work;						// clear workspace
+	jp line_addr;						// get line address
+	jp each_stmt;						// find each statement
+	jp e_line_no;						// get edit line
+	jp expt_exp;						// expect string expression
+	jp pr_st_end;						// test for carriage return or colon
+	jp syntax_z;						// checking syntax test 
+	jp stk_fetch;						// stack fetch
 
-	jp $ffff;							// $2f
-	jp $ffff;							// $2e
-	jp $ffff;							// $2d
-	jp $ffff;							// $2c
-	jp $ffff;							// $2b
-	jp $ffff;							// $2a
-	jp $ffff;							// $29
-	jp $ffff;							// $28
-	jp $ffff;							// $27
-	jp $ffff;							// $26
-	jp $ffff;							// $25
-	jp $ffff;							// $24
-	jp $ffff;							// $23
-	jp $ffff;							// $22
-	jp $ffff;							// $21
-	jp $ffff;							// $20
+	jp $ffff;							// read a character from keyboard
+	jp print_a_2;						// write a character to screen
+	jp cls;								// clear screen
+	jp $ffff;							// set colors
+	jp $ffff;							// load a file
+	jp $ffff;							// save a file
+	jp $ffff;							// read elapsed time
+	jp $ffff;							// make a sound
+	jp $ffff;							// read text position
+	jp $ffff;							// read character definition
+	jp $ffff;							// write character definition
+	jp $ffff;							// read character at a point on screen
+	jp $ffff;							// change screen geometry
+	jp $ffff;							// change palette settings
 
-	jp $ffff;							// $1f
-	jp $ffff;							// $1e
-	jp $ffff;							// $1d
-	jp $ffff;							// $1c
-	jp $ffff;							// $1b
-	jp $ffff;							// $1a
-	jp $ffff;							// $19
-	jp $ffff;							// $18
-	jp $ffff;							// $17
-	jp $ffff;							// $16
-	jp $ffff;							// $15
-	jp $ffff;							// $14
-	jp $ffff;							// $13
-	jp $ffff;							// $12
-	jp $ffff;							// $11
-	jp $ffff;							// $10
+	jp $ffff;							//
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							//
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $c900;							// ($0562 must never be called)
 
-	jp $ffff;							// $0f
-	jp $ffff;							// $0e
-	jp $ffff;							// $0d
-	jp $ffff;							// $0c
-	jp $ffff;							// $0b
-	jp $ffff;							// $0a
-	jp $ffff;							// $09
-	jp $ffff;							// $08
-	jp $ffff;							// $07
-	jp $ffff;							// $06
-	jp $ffff;							// $05
-	jp $ffff;							// $04
-	jp $ffff;							// $03
-	jp $ffff;							// $02
-	jp $ffff;							// $01
-	jp $c900;							// $00 - ($0562 must never be called)
-
-	org $0563
+;	// permits extension of vector table if required
+	org $0590
 
 ;;	// CALL command
 c_call:
