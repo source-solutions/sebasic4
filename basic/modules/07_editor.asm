@@ -292,7 +292,7 @@ key_mode:
 
 key_flag:
 	set 3, (iy + _vdu_flag);			// signal possible mode change
-	cp a;								// clear carry flag
+	cp a;								// clear carry and reset zero flag
 	ret;								// and return
 
 key_done2:

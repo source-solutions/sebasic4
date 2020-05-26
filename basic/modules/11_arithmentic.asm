@@ -417,7 +417,7 @@ pf_rnd_lp:
 	and a;								// zero?
 	jr z, pf_r_back;					// jump if so
 	cp 10;								// ten?
-	ccf;								// clear carry for valid digit
+	ccf;								// complement carry for valid digit
 	jr nc, pf_count;					// jump if carry clear
 
 pf_r_back:
@@ -779,7 +779,7 @@ test_neg:
 	inc (hl);							// increase (HL)
 
 add_rep_6:
-	jp z, report_overflow_2;				// jump if overflow
+	jp z, report_overflow_2;			// jump if overflow
 	exx;								// swap register set
 
 end_compl:
@@ -787,7 +787,7 @@ end_compl:
 	exx;								// swap register set
 
 go_nc_mlt:
-	xor a;								// clear carry flag
+	xor a;								// LD A, 0
 	jp test_norm;						// immediate jump
 
 ;	// the HL = HL * DE subroutine
@@ -915,7 +915,7 @@ strt_mlt:
 	ld a, b;							// sum of exponents
 	add a, c;							// to A
 	jr nz, make_expt;					// jump if not zero
-	and a;								// else clear carry
+	and a;								// else clear carry flag
 
 make_expt:
 	dec a;								// prepare to increase
@@ -926,7 +926,7 @@ divn_expt:
 	ccf;								// complement carry flag
 	rra;								// rotate right with carry
 	jp p, oflw1_clr;					// jump if sign flag cleared
-	jr nc, report_overflow_2;				// jump if overflow
+	jr nc, report_overflow_2;			// jump if overflow
 	and a;								// clear carry flag
 
 oflw1_clr:
@@ -936,7 +936,7 @@ oflw1_clr:
 	exx;								// alternate register set
 	bit 7, d;							// test bit 7 of D'
 	exx;								// main register set
-	jr nz, report_overflow_2;				// jump if overflow
+	jr nz, report_overflow_2;			// jump if overflow
 
 oflw2_clr:
 	ld (hl), a;							// set exponent byte
@@ -1051,7 +1051,7 @@ fp_division:
 	exx;								// main register set
 	ld l, b;							// and
 	ld h, c;							// BC
-	xor a;								// LD A, 0 and clear carry flag
+	xor a;								// LD A, 0
 	ld b, $df;							// set count
 	jr div_start;						// immediate jump
 

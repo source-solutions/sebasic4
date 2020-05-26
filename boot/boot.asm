@@ -699,11 +699,13 @@ cf_ram:
 
 cf_open:
 	ld ix, (cf_path-cf_ram)+$c100;		// path to config.sys file (cf_path)
-	ld a, '*';							// use current drive
-	ld b, fa_read | fa_open_ex;			// open for reading if file exists
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_open;						// open file
+;	ld a, '*';							// use current drive
+;	ld b, fa_read | fa_open_ex;			// open for reading if file exists
+;	and a;								// signal no error (clear carry flag)
+;	rst divmmc;							// issue a hookcode
+;	defb f_open;						// open file
+	call (open_ex-cf_ram)+$c100;		// open file if it exits
+
 	jr c, cf_exit;						// return if error
 	ld (handle_c), a;					// store handle
 
@@ -775,12 +777,14 @@ cp_end:
 	ldir;								// DE already points to destination so copy it
 
 cp_load:
-	ld ix, (cp_path-cf_ram)+$c100;		// path to config.sys file (cf_path)
-	ld a, '*';							// use current drive
-	ld b, fa_read | fa_open_ex;			// open for reading if file exists
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_open;						// open file
+	ld ix, (cp_path-cf_ram)+$c100;		// path to code page file (cp_path)
+;	ld a, '*';							// use current drive
+;	ld b, fa_read | fa_open_ex;			// open for reading if file exists
+;	and a;								// signal no error (clear carry flag)
+;	rst divmmc;							// issue a hookcode
+;	defb f_open;						// open file
+	call (open_ex-cf_ram)+$c100;		// open file if it exits
+
 	ret c;								// return if error
 	ld ix, $f800;						// file destination
 	ld bc, $0800;						// 2K of data to load
@@ -814,12 +818,14 @@ kb_end:
 	ldir;								// DE already points to destination so copy it
 
 kb_load:
-	ld ix, (kb_path-cf_ram)+$c100;		// path to config.sys file (cf_path)
-	ld a, '*';							// use current drive
-	ld b, fa_read | fa_open_ex;			// open for reading if file exists
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_open;						// open file
+	ld ix, (kb_path-cf_ram)+$c100;		// path to keyboard file (kb_path)
+;	ld a, '*';							// use current drive
+;	ld b, fa_read | fa_open_ex;			// open for reading if file exists
+;	and a;								// signal no error (clear carry flag)
+;	rst divmmc;							// issue a hookcode
+;	defb f_open;						// open file
+	call (open_ex-cf_ram)+$c100;		// open file if it exits
+
 	ret c;								// return if error
 	ld ix, $4240;						// file destination
 	ld bc, 85;							// 85 bytes of data to load
@@ -843,16 +849,27 @@ ln_end:
 	ldir;								// DE already points to destination so copy it
 
 ln_load:
-	ld ix, (ln_path-cf_ram)+$c100;		// path to config.sys file (cf_path)
+	ld ix, (ln_path-cf_ram)+$c100;		// path to language file (ln_path)
+;	ld a, '*';							// use current drive
+;	ld b, fa_read | fa_open_ex;			// open for reading if file exists
+;	and a;								// signal no error (clear carry flag)
+;	rst divmmc;							// issue a hookcode
+;	defb f_open;						// open file
+	call (open_ex-cf_ram)+$c100;		// open file if it exits
+
+	ret c;								// return if error
+	ld ix, $4000;						// file destination
+	ld bc, 576;							// 576 bytes of data to load
+	jr any_load;						// continue to common code
+
+;   // open a file if it exists (called four times)
+open_ex;
 	ld a, '*';							// use current drive
 	ld b, fa_read | fa_open_ex;			// open for reading if file exists
 	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_open;						// open file
-	ret c;								// return if error
-	ld ix, $4000;						// file destination
-	ld bc, 576;							// 576 bytes of data to load
-	jr any_load;						// continue to common code
+    ret;                                // back for error checking
 
 match_string:
 	ld hl, cf_file;	     	         	// first character of file
