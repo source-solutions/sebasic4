@@ -319,11 +319,13 @@ fgt macro(n);							// get (mem 0-5)
 	ctrl_symbol		equ $0e;
 	ctrl_number		equ $0e;
 	ctrl_graphics	equ $0f;
-	ctrl_clr_home	equ $10;
+	ctrl_home		equ $10;
 	ctrl_end		equ $11;
 	ctrl_pg_up		equ $12;
 	ctrl_pg_dn		equ $13;
 	ctrl_ins		equ $14;
+	ctrl_help		equ $15;
+	ctrl_clr		equ $16;
 	ctrl_delete		equ $7f;
 
 

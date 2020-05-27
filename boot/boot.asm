@@ -863,7 +863,7 @@ ln_load:
 	jr any_load;						// continue to common code
 
 ;   // open a file if it exists (called four times)
-open_ex;
+open_ex:
 	ld a, '*';							// use current drive
 	ld b, fa_read | fa_open_ex;			// open for reading if file exists
 	and a;								// signal no error (clear carry flag)

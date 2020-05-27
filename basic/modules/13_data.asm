@@ -286,7 +286,7 @@ rpt_mesgs:
 ;	defb ctrl_left, ",>", ctrl_right, "_:", '"', "|};'\\/.[]~+", ctrl_down, "-{?", ctrl_up, "<=`"
 ;
 ;kt_dig_sym:
-;	defb ctrl_backspace, ctrl_tab, ctrl_caps, ctrl_ins, ctrl_clr_home;
+;	defb ctrl_backspace, ctrl_tab, ctrl_caps, ctrl_ins, ctrl_home;
 ;	defb ctrl_pg_up, ctrl_delete, ctrl_end, ctrl_pg_dn, ctrl_graphics;
 
 kt_main:
@@ -298,7 +298,7 @@ kt_dig_shft:
 	defb ctrl_left, ctrl_down, ctrl_up, ctrl_right, ctrl_graphics;
 
 kt_alpha_sym:
-	defb "~*?\\", ctrl_end, "{}^", ctrl_ins, "-+=.,;", '"', ctrl_clr_home, "<|>]/", ctrl_delete, "`[:";"
+	defb "~*?\\", ctrl_end, "{}^", ctrl_ins, "-+=.,;", '"', ctrl_home, "<|>]/", ctrl_delete, "`[:";"
 
 kt_dig_sym:
 	defb "_!@#$%&'()";

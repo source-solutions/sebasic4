@@ -33,7 +33,7 @@ ed_loop:
 	push hl;							// return address
 	cp 127;								// delete?
 	jr z, ed_delete;					// jump with delete
-	cp 21;								// printable character?
+	cp 23;								// printable character?
 	jr c, ed_keys;						// jump with control keys
 
 ;	// add character subroutine
@@ -78,11 +78,13 @@ ed_keys_t:
 	defb ed_enter - $;					// $0d
 	defb ed_symbol - $;					// $0e
 	defb ed_graph - $;					// $0f
-	defb ed_clr_home - $;				// $10
+	defb ed_home - $;					// $10
 	defb ed_end - $;					// $11
 	defb ed_pg_up - $;					// $12
 	defb ed_pg_dn - $;					// $13
 	defb ed_ins - $;					// $14
+	defb ed_help - $;					// $15
+	defb ed_clr - $;					// $16
 
 ;	// tab editing subroutine
 ed_tab:
@@ -162,8 +164,8 @@ ed_symbol:
 ed_graph:
 	jp add_char;						// immediate jump
 
-;	// clr home editing subroutine
-ed_clr_home:
+;	// home editing subroutine
+ed_home:
 	ld hl, (e_ppc);						// line number to HL
 	bit 5, (iy + _flagx);				// test mode
 	jp nz, clear_sp;					// jump to clear line in input
@@ -214,6 +216,13 @@ ed_list:
 
 ed_ins:
 	ret;								// FIXME - stub for INSERT key
+
+ed_help:
+	ret;								// FIXME - stub for INSERT key
+
+ed_clr:
+	ret;								// FIXME - stub for INSERT key
+
 
 ;	// edge editing subroutine
 ed_edge:

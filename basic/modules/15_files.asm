@@ -332,7 +332,7 @@ copy:
 ;	and a;								// signal no error (clear carry flag)
 ;	rst divmmc;							// issue a hookcode
 ;	defb f_open;						// open file
-	call open_w_exists;					// open file for writing if it exists
+	call open_w_create;					// open file for writing if it exists
 
 	jp c, report_file_not_found;		// jump if error
 	ld (handle_1), a;					// store handle in sysvar

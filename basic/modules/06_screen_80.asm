@@ -303,11 +303,11 @@ print_out:
 ;	bit 1, (iy + _flags2);				// test for 40 column mode
 ;	jp nz, s40_print_out;				// jump if so
 	call po_fetch;						// current print position
-	cp 16;								// characters from 16d are printable
+	cp 14;								// characters from 16d are printable
 	jp nc, po_able;						// jump if so
 	cp 6;								// character in the range 0-5?
 	jr c, po_able;						// jump if so
-	cp 16;								// non-printable character?
+	cp 14;								// non-printable character?
 	jr nc, po_quest;					// jump if so
 	ld e, a;							// move character
 	ld d, 0;							// to DE
@@ -327,8 +327,8 @@ ctlchrtab:
 	defb po_up - $;				 		// 11, up
 	defb po_quest - $;					// 12, delete FIXME: implement CLR from ZX85 project
 	defb po_enter - $;					// 13, CR
-	defb po_quest - $;					// 14, extend
-	defb po_quest - $;					// 15, graphics
+;	defb po_quest - $;					// 14, extend
+;	defb po_quest - $;					// 15, graphics
 
 ;	// cursor left subroutine
 po_back_1:
