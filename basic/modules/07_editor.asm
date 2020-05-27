@@ -168,20 +168,9 @@ ed_graph:
 ed_home:
 	ld hl, (e_ppc);						// line number to HL
 	bit 5, (iy + _flagx);				// test mode
-	jp nz, clear_sp;					// jump to clear line in input
+	jr nz, ed_up;						// jump with input
 	ld hl, (e_line);					// start of line to HL
 	ld (k_cur), hl;						// store it in k_kur
-	ret;								// end of subroutine
-
-;	// clear SP subroutine
-clear_sp:
-	push hl;							// stack pointer to space
-	call set_hl;						// DE to first character, HL to last
-	dec hl;								// adjust amount
-	call reclaim_1;						// reclaim
-	ld (k_cur), hl;						// set k_cur
-	ld (iy + _mode), 0;					// signal 'K' mode
-	pop hl;								// unstack pointer
 	ret;								// end of subroutine
 
 ;	// end editing subroutine
@@ -214,14 +203,28 @@ ed_list:
 	xor a;								// LD A, 0
 	jp chan_open;						// open channel K
 
+;	// insert editing subroutine
 ed_ins:
 	ret;								// FIXME - stub for INSERT key
 
+;	// help editing subrotuine
 ed_help:
 	ret;								// FIXME - stub for INSERT key
 
+;	// clr editing subroutine
 ed_clr:
-	ret;								// FIXME - stub for INSERT key
+	ld hl, (e_ppc);						// line number to HL
+
+;	// clear SP subroutine
+clear_sp:
+	push hl;							// stack pointer to space
+	call set_hl;						// DE to first character, HL to last
+	dec hl;								// adjust amount
+	call reclaim_1;						// reclaim
+	ld (k_cur), hl;						// set k_cur
+	ld (iy + _mode), 0;					// signal 'K' mode
+	pop hl;								// unstack pointer
+	ret;								// end of subroutine
 
 
 ;	// edge editing subroutine
