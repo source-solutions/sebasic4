@@ -21,29 +21,6 @@
 ;	//
 ;	// dec	hex		ascii	key press	print action
 ;	// ----------------------------------------------------
-;	// 006	$06		ACK		caps lock	tab
-;	// 007	$07		BEL		tab			?
-;	// 008	$08		BS		left		cursor left
-;	// 009	$09		HT		right		cursor right
-;	// 010	$0a		LF		down		cursor down
-;	// 011	$0b		VT		up			cursor up
-;	// 012	$0c		FF		backspace	CLS
-;	// 013	$0d		CR		enter		carriage return
-;	// 014	$0e		SO		alternate	
-;	// 015	$0f		SI		control		
-;	// 016	$10		DLE		home		 
-;	// 017	$11		DC1		end
-;	// 018	$12		DC2		pg-up
-;	// 019	$13		DC3		pg-dn
-;	// 020	$14		DC4		insert
-;	// 021	$15		NAK		help		
-;	// 022	$16		SYN		clr			
-;	// 127	$7f		DEL		delete		
-
-; 	// new control codes
-;	//
-;	// dec	hex		ascii	key press	print action
-;	// ----------------------------------------------------
 ;	// 000	$00		NUL		insert		
 ;	// 001	$01		SOH		clr			
 ;	// 002	$02		STX		home

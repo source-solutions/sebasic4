@@ -307,6 +307,12 @@ fgt macro(n);							// get (mem 0-5)
 
 ;	// control characters
 
+	ctrl_ins		equ $00;
+	ctrl_clr		equ $01;
+	ctrl_home		equ $02;
+	ctrl_end		equ $03;
+	ctrl_pg_up		equ $04;
+	ctrl_pg_dn		equ $05;
 	ctrl_caps		equ $06;
 	ctrl_comma		equ $06;
 	ctrl_tab		equ $07;
@@ -319,13 +325,7 @@ fgt macro(n);							// get (mem 0-5)
 	ctrl_symbol		equ $0e;
 	ctrl_number		equ $0e;
 	ctrl_graphics	equ $0f;
-	ctrl_home		equ $10;
-	ctrl_end		equ $11;
-	ctrl_pg_up		equ $12;
-	ctrl_pg_dn		equ $13;
-	ctrl_ins		equ $14;
-	ctrl_help		equ $15;
-	ctrl_clr		equ $16;
+	ctrl_help		equ $10;
 	ctrl_delete		equ $7f;
 
 ;	// function keys

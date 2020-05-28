@@ -31,7 +31,7 @@ ed_loop:
 	call wait_key;						// get a key
 	ld hl, ed_loop;						// stack
 	push hl;							// return address
-	cp 127;								// delete?
+	cp ctrl_delete;						// delete?
 	jr z, ed_delete;					// jump with delete
 	cp 23;								// printable character?
 	jr c, ed_keys;						// jump with control keys
@@ -59,7 +59,8 @@ ed_delete:
 ed_keys:
 	ld e, a;							// code
 	ld d, 0;							// to DE
-	ld hl, ed_keys_t - 7;				// offset to table
+;	ld hl, ed_keys_t - 7;				// offset to table
+	ld hl, ed_keys_t;					// offset to table
 	add hl, de;							// get entry
 	ld e, (hl);							// store in E
 	add hl, de;							// address of handling routine
@@ -69,6 +70,13 @@ ed_keys:
 
 ;	// editing keys table
 ed_keys_t:
+	defb ed_ins - $;					// $00
+	defb ed_clr - $;					// $01
+	defb ed_home - $;					// $02
+	defb ed_end - $;					// $03
+	defb ed_pg_up - $;					// $04
+	defb ed_pg_dn - $;					// $05
+	defb ed_enter - $;					// $06
 	defb ed_tab - $;					// $07
 	defb ed_left - $;					// $08
 	defb ed_right - $;					// $09
@@ -78,13 +86,7 @@ ed_keys_t:
 	defb ed_enter - $;					// $0d
 	defb ed_symbol - $;					// $0e
 	defb ed_graph - $;					// $0f
-	defb ed_home - $;					// $10
-	defb ed_end - $;					// $11
-	defb ed_pg_up - $;					// $12
-	defb ed_pg_dn - $;					// $13
-	defb ed_ins - $;					// $14
-	defb ed_help - $;					// $15
-	defb ed_clr - $;					// $16
+	defb ed_help - $;					// $10
 
 ;	// tab editing subroutine
 ed_tab:
