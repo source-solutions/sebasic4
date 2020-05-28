@@ -330,21 +330,21 @@ fgt macro(n);							// get (mem 0-5)
 
 ;	// function keys
 
-	f_k1			equ $11
-	f_k2			equ $12
-	f_k3			equ $13
-	f_k4			equ $14
-	f_k5			equ $15
-	f_k6			equ $16
-	f_k7			equ $17
-	f_k8			equ $18
-	f_k9			equ $19
-	f_k10			equ $1a
-	f_k11			equ $1b
-	f_k12			equ $1c
-	f_k13			equ $1d
-	f_k14			equ $1e
-	f_k15			equ $1f
+	k_f1			equ $11
+	k_f2			equ $12
+	k_f3			equ $13
+	k_f4			equ $14
+	k_f5			equ $15
+	k_f6			equ $16
+	k_f7			equ $17
+	k_f8			equ $18
+	k_f9			equ $19
+	k_f10			equ $1a
+	k_f11			equ $1b
+	k_f12			equ $1c
+	k_f13			equ $1d
+	k_f14			equ $1e
+	k_f15			equ $1f
 
 ;	// printable characters
 

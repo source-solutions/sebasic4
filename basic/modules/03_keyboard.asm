@@ -232,9 +232,10 @@ k_test:
 	ld b, d;							// copy shift byte
 	ld a, e;							// move key number
 	ld d, 0;							// clear D register
-;	cp 39;								// shift or no-key?
+	cp 39;								// shift or no-key?
 
-	cp 54;								// shift or no-key?
+	ret z;								// return with shift
+	cp 54;								// no-key?
 
 	ret nc;								// return if so
 	cp 24;								// test for alternate
