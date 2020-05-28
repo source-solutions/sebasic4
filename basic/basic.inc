@@ -328,6 +328,23 @@ fgt macro(n);							// get (mem 0-5)
 	ctrl_clr		equ $16;
 	ctrl_delete		equ $7f;
 
+;	// function keys
+
+	f_k1			equ $11
+	f_k2			equ $12
+	f_k3			equ $13
+	f_k4			equ $14
+	f_k5			equ $15
+	f_k6			equ $16
+	f_k7			equ $17
+	f_k8			equ $18
+	f_k9			equ $19
+	f_k10			equ $1a
+	f_k11			equ $1b
+	f_k12			equ $1c
+	f_k13			equ $1d
+	f_k14			equ $1e
+	f_k15			equ $1f
 
 ;	// printable characters
 

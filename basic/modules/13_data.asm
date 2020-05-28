@@ -293,6 +293,14 @@ kt_main:
 	defb "BHY65TGVNJU74RFCMKI83EDX", ctrl_symbol;
 	defb "LO92WSZ ", ctrl_enter, "P01QA";
 
+kt_ext:
+	defb k_f9
+	defb k_f7;										// substitution
+	defb k_f5, k_f3, k_f1, k_f2, k_f12
+	defb k_f14;										// substitution
+	defb k_f10 
+	defb k_f13, k_f15;								// substitution
+
 kt_dig_shft:
 	defb ctrl_backspace, ctrl_tab, ctrl_caps, ctrl_pg_up, ctrl_pg_dn;
 	defb ctrl_left, ctrl_down, ctrl_up, ctrl_right, ctrl_graphics;
