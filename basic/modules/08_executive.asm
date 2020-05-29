@@ -561,6 +561,14 @@ chan_flag:
 	add hl, de;							// address of routine
 	jp (hl);							// immediate jump
 
+;	// make string subroutine
+make_string:
+	call var_end_hl;					// point to locatino before variables end marker
+	push bc;							// stack BC
+	call make_room;						// make room
+	pop bc;								// unstack BC
+	ret;								// end of subroutine
+
 ;	// make room subroutine
 make_room:
 	push hl;							// stack pointer

@@ -1173,7 +1173,7 @@ let:
 	ld hl, (dest);						// current address of dest
 	bit 1, (iy + _flagx);				// existing variable?
 	jr z, l_exists;						// jump if so
-	ld bc, $0005;						// assume five byte numeric variable
+	ld bc, 5;							// assume five byte numeric variable
 
 l_each_ch:
 	inc bc;								// add one for each character in name
@@ -1199,8 +1199,7 @@ l_test_ch:
 
 l_spaces:
 	ld a, c;							// length to A
-	call var_end_hl;					// varaibles end marker location to HL
-	call make_room;						// make BC spaces
+	call make_string;					// make BC length string
 	ex de, hl;							// first new byte to HL
 	inc de;								// second new byte
 	inc de;								// to DE
@@ -1333,8 +1332,7 @@ l_string:
 	inc bc;								// one byte for letter
 	inc bc;								// two for
 	inc bc;								// length
-	call var_end_hl;					// varaibles end marker location to HL
-	call make_room;						// insert spaces
+	call make_string;					// make BC length string
 	ld hl, (dest);						// restore pointer
 	pop bc;								// length
 	push bc;							// to BC
@@ -1352,7 +1350,10 @@ l_string:
 l_first:
 	dec hl;								// point to old end marker
 	ld (hl), a;							// write new letter
-	call var_end_hl;					// varaibles end marker location to HL
+
+var_end_hl:
+	ld hl, (e_line);					// localtion before variables end marker
+	dec hl;								// to HL
 	ret;								// end of subroutine
 
 ;	// stack fetch subroutine
