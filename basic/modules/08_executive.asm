@@ -451,8 +451,7 @@ chan_s:
 	xor a;								// clear A
 	ret;								// end of subroutine
 
-; OPEN # command
-
+; 	// OPEN # command
 open:
 	rst get_char;						// get character
 	cp ',';								// test for comma

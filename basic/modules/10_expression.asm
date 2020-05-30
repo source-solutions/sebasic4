@@ -363,15 +363,39 @@ s_cont_3:
 	jr s_cont_3;						// immediate jump
 
 s_opertr:
-	ld hl, tbl_of_ops;					// table address
+;	ld hl, tbl_of_ops;					// table address
+;	ld c, a;							// code to
+;	ld b, 0;							// BC
+;	call indexer;						// index into table
+;	jr nc, s_loop;						// jump if no op found
+;	ld c, (hl);							// get code
+;	ld hl, tbl_priors - 195;			// table address
+;	add hl, bc;							// index into table
+;	ld b, (hl);							// get priority
+
+
+	ld hl, tbl_ops_priors - 3;			// table address - 3
 	ld c, a;							// code to
 	ld b, 0;							// BC
-	call indexer;						// index into table
-	jr nc, s_loop;						// jump if no op found
-	ld c, (hl);							// get code
-	ld hl, tbl_priors - 195;			// table address
-	add hl, bc;							// index into table
+
+indexer_3:
+	inc hl;								// advance to next entry
+	inc hl;
+	inc hl;
+
+	ld a, (hl);							// first triplet to A
+	and a;								// null termniator?
+	jr z, s_loop;						// jump if so
+
+	cp c;								// matching code?
+	jr nz, indexer_3;					// jump with incorrect code
+
+	inc hl;								// address calculator code
+	ld c, (hl);							// get code;
+
+	inc hl;								// address priority
 	ld b, (hl);							// get priority
+
 
 s_loop:
 	pop de;								// get last op-code and priority
