@@ -27,8 +27,8 @@ copyright:
 	defb "SE BASIC IV 4.2 Cordelia", ctrl_enter;
 	defb "Copyright (C)2017 Source Solutions, Inc.", ctrl_enter;
 	defb ctrl_enter;
-	defb "Release 200523", ctrl_enter;
-; 	defb TIMESTR, ctrl_enter;
+;	defb "Release 200612", ctrl_enter; Zhora
+ 	defb TIMESTR, ctrl_enter;
 	defb ctrl_enter, 0;
 
 bytes_free:
@@ -37,31 +37,18 @@ bytes_free:
 
 ;	// used in 04_audio
 semi_tone:
-	df 261.625565300599;				// C
-	df 277.182630976872;				// C#
-	df 293.664767917408;				// D
-	df 311.126983722081;				// D#
-	df 329.627556912870;				// E
-	df 349.228231433004;				// F
-	df 369.994422711634;				// F#
-	df 391.995435981749;				// G
-	df 415.304697579945;				// G#
-	df 440.000000000000;				// A
-	df 466.163761518090;				// A#
-	df 493.883301256124;				// B
-
-;	defb $89, $02, $d0, $12, $86;		// C
-;	defb $89, $0a, $97, $60, $73;		// C#
-;	defb $89, $12, $d5, $17, $1d;		// D
-;	defb $89, $1b, $90, $41, $00;		// D#
-;	defb $89, $24, $d0, $53, $c8;		// E
-;	defb $89, $2e, $9d, $36, $b0;		// F
-;	defb $89, $38, $ff, $49, $3e;		// F#
-;	defb $89, $43, $ff, $6a, $72;		// G
-;	defb $89, $4f, $a7, $00, $54;		// G#
-;	defb $89, $5c, $00, $00, $00;		// A
-;	defb $89, $69, $14, $f6, $23;		// A#
-;	defb $89, $76, $f1, $10, $03;		// B
+	defb $89, $02, $d0, $12, $86;		// C  - 261.625565300599 Hz
+	defb $89, $0a, $97, $60, $74;		// C# - 277.182630976872 Hz
+	defb $89, $12, $d5, $17, $1d;		// D  - 293.664767917408 Hz
+	defb $89, $1b, $90, $41, $01;		// D# - 311.126983722081 Hz
+	defb $89, $24, $d0, $53, $c9;		// E  - 329.627556912870 Hz
+	defb $89, $2e, $9d, $36, $b0;		// F  - 349.228231433004 Hz
+	defb $89, $38, $ff, $49, $3e;		// F# - 369.994422711634 Hz
+	defb $89, $43, $ff, $6a, $72;		// G  - 391.995435981749 Hz
+	defb $89, $4f, $a7, $00, $55;		// G# - 415.304697579945 Hz
+	defb $89, $5c, $00, $00, $00;		// A  - 440.000000000000 Hz
+	defb $89, $69, $14, $f6, $23;		// A# - 466.163761518090 Hz
+	defb $89, $76, $f1, $10, $04;		// B  - 493.883301256124 Hz
 
 ;	// used in 05_miscellaneous
 renum_tbl:
@@ -102,45 +89,29 @@ init_chan:
 	defb end_marker;					// no more channels
 
 ;	// used in 10_expression
-tbl_of_ops:
-	defb '+', $cf;						// +	%11000000 + fadd
-	defb '-', $c3;						// -	%11000000 + fsub
-	defb '*', $c4;						// *	%11000000 + fmul
-	defb '/', $c5;						// /	%11000000 + fdiv
-	defb '^', $c6;						// ^	%11000000 + fexp
-	defb '=', $ce;						// =	%11000000 + fcp(_eq)
-	defb '>', $cc;						// >	%11000000 + fcp(_gt)
-	defb '<', $cd;						// <	%11000000 + fcp(_lt)
-	defb tk_l_eql, $c9;					// <=	%11000000 + fcp(_le)
-	defb tk_gr_eq, $ca;					// >=	%11000000 + fcp(_ge)
-	defb tk_neql, $cb;					// <>	%11000000 + fcp(ne)
-	defb tk_or, $c7;					// OR	%11000000 + fbor
-	defb tk_and, $c8;					// AND	%11000000 + fband
+tbl_ops_priors:
+	defb '+', $cf, 6;					// +	%11000000 + fadd
+	defb '-', $c3, 6;					// -	%11000000 + fsub
+	defb '*', $c4, 8;					// *	%11000000 + fmul
+	defb '/', $c5, 8;					// /	%11000000 + fdiv
+	defb '^', $c6, 10;					// ^	%11000000 + fexp
+	defb '=', $ce, 5;					// =	%11000000 + fcp(_eq)
+	defb '>', $cc, 5;					// >	%11000000 + fcp(_gt)
+	defb '<', $cd, 5;					// <	%11000000 + fcp(_lt)
+	defb tk_l_eql, $c9, 5;				// <=	%11000000 + fcp(_le)
+	defb tk_gr_eq, $ca, 5;				// >=	%11000000 + fcp(_ge)
+	defb tk_neql, $cb, 5;				// <>	%11000000 + fcp(ne)
+	defb tk_or, $c7, 2;					// OR	%11000000 + fbor
+	defb tk_and, $c8, 3;				// AND	%11000000 + fband
 	defb 0;								// null terminator
-
-tbl_priors:
-	defb $06;							// -
-	defb $08;							// *
-	defb $08;							// /
-	defb $0a;							// ^
-	defb $02;							// OR
-	defb $03;							// AND
-	defb $05;							// <=
-	defb $05;							// >=
-	defb $05;							// <>
-	defb $05;							// >
-	defb $05;							// <
-	defb $05;							// =
-	defb $06;							// +
 
 ;	// used in 12_calculator
 constants:
-	pi equ 3.14159265358979
-	df 0;								// int
-	df 1;								// int
-	df 0.5;								// float
-	df pi / 2;							// float
-	df 10;								// int
+	defb $00, $00, $00, $00, $00;		// 0
+	defb $00, $00, $01, $00, $00;		// 1
+	defb $80, $00, $00, $00, $00;		// 0.5
+	defb $81, $49, $0f, $da, $a2;		// pi / 2 (pi = 3.14159265358979)
+	defb $00, $00, $0a, $00, $00;		// 10
 
 tbl_addrs:
 	defw fp_jump_true;
@@ -205,6 +176,8 @@ tbl_addrs:
 	defw fp_calc_2;
 	defw fp_hex_str;
 	defw fp_re_stack;
+	defw fp_new_fn_1;
+	defw fp_new_fn_2;
 	defw fp_series_xx;
 	defw fp_stk_const_xx;
 	defw fp_st_mem_xx;
@@ -298,19 +271,27 @@ rpt_mesgs:
 ;	defb ctrl_left, ",>", ctrl_right, "_:", '"', "|};'\\/.[]~+", ctrl_down, "-{?", ctrl_up, "<=`"
 ;
 ;kt_dig_sym:
-;	defb ctrl_backspace, ctrl_tab, ctrl_caps, ctrl_ins, ctrl_clr_home;
+;	defb ctrl_backspace, ctrl_tab, ctrl_caps, ctrl_ins, ctrl_home;
 ;	defb ctrl_pg_up, ctrl_delete, ctrl_end, ctrl_pg_dn, ctrl_graphics;
 
 kt_main:
 	defb "BHY65TGVNJU74RFCMKI83EDX", ctrl_symbol;
 	defb "LO92WSZ ", ctrl_enter, "P01QA";
 
+kt_ext:
+	defb k_f9
+	defb k_f7;										// substitution
+	defb k_f5, k_f3, k_f1, k_f2, k_f12
+	defb k_f14;										// substitution
+	defb k_f10 
+	defb k_f13, k_f15;								// substitution
+
 kt_dig_shft:
 	defb ctrl_backspace, ctrl_tab, ctrl_caps, ctrl_pg_up, ctrl_pg_dn;
 	defb ctrl_left, ctrl_down, ctrl_up, ctrl_right, ctrl_graphics;
 
 kt_alpha_sym:
-	defb "~*?\\", ctrl_end, "{}^", ctrl_ins, "-+=.,;", '"', ctrl_clr_home, "<|>]/", ctrl_delete, "`[:";"
+	defb "~*?\\", ctrl_end, "{}^", ctrl_ins, "-+=.,;", '"', ctrl_home, "<|>]/", ctrl_delete, "`[:";"
 
 kt_dig_sym:
 	defb "_!@#$%&'()";

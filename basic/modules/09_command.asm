@@ -104,8 +104,6 @@ separator:
 stmt_ret:
 	call break_key;						// break?
 	jr c, stmt_r_1;						// jump if not
-;	rst error;							// else
-;	defb break;							// error
 	jp report_break;					// clear keyboard buffer and report break
 
 stmt_r_1:
@@ -746,11 +744,6 @@ run_zero:
 	call use_zero;						// use line zero
 	jr c_run;							// run
 
-var_end_hl:
-	ld hl, (e_line);					// variables end marker
-	dec hl;								// to HL
-	ret;								// end of subroutine
-
 ;	// CLEAR command
 clear:
 	call find_int2;						// get operand
@@ -764,7 +757,7 @@ clear_run:
 clear_1:
 	push bc;							// stack value
 	ld de, (vars);						// start of variables to DE
-	call var_end_hl;					// varaibles end marker location to HL
+	call var_end_hl;					// location before varaibles end marker location to HL
 	call reclaim_1;						// reclaim all bytes of current variables area
 	call rest_run;						// data restore
 	call cls;							// clear display
@@ -1293,8 +1286,6 @@ in_stop:
 
 ;	// STOP command
 stop:
-;	rst error;							// then
-;	defb break;							// error
 	jp report_break;					// clear keyboard buffer and report break
 
 ;	// in channel K subroutine

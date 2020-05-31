@@ -99,11 +99,8 @@ endskp8:
 ; end of get shortname
 
 	ld ix, $5900;						// default program name
-	ld a, '*';							// use current drive
-	ld b, fa_read | fa_open_ex;			// open for reading if file exists
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_open;						// open file
+	call open_r_exists;					// open file for reading if it exists
+
 	jr c, app_not_found;				// jump if error
 	ld (handle), a;						// store handle
 
@@ -154,24 +151,30 @@ appname:
 resources:
 	defb "../rsc", 0;					// resource folder
 
+open_w_create:
+	ld b, fa_write | fa_open_al;		// create or open for writing if file exists
+	jr open_f_common;					// immediate jump
+
+open_r_exists:
+	ld b, fa_read | fa_open_ex;			// open for reading if file exists
+
+open_f_common:
+   	ld a, '*';							// use current drive
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_open;						// open file
+    ret;                                // done
+
 ;	// file subroutines (IX must point to an ASCIIZ path on entry)
 
 f_open_read_ex:
-	ld a, '*';							// use current drive
-	ld b, fa_read | fa_open_ex;			// open for reading if file exists
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_open;						// open file
-	jr c, report_file_not_found;		// jump if error
-	ld (handle), a;						// store handle
-	ret;								// end of subroutine
+	call open_r_exists;					// open file for reading if it exists
+	jr open_f_ret;						// immediate jump
 
 f_open_write_al:
-	ld a, '*';							// use current drive
-	ld b, fa_write | fa_open_al;		// open for writing
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_open;						// open file
+	call open_w_create;					// open file for writing if it exists
+
+open_f_ret:
 	jr c, report_file_not_found;		// jump if error
 	ld (handle), a;						// store handle in sysvar
 	ret;								// end of subroutine
@@ -304,12 +307,8 @@ copy:
 	call f_get_stats;					// get file length
 	ld ix, $5900;						// pointer to path
 
-;	// open file for writing with alternate handle
-	ld a, '*';							// use current drive
-	ld b, fa_write | fa_open_al;		// open for writing
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_open;						// open file
+	call open_w_create;					// open file for writing if it exists
+
 	jp c, report_file_not_found;		// jump if error
 	ld (handle_1), a;					// store handle in sysvar
 
@@ -650,8 +649,7 @@ pr_ch_na:
 	ld a, '?';							// else substitute a question mark
 
 pr_fn_chr:
-;	rst print_a;						// print character
-	call print_f;
+	call print_f;						// print character substituting ' ' for '_'
 	djnz pr_foldername;					// loop until all 12 are done
 	ld hl, dir_msg;						// else point to "<DIR>   " message
 
@@ -719,8 +717,7 @@ pr_ch_na2:
 	ld a, '?';							// else substitute a question mark
 
 pr_fn_chr_2:
-;	rst print_a;						// print character
-	call print_f;
+	call print_f;						// print character substituting ' ' for '_'
 	djnz pr_filename;					// loop until all 12 are done
 	ld b, 8;							// count
 

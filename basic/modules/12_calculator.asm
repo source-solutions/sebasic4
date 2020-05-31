@@ -56,20 +56,22 @@ re_entry:
 scan_ent:
 	push hl;							// stack it
 	and a;								// test A
-	jp p, first_3d;						// jump with 0 to 61
+	jp p, first_3f;						// jump with 0 to 61
 	ld d, a;							// literal to D
 	and %01100000;						// preserve bit 5 and 6
 	rrca;								// shift
 	rrca;								// right
 	rrca;								// into
 	rrca;								// bit 1 and 2
-	add a, 124;							// offsets 62 to 65
+
+	add a, 128;							// offsets 64 to 68
+
 	ld l, a;							// L holds doubled offset
 	ld a, d;							// get parameter
 	and %00011111;						// from bits 0 to 4
 	jr ent_table;						// address routine
 
-first_3d:
+first_3f:
 	cp 24;								// unary operation?
 	jr nc, double_a;					// jump if so
 	exx;								// main register set
@@ -1102,20 +1104,20 @@ cases:
 
 ;	// arcsine function
 fp_asin:
-	fwait();							; x
-	fmove();							; x, x
-	fmove();							; x, x, x
-	fmul();								; x, x * x
-	fstk1();							; x, x * x, 1
-	fsub();								; x, x * x - 1
-	fneg();								; x, 1 - x * x
-	fsqrt();							; x, sqr(1 - x * x)
-	fstk1();							; x, sqr(1 - x * x), 1
-	fadd();								; x, 1 + sqr(1 - x * x)
-	fdiv();								; x / (1 + sqr(1 - x * x)) = tan
-	fatan();							; y / 2
-	fmove();							; y / 2, y / 2
-	fadd();								; y = asn x
+	fwait();							// x
+	fmove();							// x, x
+	fmove();							// x, x, x
+	fmul();								// x, x * x
+	fstk1();							// x, x * x, 1
+	fsub();								// x, x * x - 1
+	fneg();								// x, 1 - x * x
+	fsqrt();							// x, sqr(1 - x * x)
+	fstk1();							// x, sqr(1 - x * x), 1
+	fadd();								// x, 1 + sqr(1 - x * x)
+	fdiv();								// x / (1 + sqr(1 - x * x)) = tan
+	fatan();							// y / 2
+	fmove();							// y / 2, y / 2
+	fadd();								// y = asn x
 	fce();								// exit calculator
 	ret;								// end of subroutine
 
@@ -1160,7 +1162,67 @@ fp_sqr_1:
 	djnz fp_sqr_1;						// loop until found
 	ret;								// end of subroutine
 
+;	// exponentiation operation
 fp_to_power:
+	ld a, (de);							//
+	or a;								//
+	jr nz, topwr1;						//
+	call fp_to_bc_delete;				//
+	push bc;							//
+	jr z, topwrp;						//
+	fwait();							// x
+
+topwrn:
+	fstk1();							// x, 1
+	fxch();								// 1, x
+	fdiv();								// 1/x
+	fce();								// exit calculator
+
+topwrp:
+	pop hl;								//
+	ld a, h;							//
+	or l;								//
+	jr z, stkone;						//
+	ld b, $10;							//
+	dec a;								//
+	jr nz, topwsh;						//
+	ld a, h;							//
+	or a;								//
+	ret z;								//
+
+topwsh:
+	dec b;								//
+	add hl, hl;							//
+	jr nc, topwsh;						//
+	push hl;							//
+	fwait();							// x
+	fst(0);								// store in mem-0
+
+topwrl:
+	fmove();							// x, x
+	fmul();								// x, x * x
+	fce();								// exit calculator
+	pop hl;								//
+	add hl, hl;							//
+	push hl;							//
+	ld a, (breg);						//
+	ld b, a;							//
+	jr nc, topwre;						//
+	fwait();							// x
+	fgt(0);								// x, x
+	fmul();								// x, x * x
+	fjp(topwro);						//
+
+topwre:
+	fwait();							// x
+
+topwro:
+	fdjnz(topwrl);						//
+	fce();								// exit calculator
+	pop hl;								//
+	ret;								//
+
+topwr1:
 	fwait();							// x
 	fxch();								// y, x
 	fmove();							// y, x, x
@@ -1172,17 +1234,13 @@ fp_to_power:
 	jp fp_exp;							// form exp(y * log x)
 
 xis0:
-	fdel();								// y
-	fmove();							// y, y
-	fnot();								// y, (1 / 0)
-	fjpt(one);							// y
-	fstk0();							// y, 0
 	fxch();								// 0, y
 	fcp(_gz);							// 0, (1 / 0)
 	fjpt(last);							// 0
-	fstk1();							// 0, 1
-	fxch();								// 1, 0
-	fdiv();								// divide by zero gives arithmetic overflow
+	fjp(topwrn);						// 1/x (reciprocal already available)
+
+stkone:
+	fwait();							// x
 
 one:
 	fdel();								// -
@@ -1230,4 +1288,12 @@ hexs_4:
 	add a, '0';							// offset to ASCII zero
 	ld (de), a;							// store character
 	inc de;								// next position
+	ret;
+
+;	// new function 1
+fp_new_fn_1:
+	ret;
+
+;	// new function 2
+fp_new_fn_2:
 	ret;

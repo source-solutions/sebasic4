@@ -31,9 +31,9 @@ ed_loop:
 	call wait_key;						// get a key
 	ld hl, ed_loop;						// stack
 	push hl;							// return address
-	cp 127;								// delete?
+	cp ctrl_delete;						// delete?
 	jr z, ed_delete;					// jump with delete
-	cp 21;								// printable character?
+	cp 23;								// printable character?
 	jr c, ed_keys;						// jump with control keys
 
 ;	// add character subroutine
@@ -59,7 +59,7 @@ ed_delete:
 ed_keys:
 	ld e, a;							// code
 	ld d, 0;							// to DE
-	ld hl, ed_keys_t - 7;				// offset to table
+	ld hl, ed_keys_t;					// offset to table
 	add hl, de;							// get entry
 	ld e, (hl);							// store in E
 	add hl, de;							// address of handling routine
@@ -69,6 +69,13 @@ ed_keys:
 
 ;	// editing keys table
 ed_keys_t:
+	defb ed_ins - $;					// $00
+	defb ed_clr - $;					// $01
+	defb ed_home - $;					// $02
+	defb ed_end - $;					// $03
+	defb ed_pg_up - $;					// $04
+	defb ed_pg_dn - $;					// $05
+	defb ed_enter - $;					// $06
 	defb ed_tab - $;					// $07
 	defb ed_left - $;					// $08
 	defb ed_right - $;					// $09
@@ -78,11 +85,7 @@ ed_keys_t:
 	defb ed_enter - $;					// $0d
 	defb ed_symbol - $;					// $0e
 	defb ed_graph - $;					// $0f
-	defb ed_clr_home - $;				// $10
-	defb ed_end - $;					// $11
-	defb ed_pg_up - $;					// $12
-	defb ed_pg_dn - $;					// $13
-	defb ed_ins - $;					// $14
+	defb ed_help - $;					// $10
 
 ;	// tab editing subroutine
 ed_tab:
@@ -162,24 +165,13 @@ ed_symbol:
 ed_graph:
 	jp add_char;						// immediate jump
 
-;	// clr home editing subroutine
-ed_clr_home:
+;	// home editing subroutine
+ed_home:
 	ld hl, (e_ppc);						// line number to HL
 	bit 5, (iy + _flagx);				// test mode
-	jp nz, clear_sp;					// jump to clear line in input
+	jr nz, ed_up;						// jump with input
 	ld hl, (e_line);					// start of line to HL
 	ld (k_cur), hl;						// store it in k_kur
-	ret;								// end of subroutine
-
-;	// clear SP subroutine
-clear_sp:
-	push hl;							// stack pointer to space
-	call set_hl;						// DE to first character, HL to last
-	dec hl;								// adjust amount
-	call reclaim_1;						// reclaim
-	ld (k_cur), hl;						// set k_cur
-	ld (iy + _mode), 0;					// signal 'K' mode
-	pop hl;								// unstack pointer
 	ret;								// end of subroutine
 
 ;	// end editing subroutine
@@ -212,8 +204,28 @@ ed_list:
 	xor a;								// LD A, 0
 	jp chan_open;						// open channel K
 
+;	// insert editing subroutine
 ed_ins:
 	ret;								// FIXME - stub for INSERT key
+
+;	// help editing subrotuine
+ed_help:
+	ret;								// FIXME - stub for INSERT key
+
+;	// clr editing subroutine
+ed_clr:
+	ld hl, (e_ppc);						// line number to HL
+
+;	// clear SP subroutine
+clear_sp:
+	push hl;							// stack pointer to space
+	call set_hl;						// DE to first character, HL to last
+	dec hl;								// adjust amount
+	call reclaim_1;						// reclaim
+	ld (k_cur), hl;						// set k_cur
+	ld (iy + _mode), 0;					// signal 'K' mode
+	pop hl;								// unstack pointer
+	ret;								// end of subroutine
 
 ;	// edge editing subroutine
 ed_edge:
@@ -292,7 +304,7 @@ key_mode:
 
 key_flag:
 	set 3, (iy + _vdu_flag);			// signal possible mode change
-	cp a;								// clear carry flag
+	cp a;								// clear carry and reset zero flag
 	ret;								// and return
 
 key_done2:

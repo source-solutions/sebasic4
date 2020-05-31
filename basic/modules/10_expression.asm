@@ -17,12 +17,14 @@
 ;	// --- EXPRESSION EVALUATION -----------------------------------------------
 
 ;	// FIXME - futher optimization is possible (see: indexer_0)
-;	//         BIN$, OCT$ and HEX$ are not yet implemented
+;	//         BIN$ and OCT$ are not yet implemented
 
 ;	// scanning subroutine
 	org $24f0;
 scanning:
 	rst get_char;						// get current character
+
+scanning_1:
 	ld b, 0;							// priority marker
 	push bc;							// stack it
 
@@ -139,37 +141,53 @@ s_bracket:
 s_fn:
 	jp s_fn_sbrn;						// immediate jump
 
+;	// fast RND function
 s_rnd:
 	call syntax_z;						// checking syntax?
-	jr z, s_rnd_end;					// jump if not
-	ld bc, (seed);						// get current value of seed
-	call stack_bc;						// stack it
-	fwait();							// x
-	fstk1();							// x, 1
-	fadd();								// x + 1
-	fstk();								// x + 1, 75
-	defb $37;							// exponent
-	defb $16;							// mantissa
-	fmul();								// (x + 1) * 75
-	fstk();								// (x + 1) * 75, 65537
-	defb $80;							// exponent
-	defb $41, $00, $00, $80;			// mantissa
-	fmod();								// r, (x + 1) * 75/65537
-	fdel();								// r
-	fstk1();							// r, 1
-	fsub();								// r - 1
-	fmove();							// r - 1, r - 1
-	fce();								// exit calculator
-	call fp_to_bc;						// calculator stack to BC
-	ld (seed), bc;						// store in seed
-	ld a, (hl);							// get exponen
-	and a;								// zero?
-	jr z, s_rnd_end;					// jump if so
-	sub 16;								// divide last value by 65536
-	ld (hl), a;							// store value
+	jr z, s_pi_end;						// jump if not
+	ld hl, (seed);						// get current value of seed
+	ld e, l;							// store it
+	ld d, h;							// in DE
+	xor a;								//
+	ld bc, $062c;						//
 
-s_rnd_end:
-	jr s_pi_end;						// immediate jump
+rndl:
+	adc hl, hl;							//
+	adc a, a;							//
+	rl c;								//
+	jr nc, noadd;						//
+	ccf;								//
+	adc hl, de;							//
+	adc a, 0;							//
+
+noadd:
+	djnz rndl;							//
+	ld c, 75;							//
+	adc hl, bc;							//
+	adc a, b;							//
+	call s_seed;						//
+	ld a, (hl);							//
+	or a;								//
+	jr z, s_pi_end;						//
+	sub a, $10;							//
+	ld (hl), a;							//
+	jr s_pi_end;						//
+
+s_seed:
+	jr z, nomod;						//
+	ld c, a;							//
+	sbc hl, bc;							//
+	jr c, domod;						//
+
+nomod:
+	dec hl;								//
+
+domod:
+	ld (seed), hl;						//
+	ld c, l;							//
+	ld b, h;							//
+	call stack_bc;						//
+	jp fp_re_stack;						//
 
 s_pi:
 	call syntax_z;						// checking syntax?
@@ -313,15 +331,28 @@ s_cont_3:
 	rst next_char;						// next character
 	jr s_cont_3;						// immediate jump
 
+;	// uses a combined table of operators and priorities
 s_opertr:
-	ld hl, tbl_of_ops;					// table address
+	ld hl, tbl_ops_priors - 3;			// table address - 3
 	ld c, a;							// code to
 	ld b, 0;							// BC
-	call indexer;						// index into table
-	jr nc, s_loop;						// jump if no op found
-	ld c, (hl);							// get code
-	ld hl, tbl_priors - 195;			// table address
-	add hl, bc;							// index into table
+
+indexer_3:
+	inc hl;								// advance to next entry
+	inc hl;
+	inc hl;
+
+	ld a, (hl);							// first triplet to A
+	and a;								// null termniator?
+	jr z, s_loop;						// jump if so
+
+	cp c;								// matching code?
+	jr nz, indexer_3;					// jump with incorrect code
+
+	inc hl;								// address calculator code
+	ld c, (hl);							// get code;
+
+	inc hl;								// address priority
 	ld b, (hl);							// get priority
 
 s_loop:
@@ -457,7 +488,7 @@ sf_argmt1:
 	dec hl;								// step back
 
 sf_fnd_df:
-	ld de, $00ce;						// search for DEF FN
+	ld de, tk_def_fn;					// search for DEF FN
 	push bc;							// stack name and string status
 	call look_prog;						// search program
 	pop bc;								// unstack name and status
@@ -494,7 +525,8 @@ sf_values:
 	call fn_skpovr;						// skip first parenthesis
 	push hl;							// stack pointer
 	cp ')';								// closing parenthesis?
-	jr z, sf_r_br_2;					// jump if no arguments
+;	jr z, sf_r_br_2;					// jump if no arguments
+	jp z, sf_r_br_2;					// jump if no arguments
 
 sf_arg_lp:
 	inc hl;								// point to next code
@@ -507,6 +539,7 @@ sf_arg_lp:
 	ld d, 0;							// reset bit 6 of D
 	inc hl;								// point to hidden number marker
 
+;	// enable nesting and recursion
 sf_arg_vl:
 	inc hl;								// point to first byte of DEF FN
 	push hl;							// stack pointer
@@ -516,17 +549,18 @@ sf_arg_vl:
 	xor (iy + _flags);					// test bit 6
 	and %01000000;						// against result
 	jr nz, report_type_mismatch;		// error if no match
-	pop de;								// unstack pointer
-	ld hl, (stkend);					// stack end to HL
-	ld bc, 5;							// five bytes
-	sbc hl, bc;							// decrease stack end by five
-	ld (stkend), hl;					// store it effectively deleting last value
-	ldir;								// copy five bytes
-	ex de, hl;							// pointer to HL
-	dec hl;								// skip to end of five bytes
+
+	pop hl;								// pop the start address in DEF FN statement
+	inc hl;								// skip over old value for now
+	inc hl;
+	inc hl;
+	inc hl;
+
 	call fn_skpovr;						// next argument to HL
 	cp ')';								// closing parenthesis?
-	jr z, sf_r_br_2;					// jump if so
+
+	jr z, savargs;						// jump if so
+
 	push hl;							// stack pointer to comma
 	rst get_char;						// get current character
 	cp ',';								// comma?
@@ -535,6 +569,67 @@ sf_arg_vl:
 	pop hl;								// unstack comma pointer
 	call fn_skpovr;						// next argument to HL
 	jr sf_arg_lp;						// jump back
+
+cntargs:
+	ld hl, (stkend);					// 
+	ld bc, 5;							// 
+
+cntarg:
+	ld a, (de);							// 
+	cp ctrl_number;						// 
+	inc de;								// 
+	jr nz, cnoarg;						// 
+	sbc hl, bc;							// 
+	ex de, hl;							// 
+	add hl, bc;							// 
+	ex de, hl;							// 
+
+cnoarg:
+	cp ')';								// 
+	jr nz, cntarg;						// 
+	ret;								// 
+
+rstargs:
+	push de;							// 
+	call cntargs;						// 
+	sbc hl, bc;							// 
+	pop de;								// 
+	push hl;							// 
+
+resarg:
+	ld a, (de);							// 
+	cp ctrl_number;						// 
+	inc de;								// 
+	jr nz, rnoarg;						// 
+	push bc;							// 
+	ldir;								// 
+	pop bc;								// 
+
+rnoarg:
+	cp ')';								// 
+	jr nz, resarg;						// 
+	pop de;								// 
+	ld c, 5;							// 
+	ldir;								// 
+	ld (stkend), de;					// reset stack end
+	ret;								// end of subroutine
+
+savargs:
+	pop de;								// 
+	push de;							// 
+	call cntargs;						// 
+	ex de, hl;							// 
+	pop hl;								// 
+	push hl;							// 
+	ld a, (hl);							// 
+
+savarg:
+	inc hl;								// 
+	cp ctrl_number;						// 
+	call z, fp_exchange;				// 
+	ld a, (hl);							// 
+	cp ')';								// 
+	jr nz, savarg;						// 
 
 sf_r_br_2:
 	push hl;							// stack pointer to closing parenthesis
@@ -556,7 +651,11 @@ sf_value:
 	push de;							// stack address of closing parenthesis
 	rst next_char;						// move past closing parenthesis
 	rst next_char;						// and equals signS
-	call scanning;						// evaluate function
+	call scanning_1;					// evaluate function
+
+	ld de, (defadd);					// DEF FN argument list
+	call rstargs;						// restore function argumets from stack
+
 	pop hl;								// unstack address of closing parenthesis
 	ld (ch_add), hl;					// store it in sysvar
 	pop hl;								// unstack original value of defadd
@@ -568,6 +667,7 @@ sf_value:
 fn_skpovr:
 	inc hl;								// next code
 
+;	// altered for RENUM
 fn_skpovr_1:
 	ld a, (hl);							// code to A
 ;	cp ' ' + 1;							// > space?
@@ -1048,7 +1148,7 @@ let:
 	ld hl, (dest);						// current address of dest
 	bit 1, (iy + _flagx);				// existing variable?
 	jr z, l_exists;						// jump if so
-	ld bc, $0005;						// assume five byte numeric variable
+	ld bc, 5;							// assume five byte numeric variable
 
 l_each_ch:
 	inc bc;								// add one for each character in name
@@ -1074,8 +1174,7 @@ l_test_ch:
 
 l_spaces:
 	ld a, c;							// length to A
-	call var_end_hl;					// varaibles end marker location to HL
-	call make_room;						// make BC spaces
+	call make_string;					// make BC length string
 	ex de, hl;							// first new byte to HL
 	inc de;								// second new byte
 	inc de;								// to DE
@@ -1208,8 +1307,7 @@ l_string:
 	inc bc;								// one byte for letter
 	inc bc;								// two for
 	inc bc;								// length
-	call var_end_hl;					// varaibles end marker location to HL
-	call make_room;						// insert spaces
+	call make_string;					// make BC length string
 	ld hl, (dest);						// restore pointer
 	pop bc;								// length
 	push bc;							// to BC
@@ -1227,7 +1325,10 @@ l_string:
 l_first:
 	dec hl;								// point to old end marker
 	ld (hl), a;							// write new letter
-	call var_end_hl;					// varaibles end marker location to HL
+
+var_end_hl:
+	ld hl, (e_line);					// localtion before variables end marker
+	dec hl;								// to HL
 	ret;								// end of subroutine
 
 ;	// stack fetch subroutine

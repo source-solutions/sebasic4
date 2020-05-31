@@ -17,6 +17,44 @@
 ;	// keyboard routines are called during maskable interrupt and avoid
 ;	// use of IY because the maskable interrupt routine does not stack it
 
+; 	// control codes
+;	//
+;	// dec	hex		ascii	key press	print action
+;	// ----------------------------------------------------
+;	// 000	$00		NUL		insert		
+;	// 001	$01		SOH		clr			
+;	// 002	$02		STX		home
+;	// 003	$03		ETX		end
+;	// 004	$04		EOT		pg-up
+;	// 005	$05		ENQ		pg-dn
+;	// 006	$06		ACK		caps lock	tab
+;	// 007	$07		BEL		tab			?
+;	// 008	$08		BS		left		cursor left
+;	// 009	$09		HT		right		cursor right
+;	// 010	$0a		LF		down		cursor down
+;	// 011	$0b		VT		up			cursor up
+;	// 012	$0c		FF		backspace	CLS
+;	// 013	$0d		CR		enter		carriage return
+;	// 014	$0e		SO		alternate	
+;	// 015	$0f		SI		control		
+;	// 016	$10		DLE		help			
+;	// 017	$11		DC1		F1			
+;	// 018	$12		DC2		F2			
+;	// 019	$13		DC3		F3			
+;	// 020	$14		DC4		F4			
+;	// 021	$15		NAK		F5			
+;	// 022	$16		SYN		F6			
+;	// 023	$17		ETB		F7			
+;	// 024	$18		CAN		F8			
+;	// 025	$19		EM		F9			
+;	// 026	$1a		SUB		F10			
+;	// 027	$1b		ESC		F11			
+;	// 028	$1c		FS		F12			
+;	// 029	$1d		GS		F13			
+;	// 030	$1e		RS		F14			
+;	// 031	$1f		US		F15			
+;	// 127	$7f		DEL		delete		
+
 ;	// --- KEYBOARD ROUTINES ---------------------------------------------------
 
 ;	// keyboard scanning subroutine
@@ -62,9 +100,38 @@ key_done:
 	cp 24;								// check for shift + symbol
 	ret;								// end of subroutine
 
+;	// additional keys scanning subroutine
+f_key_scan:
+	ld bc, $fc3b;						// Uno register port
+	ld a, 4;							// PS/2 scancode port
+	out (c), a;							// select port
+	inc b;								// Uno data port
+	in a, (c);							// read last scancode
+	cp $0d;								// less than $0D
+	jr c, f_key_found;					// possible F key found
+
+no_f_key:
+	cp $83;								// was it F7?
+	ret nz;								// return if not
+	ld a, 2;							// alter from $83 to 2
+
+f_key_found:
+;	cp 0;								// value on port should never be zero
+;	jr z, no_f_key;						// so this routine should not be needed
+;	cp 2;								// value on port should never be 2
+;	jr z, no_f_key;						// so this routine should not be needed
+;	cp 8;								// value on port should never be 8
+;	jr z, no_f_key;						// so this routine should not be needed
+
+	add a, 39;							// original matrix has 40 keys. 
+	ld e, a;							// key value to E
+	cp a;								// set zero flag;
+	ret;								// return;
+
 ;	// keyboard subroutine
 keyboard:
 	call key_scan;						// get key pair in DE
+	call nz, f_key_scan;				// if no main keys pressed, test F-keys
 	ret nz;								// return if no key
 	ld hl, kstate;						// kstate_0 to HL
 
@@ -143,6 +210,10 @@ k_test:
 	ld a, e;							// move key number
 	ld d, 0;							// clear D register
 	cp 39;								// shift or no-key?
+
+	ret z;								// return with shift
+	cp 54;								// no-key?
+
 	ret nc;								// return if so
 	cp 24;								// test for alternate
 	jr nz, k_main;						// jump if not
@@ -200,7 +271,7 @@ k_enter:
 	ret z;								// return if not
 	bit 5, b;							// shift?
 	ret nz;								// return if so
-	ld a, 'E';							// make it E
+	ld a, ctrl_clr;						// make it CLR key
 	ret;								// done
 
 k_space:
@@ -208,7 +279,7 @@ k_space:
 	ret z;								// return if not
 	bit 5, b;							// shift?
 	ret nz;								// return if so
-	ld a, 'S';							// make it S
+	ld a, ctrl_help;					// make it HELP key
 	ret;								// done
 
 k_digit:

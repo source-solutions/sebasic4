@@ -303,11 +303,11 @@ print_out:
 ;	bit 1, (iy + _flags2);				// test for 40 column mode
 ;	jp nz, s40_print_out;				// jump if so
 	call po_fetch;						// current print position
-	cp 16;								// characters from 16d are printable
+	cp 14;								// characters from 16d are printable
 	jp nc, po_able;						// jump if so
 	cp 6;								// character in the range 0-5?
 	jr c, po_able;						// jump if so
-	cp 16;								// non-printable character?
+	cp 14;								// non-printable character?
 	jr nc, po_quest;					// jump if so
 	ld e, a;							// move character
 	ld d, 0;							// to DE
@@ -320,15 +320,13 @@ print_out:
 
 ctlchrtab:
 	defb po_comma - $;					// 06, comma
-	defb po_quest - $;					// 07, edit
-	defb po_back_1 - $;					// 08, left
+	defb po_quest - $;					// 07, BEL
+	defb po_back_1 - $;					// 08, BS
 	defb po_right - $;					// 09, right
-	defb po_quest - $;					// 10, down
-	defb po_quest - $;					// 11, up
-	defb po_quest - $;					// 12, delete
-	defb po_enter - $;					// 13, enter
-	defb po_quest - $;					// 14, extend
-	defb po_quest - $;					// 15, graphics
+	defb po_down - $;					// 10, LF
+	defb po_up - $;				 		// 11, up
+	defb po_quest - $;					// 12, delete FIXME: implement CLR from ZX85 project
+	defb po_enter - $;					// 13, CR
 
 ;	// cursor left subroutine
 po_back_1:
@@ -344,7 +342,7 @@ po_back_1:
 	inc b;								// up one line
 
 po_back_3:
-	jp cl_set;							// indirect return
+	jr jp_cl_set;						// indirect return
 
 ;	// cursor right subroutine
 po_right:
@@ -355,11 +353,38 @@ po_right:
 	ld (hl), d;							// restore sysvar
 	ret;								// end of subroutine
 
+;	// cursor down subroutine
+po_down:
+	ld a, c;							// 
+	push af;							// 
+	call po_enter;						// 
+	pop af;								// 
+	cp c;								// 
+	ret z;								// 
+	ld c, a;							// 
+
+cl_scrl:
+	call po_scr;						// test for scroll
+
+cl_set2:
+	jr jp_cl_set;						// indirect return
+
+;	// cursor up subroutine
+po_up:
+	inc b;								// move one line up
+	ld a, 25;							// screen has 24 lines
+	cp b;								// top of screen reached?
+	jr nz, jp_cl_set;					// set position, if not
+	dec b;								// do nothing
+	ret;								// end of subroutine
+
 ;	// carriage return subroutine
 po_enter:
 	ld c, 81;							// left column
 	call po_scr;						// scroll if required
 	dec b;								// down a line
+
+jp_cl_set:
 	jp cl_set;							// indirect return
 
 ;	// print a question mark subroutine
@@ -606,13 +631,13 @@ po_stp_asciiz:
 	ret;								// return with pointer to message in DE
 ;	// end of ASCIIZ printing
 
-; ;	// SpectraNet entry point
-; ;	org $c0a;
-; ;po_msg:
-; ;	push hl;							// stack last entry
-; ;	ld h, 0;							// zero high byte
-; ;	ex (sp), hl;						// to suppress trailing spaces
-; ;	jr po_table;						// immediate jump
+;	// SpectraNet entry point
+;	org $c0a;
+;po_msg:
+;	push hl;							// stack last entry
+;	ld h, 0;							// zero high byte
+;	ex (sp), hl;						// to suppress trailing spaces
+;	jr po_table;						// immediate jump
 
 ;	// token printing subroutine
 po_tokens:
@@ -639,7 +664,9 @@ po_each:
 
 po_tr_sp:
 	ld a, d;							// offset to A
-	cp 3;								// RND, INKEY$ or PI?
+	cp 3;								// FN?
+	jr z, po_sv_sp;						// jump if so
+	cp 7;								// RND, INKEY$, PI, FN, BIN$, OCT$, HEX$
 	ret c;								// return if so
 
 po_sv_sp:
@@ -715,9 +742,6 @@ po_scr_2:
 	exx;								// main resgister set
 	cp ' ';								// space?
 	jr z, report_break;					// treat as BREAK and jump if so
-	or %00100000;						// N or
-	cp 'n';								// n?
-	jr z, report_break;					// treat as BREAK and jump if so
 	call chan_open_fe;					// open channel S
 
 po_scr_3:
@@ -780,7 +804,7 @@ cls:
 cls_lower:
 	ld hl, vdu_flag;					// address sysvar
 	ld b, (iy + _df_sz);				// get address
-	set 0, (hl);						// signal lower part
+;	set 0, (hl);						// signal lower part
 	res 5, (hl);						// signal no lower screen clear after key
 	call cl_line;						// clear lower part of screen
 	dec b;								// reduce counter

@@ -451,8 +451,7 @@ chan_s:
 	xor a;								// clear A
 	ret;								// end of subroutine
 
-; OPEN # command
-
+; 	// OPEN # command
 open:
 	rst get_char;						// get character
 	cp ',';								// test for comma
@@ -560,6 +559,14 @@ chan_flag:
 	ld d, 0;							// to DE
 	add hl, de;							// address of routine
 	jp (hl);							// immediate jump
+
+;	// make string subroutine
+make_string:
+	call var_end_hl;					// point to locatino before variables end marker
+	push bc;							// stack BC
+	call make_room;						// make room
+	pop bc;								// unstack BC
+	ret;								// end of subroutine
 
 ;	// make room subroutine
 make_room:
@@ -751,11 +758,6 @@ close_2:
 	push hl;							// stack stream data address
 	ld hl, (chans);						// base address of channel to HL
 	add hl, bc;							// channel address
-;	inc hl;								// skip past
-;	inc hl;								// output and
-;	inc hl;								// input routines
-;	ld c, (hl);							// channel letter to C
-;	ex de, hl;							// swap pointers
 
 	dec hl;								// point to first byte
 	ld (curchl), hl;					// update current channel
@@ -1027,7 +1029,6 @@ out_curs:
 	ld (iy + _p_flag), h;				// restore p_flag
 	exx;								// main register set
 	ret;								// end of subroutine
-
 
 ;	// line fetch subroutine
 ln_fetch:
