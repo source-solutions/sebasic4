@@ -1097,7 +1097,7 @@ count_one:
 	inc b;								// increase count
 	jp m, div_loop;						// loop until done
 	push af;							// stack carry flag (33rd bit)
-	jr z, div_start;					// trial subtract for 34th bit if required
+	jr z, div_34th;						// trial subtract for 34th bit if required
 	ld e, a;							// transfer
 	ld d, c;							// mantissa of result ...
 	exx;								// alternate register set
