@@ -104,8 +104,6 @@ separator:
 stmt_ret:
 	call break_key;						// break?
 	jr c, stmt_r_1;						// jump if not
-;	rst error;							// else
-;	defb break;							// error
 	jp report_break;					// clear keyboard buffer and report break
 
 stmt_r_1:
@@ -1288,8 +1286,6 @@ in_stop:
 
 ;	// STOP command
 stop:
-;	rst error;							// then
-;	defb break;							// error
 	jp report_break;					// clear keyboard buffer and report break
 
 ;	// in channel K subroutine

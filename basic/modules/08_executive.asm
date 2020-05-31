@@ -758,11 +758,6 @@ close_2:
 	push hl;							// stack stream data address
 	ld hl, (chans);						// base address of channel to HL
 	add hl, bc;							// channel address
-;	inc hl;								// skip past
-;	inc hl;								// output and
-;	inc hl;								// input routines
-;	ld c, (hl);							// channel letter to C
-;	ex de, hl;							// swap pointers
 
 	dec hl;								// point to first byte
 	ld (curchl), hl;					// update current channel
@@ -1034,7 +1029,6 @@ out_curs:
 	ld (iy + _p_flag), h;				// restore p_flag
 	exx;								// main register set
 	ret;								// end of subroutine
-
 
 ;	// line fetch subroutine
 ln_fetch:

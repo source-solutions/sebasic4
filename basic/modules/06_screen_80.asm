@@ -327,8 +327,6 @@ ctlchrtab:
 	defb po_up - $;				 		// 11, up
 	defb po_quest - $;					// 12, delete FIXME: implement CLR from ZX85 project
 	defb po_enter - $;					// 13, CR
-;	defb po_quest - $;					// 14, extend
-;	defb po_quest - $;					// 15, graphics
 
 ;	// cursor left subroutine
 po_back_1:
@@ -633,13 +631,13 @@ po_stp_asciiz:
 	ret;								// return with pointer to message in DE
 ;	// end of ASCIIZ printing
 
-; ;	// SpectraNet entry point
-; ;	org $c0a;
-; ;po_msg:
-; ;	push hl;							// stack last entry
-; ;	ld h, 0;							// zero high byte
-; ;	ex (sp), hl;						// to suppress trailing spaces
-; ;	jr po_table;						// immediate jump
+;	// SpectraNet entry point
+;	org $c0a;
+;po_msg:
+;	push hl;							// stack last entry
+;	ld h, 0;							// zero high byte
+;	ex (sp), hl;						// to suppress trailing spaces
+;	jr po_table;						// immediate jump
 
 ;	// token printing subroutine
 po_tokens:
@@ -666,7 +664,6 @@ po_each:
 
 po_tr_sp:
 	ld a, d;							// offset to A
-;	cp 3;								// RND, INKEY$ or PI? 
 	cp 3;								// FN?
 	jr z, po_sv_sp;						// jump if so
 	cp 7;								// RND, INKEY$, PI, FN, BIN$, OCT$, HEX$
@@ -745,9 +742,6 @@ po_scr_2:
 	exx;								// main resgister set
 	cp ' ';								// space?
 	jr z, report_break;					// treat as BREAK and jump if so
-;	or %00100000;						// N or
-;	cp 'n';								// n?
-;	jr z, report_break;					// treat as BREAK and jump if so
 	call chan_open_fe;					// open channel S
 
 po_scr_3:

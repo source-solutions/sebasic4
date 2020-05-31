@@ -89,37 +89,6 @@ init_chan:
 	defb end_marker;					// no more channels
 
 ;	// used in 10_expression
-;tbl_of_ops:
-;	defb '+', $cf;						// +	%11000000 + fadd
-;	defb '-', $c3;						// -	%11000000 + fsub
-;	defb '*', $c4;						// *	%11000000 + fmul
-;	defb '/', $c5;						// /	%11000000 + fdiv
-;	defb '^', $c6;						// ^	%11000000 + fexp
-;	defb '=', $ce;						// =	%11000000 + fcp(_eq)
-;	defb '>', $cc;						// >	%11000000 + fcp(_gt)
-;	defb '<', $cd;						// <	%11000000 + fcp(_lt)
-;	defb tk_l_eql, $c9;					// <=	%11000000 + fcp(_le)
-;	defb tk_gr_eq, $ca;					// >=	%11000000 + fcp(_ge)
-;	defb tk_neql, $cb;					// <>	%11000000 + fcp(ne)
-;	defb tk_or, $c7;					// OR	%11000000 + fbor
-;	defb tk_and, $c8;					// AND	%11000000 + fband
-;	defb 0;								// null terminator
-
-;tbl_priors:
-;	defb $06;							// -
-;	defb $08;							// *
-;	defb $08;							// /
-;	defb $0a;							// ^
-;	defb $02;							// OR
-;	defb $03;							// AND
-;	defb $05;							// <=
-;	defb $05;							// >=
-;	defb $05;							// <>
-;	defb $05;							// >
-;	defb $05;							// <
-;	defb $05;							// =
-;	defb $06;							// +
-
 tbl_ops_priors:
 	defb '+', $cf, 6;					// +	%11000000 + fadd
 	defb '-', $c3, 6;					// -	%11000000 + fsub
@@ -135,7 +104,6 @@ tbl_ops_priors:
 	defb tk_or, $c7, 2;					// OR	%11000000 + fbor
 	defb tk_and, $c8, 3;				// AND	%11000000 + fband
 	defb 0;								// null terminator
-
 
 ;	// used in 12_calculator
 constants:

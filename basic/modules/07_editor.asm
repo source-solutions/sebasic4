@@ -59,7 +59,6 @@ ed_delete:
 ed_keys:
 	ld e, a;							// code
 	ld d, 0;							// to DE
-;	ld hl, ed_keys_t - 7;				// offset to table
 	ld hl, ed_keys_t;					// offset to table
 	add hl, de;							// get entry
 	ld e, (hl);							// store in E
@@ -227,7 +226,6 @@ clear_sp:
 	ld (iy + _mode), 0;					// signal 'K' mode
 	pop hl;								// unstack pointer
 	ret;								// end of subroutine
-
 
 ;	// edge editing subroutine
 ed_edge:

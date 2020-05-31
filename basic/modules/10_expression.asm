@@ -143,37 +143,6 @@ s_fn:
 
 ;	// fast RND function
 s_rnd:
-;	call syntax_z;						// checking syntax?
-;	jr z, s_rnd_end;					// jump if not
-;	ld bc, (seed);						// get current value of seed
-;	call stack_bc;						// stack it
-;	fwait();							// x
-;	fstk1();							// x, 1
-;	fadd();								// x + 1
-;	fstk();								// x + 1, 75
-;	defb $37;							// exponent
-;	defb $16;							// mantissa
-;	fmul();								// (x + 1) * 75
-;	fstk();								// (x + 1) * 75, 65537
-;	defb $80;							// exponent
-;	defb $41, $00, $00, $80;			// mantissa
-;	fmod();								// r, (x + 1) * 75/65537
-;	fdel();								// r
-;	fstk1();							// r, 1
-;	fsub();								// r - 1
-;	fmove();							// r - 1, r - 1
-;	fce();								// exit calculator
-;	call fp_to_bc;						// calculator stack to BC
-;	ld (seed), bc;						// store in seed
-;	ld a, (hl);							// get exponen
-;	and a;								// zero?
-;	jr z, s_rnd_end;					// jump if so
-;	sub 16;								// divide last value by 65536
-;	ld (hl), a;							// store value
-
-;s_rnd_end:
-;	jr s_pi_end;						// immediate jump
-
 	call syntax_z;						// checking syntax?
 	jr z, s_pi_end;						// jump if not
 	ld hl, (seed);						// get current value of seed
@@ -362,18 +331,8 @@ s_cont_3:
 	rst next_char;						// next character
 	jr s_cont_3;						// immediate jump
 
+;	// uses a combined table of operators and priorities
 s_opertr:
-;	ld hl, tbl_of_ops;					// table address
-;	ld c, a;							// code to
-;	ld b, 0;							// BC
-;	call indexer;						// index into table
-;	jr nc, s_loop;						// jump if no op found
-;	ld c, (hl);							// get code
-;	ld hl, tbl_priors - 195;			// table address
-;	add hl, bc;							// index into table
-;	ld b, (hl);							// get priority
-
-
 	ld hl, tbl_ops_priors - 3;			// table address - 3
 	ld c, a;							// code to
 	ld b, 0;							// BC
@@ -395,7 +354,6 @@ indexer_3:
 
 	inc hl;								// address priority
 	ld b, (hl);							// get priority
-
 
 s_loop:
 	pop de;								// get last op-code and priority
@@ -581,7 +539,7 @@ sf_arg_lp:
 	ld d, 0;							// reset bit 6 of D
 	inc hl;								// point to hidden number marker
 
-;	// fixed to enable nesting and recursion
+;	// enable nesting and recursion
 sf_arg_vl:
 	inc hl;								// point to first byte of DEF FN
 	push hl;							// stack pointer
@@ -591,14 +549,7 @@ sf_arg_vl:
 	xor (iy + _flags);					// test bit 6
 	and %01000000;						// against result
 	jr nz, report_type_mismatch;		// error if no match
-;	pop de;								// unstack pointer
-;	ld hl, (stkend);					// stack end to HL
-;	ld bc, 5;							// five bytes
-;	sbc hl, bc;							// decrease stack end by five
-;	ld (stkend), hl;					// store it effectively deleting last value
-;	ldir;								// copy five bytes
-;	ex de, hl;							// pointer to HL
-;	dec hl;								// skip to end of five bytes
+
 	pop hl;								// pop the start address in DEF FN statement
 	inc hl;								// skip over old value for now
 	inc hl;
@@ -607,7 +558,7 @@ sf_arg_vl:
 
 	call fn_skpovr;						// next argument to HL
 	cp ')';								// closing parenthesis?
-;	jr z, sf_r_br_2;					// jump if so
+
 	jr z, savargs;						// jump if so
 
 	push hl;							// stack pointer to comma
@@ -700,7 +651,6 @@ sf_value:
 	push de;							// stack address of closing parenthesis
 	rst next_char;						// move past closing parenthesis
 	rst next_char;						// and equals signS
-;	call scanning;						// evaluate function
 	call scanning_1;					// evaluate function
 
 	ld de, (defadd);					// DEF FN argument list
@@ -717,6 +667,7 @@ sf_value:
 fn_skpovr:
 	inc hl;								// next code
 
+;	// altered for RENUM
 fn_skpovr_1:
 	ld a, (hl);							// code to A
 ;	cp ' ' + 1;							// > space?
