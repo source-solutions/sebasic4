@@ -25,10 +25,10 @@ copyright:
 	defb "Copyright (C)1999 Chloe Corporation", ctrl_enter;
 	defb ctrl_enter;
 	defb "SE BASIC IV 4.2 Cordelia", ctrl_enter;
-	defb "Copyright (C)2017 Source Solutions, Inc.", ctrl_enter;
+	defb "Copyright (C)2020 Source Solutions, Inc.", ctrl_enter;
 	defb ctrl_enter;
-;	defb "Release 200612", ctrl_enter; Zhora
- 	defb TIMESTR, ctrl_enter;
+	defb "Release 200612", ctrl_enter; Zhora
+; 	defb TIMESTR, ctrl_enter;
 	defb ctrl_enter, 0;
 
 bytes_free:
