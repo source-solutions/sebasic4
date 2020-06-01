@@ -9,5 +9,5 @@ SE Basic IV is a free open-source Z80 interpreter for Microsoft BASIC. Although 
 * [Language reference](https://github.com/cheveron/sebasic4/wiki/Language-reference), comprehensive reference to BASIC.
 * [Technical reference](https://github.com/cheveron/sebasic4/wiki/Technical-reference), file formats and internals.
 * [Developer's guide](https://github.com/cheveron/sebasic4/wiki/Developer's-guide), building SE basic IV from source.
-* [Acknowledgements](https://github.com/cheveron/sebasic4/wiki/Acknowledgements)
+* [Acknowledgments](https://github.com/cheveron/sebasic4/wiki/Acknowledgements)
 * [License](https://github.com/cheveron/sebasic4/wiki/License)
