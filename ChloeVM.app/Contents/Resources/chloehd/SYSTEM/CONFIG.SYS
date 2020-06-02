@@ -10,7 +10,7 @@
 # ln=ES-1252
 
 ## français
-# ln=FR-1252
+ln=FR-1252
 
 ## italiana
 # ln=IT
@@ -58,7 +58,7 @@
 # cp=MSX2PLUS
 
 ## Latin 1 / Western European
-# cp=1252-EUW
+cp=1252-EUW
 
 ## Latin 2 / Central European
 # cp=1250-EUC
@@ -82,4 +82,4 @@
 # cp=0437-IBM
 
 # Help system
-cp=HELP
+# cp=HELP
