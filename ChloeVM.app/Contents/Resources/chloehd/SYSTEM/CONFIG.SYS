@@ -10,7 +10,7 @@
 # ln=ES-1252
 
 ## français
-ln=FR-1252
+# ln=FR-1252
 
 ## italiana
 # ln=IT
@@ -42,6 +42,9 @@ ln=FR-1252
 
 ### code page (8-bit system font)
 
+## Baltic
+# cp=1257-BAL
+
 ## Cyrillic
 # cp=1251-CYR
 
@@ -55,13 +58,16 @@ ln=FR-1252
 # cp=MSX2PLUS
 
 ## Latin 1 / Western European
-cp=1252-EUW
+# cp=1252-EUW
 
 ## Latin 2 / Central European
 # cp=1250-EUC
 
 ## Turkish
 # cp=1254-TUR
+
+## Vietnamese
+# cp=1258-VIE
 
 ## Atari 8-bit
 # cp=ATASCII
@@ -74,3 +80,6 @@ cp=1252-EUW
 
 ## IBM PC US
 # cp=0437-IBM
+
+# Help system
+cp=HELP
