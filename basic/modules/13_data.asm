@@ -225,7 +225,9 @@ sp_in_sp:
 
 ready:
 	defb "Ready", 0;
-	defb 0;								// one byte padding for translation
+
+;	// padding for translation
+	org ready + 13
 
 ;	// used in 08_executive
 rpt_mesgs:
