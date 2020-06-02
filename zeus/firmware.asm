@@ -17,7 +17,7 @@
 	output_bin "../bin/FIRMWA~1.BIN",$6000,40962
 
     org $6000
-    import_bin "../ChloeVM.app/Contents/Resources/UnoDOSIII.rom";
+    import_bin "../ChloeVM.app/Contents/Resources/unodos3.rom";
     import_bin "../ChloeVM.app/Contents/Resources/se.rom";
 
     defb XOR_MEM($6000, $a000)
