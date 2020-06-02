@@ -157,12 +157,12 @@ initial:
 	ld a, %10110110;					// light gray
 	out (c),a;							// set it
 
-;	ld a, 25;							// background
-;	ld b, e;							// register select
-;	out (c), a;							// select it
-;	ld a, %00000010;					// blue
-;	ld b, d;							// data select
-;	out (c),a;							// set it
+	ld a, 25;							// background
+	ld b, e;							// register select
+	out (c), a;							// select it
+	ld a, %00000010;					// blue
+	ld b, d;							// data select
+	out (c),a;							// set it
 
 	call cls;							// clear screen
 	call set_min;						// set up workspace
