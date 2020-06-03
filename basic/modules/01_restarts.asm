@@ -181,9 +181,31 @@ key_int:
 	push de;							// stack DE
 	push bc;							// stack BC
 	call keyboard;						// read keypress
+	call joystick;						// read joystick
+	call mouse;							// read mouse
 	pop bc;								// unstack BC
 	pop de;								// unstack DC
 	pop hl;								// unstack HL
 	pop af;								// unstack AF
 	ei;									// switch on interrupts
 	ret;								// end of maskamask_int
+
+joystick:
+	in a, (stick);						// read joystick
+	ld (jstate), a;						// store in system variable
+	ret;								// end of subroutine
+
+mouse:
+	ld hl, mstate;						// mouse state
+	ld bc, mouse_b;						// mouse button
+	in a, (c);							// read it
+	ld (hl), a;							// store it
+	inc l;								// mstate + 1
+	inc b;								// mouse x position
+	in a, (c);							// read it
+	ld (hl), a;							// store it
+	inc l;								// mstate + 2
+	ld b, $ff;							// mouse y position
+	in a, (c);							// read it
+	ld (hl), a;							// store it
+	ret;								// end of subroutine
