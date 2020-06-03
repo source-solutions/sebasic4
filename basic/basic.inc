@@ -495,16 +495,19 @@ fgt macro(n);							// get (mem 0-5)
 
 ;	// i/o ports
 
-	mmu				equ	$f4
-	ula				equ	$fe
-	scld			equ	$ff
-	ay_reg			equ	$c0f5
-	ay_tmxdat		equ	$00f6
-	paging			equ	$7ffd
-	ay_128dat		equ	$bffd
+	joystick		equ   $1f
+	mmu				equ	  $f4
+	ay_tmxdat		equ	  $f6
+	ula				equ	  $fe
+	scld			equ	  $ff
 	ulaplus_reg		equ	$bf3b
 	ulaplus_dat		equ	$ff3b
-
+	mouse			equ $fadf
+	mouse_x			equ $fbdf
+	mouse_y			equ $ffdf
+	ay_reg			equ	$c0f5
+	paging			equ	$7ffd
+	ay_128dat		equ	$bffd
 
 ;	// restarts
 
