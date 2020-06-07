@@ -295,6 +295,8 @@ k_set_7:
 ;	// keyboard decoding subroutine
 k_decode:
 	ld a, e;							// copy main code
+
+k_decode_1:
 	cp 13;								// test for enter;
 	jr z, k_enter;						// if so, check for symbol
 	cp ' ';								// test for space;
