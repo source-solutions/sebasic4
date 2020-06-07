@@ -79,16 +79,8 @@
 ;	// keyboard scanning subroutine
 key_scan:
 	ld de, $ffff;						// set DE to no key
-
 	call f_key_scan;					// test F-keys
 
-;	ld bc, mouse_b
-;	in a, (c)
-;	cp 253
-;	jr nz, key_scan_1
-;	ld e, 40
-
-key_scan_1:
 	ld bc, $fefe;						// B = counter, C = port
 	ld l, 47;							// initial key value
 
@@ -131,6 +123,18 @@ key_done:
 
 ;	// additional keys scanning subroutine
 f_key_scan:
+
+;	// temporary code
+	ld bc, mouse_b;						// substitute mouse click for keypress
+	in a, (c);							// read mouse button
+	cp 253;								// left button pressed?
+	jr nz, f_key_scan_1;				// jump if not
+	ld a, 1;							// else set scan code to F9
+	jr f_key_found;						// and jump 
+
+f_key_scan_1:
+;	// end of temporary code
+
 	ld bc, $fc3b;						// Uno register port
 	ld a, 4;							// PS/2 scancode port
 	out (c), a;							// select port
