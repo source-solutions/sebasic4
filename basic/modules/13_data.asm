@@ -289,7 +289,7 @@ kt_ext:
 ;	defb k_f11;										// substitution
 ;	defb k_f10;
 ;	defb k_f8, k_f6, k_f4;
-;	defb k_f13, K_f14, k_f15;						// substitution
+;	defb k_f13, k_f14, k_f15;						// substitution
 
 kt_dig_shft:
 	defb ctrl_backspace, ctrl_tab, ctrl_caps, ctrl_pg_up, ctrl_pg_dn;
