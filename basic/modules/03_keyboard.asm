@@ -57,29 +57,39 @@
 
 ;	// scan codes
 ;	//
-;	// F1  - $05
-;	// F2  - $06
-;	// F3  - $04
-;	// F4  - $0C
-;	// F5  - $03
-;	// F6  - $0B
-;	// F7  - $83
-;	// F8  - $0A
-;	// F9  - $01
-;	// F10 - $09
-;	// F11 - $78
-;	// F12 - $07
-;	// F13 - $7C EXT
-;	// F14 - $7E
-;	// F15 - $77 EXT
+;	// F9  - $01		- 01 + 39 = 40
+;	// F7  - $83		- 02 (41)
+;	// F5  - $03		- 03 + 39 = 42
+;	// F3  - $04		- 04 + 39 = 43
+;	// F1  - $05		- 05 + 39 = 44
+;	// F2  - $06		- 06 + 39 = 45
+;	// F12 - $07		- 07 + 39 = 46
+;	// F11 - $78 		- 08 (47)
+;	// F10 - $09 		- 09 + 39 = 48
+;	// F8  - $0A		- 10 + 39 = 49
+;	// F6  - $0B		- 11 + 39 = 50
+;	// F4  - $0C		- 12 + 39 = 51
+;	// F13 - $7C EXT	- 13 (51)
+;	// F14 - $7E		- 14 (52)
+;	// F15 - $77 EXT	- 15 (53)
 
 
 ;	// --- KEYBOARD ROUTINES ---------------------------------------------------
 
 ;	// keyboard scanning subroutine
 key_scan:
-	ld bc, $fefe;						// B = counter, C = port
 	ld de, $ffff;						// set DE to no key
+
+	call f_key_scan;					// test F-keys
+
+;	ld bc, mouse_b
+;	in a, (c)
+;	cp 253
+;	jr nz, key_scan_1
+;	ld e, 40
+
+key_scan_1:
+	ld bc, $fefe;						// B = counter, C = port
 	ld l, 47;							// initial key value
 
 key_line:
@@ -129,28 +139,50 @@ f_key_scan:
 	cp $0d;								// less than $0D
 	jr c, f_key_found;					// possible F key found
 
-no_f_key:
+test_f7:
 	cp $83;								// was it F7?
-	ret nz;								// return if not
-	ld a, 2;							// alter from $83 to 2
+	jr nz, test_f11;					// jump if not
+	ld a, 2;							// alter from $83 to $02
+	jr f_key_found;						// jump if so
+
+test_f11:
+	cp $78;								// was it F11?
+	jr nz, test_f13;					// jump if not
+	ld a, 8;							// alter from $78 to $08
+	jr f_key_found;						// jump if so
+
+test_f13:
+	cp $7c;								// was it F13?
+	jr nz, test_f14;					// jump if not
+	ld a, 13;							// alter from $7c to $0D
+	jr f_key_found;						// jump if so
+
+test_f14:
+	cp $7e;								// was it F13?
+	jr nz, test_f15;					// jump if not
+	ld a, 14;							// alter from $7e to $0E
+	jr f_key_found;						// jump if so
+
+test_f15:
+	cp $77;								// was it F13?
+	ret nz;								// return with no match
+	ld a, 15;							// alter from $77 to $0F
 
 f_key_found:
 ;	cp 0;								// value on port should never be zero
-;	jr z, no_f_key;						// so this routine should not be needed
+;	ret z;								// so this routine should not be needed
 ;	cp 2;								// value on port should never be 2
-;	jr z, no_f_key;						// so this routine should not be needed
+;	ret z;								// so this routine should not be needed
 ;	cp 8;								// value on port should never be 8
-;	jr z, no_f_key;						// so this routine should not be needed
+;	ret z;								// so this routine should not be needed
 
 	add a, 39;							// original matrix has 40 keys. 
 	ld e, a;							// key value to E
-	cp a;								// set zero flag;
 	ret;								// return;
 
 ;	// keyboard subroutine
 keyboard:
 	call key_scan;						// get key pair in DE
-	call nz, f_key_scan;				// if no main keys pressed, test F-keys
 	ret nz;								// return if no key
 	ld hl, kstate;						// kstate_0 to HL
 
