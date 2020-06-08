@@ -136,14 +136,14 @@ f_key_scan_1:
 ;	// end of temporary code
 
 	ld bc, uno_reg;						// Uno register port
-	ld a, 5;							// Key state
-	out (c), a;							// Select key state
-	inc b;								// Uno data port
-	in a, (c);							// Get key state
-	bit 0, a;							// test for a key (also does RES 0, a)
-	ret z;								// back if no key pressed
+;	ld a, 5;							// Key state
+;	out (c), a;							// Select key state
+;	inc b;								// Uno data port
+;	in a, (c);							// Get key state
+;	bit 0, a;							// test for a key (also does RES 0, a)
+;	ret z;								// back if no key pressed
 
-	dec b;								// Uno register port
+;	dec b;								// Uno register port
 	ld a, 4;							// PS/2 scancode port
 	out (c), a;							// select port
 	inc b;								// Uno data port
