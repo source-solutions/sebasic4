@@ -7,10 +7,10 @@
 # ln=EN-US 
 
 ## español
-# ln=ES-1252
+ln=ES-1252
 
 ## français
-ln=FR-1252
+# ln=FR-1252
 
 ## italiana
 # ln=IT
