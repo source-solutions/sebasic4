@@ -123,7 +123,6 @@ stack_num:
 	ld (stkend), de;					// reset stack end
 	ret;								// end of subroutine
 
-
 ;	// move a floating point number subroutine
 fp_duplicate:
 move_fp:
@@ -133,8 +132,8 @@ move_fp:
 
 ;	// stack literals subroutine
 fp_stk_data:
-	ld l, e;							// to HL
-	ld h, d;							// DE
+	ld l, e;							// DE to
+	ld h, d;							// HL
 
 stk_const:
 	call test_5_sp;						// test for space
