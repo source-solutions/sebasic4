@@ -63,9 +63,7 @@ scan_ent:
 	rrca;								// right
 	rrca;								// into
 	rrca;								// bit 1 and 2
-
-	add a, 128;							// offsets 64 to 68
-
+	add a, tbl_offs;					// offsets 64 to 68
 	ld l, a;							// L holds doubled offset
 	ld a, d;							// get parameter
 	and %00011111;						// from bits 0 to 4
@@ -760,6 +758,7 @@ fp_n_mod_m:
 	fce();								// exit calculator
 	ret;								// end of subroutine
 
+;	// FIXMEL ZX82X1
 ;	// INT function
 fp_int:
 	fwait();							// x
@@ -847,6 +846,7 @@ rslt_zero:
 	fce();								// exit calculator
 	ret;								// end of subroutine
 
+;	// FIXME: ZX82X1
 ;	// natural logarithm function
 fp_log:
 	fwait();							// x
@@ -985,6 +985,7 @@ yneg:
 	fce();								// exit calculator
 	ret;								// end of subroutine
 
+;	// FIXME: ZX82X1
 ;	// cosine function
 fp_cos:
 	fwait();							// x

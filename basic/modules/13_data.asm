@@ -178,6 +178,8 @@ tbl_addrs:
 	defw fp_re_stack;
 	defw fp_new_fn_1;
 	defw fp_new_fn_2;
+
+tbl_offs equ $ - tbl_addrs
 	defw fp_series_xx;
 	defw fp_stk_const_xx;
 	defw fp_st_mem_xx;
