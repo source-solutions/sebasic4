@@ -31,7 +31,7 @@
 				"command": "./scripts/run-deb.sh",
 			},
 			"osx": {
-				"command": ".open ChloeVM.app",
+				"command": "open ChloeVM.app",
 			},
 			"windows": {
 				"command": ".\\scripts\\run.cmd"
