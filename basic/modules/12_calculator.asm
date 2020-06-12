@@ -63,9 +63,7 @@ scan_ent:
 	rrca;								// right
 	rrca;								// into
 	rrca;								// bit 1 and 2
-
-	add a, 128;							// offsets 64 to 68
-
+	add a, tbl_offs;					// offsets 64 to 68
 	ld l, a;							// L holds doubled offset
 	ld a, d;							// get parameter
 	and %00011111;						// from bits 0 to 4
@@ -123,7 +121,6 @@ stack_num:
 	ld (stkend), de;					// reset stack end
 	ret;								// end of subroutine
 
-
 ;	// move a floating point number subroutine
 fp_duplicate:
 move_fp:
@@ -133,8 +130,8 @@ move_fp:
 
 ;	// stack literals subroutine
 fp_stk_data:
-	ld l, e;							// to HL
-	ld h, d;							// DE
+	ld l, e;							// DE to
+	ld h, d;							// HL
 
 stk_const:
 	call test_5_sp;						// test for space
@@ -527,7 +524,7 @@ str_test:
 	push af;							// stack carry flag
 	fwait();							// x
 	fstk0();							// x, 0
-	fce();								// exit calculatorexit calculator
+	fce();								// exit calculator
 
 end_tests:
 	pop af;								// unstack carry flag

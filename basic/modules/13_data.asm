@@ -27,8 +27,8 @@ copyright:
 	defb "SE BASIC IV 4.2 Cordelia", ctrl_enter;
 	defb "Copyright (C)2020 Source Solutions, Inc.", ctrl_enter;
 	defb ctrl_enter;
-	defb "Release 200612", ctrl_enter; Zhora
-; 	defb TIMESTR, ctrl_enter;
+;	defb "Release 200715", ctrl_enter; Morton
+ 	defb TIMESTR, ctrl_enter;
 	defb ctrl_enter, 0;
 
 bytes_free:
@@ -178,6 +178,8 @@ tbl_addrs:
 	defw fp_re_stack;
 	defw fp_new_fn_1;
 	defw fp_new_fn_2;
+
+tbl_offs equ $ - tbl_addrs
 	defw fp_series_xx;
 	defw fp_stk_const_xx;
 	defw fp_st_mem_xx;
@@ -225,7 +227,9 @@ sp_in_sp:
 
 ready:
 	defb "Ready", 0;
-	defb 0;								// one byte padding for translation
+
+;	// padding for translation
+	org ready + 13
 
 ;	// used in 08_executive
 rpt_mesgs:
@@ -276,15 +280,18 @@ rpt_mesgs:
 
 kt_main:
 	defb "BHY65TGVNJU74RFCMKI83EDX", ctrl_symbol;
-	defb "LO92WSZ ", ctrl_enter, "P01QA";
+	defb "LO92WSZ ", ctrl_enter, "P01QA", 0;
 
 kt_ext:
-	defb k_f9
-	defb k_f7;										// substitution
-	defb k_f5, k_f3, k_f1, k_f2, k_f12
-	defb k_f14;										// substitution
-	defb k_f10 
-	defb k_f13, k_f15;								// substitution
+	defb "975312CBA864DEF"
+
+;	defb k_f9
+;	defb k_f7;										// substitution
+;	defb k_f5, k_f3, k_f1, k_f2, k_f12
+;	defb k_f11;										// substitution
+;	defb k_f10;
+;	defb k_f8, k_f6, k_f4;
+;	defb k_f13, k_f14, k_f15;						// substitution
 
 kt_dig_shft:
 	defb ctrl_backspace, ctrl_tab, ctrl_caps, ctrl_pg_up, ctrl_pg_dn;

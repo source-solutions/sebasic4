@@ -616,10 +616,10 @@ addend_0:
 
 zeros_4_5:
 	ld l, 0;							// clear L'
-	ld e, l;							// DE'
-	ld d, a;							// clear
+	ld e, l;							// clear
+	ld d, a;							// DE'
 	exx;								// main register set
-	ld de, $0000;						// clear DE
+	ld de, 0;							// clear DE
 	ret;								// end of subroutine
 
 ;	// add back subroutine
@@ -945,7 +945,7 @@ oflw2_clr:
 	exx;								// main register set
 
 test_norm:
-	jr nc, normalise;					// jump if no carry
+	jr nc, normalize;					// jump if no carry
 	ld a, (hl);							// result to A
 	and a;								// test for zero
 
@@ -968,7 +968,7 @@ skip_zero:
 	dec hl;								// first byte of result
 	jr oflow_clr;						// immediate jump
 
-normalise:
+normalize:
 	ld b, 32;							// left shift count
 
 shift_one:
@@ -997,7 +997,7 @@ norml_now:
 	ld d, 128;							// mantissa to 0.5
 	exx;								// main register set
 	inc (hl);							// increase result
-	jr z, report_overflow_2;				// jump with overflow
+	jr z, report_overflow_2;			// jump with overflow
 
 oflow_clr:
 	push hl;							// stack pointer
@@ -1034,7 +1034,7 @@ fp_division:
 	ex de, hl;							// swap pointers
 	xor a;								// LD A, 0
 	call prep_m_d;						// prepare number to divide by
-	jr c, report_overflow_2;				// error if divide by zero
+	jr c, report_overflow_2;			// error if divide by zero
 	ex de, hl;							// swap pointers
 	call prep_m_d;						// prepare number to be divided
 	ret c;								// return if already zero

@@ -495,16 +495,19 @@ fgt macro(n);							// get (mem 0-5)
 
 ;	// i/o ports
 
-	mmu				equ	$f4
-	ula				equ	$fe
-	scld			equ	$ff
-	ay_reg			equ	$c0f5
-	ay_tmxdat		equ	$00f6
-	paging			equ	$7ffd
-	ay_128dat		equ	$bffd
+	stick			equ   $1f
+	mmu				equ	  $f4
+	ay_tmxdat		equ	  $f6
+	ula				equ	  $fe
+	scld			equ	  $ff
 	ulaplus_reg		equ	$bf3b
 	ulaplus_dat		equ	$ff3b
-
+	mouse_b			equ $fadf
+	mouse_x			equ $fbdf
+	mouse_y			equ $ffdf
+	ay_reg			equ	$c0f5
+	paging			equ	$7ffd
+	ay_128dat		equ	$bffd
 
 ;	// restarts
 
@@ -587,6 +590,8 @@ fgt macro(n);							// get (mem 0-5)
 	f_addr		equ f_size + 4;		// (iy - $72)
 	handle_1	equ f_addr + 2;		// (iy - $70)
 
+	mstate		equ jstate - 4;		// (iy - $40)	mouse state
+	jstate		equ k_head - 1;		// (iy - $3d)	joystick state
 	k_head		equ k_tail - 1;		// (iy - $3c)	pointer to head of keyboard buffer
 	k_tail		equ kstate - 1;		// (iy - $3b)	pointer to tail of keyboard buffer
 	kstate		equ $5c00;			// (iy - $3a)	key state 0 to 3

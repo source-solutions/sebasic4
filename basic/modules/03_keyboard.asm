@@ -55,12 +55,33 @@
 ;	// 031	$1f		US		F15			
 ;	// 127	$7f		DEL		delete		
 
+;	// scan codes
+;	//
+;	// F9  - $01		- 01 + 39 = 40
+;	// F7  - $83		- 02 (41)
+;	// F5  - $03		- 03 + 39 = 42
+;	// F3  - $04		- 04 + 39 = 43
+;	// F1  - $05		- 05 + 39 = 44
+;	// F2  - $06		- 06 + 39 = 45
+;	// F12 - $07		- 07 + 39 = 46
+;	// F11 - $78 		- 08 (47)
+;	// F10 - $09 		- 09 + 39 = 48
+;	// F8  - $0A		- 10 + 39 = 49
+;	// F6  - $0B		- 11 + 39 = 50
+;	// F4  - $0C		- 12 + 39 = 51
+;	// F13 - $7C EXT	- 13 (51)
+;	// F14 - $7E		- 14 (52)
+;	// F15 - $77 EXT	- 15 (53)
+
+
 ;	// --- KEYBOARD ROUTINES ---------------------------------------------------
 
 ;	// keyboard scanning subroutine
 key_scan:
-	ld bc, $fefe;						// B = counter, C = port
 	ld de, $ffff;						// set DE to no key
+	call f_key_scan;					// test F-keys
+
+	ld bc, $fefe;						// B = counter, C = port
 	ld l, 47;							// initial key value
 
 key_line:
@@ -102,7 +123,27 @@ key_done:
 
 ;	// additional keys scanning subroutine
 f_key_scan:
-	ld bc, $fc3b;						// Uno register port
+
+;	// temporary code
+	ld bc, mouse_b;						// substitute mouse click for keypress
+	in a, (c);							// read mouse button
+	cp 253;								// left button pressed?
+	jr nz, f_key_scan_1;				// jump if not
+	ld a, 1;							// else set scan code to F9
+	jr f_key_found;						// and jump 
+
+f_key_scan_1:
+;	// end of temporary code
+
+	ld bc, uno_reg;						// Uno register port
+;	ld a, 5;							// Key state
+;	out (c), a;							// Select key state
+;	inc b;								// Uno data port
+;	in a, (c);							// Get key state
+;	bit 0, a;							// test for a key (also does RES 0, a)
+;	ret z;								// back if no key pressed
+
+;	dec b;								// Uno register port
 	ld a, 4;							// PS/2 scancode port
 	out (c), a;							// select port
 	inc b;								// Uno data port
@@ -110,28 +151,50 @@ f_key_scan:
 	cp $0d;								// less than $0D
 	jr c, f_key_found;					// possible F key found
 
-no_f_key:
+test_f7:
 	cp $83;								// was it F7?
-	ret nz;								// return if not
-	ld a, 2;							// alter from $83 to 2
+	jr nz, test_f11;					// jump if not
+	ld a, 2;							// alter from $83 to $02
+	jr f_key_found;						// jump if so
+
+test_f11:
+	cp $78;								// was it F11?
+	jr nz, test_f13;					// jump if not
+	ld a, 8;							// alter from $78 to $08
+	jr f_key_found;						// jump if so
+
+test_f13:
+	cp $7c;								// was it F13?
+	jr nz, test_f14;					// jump if not
+	ld a, 13;							// alter from $7c to $0D
+	jr f_key_found;						// jump if so
+
+test_f14:
+	cp $7e;								// was it F13?
+	jr nz, test_f15;					// jump if not
+	ld a, 14;							// alter from $7e to $0E
+	jr f_key_found;						// jump if so
+
+test_f15:
+	cp $77;								// was it F13?
+	ret nz;								// return with no match
+	ld a, 15;							// alter from $77 to $0F
 
 f_key_found:
 ;	cp 0;								// value on port should never be zero
-;	jr z, no_f_key;						// so this routine should not be needed
+;	ret z;								// so this routine should not be needed
 ;	cp 2;								// value on port should never be 2
-;	jr z, no_f_key;						// so this routine should not be needed
+;	ret z;								// so this routine should not be needed
 ;	cp 8;								// value on port should never be 8
-;	jr z, no_f_key;						// so this routine should not be needed
+;	ret z;								// so this routine should not be needed
 
 	add a, 39;							// original matrix has 40 keys. 
 	ld e, a;							// key value to E
-	cp a;								// set zero flag;
 	ret;								// return;
 
 ;	// keyboard subroutine
 keyboard:
 	call key_scan;						// get key pair in DE
-	call nz, f_key_scan;				// if no main keys pressed, test F-keys
 	ret nz;								// return if no key
 	ld hl, kstate;						// kstate_0 to HL
 
@@ -248,7 +311,7 @@ k_decode:
 k_decode_1:
 	cp 13;								// test for enter;
 	jr z, k_enter;						// if so, check for symbol
-	cp ' ';								// test for enter;
+	cp ' ';								// test for space;
 	jr z, k_space;						// if so, check for symbol
 	cp ':';								// jump if digit, return, shift
 	jr c, k_digit;						// or alternate
