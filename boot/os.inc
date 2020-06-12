@@ -19,7 +19,7 @@
 
 
 ;	// VERSION
-	version equ "UnoDOS 3 [Version 3.0.90625]"
+;	version equ "UnoDOS 3 [Version 3.0.90625]"
 
 
 ;	// divIDE / divMMC trap addresses

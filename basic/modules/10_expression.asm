@@ -192,9 +192,9 @@ domod:
 s_pi:
 	call syntax_z;						// checking syntax?
 	jr z, s_pi_end;						// jump if so
-	fwait();							// enter calculator
-	fstkhalfpi();						// pi / 2
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fstkhalfpi;							// pi / 2
+	fce;								// exit calculator
 	inc (hl);							// increment exponent
 
 s_pi_end:
@@ -378,9 +378,9 @@ s_stk_lst:
 	ld a, e;							// last op-code to A
 	and %00111111;						// clear bits 6 and 7
 	ld b, a;							// store in B
-	fwait();							// perform
-	fsgl();								// calculator
-	fce();								// operation
+	fwait;								// perform
+	fsgl;								// calculator
+	fce;								// operation
 	jr s_runtest;						// immediate jump
 
 s_syntest:
@@ -1144,7 +1144,7 @@ get_hl_x_de:
 	ret;								// end ofS subroutine
 
 ;	// LET command
-let:
+c_let:
 	ld hl, (dest);						// current address of dest
 	bit 1, (iy + _flagx);				// existing variable?
 	jr z, l_exists;						// jump if so
@@ -1207,9 +1207,9 @@ l_single:
 
 l_numeric:
 	push hl;							// stack destination pointer
-	fwait();							// enter calculator
-	fdel();								// reduce stack end by five
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fdel;								// reduce stack end by five
+	fce;								// exit calculator
 	pop hl;								// unstack destination pointer
 	ld bc, 5;							// five bytes
 	and a;								// prepare for subtraction
@@ -1570,29 +1570,29 @@ decimal:
 
 dec_rpt_c:
 	jp c, report_syntax_err;			// error if not
-	fwait();							// enter calculator
-	fstk0();							// stack zero
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fstk0;								// stack zero
+	fce;								// exit calculator
 
 dec_sto_1:
-	fwait();							// enter calculator
-	fstk1();							// stack one in full floating point form
-	fst(0);								// store in mem_0
-	fdel();								// remove from calculator stack
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fstk1;								// stack one in full floating point form
+	fst 0;								// store in mem_0
+	fdel;								// remove from calculator stack
+	fce;								// exit calculator
 
 nxt_dgt_1:
 	rst get_char;						// get current character
 	call stk_digit;						// stack digit
 	jr c, e_format;						// jump if not digit
-	fwait();							// enter calculator
-	fgt(0);								// get from mem_0
-	fstk10();							// x, 10
-	fmul();								// x * 10
-	fst(0);								// store in mem_0
-	fdiv();								// divide by saved number
-	fadd();								// add to last value
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fgt 0;								// get from mem_0
+	fstk10;								// x, 10
+	fmul;								// x * 10
+	fst 0;								// store in mem_0
+	fdiv;								// divide by saved number
+	fadd;								// add to last value
+	fce;								// exit calculator
 	rst next_char;						// get next character
 	jr nxt_dgt_1;						// loop until done
 
@@ -1664,19 +1664,19 @@ stack_bc:
 ;	// integer to floating point subroutine
 int_to_fp:
 	push af;							// stack first digit
-	fwait();							// enter calculator
-	fstk0();							// stack zero
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fstk0;								// stack zero
+	fce;								// exit calculator
 	pop af;								// unstack first digit
 
 nxt_dgt_2:
 	call stk_digit;						// stack floating point form
 	ret c;								// return if not a digit
-	fwait();							// enter calculator
-	fxch();								// swap with previous last value
-	fstk10();							// stack 10
-	fmul();								// multiply previous last value by 10
-	fadd();								// add to digit
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fxch;								// swap with previous last value
+	fstk10;								// stack 10
+	fmul;								// multiply previous last value by 10
+	fadd;								// add to digit
+	fce;								// exit calculator
 	call ch_add_plus_1;					// next code to A
 	jr nxt_dgt_2;						// jump back

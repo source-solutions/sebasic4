@@ -28,44 +28,44 @@ e_save:
 	push af;							// stack m
 	ld hl, membot;						// address sysvar
 	call fp_0_div_1;					// stack sign
-	fwait();							// x
-	fstk10();							// x, 10
-	fce();								// exit calcualtor
+	fwait;								// x
+	fstk10;								// x, 10
+	fce;								// exit calcualtor
 	pop af;								// unstack m
 
 e_loop:
 	srl a;								// get next bit
 	jr nc, e_tst_end;					// jump if carry cleared
 	push af;							// stack flags
-	fwait();							// x', 10^(2^n)
-	fst(1);								// store in mem-1
-	fgt(0);								// x', 10^(2^n), (1/0)
-	fjpt(e_divsn);						// x', 10^(2^n)
-	fmul();								// x', 10^(2^n) = x''
-	fjp(e_fetch);						// x''
+	fwait;								// x', 10^(2^n)
+	fst 1;								// store in mem-1
+	fgt 0;								// x', 10^(2^n), (1/0)
+	fjpt e_divsn;						// x', 10^(2^n)
+	fmul;								// x', 10^(2^n) = x''
+	fjp e_fetch;						// x''
 
 e_divsn:
-	fdiv();								// x/10^(2^n) = x''
+	fdiv;								// x/10^(2^n) = x''
 
 e_fetch:
-	fgt(1);								// x'', 10^(2^n)
-	fce();								// exit calculator
+	fgt 1;								// x'', 10^(2^n)
+	fce;								// exit calculator
 	pop af;								// unstack flags
 
 e_tst_end:
 	jr z, e_end;						// jump if zero
 	push af;							// stack m
-	fwait();							// x'', 10^(2^n)
-	fmove();							// x'', 10^(2^n), 10^(2^n)
-	fmul();								// x'', 10^(2^(n + 1))
-	fce();								// exit calculator
+	fwait;								// x'', 10^(2^n)
+	fmove;								// x'', 10^(2^n), 10^(2^n)
+	fmul;								// x'', 10^(2^(n + 1))
+	fce;								// exit calculator
 	pop af;								// unstack m
 	jr e_loop;							// loop for all bits
 
 e_end:
-	fwait();							// enter calculator
-	fdel();								// delete final ^10
-	fce();								// x * 10^m
+	fwait;								// enter calculator
+	fdel;								// delete final ^10
+	fce;								// x * 10^m
 	ret;								// end of subroutine
 
 ;	// integer fetch subroutine
@@ -108,21 +108,21 @@ int_store:
 
 ;	// floating point to BC subroutine
 fp_to_bc:
-	fwait();							// stkend_5 
-	fce();								// to HL
+	fwait;								// stkend_5 
+	fce;								// to HL
 	ld a, (hl);							// exponent to A
 	and a;								// zero?
 	jr z, fp_to_bc_delete;				// jump if so
-	fwait();							// round to
-	fstkhalf();							// nearest integer
-	fadd();								// and convert
-	fint();								// to small integer
-	fce();								// form
+	fwait;								// round to
+	fstkhalf;							// nearest integer
+	fadd;								// and convert
+	fint;								// to small integer
+	fce;								// form
 
 fp_to_bc_delete:
-	fwait();							// remove from 
-	fdel();								// calculator
-	fce();								// stack
+	fwait;								// remove from 
+	fdel;								// calculator
+	fce;								// stack
 	push de;							// stack both
 	push hl;							// pointers
 	ex de, hl;							// HL points to number
@@ -148,13 +148,13 @@ log_2_a:
 	xor a;								// and
 	ld b, a;							// then
 	call stk_store;						// put on calculator stack
-	fwait();							// enter calculator
-	fstk();								// stack 
+	fwait;								// enter calculator
+	fstk;								// stack 
 	defb $ef;							// x
 	defb $1a, $20, $9a, $85;			// 
-	fmul();								// x * log 2
-	fint();								// int log (2^x)
-	fce();								// exit calculator
+	fmul;								// x * log 2
+	fint;								// int log (2^x)
+	fce;								// exit calculator
 
 ;	// floating point to A subroutine
 fp_to_a:
@@ -174,48 +174,48 @@ fp_a_end:
 
 ;	// print a floating-point number subroutine
 print_fp:
-	fwait();							// enter calculator
-	fmove();							// x, x
-	fcp(_lz);							// x, (1/0)
-	fjpt(pf_negtve);					// x
-	fmove();							// x, x
-	fcp(_gz);							// x, (1/0)
-	fjpt(pf_postve);					// x
-	fdel();								// 
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fmove;								// x, x
+	fcp lz;								// x, (1/0)
+	fjpt pf_negtve;						// x
+	fmove;								// x, x
+	fcp gz;								// x, (1/0)
+	fjpt pf_postve;						// x
+	fdel;								// 
+	fce;								// exit calculator
 	ld a, '0';							// ASCII
 	rst print_a;						// print it
 	ret;								// end of subroutine
 
 pf_negtve:
-	fabs();								// x' = abs x
-	fce();								// x'
+	fabs;								// x' = abs x
+	fce;								// x'
 	ld a, '-';							// minus
 	rst print_a;						// print it
-	fwait();							// exit calculator
+	fwait;								// exit calculator
 
 pf_postve:
-	fstk0();							// stack 0
-	fst(3);								// store it in mem_3
-	fst(4);								// mem_4
-	fst(5);								// and mem_5
-	fdel();								// remove it
-	fce();								// exit calculator
+	fstk0;								// stack 0
+	fst 3;								// store it in mem_3
+	fst 4;								// mem_4
+	fst 5;								// and mem_5
+	fdel;								// remove it
+	fce;								// exit calculator
 	exx;								// alternate register set
 	push hl;							// stack HL'
 	exx;								// main register set
 
 pf_loop:
-	fwait();							// enter calculator
-	fmove();							// x', x'
-	fint();								// x', int (x') = i
-	fst(2);								// i to mem_2
-	fsub();								// x' - i = f
-	fgt(2);								// f, i
-	fxch();								// i, f
-	fst(2);								// f to mem_2
-	fdel();								// i
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fmove;								// x', x'
+	fint;								// x', int (x') = i
+	fst 2;								// i to mem_2
+	fsub;								// x' - i = f
+	fgt 2;								// f, i
+	fxch;								// i, f
+	fst 2;								// f to mem_2
+	fdel;								// i
+	fce;								// exit calculator
 	ld a, (hl);							// small
 	and a;								// integer?
 	jr nz, pf_large;					// jump if not
@@ -237,10 +237,10 @@ pf_save:
 	jr pf_bits;							// immediate jump
 
 pf_small:
-	fwait();							// enter calculator
-	fdel();								// i = 0 
-	fgt(2);								// i, f
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fdel;								// i = 0 
+	fgt 2;								// i, f
+	fce;								// exit calculator
 	ld a, (hl);							// exponent to A
 	sub 126;							// e - 126
 	call log_2_a;						// log (2^A), A=n
@@ -250,13 +250,13 @@ pf_small:
 	ld (mem_5_1), a;					// store count
 	ld a, d;							// n to A
 	call fp_e_to_fp;					// stack f*10^n
-	fwait();							// i, u
-	fmove();							// i, y, y
-	fint();								// i, y, (int (y)) = i2
-	fst(1);								// store i2 in mem-1
-	fsub();								// i, y - i2
-	fgt(1);								// i, y - i2, i2
-	fce();								// i, f2, i2 (f2 = y - i2)
+	fwait;								// i, u
+	fmove;								// i, y, y
+	fint;								// i, y, (int (y)) = i2
+	fst 1;								// store i2 in mem-1
+	fsub;								// i, y - i2
+	fgt 1;								// i, y - i2, i2
+	fce;								// i, f2, i2 (f2 = y - i2)
 	call fp_to_a;						// i2 to A
 	push hl;							// stack pointer to f2
 	ld (mem_3), a;						// i2 to mem-3
@@ -353,10 +353,10 @@ pf_all_9:
 	jr pf_round;						// immediate jump
 
 pf_more:
-	fwait();							// enter calculator
-	fdel();								// remove last item from stack
-	fgt(2);								// f
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fdel;								// remove last item from stack
+	fgt 2;								// f
+	fce;								// exit calculator
 
 pf_fractn:
 	ex de, hl;							// DE points to f
@@ -428,9 +428,9 @@ pf_r_back:
 
 pf_count:
 	ld (iy + _mem_5), b;				// number of digits to print to B
-	fwait();							// enter calculator
-	fdel();								// remove last item from stack
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fdel;								// remove last item from stack
+	fce;								// exit calculator
 	exx;								// alternate register set
 	pop hl;								// unstack offset to HL'
 	exx;								// main register set

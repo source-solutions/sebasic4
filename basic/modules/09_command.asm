@@ -305,7 +305,7 @@ val_fet_2:
 	and %01000000;						// numeric or string
 	jr nz, report_syntax_err;			// error if no match
 	bit 7, d;							// checking syntax?
-	jp nz, let;							// jump if not
+	jp nz, c_let;						// jump if not
 	ret;								// else return
 
 ;	// command class 4
@@ -364,9 +364,9 @@ fetch_num:
 ;	// use zero subroutine
 use_zero:
 	call unstack_z;						// return if checking syntax
-	fwait();							// enter calculator
-	fstk0();							// stack zero
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fstk0;								// stack zero
+	fce;								// exit calculator
 	ret;								// end of subroutine
 
 ;	// IF command
@@ -374,9 +374,9 @@ c_if:
 	pop bc;								// discard stmt-ret return address
 	call syntax_z;						// checking syntax
 	jr z, if_1;							// jump if so
-	fwait();							// enter calculator
-	fdel() ;							// remove last item
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fdel;								// remove last item
+	fce;								// exit calculator
 	ex de, hl;							// swap pointers
 	call test_zero;						// zero?
 	jp c, line_end;						// jump if not
@@ -395,19 +395,19 @@ c_for:
 
 f_use_1:
 	call check_end;						// next statement if checking syntax
-	fwait();							// enter calculator
-	fstk1();							// stack one
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fstk1;								// stack one
+	fce;								// exit calculator
 
 f_reorder:
-	fwait();							// enter calculator
-	fst(0);								// store step in mem-0
-	fdel();								// remove last item
-	fxch();								// l, v
-	fgt(0);								// l, v, s
-	fxch();								// l, s, v
-	fce();								// exit calculator
-	call let;							// find or create variable
+	fwait;								// enter calculator
+	fst 0;								// store step in mem-0
+	fdel;								// remove last item
+	fxch;								// l, v
+	fgt 0;								// l, v, s
+	fxch;								// l, s, v
+	fce;								// exit calculator
+	call c_let;							// find or create variable
 	ld (mem), hl;						// contents of mem to HL
 	dec hl;								// point to single character name
 	ld a, (hl);							// store it in A
@@ -422,10 +422,10 @@ f_reorder:
 
 f_l_s:
 	push hl;							// stack pointer
-	fwait();							// l, x
-	fdel();								// l
-	fdel();								// empty calculator stack
-	fce();								// exit calculator
+	fwait;								// l, x
+	fdel;								// l
+	fdel;								// empty calculator stack
+	fce;								// exit calculator
 	pop hl;								// unstack pointer
 	ex de, hl;							// swap pointers
 	ld c, 10;							// ten bytes of limit
@@ -518,13 +518,13 @@ c_next:
 	jr z, report_next_wo_for;			// jump if not
 	inc hl;								// skip name
 	ld (mem), hl;						// variable address to temporary memory area
-	fwait();							// enter calculator
-	fgt(0);								// v
-	fgt(2);								// v, s
-	fadd();								// v + s
-	fst(0);								// v + s to mem_0
-	fdel();								// remove last item
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fgt 0;								// v
+	fgt 2;								// v, s
+	fadd;								// v + s
+	fst 0;								// v + s to mem_0
+	fdel;								// remove last item
+	fce;								// exit calculator
 	call next_loop;						// test value against limit
 	ret c;								// return if for-next loop done
 	ld hl, (mem);						// address least significant byte
@@ -544,24 +544,24 @@ report_next_wo_for:
 
 ;	// next loop subroutine
 next_loop:
-	fwait();							// enter calculator
-	fgt(1);								// l
-	fgt(0);								// l, v
-	fgt(2);								// l, v, s
-	fcp(_lz);							// less than zero?
-	fjpt(next_1);						// jump if so
-	fxch();								// v, l
+	fwait;								// enter calculator
+	fgt 1;								// l
+	fgt 0;								// l, v
+	fgt 2;								// l, v, s
+	fcp lz;								// less than zero?
+	fjpt next_1;						// jump if so
+	fxch;								// v, l
 
 next_1:
-	fsub();								// v - l or l - v
-	fcp(_gz);							// greater than zero?
-	fjpt(next_2);						// jump if so
-	fce();								// exit calculator
+	fsub;								// v - l or l - v
+	fcp gz;								// greater than zero?
+	fjpt next_2;						// jump if so
+	fce;								// exit calculator
 	and a;								// clear carry flag
 	ret;								// end of subroutine
 
 next_2:
-	fce();								// exit calculator
+	fce;								// exit calculator
 	scf;								// set carry flag
 	ret;								// end of subroutine
 
@@ -569,7 +569,7 @@ next_2:
 read_3:
 	rst next_char;						// next character
 
-read:
+c_read:
 	call class_01;						// get entry for existing variable
 	call syntax_z;						// checking syntax?
 	jr z, read_2;						// jump if so
@@ -577,7 +577,7 @@ read:
 	ld (x_ptr), hl;						// ch_add to x_ptr
 	ld hl, (datadd);					// data address pointer to HL
 	ld a, (hl);							// first value to A
-	cp ',';								// comma?
+	cp $2c;								// comma?
 	jr z, read_1;						// jump if not
 	ld e, tk_data;						// data token?
 	call look_prog;						// search for token
@@ -596,7 +596,7 @@ read_1:
 
 read_2:
 	rst get_char;						// get current character
-	cp ',';								// comma?
+	cp $2c;								// comma?
 	jr z, read_3;						// jump if so
 	call check_end;						// ext statement if checking syntax
 	ret;								// end of routine
@@ -718,7 +718,7 @@ report_overflow:
 	defb overflow;						// error
 
 ;	// RUN command
-run:
+c_run:
 	rst get_char;						// get character
 	cp ctrl_enter;						// test for carriage return
 	jr z, run_zero;						// jump if so
@@ -733,7 +733,7 @@ run:
 	jp z, run_app;						// jump if string
 
 ;	// RUN <line> command
-c_run:
+l_run:
 	call goto;							// set newppc
 	ld bc, 0;							// restore value
 	call rest_run;						// perform restore
@@ -742,7 +742,7 @@ c_run:
 run_zero:
 	call check_end;						// return if checking syntax
 	call use_zero;						// use line zero
-	jr c_run;							// run
+	jr l_run;							// run
 
 ;	// CLEAR command
 clear:
@@ -962,7 +962,7 @@ unstack_z:
 	jp (hl);							// else immediate jump
 
 ;	// PRINT command
-print:
+c_print:
 	ld a, 2;							// channel S
 
 print_1:
@@ -1255,7 +1255,7 @@ in_var_6:
 	ld c, l;							// HL
 	ld b, h;							// to BC
 	call stk_sto_str;					// stack parameters
-	call let;							// make assignment
+	call c_let;							// make assignment
 	jr in_next_2;						// immediate jump
 
 in_next_1:
@@ -1285,7 +1285,7 @@ in_stop:
 	call unstack_z;						// return if checking syntax
 
 ;	// STOP command
-stop:
+c_stop:
 	jp report_break;					// clear keyboard buffer and report break
 
 ;	// in channel K subroutine
@@ -1354,22 +1354,22 @@ renum_error:
 	defb syntax_error;
 
 line_10:
-	fwait();							// stack
-	fstk10();							// 10 as
-	fce();								// first line
+	fwait;								// stack
+	fstk10;								// 10 as
+	fce;								// first line
 
 step_10:
-	fwait();							// stack
-	fstk10();							// 10 as
-	fce();								// step
+	fwait;								// stack
+	fstk10;								// 10 as
+	fce;								// step
 
 renum_2:
-	fwait();							// enter calculator
-	fst(1);								// store step in mem-1
-	fdel();								// remove it
-	fst(0);								// store start in mem-0
-	fdel();								// remove it
-	fce();								// exit calulator
+	fwait;								// enter calculator
+	fst 1;								// store step in mem-1
+	fdel;								// remove it
+	fst 0;								// store start in mem-0
+	fdel;								// remove it
+	fce;								// exit calulator
 	ld hl, (vars);						// start of variables to HL
 	ld de, (prog);						// start of program to DE
 	or a;								// is there a program

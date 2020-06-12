@@ -239,9 +239,9 @@ c_error:
 
 ;	// LOCATE command <row>,<column> (counts from 1)
 locate:
-	fwait();							// enter calculator
-	fxch();								// swap values
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fxch;								// swap values
+	fce;								// exit calculator
 
 	ld a, 2;							// select upper screen
 	call chan_open;						// open channel
@@ -412,7 +412,7 @@ onerr_stop:
 onerr_test:
 	cp ok;								// no error?
 	ret z;								// return if so
-	cp break;							// BREAK?
+	cp msg_break;						// BREAK?
 	ret z;								// return if so
 	ld hl, (onerr);						// get flag or line number
 	ld a, h;							// flag to H

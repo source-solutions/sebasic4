@@ -109,7 +109,7 @@ initial:
 	ld a, (chans);						// coming from
 	and a;								// start or new?
 	ld (iy - _onerr_h), 255;			// signal on error stop
-	ld a, break + 1;					// prepare error
+	ld a, msg_break + 1;				// prepare error
 	jp nz, main_g;						// jump if NMI Break
 	ld bc, 21;							// byte count
 	ld de, init_chan;					// destination
@@ -462,9 +462,9 @@ open:
 open_nf:
 	call check_end;						// end of syntax checking
 
-	fwait();							// enter calculator
-	fxch();								// swap stream number and channel code
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fxch;								// swap stream number and channel code
+	fce;								// exit calculator
 	call str_data;						// get stream data, zero flag set if stream closed
 	ld a, c;							// stream
 	or b;								// closed?
@@ -846,7 +846,7 @@ auto_l_4:
 	ret;								// end of subroutine
 
 ;	// LIST command
-list:
+c_list:
 	ld hl, (flags);						// get flags
 	push hl;							// stack flags
 	call list_1;						// do list

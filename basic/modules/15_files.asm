@@ -35,7 +35,8 @@
 ;	// File commands page out the BASIC ROM.
 ;	// They must be stored at $4000 or later.
 
-	include "../boot/os.inc";				// label definitions
+	include "../../boot/os.inc";				// label definitions
+	include "../../boot/uno.inc";				// label definitions
 
 	org $5000;
 
@@ -477,7 +478,7 @@ name:
 	or a;								// clear flags
 	ret;								// done
 
-save:
+c_save:
 	call unstack_z;						// return if checking syntax
 	call get_path;						// path to buffer
 	ld ix, $5a00;						// pointer to path
@@ -743,7 +744,3 @@ print_f:
 no_:
 	rst print_a;						// print it
 	ret;								// return
-
-;	// last byte
-org $5bb9;
-	defb $A0;							// end marker

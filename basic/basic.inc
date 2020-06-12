@@ -43,250 +43,257 @@
 
 ;	// parameter definitions
 
-	_le equ 0;							// less than or equal
-	_ge equ 1;							// greater or equal
-	_ne equ 2;							// not equal
-	_gt equ 3;							// greater than
-	_lt equ 4;							// less than
-	_eq equ 5;							// equal
-	_lz equ $2d;						// less than zero
-	_gz equ $2e;						// greater than zero
+	le equ 0;							// less than or equal
+	ge equ 1;							// greater or equal
+	ne equ 2;							// not equal
+	gt equ 3;							// greater than
+	lt equ 4;							// less than
+	eq equ 5;							// equal
+	lz equ $2d;							// less than zero
+	gz equ $2e;							// greater than zero
 
 
 ;	// instruction macros
 
-fwait macro();							// stop the Z80
-	rst $28
-	mend
+MACRO fwait;							// stop the Z80
+	rst $28;
+ENDM
 
-fjpt macro(dest);						// jump if true
-	defb 0, dest - $ - 1
-	mend
+MACRO fjpt n;							// jump if true
+	defb 0, {n} - $ - 1;
+ENDM
 
-fxch macro();							// exchange
-	defb 1
-	mend
+MACRO fxch;								// exchange
+	defb 1;
+ENDM
 
-fdel macro();							// delete
-	defb 2
-	mend
+MACRO fdel;								// delete
+	defb 2;
+ENDM
 
-fsub macro();							// subtract
-	defb 3
-	mend
+MACRO fsub;								// subtract
+	defb 3;
+ENDM
 
-fmul macro();							// multiply
-	defb 4
-	mend
+MACRO fmul;								// multiply
+	defb 4;
+ENDM
 
-fdiv macro();							// divide
-	defb 5
-	mend
+MACRO fdiv;								// divide
+	defb 5;
+ENDM
 
-ftop macro();							// to power
-	defb 6
-	mend
+MACRO ftop;								// to power
+	defb 6;
+ENDM
 
-fbor macro();							// binary or
-	defb 7
-	mend
+MACRO fbor;								// binary or
+	defb 7;
+ENDM
 
-fband macro();							// binary and
-	defb 8
-	mend
+MACRO fband;							// binary and
+	defb 8;
+ENDM
 
-fcp macro(n);							// compare (_le to _gz)
-	defb 9 + n
-	mend
+MACRO fcp n;							// compare (_le to gz)
+	defb 9 + {n}
+ENDM
 
-fadd macro();							// add
-	defb $0f
-	mend
+MACRO fadd;								// add
+	defb $0f;
+ENDM
 
-fbands macro();							// binary and string
-	defb $10
-	mend
+MACRO fbands;							// binary and string
+	defb $10;
+ENDM
 
-fcps macro(n);							// compare string (_le to _eq)
-	defb $11 + n
-	mend
+MACRO fcps n;							// compare string (_le to _eq)
+	defb $11 + {n};
+ENDM
 
-fcat macro();							// concatenate string
-	defb $17
-	mend
+MACRO fcat;								// concatenate string
+	defb $17;
+ENDM
 
-fvals macro();							// value string
-	defb $18
-	mend
+MACRO fvals;							// value string
+	defb $18;
+ENDM
 
-fusrs macro();							// user string
-	defb $19
-	mend
+MACRO fusrs;							// user string
+	defb $19;
+ENDM
 
-fread macro();							// read in
-	defb $1a
-	mend
+MACRO fread;							// read in
+	defb $1a;
+ENDM
 
-fneg macro();							// negate
-	defb $1b
-	mend
+MACRO fneg;								// negate
+	defb $1b;
+ENDM
 
-fasc macro();							// character to ASCII
-	defb $1c
-	mend
+MACRO fasc;								// character to ASCII
+	defb $1c;
+ENDM
 
-fval macro();							// value
-	defb $1d
-	mend
+MACRO fval;								// value
+	defb $1d;
+ENDM
 
-flen macro();							// length of string
-	defb $1e
-	mend
+MACRO flen;								// length of string
+	defb $1e;
+ENDM
 
-fsin macro();							// sine
-	defb $1f
-	mend
+MACRO fsin;								// sine
+	defb $1f;
+ENDM
 
-fcos macro();							// cosine
-	defb $20
-	mend
+MACRO fcos;								// cosine
+	defb $20;
+ENDM
 
-ftan macro();							// tangent
-	defb $21
-	mend
+MACRO ftan;								// tangent
+	defb $21;
+ENDM
 
-fasin macro();							// arcsine
-	defb $22
-	mend
+MACRO fasin;							// arcsine
+	defb $22;
+ENDM
 
-facos macro();							// arc-cosine
-	defb $23
-	mend
+MACRO facos;							// arc-cosine
+	defb $23;
+ENDM
 
-fatan macro();							// arctangent
-	defb $24
-	mend
+MACRO fatan;							// arctangent
+	defb $24;
+ENDM
 
-flogn macro();							// natural logarithm
-	defb $25
-	mend
+MACRO flogn;							// natural logarithm
+	defb $25;
+ENDM
 
-fexp macro();							// exponential
-	defb $26
-	mend
+MACRO fexp;								// exponential
+	defb $26;
+ENDM
 
-fint macro();							// integer (rounded down)
-	defb $27
-	mend
+MACRO fint;								// integer (rounded down)
+	defb $27;
+ENDM
 
-fsqrt macro();							// square root
-	defb $28
-	mend
+MACRO fsqrt;							// square root
+	defb $28;
+ENDM
 
-fsgn macro();							// signum
-	defb $29
-	mend
+MACRO fsgn;								// signum
+	defb $29;
+ENDM
 
-fabs macro();							// absolute value
-	defb $2a
-	mend
+MACRO fabs;								// absolute value
+	defb $2a;
+ENDM
 
-fpeek macro();							// PEEK
-	defb $2b
-	mend
+MACRO fpeek;							// PEEK
+	defb $2b;
+ENDM
 
-fin macro();							// IN
-	defb $2c
-	mend
+MACRO fin;								// IN
+	defb $2c;
+ENDM
 
-fusr macro();							// user address
-	defb $2d
-	mend
+MACRO fusr;								// user address
+	defb $2d;
+ENDM
 
-fstrs macro();							// string
-	defb $2e
-	mend
+MACRO fstrs;							// string
+	defb $2e;
+ENDM
 
-fchrs macro();							// character
-	defb $2f
-	mend
+MACRO fchrs;							// character
+	defb $2f;
+ENDM
 
-fnot macro();							// not
-	defb $30
-	mend
+MACRO fnot;								// not
+	defb $30;
+ENDM
 
-fmove macro();							// move
-	defb $31
-	mend
+MACRO fmove;							// move
+	defb $31;
+ENDM
 
-fmod macro();							// modulus
-	defb $32
-	mend
+MACRO fmod;								// modulus
+	defb $32;
+ENDM
 
-fjp macro(dest);						// jump
-	defb $33, dest - $ - 1
-	mend
+MACRO fjp n;							// jump
+	defb $33, {n} - $ - 1;
+ENDM
 
-fstk macro();							// stack data
-	defb $34
-	mend
+MACRO fstk;								// stack data
+	defb $34;
+ENDM
 
-fdjnz macro(dest)						// djnz
-	defb $35, dest - $ - 1
-	mend
+MACRO fdjnz n;							// djnz
+	defb $35, {n} - $ - 1;
+ENDM
 
-fce macro();							// chip enable
-	defb $38
-	mend
+MACRO fce;								// chip enable
+	defb $38;
+ENDM
 
-fget macro();							// get
-	defb $39
-	mend
+MACRO fget;								// get
+	defb $39;
+ENDM
 
-ftrn macro();							// truncate
-	defb $3a
-	mend
+MACRO ftrn;								// truncate
+	defb $3a;
+ENDM
 
-fsgl macro();							// single operation
-	defb $3b
-	mend
+MACRO fsgl;								// single operation
+	defb $3b;
+ENDM
 
-fetof macro();							// e to floating-point
-	defb $3c
-	mend
+MACRO fhex;								// HEX$
+	defb $3c;
+ENDM
 
-frstk macro();							// restack
-	defb $3d
-	mend
+MACRO frstk;							// restack
+	defb $3d;
+ENDM
 
-fstk0 macro();							// stack 0
-	defb $a0
-	mend
+MACRO fnew1;							// reserved
+	defb $3e;
+ENDM
 
-fstk1 macro();							// stack 1
+MACRO fnew2;							// reserved
+	defb $3f;
+ENDM
+
+MACRO fstk0;							// stack 0
+	defb $a0;
+ENDM
+
+MACRO fstk1;							// stack 1
 	defb $a1
-	mend
+ENDM
 
-fstkhalf macro();						// stack half
+MACRO fstkhalf;							// stack half
 	defb $a2
-	mend
+ENDM
 
-fstkhalfpi macro();						// stack pi/2
+MACRO fstkhalfpi;						// stack pi/2
 	defb $a3
-	mend
+ENDM
 
-fstk10 macro();							// stack 10
+MACRO fstk10;							// stack 10
 	defb $a4
-	mend
+ENDM
 
-fst macro(n);							// store (mem 0-5)
-	defb $c0 + n
-	mend
+MACRO fst n;						// store (mem 0-5)
+	defb $c0 + {n};
+ENDM
 
-fgt macro(n);							// get (mem 0-5)
-	defb $e0 + n
-	mend
-
+MACRO fgt n;						// get (mem 0-5)
+	defb $e0 + {n};
+ENDM
 
 ;	// miscellaneous
 
@@ -541,7 +548,7 @@ fgt macro(n);							// get (mem 0-5)
 ;	// errors
 
 	ok						equ $ff;
-	break					equ $00;
+	msg_break				equ $00;
 	next_without_for		equ $01;
 	syntax_error			equ $02;
 	return_without_gosub	equ $03;

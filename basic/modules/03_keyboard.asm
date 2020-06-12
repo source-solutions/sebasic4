@@ -209,7 +209,7 @@ k_st_loop:
 
 k_ch_set:
 	ld a, l;							// low address to A
-	ld l, low kstate_4;					// has second set
+	ld l, kstate_4;						// has second set
 	cp l;								// been considered?
 	jr nz, k_st_loop;					// jump if not
 	call k_test;						// change key to main code
@@ -217,12 +217,12 @@ k_ch_set:
 	ld hl, kstate;						// kstate_0 to HL
 	cp (hl);							// jump if match
 	jr z, k_repeat;						// including repeat
-	ld l, low kstate_4;					// kstate_4 to HL
+	ld l, kstate_4;						// kstate_4 to HL
 	cp (hl);							// jump if match
 	jr z, k_repeat;						// including repeat
 	bit 7, (hl);						// test second set
 	jr nz, k_new;						// jump if free
-	ld l,  low kstate;					// kstate_0 to HL
+	ld l, kstate;						// kstate_0 to HL
 	bit 7, (hl);						// test first set
 	ret z;								// return if not free
 
@@ -236,9 +236,9 @@ k_new:
 	ld (hl), a;							// store A
 	inc hl;								// kstate 3/7 to HL
 	push hl;							// stack pointer
-	ld l, low flags;					// HL points to flags
+	ld l, flags;						// HL points to flags
 	ld d, (hl);							// flags to D
-	ld l, low mode;						// HL points to mode
+	ld l, mode;							// HL points to mode
 	ld c, (hl);							// mode to C
 	call k_meta;						// decode with test for meta and control
 	pop hl;								// unstack pointer

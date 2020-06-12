@@ -754,7 +754,7 @@ po_scr_3:
 report_break:
 	call flush_kb;						// clear keyboard buffer
 	rst error;
-	defb break;
+	defb msg_break;
 
 po_scr_4:
 	cp 2;								// lower part fits?
@@ -772,7 +772,7 @@ po_scr_4a:
 	ld b, a;							// df_sz to b
 	inc a;								// increment df_sz
 	ld (hl), a;							// store it
-	ld l, low s_posn_h;					// address sysvar
+	ld l, s_posn_h;						// address sysvar
 	cp (hl);							// lower scrolling only required?
 	jr c, po_scr_4b;					// jump if so
 	inc (hl);							// increment s-posn-h

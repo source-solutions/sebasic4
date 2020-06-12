@@ -232,31 +232,31 @@ swap_byte:
 fp_series_xx:
 	ld b, a;							// parameter to B
 	call gen_ent_1;						// enter calc and set counter
-	fmove();							// z, z
-	fadd();								// 2 * z
-	fst(0);								// 2 * z			mem-0 holds 2 * z
-	fdel();								// -
-	fstk0();							// 0
-	fst(2);								// 0				mem-2 holds 0
+	fmove;								// z, z
+	fadd;								// 2 * z
+	fst 0;								// 2 * z			mem-0 holds 2 * z
+	fdel;								// -
+	fstk0;								// 0
+	fst 2;								// 0				mem-2 holds 0
 
 g_loop:
-	fmove();							// b(r), b(r)
-	fgt(0);								// b(r), b(r), 2 * z
-	fmul();								// b(r), 2 * b(r) * z
-	fgt(2);								// b(r), 2 * b(r) * z, b(r - 1)
-	fst(1);								//					mem-1 holds b(r - 1) 
-	fsub();								// b(r), 2 * b(r) * z - b(r - 1)
-	fce();								// exit calculator
+	fmove;								// b(r), b(r)
+	fgt 0;								// b(r), b(r), 2 * z
+	fmul;								// b(r), 2 * b(r) * z
+	fgt 2;								// b(r), 2 * b(r) * z, b(r - 1)
+	fst 1;								//					mem-1 holds b(r - 1) 
+	fsub;								// b(r), 2 * b(r) * z - b(r - 1)
+	fce;								// exit calculator
 	call fp_stk_data;					// b(r), 2 * b(r) * z - b(r - 1), a(r + 1)
 	call gen_ent_2;						// re-enter calc without disturbing breg
-	fadd();								// b(r), 2 * b(r) * z - b(r - 1) + a(r + 1)
-	fxch();								// 2 * b(r) * z - b(r - 1) + a(r + 1), b(r)
-	fst(2);								//  				mem-2 holds b(r)
-	fdel();								// 2 * b(r) * z - b(r - 1) + a(r + 1) =
-	fdjnz(g_loop);						// b(r + 1)
-	fgt(1);								// b(n), b(n - 2)
-	fsub();								// b(n) - b(n - 2)
-	fce();								// exit calculator
+	fadd;								// b(r), 2 * b(r) * z - b(r - 1) + a(r + 1)
+	fxch;								// 2 * b(r) * z - b(r - 1) + a(r + 1), b(r)
+	fst 2;								//  				mem-2 holds b(r)
+	fdel;								// 2 * b(r) * z - b(r - 1) + a(r + 1) =
+	fdjnz g_loop;						// b(r + 1)
+	fgt 1;								// b(n), b(n - 2)
+	fsub;								// b(n) - b(n - 2)
+	fce;								// exit calculator
 	ret;								// end of subroutine
 
 ;	// absolute magnitude function
@@ -522,9 +522,9 @@ frst_less:
 
 str_test:
 	push af;							// stack carry flag
-	fwait();							// x
-	fstk0();							// x, 0
-	fce();								// exit calculator
+	fwait;								// x
+	fstk0;								// x, 0
+	fce;								// exit calculator
 
 end_tests:
 	pop af;								// unstack carry flag
@@ -742,63 +742,63 @@ fp_end_calc:
 
 ;	// modulus subroutine
 fp_n_mod_m:
-	fwait();							// n
-	fst(1);								// n, m					mem_1 = m
-	fdel();								// n
-	fmove();							// n, n
-	fgt(1);								// n, n, m
-	fdiv();								// n, n / m
-	fint();								// n, int (n / m)
-	fgt(1);								// n, int (n / m), m
-	fxch();								// n, m, int (n / m)
-	fst(1);								// n, m, int (n / m)	mem_1 = int (n / m)
-	fmul();								// n, m * int (n / m)
-	fsub();								// n - m * int (n / m)
-	fgt(1);								// n - m * int (n / m), int (n / m)
-	fce();								// exit calculator
+	fwait;								// n
+	fst 1;								// n, m					mem_1 = m
+	fdel;								// n
+	fmove;								// n, n
+	fgt 1;								// n, n, m
+	fdiv;								// n, n / m
+	fint;								// n, int (n / m)
+	fgt 1;								// n, int (n / m), m
+	fxch;								// n, m, int (n / m)
+	fst 1;								// n, m, int (n / m)	mem_1 = int (n / m)
+	fmul;								// n, m * int (n / m)
+	fsub;								// n - m * int (n / m)
+	fgt 1;								// n - m * int (n / m), int (n / m)
+	fce;								// exit calculator
 	ret;								// end of subroutine
 
 ;	// INT function
 fp_int:
-	fwait();							// x
-	fmove();							// x, x
-	fcp(_lz);							// x, (1 / 0)
-	fjpt(x_neg);						// x
-	ftrn();								// i (x)
-	fce();								// exit calculator
+	fwait;								// x
+	fmove;								// x, x
+	fcp lz;								// x, (1 / 0)
+	fjpt x_neg;							// x
+	ftrn;								// i (x)
+	fce;								// exit calculator
 	ret;								// end of subroutine
 
 x_neg:
-	fmove();							// x, x
-	ftrn();								// x, i (x)
-	fst(0);								// x, i (x)			mem_0 = i (x
-	fsub();								// x - i (x)
-	fgt(0);								// x - i (x), i (x)
-	fxch();								// i (x), (1 / 0)
-	fnot();								// i (x)
-	fjpt(exit);							// i (x)
-	fstk1();							// i (x), 1
-	fsub();								// i (x) - 1
+	fmove;								// x, x
+	ftrn;								// x, i (x)
+	fst 0;								// x, i (x)			mem_0 = i (x
+	fsub;								// x - i (x)
+	fgt 0;								// x - i (x), i (x)
+	fxch;								// i (x), (1 / 0)
+	fnot;								// i (x)
+	fjpt exit;							// i (x)
+	fstk1;								// i (x), 1
+	fsub;								// i (x) - 1
 
 exit:
-	fce();								// exit calculator
+	fce;								// exit calculator
 	ret;								// end of subroutine
 
 ;	// exponential function
 fp_exp:
-	fwait();							// x
-	fstk();								// x, 1 / log 2
+	fwait;								// x
+	fstk;								// x, 1 / log 2
 	defb $f1;							// exponent
 	defb $38, $aa, $3b, $29;			// mantissa
-	fmul();								// x / log 2 = y
-	fmove();							// y, y
-	fint();								// y, int y = n
-	fst(3);								// y, n				mem-3 = n
-	fsub();								// y - n = w
-	fmove();							// w, w
-	fadd();								// 2 * w
-	fstk1();							// 2 * w, 1
-	fsub();								// 2 * w - 1 = z
+	fmul;								// x / log 2 = y
+	fmove;								// y, y
+	fint;								// y, int y = n
+	fst 3;								// y, n				mem-3 = n
+	fsub;								// y - n = w
+	fmove;								// w, w
+	fadd;								// 2 * w
+	fstk1;								// 2 * w, 1
+	fsub;								// 2 * w - 1 = z
 	defb $88;							// series generator
 	defb $13;							// exponent
 	defb $36;							// mantissa
@@ -816,8 +816,8 @@ fp_exp:
 	defb $7e, $bb, $94, $58;			// mantissa
 	defb $f1;							// exponent
 	defb $3a, $7e, $f8, $cf;			// mantissa
-	fgt(3);								// 2 * w, n
-	fce();								// exit calculator
+	fgt 3;								// 2 * w, n
+	fce;								// exit calculator
 	call fp_to_a;						// abs(n) mod 256 to A
 	jr nz, n_negtv;						// jump if n negative
 	jr c, report_overflow_3;			// error if abs(n) > 255
@@ -839,77 +839,77 @@ result_ok:
 	ret;								// exit
 
 rslt_zero:
-	fwait();							// make
-	fdel();								// last value
-	fstk0();							// zero
-	fce();								// exit calculator
+	fwait;								// make
+	fdel;								// last value
+	fstk0;								// zero
+	fce;								// exit calculator
 	ret;								// end of subroutine
 
 ;	// natural logarithm function
 fp_log:
-	fwait();							// x
-	frstk();							// full floating point form
-	fmove();							// x, x
-	fcp(_gz);							// x, (1 / 0)
-	fjpt(valid);						// x (jump if valid)
-	fce();								// else exit calculator
+	fwait;								// x
+	frstk;								// full floating point form
+	fmove;								// x, x
+	fcp gz;								// x, (1 / 0)
+	fjpt valid;							// x (jump if valid)
+	fce;								// else exit calculator
 	rst error;							// then
 	defb illegal_function_call;			// error
 
 valid:
-	fce();								// exit calculator
+	fce;								// exit calculator
 	ld a, (hl);							// exponent to A
 	ld (hl), $80;						// x to x'
 	call stack_a;						// x', e
-	fwait();							// x', e
-	fstk();								// x', e, 128
+	fwait;								// x', e
+	fstk;								// x', e, 128
 	defb $38;							// exponent
 	defb $00;							// mantissa
-	fsub();								// x', e'
-	fxch();								// e', x'
-	fmove();							// e, x', x'
-	fstk();								// e', x', x', 0.8
+	fsub;								// x', e'
+	fxch;								// e', x'
+	fmove;								// e, x', x'
+	fstk;								// e', x', x', 0.8
 	defb $f0;							// exponent
 	defb $4c, $cc, $cc, $cd;			// mantissa
-	fsub();								// e', x', x' - 0.8
-	fcp(_gz);							// e', x', (1 / 0)
-	fjpt(gre_8);						// e', x'
-	fxch();								// x', e'
-	fstk1();							// x, e', 1
-	fsub();								// x, e' - 1
-	fxch();								// e' - 1, x
-	fce();								// exit calculator
+	fsub;								// e', x', x' - 0.8
+	fcp gz;								// e', x', (1 / 0)
+	fjpt gre_8;							// e', x'
+	fxch;								// x', e'
+	fstk1;								// x, e', 1
+	fsub;								// x, e' - 1
+	fxch;								// e' - 1, x
+	fce;								// exit calculator
 	inc (hl);							// 2 * x'
-	fwait();							// e' - 1, 2 * x'
+	fwait;								// e' - 1, 2 * x'
 
 gre_8:
-	fxch();								// 2 * x', e' - 1
-	fstk();								// x', e', log 2
+	fxch;								// 2 * x', e' - 1
+	fstk;								// x', e', log 2
 	defb $f0;							// exponent
 	defb $31, $72, $17, $f8;			// mantissa
-	fmul();								// x', e' * log 2 = y1
+	fmul;								// x', e' * log 2 = y1
 ;										// 2 * x', (e' -1 ) * log 2 = y2
-	fxch();								// y1, x'		x' large
+	fxch;								// y1, x'		x' large
 ;										// y2, 2 * x'	x' small
-	fstkhalf();							// y1, x', 0.5
+	fstkhalf;							// y1, x', 0.5
 ;										// y2, 2 * x', 0.5
-	fsub();								// y1, x' - 0.5
+	fsub;								// y1, x' - 0.5
 ;										// y2, 2 * x' - 0.5 
-	fstkhalf();							// y1, x' - 0.5, 0.5 
+	fstkhalf;							// y1, x' - 0.5, 0.5 
 ;										// y2, 2 * x' - 0.5, 0.5
-	fsub();								// y1, x' - 1
+	fsub;								// y1, x' - 1
 ;										// y2, 2 * x' - 1
-	fmove();							// y, x' - 1, x' - 1
+	fmove;								// y, x' - 1, x' - 1
 ;										// y2, 2 * x' - 1, 2 * x' - 1
-	fstk();								// y1, x' - 1, x' - 1, 2.5
+	fstk;								// y1, x' - 1, x' - 1, 2.5
 ;										// y2, 2 * x' - 1, 2 * x' - 1, 2.5
 	defb $32;							// exponent
 	defb $20;							// mantissa
-	fmul();								// y1, x' - 1, 2.5 * x' - 2.5
+	fmul;								// y1, x' - 1, 2.5 * x' - 2.5
 ;										// y2, 2 * x' - 1, 5 * x' - 2.5
-	fstkhalf();							// y1, x' - 1, 2.5 * x' - 2.5, 0.5
+	fstkhalf;							// y1, x' - 1, 2.5 * x' - 2.5, 0.5
 ;										// y2, 2 * x' - 1, 5 * x' - 2.5, 0.5
-	fsub();								// y1, x' - 1, 2.5 * x' - 3 = z
+	fsub;								// y1, x' - 1, 2.5 * x' - 3 = z
 ;										// y2, 2 * x' - 1, 5 * x' - 3 = z
 	defb $8c;							// series generator
 	defb $11;							// exponent
@@ -936,78 +936,78 @@ gre_8:
 	defb $a7, $9c, $7e, $5e;			// mantissa
 	defb $f0;							// exponent
 	defb $6e, $23, $80, $93;			// mantissa
-	fmul();								// y1 = log (2** e'), log x'
+	fmul;								// y1 = log (2** e'), log x'
 ;										// y2 = log (2** (e' - 1)), log (2 * x')
-	fadd();								// log (2** e') * x')			= log x
+	fadd;								// log (2** e') * x')			= log x
 ;										// log (2** (e' - 1) * 2 * x')	= log x
-	fce();								// exit calculator
+	fce;								// exit calculator
 	ret;								// log x
 
 ;	// reduce argument subroutine
 fp_get_argt:
-	fwait();							// x
-	fstk();								// x, 1 / (2 * pi)
+	fwait;								// x
+	fstk;								// x, 1 / (2 * pi)
 	defb $ee;							// exponent
 	defb $22, $f9, $83, $6e;			// mantissa
-	fmul();								// x / (2 * pi)
-	fmove();							// x / (2 * pi), x / (2 * pi) 
-	fstkhalf();							// x / (2 * pi), x / (2 * pi), 0.5
-	fadd();								// x / (2 * pi), x / (2 * pi) + 0.5
-	fint();								// x / (2 * pi), int (x / (2 * pi) + 0.5)
-	fsub();								// x / (2 * pi) - int (x / (2 * pi) + 0.5) = y 
-	fmove();							// y, y
-	fadd();								// 2 * y
-	fmove();							// 2 * y, 2 * y
-	fadd();								//  4 * y
-	fmove();							// 4 * y, 4 * y
-	fabs();								// 4 * y, abs (4 * y)
-	fstk1();							// 4 * y, abs (4 * y), 1
-	fsub();								// 4 * y, abs(4 * y) - 1 = z
-	fmove();							// 4 * y, z, z
-	fcp(_gz);							// 4 * y, z, (1 / 0)
-	fst(0);								// mem_0 = test result
-	fjpt(zplus);						// 4 * y, z
-	fdel();								// 4 * y
-	fce();								// 4 * y = v (case 1)
+	fmul;								// x / (2 * pi)
+	fmove;								// x / (2 * pi), x / (2 * pi) 
+	fstkhalf;							// x / (2 * pi), x / (2 * pi), 0.5
+	fadd;								// x / (2 * pi), x / (2 * pi) + 0.5
+	fint;								// x / (2 * pi), int (x / (2 * pi) + 0.5)
+	fsub;								// x / (2 * pi) - int (x / (2 * pi) + 0.5) = y 
+	fmove;								// y, y
+	fadd;								// 2 * y
+	fmove;								// 2 * y, 2 * y
+	fadd;								//  4 * y
+	fmove;								// 4 * y, 4 * y
+	fabs;								// 4 * y, abs (4 * y)
+	fstk1;								// 4 * y, abs (4 * y), 1
+	fsub;								// 4 * y, abs(4 * y) - 1 = z
+	fmove;								// 4 * y, z, z
+	fcp gz;								// 4 * y, z, (1 / 0)
+	fst 0;								// mem_0 = test result
+	fjpt zplus;							// 4 * y, z
+	fdel;								// 4 * y
+	fce;								// 4 * y = v (case 1)
 	ret;								// end of subroutine
 
 zplus:
-	fstk1();							// 4 * y, z, 1
-	fsub();								// 4 * y, z - 1
-	fxch();								// z - 1, 4 * y
-	fcp(_lz);							// z - 1, (1 / 0)
-	fjpt(yneg);							// z - 1
-	fneg();								// 1 - z
+	fstk1;								// 4 * y, z, 1
+	fsub;								// 4 * y, z - 1
+	fxch;								// z - 1, 4 * y
+	fcp lz;								// z - 1, (1 / 0)
+	fjpt yneg;							// z - 1
+	fneg;								// 1 - z
 
 yneg:
-	fce();								// exit calculator
+	fce;								// exit calculator
 	ret;								// end of subroutine
 
 ;	// cosine function
 fp_cos:
-	fwait();							// x
-	fget();								// v
-	fabs();								// abs v
-	fstk1();							// abs v, 1
-	fsub();								// abs v - 1
-	fgt(0);								// abs v - 1, (1/0)
-	fjpt(c_ent);						// abs v - 1 = w
-	fneg();								// 1 - abs v
-	fjp(c_ent);							// 1 - abs v = w
+	fwait;								// x
+	fget;								// v
+	fabs;								// abs v
+	fstk1;								// abs v, 1
+	fsub;								// abs v - 1
+	fgt 0;								// abs v - 1, (1/0)
+	fjpt c_ent;							// abs v - 1 = w
+	fneg;								// 1 - abs v
+	fjp c_ent;							// 1 - abs v = w
 
 ;	// sine function
 fp_sin:
-	fwait();							// x
-	fget();								// w
+	fwait;								// x
+	fget;								// w
 
 c_ent:
-	fmove();							// w, w
-	fmove();							// w, w, w
-	fmul();								// w, w, w * w
-	fmove();							// w, 2 * w * w, 1
-	fadd();								// w, 2 * w * w
-	fstk1();							// w, 2 * w * w, 1
-	fsub();								// w, 2 * w * w - 1 = z
+	fmove;								// w, w
+	fmove;								// w, w, w
+	fmul;								// w, w, w * w
+	fmove;								// w, 2 * w * w, 1
+	fadd;								// w, 2 * w * w
+	fstk1;								// w, 2 * w * w, 1
+	fsub;								// w, 2 * w * w - 1 = z
 	defb $86;							// series-06
 	defb $14;							// exponent
 	defb $e6;							// mantissa
@@ -1021,19 +1021,19 @@ c_ent:
 	defb $92, $0d, $cd, $ed;			// mantissa
 	defb $f1;							// exponent
 	defb $23, $5d, $1b, $ea;			// mantissa
-	fmul();								// in (pi * w / 2) = sin x (or = cos x)
-	fce();								// sin x (or cos x)
+	fmul;								// in (pi * w / 2) = sin x (or = cos x)
+	fce;								// sin x (or cos x)
 	ret;								// end of subroutine
 
 ;	// tangent function
 fp_tan:
-	fwait();							// x
-	fmove();							// x, x
-	fsin();								// x, sin x
-	fxch();								// sin x, cos x
-	fcos();								// sin x / cos x = tan x
-	fdiv();								// test for overflow
-	fce();								// exit calculator
+	fwait;								// x
+	fmove;								// x, x
+	fsin;								// x, sin x
+	fxch;								// sin x, cos x
+	fcos;								// sin x / cos x = tan x
+	fdiv;								// test for overflow
+	fce;								// exit calculator
 	ret;								// end of subroutine
 
 ;	// arctangent function
@@ -1042,32 +1042,32 @@ fp_atan:
 	ld a, (hl);							// get exponent
 	cp $81;								// y = x?
 	jr c, small;						// jump if so
-	fwait();							// x
-	fstk1();							// x, 1
-	fneg();								// x, -1
-	fxch();								// -1, x
-	fdiv();								// -1 / x
-	fmove();							// -1 / x, -1 / x
-	fcp(_lz);							// -1 / x, (1 / 0)
-	fstkhalfpi();						// -1 / x, pi / 2, (1 / 0) 
-	fxch();								// -1 / x, pi / 2
-	fjpt(cases);						// jump if y = -1 / x, w = pi / 2
-	fneg();								// -1 / 2, =pi / 2
-	fjp(cases);							// jump if y = -1 / x, w = -pi / 2
+	fwait;								// x
+	fstk1;								// x, 1
+	fneg;								// x, -1
+	fxch;								// -1, x
+	fdiv;								// -1 / x
+	fmove;								// -1 / x, -1 / x
+	fcp lz;								// -1 / x, (1 / 0)
+	fstkhalfpi;							// -1 / x, pi / 2, (1 / 0) 
+	fxch;								// -1 / x, pi / 2
+	fjpt cases;							// jump if y = -1 / x, w = pi / 2
+	fneg;								// -1 / 2, =pi / 2
+	fjp cases;							// jump if y = -1 / x, w = -pi / 2
 
 small:
-	fwait();							// y
-	fstk0();							// y, 0
+	fwait;								// y
+	fstk0;								// y, 0
 
 cases:
-	fxch();								// w, y
-	fmove();							// w, y, y
-	fmove();							// w, y, y, y
-	fmul();								// w, y, y * y
-	fmove();							// w, y, y * y, y * y
-	fadd();								// w, y, 2 * y * y
-	fstk1();							// w, y, 2 * y * y, 1
-	fsub();								// w, y, 2 * y * y - 1 = z
+	fxch;								// w, y
+	fmove;								// w, y, y
+	fmove;								// w, y, y, y
+	fmul;								// w, y, y * y
+	fmove;								// w, y, y * y, y * y
+	fadd;								// w, y, 2 * y * y
+	fstk1;								// w, y, 2 * y * y, 1
+	fsub;								// w, y, 2 * y * y - 1 = z
 	defb $8c;							// series-0c
 	defb $10;							// exponent
 	defb $b2;							// mantissa
@@ -1093,47 +1093,47 @@ cases:
 	defb $d8, $de, $63, $be;			// mantissa
 	defb $f0;							// exponent
 	defb $61, $a1, $b3, $0c;			// mantissa
-	fmul();								// w, atn x			case 1
+	fmul;								// w, atn x			case 1
 ;										// w, atn (-1/x) 	case 2 and 3
-	fadd();								// atn x
-	fce();								// exit calculator
+	fadd;								// atn x
+	fce;								// exit calculator
 	ret;								// end of subroutine
 
 ;	// arcsine function
 fp_asin:
-	fwait();							// x
-	fmove();							// x, x
-	fmove();							// x, x, x
-	fmul();								// x, x * x
-	fstk1();							// x, x * x, 1
-	fsub();								// x, x * x - 1
-	fneg();								// x, 1 - x * x
-	fsqrt();							// x, sqr(1 - x * x)
-	fstk1();							// x, sqr(1 - x * x), 1
-	fadd();								// x, 1 + sqr(1 - x * x)
-	fdiv();								// x / (1 + sqr(1 - x * x)) = tan
-	fatan();							// y / 2
-	fmove();							// y / 2, y / 2
-	fadd();								// y = asn x
-	fce();								// exit calculator
+	fwait;								// x
+	fmove;								// x, x
+	fmove;								// x, x, x
+	fmul;								// x, x * x
+	fstk1;								// x, x * x, 1
+	fsub;								// x, x * x - 1
+	fneg;								// x, 1 - x * x
+	fsqrt;								// x, sqr(1 - x * x)
+	fstk1;								// x, sqr(1 - x * x), 1
+	fadd;								// x, 1 + sqr(1 - x * x)
+	fdiv;								// x / (1 + sqr(1 - x * x)) = tan
+	fatan;								// y / 2
+	fmove;								// y / 2, y / 2
+	fadd;								// y = asn x
+	fce;								// exit calculator
 	ret;								// end of subroutine
 
 ;	// arccosine function
 fp_acos:
-	fwait();							// x
-	fasin();							// asn x
-	fstkhalfpi();						// asn x, pi / 2
-	fsub();								// asn x - pi / 2
-	fneg();								// pi / 2 - asn x = acs x
-	fce();								// exit calculator
+	fwait;								// x
+	fasin;								// asn x
+	fstkhalfpi;							// asn x, pi / 2
+	fsub;								// asn x - pi / 2
+	fneg;								// pi / 2 - asn x = acs x
+	fce;								// exit calculator
 	ret;								// end of subroutine
 
 ;	// square root function
 fp_sqr:
-	fwait();							// x
-	frstk();							// full floating point form
-	fst(0);								// store in mem-0
-	fce();								// exit calculator
+	fwait;								// x
+	frstk;								// full floating point form
+	fst 0;								// store in mem-0
+	fce;								// exit calculator
 	ld a, (hl);							// value to A
 	and a;								// test against zero
 	ret z;								// return if so
@@ -1148,13 +1148,13 @@ fp_sqr:
 	ld b, 5;							// set counter
 
 fp_sqr_1:
-	fwait();							// x
-	fmove();							// x, x
-	fgt(0);								// x, x, n
-	fxch();								// x, n, x
-	fdiv();								// x, n / x
-	fadd();								// x + n / x
-	fce();								// exit calculator
+	fwait;								// x
+	fmove;								// x, x
+	fgt 0;								// x, x, n
+	fxch;								// x, n, x
+	fdiv;								// x, n / x
+	fadd;								// x + n / x
+	fce;								// exit calculator
 	dec (hl);							// halve value
 	djnz fp_sqr_1;						// loop until found
 	ret;								// end of subroutine
@@ -1167,13 +1167,13 @@ fp_to_power:
 	call fp_to_bc_delete;				//
 	push bc;							//
 	jr z, topwrp;						//
-	fwait();							// x
+	fwait;								// x
 
 topwrn:
-	fstk1();							// x, 1
-	fxch();								// 1, x
-	fdiv();								// 1/x
-	fce();								// exit calculator
+	fstk1;								// x, 1
+	fxch;								// 1, x
+	fdiv;								// 1/x
+	fce;								// exit calculator
 
 topwrp:
 	pop hl;								//
@@ -1192,59 +1192,59 @@ topwsh:
 	add hl, hl;							//
 	jr nc, topwsh;						//
 	push hl;							//
-	fwait();							// x
-	fst(0);								// store in mem-0
+	fwait;								// x
+	fst 0;								// store in mem-0
 
 topwrl:
-	fmove();							// x, x
-	fmul();								// x, x * x
-	fce();								// exit calculator
+	fmove;								// x, x
+	fmul;								// x, x * x
+	fce;								// exit calculator
 	pop hl;								//
 	add hl, hl;							//
 	push hl;							//
 	ld a, (breg);						//
 	ld b, a;							//
 	jr nc, topwre;						//
-	fwait();							// x
-	fgt(0);								// x, x
-	fmul();								// x, x * x
-	fjp(topwro);						//
+	fwait;								// x
+	fgt 0;								// x, x
+	fmul;								// x, x * x
+	fjp topwro;							//
 
 topwre:
-	fwait();							// x
+	fwait;								// x
 
 topwro:
-	fdjnz(topwrl);						//
-	fce();								// exit calculator
+	fdjnz topwrl;						//
+	fce;								// exit calculator
 	pop hl;								//
 	ret;								//
 
 topwr1:
-	fwait();							// x
-	fxch();								// y, x
-	fmove();							// y, x, x
-	fnot();								// y, x, (1 / 0)
-	fjpt(xis0);							// y, x
-	flogn();							// y, log x
-	fmul();								// y * log x
-	fce();								// exit calculator
+	fwait;								// x
+	fxch;								// y, x
+	fmove;								// y, x, x
+	fnot;								// y, x, (1 / 0)
+	fjpt xis0;							// y, x
+	flogn;								// y, log x
+	fmul;								// y * log x
+	fce;								// exit calculator
 	jp fp_exp;							// form exp(y * log x)
 
 xis0:
-	fxch();								// 0, y
-	fcp(_gz);							// 0, (1 / 0)
-	fjpt(last);							// 0
-	fjp(topwrn);						// 1/x (reciprocal already available)
+	fxch;								// 0, y
+	fcp gz;								// 0, (1 / 0)
+	fjpt last;							// 0
+	fjp topwrn;							// 1/x (reciprocal already available)
 
 stkone:
-	fwait();							// x
+	fwait;								// x
 
 one:
-	fdel();								// -
-	fstk1();							// 1
+	fdel;								// -
+	fstk1;								// 1
 
 last:
-	fce();								// exit calculator
+	fce;								// exit calculator
 	ret;								// end of subroutine
 
 ;	// HEX$ function

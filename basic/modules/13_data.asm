@@ -27,8 +27,9 @@ copyright:
 	defb "SE BASIC IV 4.2 Cordelia", ctrl_enter;
 	defb "Copyright (C)2020 Source Solutions, Inc.", ctrl_enter;
 	defb ctrl_enter;
-;	defb "Release 200715", ctrl_enter; Morton
- 	defb TIMESTR, ctrl_enter;
+;	defb "Release 200715", ctrl_enter;	// Morton
+; 	defb "YY-MM-DD HH:MM", ctrl_enter;
+ 	defb "10:56 pm Sun 7/Jun/2020", ctrl_enter;
 	defb ctrl_enter, 0;
 
 bytes_free:
@@ -308,46 +309,46 @@ token_table:
 	defb end_marker;
 
 ;	// functions
-	dbtb "RND", "INKEY$", "PI", "FN";
-	dbtb "BIN$", "OCT$", "HEX$", "SPC";
-	dbtb "TAB", "VAL$", "ASC", "VAL";
-	dbtb "LEN", "SIN", "COS", "TAN";
-	dbtb "ASIN", "ACOS", "ATAN", "LOG";
-	dbtb "EXP", "INT", "SQR", "SGN";
-	dbtb "ABS", "PEEK", "INP", "USR";
-	dbtb "STR$", "CHR$", "NOT", "MOD";
-	dbtb "OR", "AND", "<=", ">=";
-	dbtb "<>", "LINE", "THEN", "TO";
-	dbtb "STEP";
+	str "RND", "INKEY$", "PI", "FN";
+	str "BIN$", "OCT$", "HEX$", "SPC";
+	str "TAB", "VAL$", "ASC", "VAL";
+	str "LEN", "SIN", "COS", "TAN";
+	str "ASIN", "ACOS", "ATAN", "LOG";
+	str "EXP", "INT", "SQR", "SGN";
+	str "ABS", "PEEK", "INP", "USR";
+	str "STR$", "CHR$", "NOT", "MOD";
+	str "OR", "AND", "<=", ">=";
+	str "<>", "LINE", "THEN", "TO";
+	str "STEP";
 
 ;	// commands
-	dbtb "DEF FN", "BLOAD", "BSAVE", "CHDIR";
-	dbtb "COPY", "OPEN #", "CLOSE #", "WHILE";
-	dbtb "WEND", "SOUND", "FILES", "KILL";
-	dbtb "LOAD", "MKDIR", "NAME", "RMDIR";
-	dbtb "SAVE", "OUT", "LOCATE", "END";
-	dbtb "STOP", "READ", "DATA", "RESTORE";
-	dbtb "NEW", "ERROR", "CONT", "DIM";
+	str "DEF FN", "BLOAD", "BSAVE", "CHDIR";
+	str "COPY", "OPEN #", "CLOSE #", "WHILE";
+	str "WEND", "SOUND", "FILES", "KILL";
+	str "LOAD", "MKDIR", "NAME", "RMDIR";
+	str "SAVE", "OUT", "LOCATE", "END";
+	str "STOP", "READ", "DATA", "RESTORE";
+	str "NEW", "ERROR", "CONT", "DIM";
 
 tk_ptr_rem:
-	dbtb "REM", "FOR", "GOTO", "GOSUB";
-	dbtb "INPUT", "PALETTE", "LIST", "LET";
-	dbtb "WAIT", "NEXT", "POKE", "PRINT"
-	dbtb "DELETE", "RUN", "EDIT", "RANDOMIZE";
-	dbtb "IF", "CLS", "CALL", "CLEAR"
-	dbtb "RETURN", "COLOR", "TRON", "TROFF"
-	dbtb "ON", "RENUM", "AUTO", "SCREEN";
-	dbtb "XOR", "_E2", "_E3", "_E4"
-	dbtb "_E5", "_E6", "_E7", "_E8";
-	dbtb "_E9", "_EA", "_EB", "_EC";
-	dbtb "_ED", "_EE", "_EF", "_F0";
-	dbtb "_F1", "_F2", "_F3", "_F4";
-	dbtb "_F5", "_F6", "_F7", "_F8";
-	dbtb "_F9", "_FA", "_FB", "_FC";
-	dbtb "_FD", "_FE";
+	str "REM", "FOR", "GOTO", "GOSUB";
+	str "INPUT", "PALETTE", "LIST", "LET";
+	str "WAIT", "NEXT", "POKE", "PRINT"
+	str "DELETE", "RUN", "EDIT", "RANDOMIZE";
+	str "IF", "CLS", "CALL", "CLEAR"
+	str "RETURN", "COLOR", "TRON", "TROFF"
+	str "ON", "RENUM", "AUTO", "SCREEN";
+	str "XOR", "_E2", "_E3", "_E4"
+	str "_E5", "_E6", "_E7", "_E8";
+	str "_E9", "_EA", "_EB", "_EC";
+	str "_ED", "_EE", "_EF", "_F0";
+	str "_F1", "_F2", "_F3", "_F4";
+	str "_F5", "_F6", "_F7", "_F8";
+	str "_F9", "_FA", "_FB", "_FC";
+	str "_FD", "_FE";
 	
 tk_ptr_last:
-	dbtb "_FF";
+	str "_FF";
 
 ;	// used in 09_command
 offst_tbl:
@@ -505,7 +506,7 @@ p_rmdir:
 
 p_save:
 	defb str_exp_no_f_ops;
-	defw save;
+	defw c_save;
 
 p_out:
 	defb two_c_s_num_no_f_ops;
@@ -521,11 +522,11 @@ p_end:
 
 p_stop:
 	defb no_f_ops;
-	defw stop;
+	defw c_stop;
 
 p_read:
 	defb var_syn;
-	defw read;
+	defw c_read;
 
 p_data:
 	defb var_syn;
@@ -556,7 +557,7 @@ p_rem:
 	defw rem;
 
 p_for:
-	defb chr_var, '=', num_exp, tk_to, num_exp, var_syn;
+	defb chr_var, "=", num_exp, tk_to, num_exp, var_syn;
 	defw c_for;
 
 p_goto:
@@ -577,7 +578,7 @@ p_palette:
 
 p_list:
 	defb var_syn;
-	defw list;
+	defw c_list;
 
 p_let:
 	defb var_rqd, '=', expr_num_str;
@@ -596,7 +597,7 @@ p_poke:
 
 p_print:
 	defb var_syn;
-	defw print;
+	defw c_print;
 
 p_delete:
 	defb num_exp, ',', num_exp_no_f_ops;
@@ -604,7 +605,7 @@ p_delete:
 
 p_run:
 	defb var_syn;
-	defw run;
+	defw c_run;
 
 p_edit:
 	defb num_exp_0;

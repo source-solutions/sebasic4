@@ -14,22 +14,21 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
-; 	// This source is compatible with Zeus (http://www.desdes.com/products/oldfiles)
+; 	// This source is compatible with RASM
+;	// (http://www.cpcwiki.eu/forum/programming/rasm-z80-assembler-in-beta/)
 
-	zoWarnFlow = false;					// prevent pseudo op-codes triggering warnings.
-	output_bin "../bin/boot.rom",0,$4000
 	include "uno.inc";					// label definitions
 	include "os.inc";					// label definitions
 
 ;	// restarts
-	divmmc equ $08
-	wreg equ $20
+	divmmc equ $08;
+	wreg equ $20;
 
 ;	// IO ports
-	mmu equ	$f4
-	ula equ $fe
-	scld equ $ff
-	paging equ $7ffd
+	mmu equ	$f4;
+	ula equ $fe;
+	scld equ $ff;
+	paging equ $7ffd;
 
 ;	// control codes
 	ctrl_cr			equ $0d;
@@ -57,7 +56,7 @@ to_rom1:
 
 ;	// write to SPI flash
 	org $0020;
-wreg:
+;wreg:
 	ld bc, uno_reg + $100;				// $fd3b. Will be decremented to $fc before the OUT by OUTI.
 	pop hl;								// drop return address.
 	outi;								// DEC B; OUT [BC], (HL); INC HL.
@@ -602,9 +601,7 @@ waits6:
 ;	// part two of BASIC
 	org $0400
 basic:
-	import_bin "basic.bin"
-
-	defb "The supreme art of war is to subdue the enemy without fighting-Sun Tzu"
+	incbin "basic.bin"
 
 ;	// wipe lower 8KiB of shadow RAM
 	org $2000;
@@ -955,7 +952,7 @@ cf_end:
 ;	// code page 437 font
 	org $2a00
 font:
-	import_bin "0437-IBM.CP"
+	incbin "0437-IBM.CP"
 
 ;	// entry point from OS ROM
 	org $3200
@@ -966,9 +963,7 @@ font:
 	ret;								// done (back to MMC ROM)
 
 os:
-;	import_bin "../bin/unodos-0.sys"
-;	import_bin "../bin/unodos-1.sys"
-	import_bin "../bin/unodos.sys"
+	incbin "../bin/unodos.sys"
 
 os_end:
 	defb "Source Solutions";
