@@ -231,8 +231,8 @@ D + 3: modifiers and user signals, 0 if there is no
 // scan code 2 list
 
 // ROW 0
-//#define PC_ESC      0x0e        // key to left of '1'
-#define PC_ESC		0x76
+#define PC_ESC      0x0e        // key to left of '1'
+#define PC_F0		0x76        // ESC
 #define PC_F1		0x05
 #define PC_F2		0x06
 #define PC_F3		0x04
@@ -454,7 +454,7 @@ int main()
 	MAPANY(PC_PGUP,SE_PGUP,0,0);
 	MAPANY(PC_PGDN,SE_PGDN,0,0);
 
-	MAP(PC_ESC|MD_SHIFT,0,NMI,0);						// F0 for NMI
+	MAPANY(PC_F0,0,NMI,0);								// F0 for NMI
     MAP(PC_ESC|MD_SHIFT|MD_CTRL,0,URESET,0);			// Ctrl-Alt-Del for user reset
     MAP(PC_ESC|MD_SHIFT|MD_CTRL|MD_ALT,0,MRESET,0);		// Ctrl-Alt-BkSpace for master reset
 
@@ -513,7 +513,7 @@ int main()
 	//SAVEMAP1HEX("keyb1_us_hex.txt");
 	//SAVEMAP2HEX("keyb2_us_hex.txt");
 	// And map file for loading from ESXDOS
-	SAVEMAPBIN("PERIXXV2");
+	SAVEMAPBIN("CHLOEV2");
 	
 	return 0;
 }

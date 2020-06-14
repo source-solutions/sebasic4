@@ -163,7 +163,8 @@ D + 1: key2 (or 0 if there is not)
 // scan code 2 list
 
 // ROW 0
-#define PC_ESC		0x76
+#define PC_ESC      0x0e        // key to left of '1'
+#define PC_F0		0x76        // ESC
 #define PC_F1		0x05
 #define PC_F2		0x06
 #define PC_F3		0x04
@@ -487,7 +488,7 @@ int main()
 	//SAVEMAP1HEX("keyb1_us_hex.txt");
 	//SAVEMAP2HEX("keyb2_us_hex.txt");
 	// And map file for loading from ESXDOS
-	SAVEMAPBIN("PERIXXV4");
+	SAVEMAPBIN("CHLOEV4");
 	
 	return 0;
 }
