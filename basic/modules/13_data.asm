@@ -28,7 +28,8 @@ copyright:
 	defb "Copyright (C)2020 Source Solutions, Inc.", ctrl_enter;
 	defb ctrl_enter;
 ;	defb "Release 200715", ctrl_enter;	// Morton
- 	defb "YY-MM-DD HH:MM", ctrl_enter;
+; 	defb "YY-MM-DD HH:MM", ctrl_enter;
+ 	defb "20-06-15 HH:MM", ctrl_enter;
 	defb ctrl_enter, 0;
 
 bytes_free:
@@ -280,9 +281,9 @@ rpt_mesgs:
 
 kt_main:
 	defb "BHY65TGVNJU74RFCMKI83EDX", ctrl_symbol;
-	defb "LO92WSZ ", ctrl_enter, "P01QA", 0;
+	defb "LO92WSZ ", ctrl_enter, "P01QA",0;
 
-kt_ext:
+kt_ctrl:
 	defb "975312CBA864DEF"
 
 ;	defb k_f9
