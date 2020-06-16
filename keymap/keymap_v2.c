@@ -520,8 +520,8 @@ int main()
     //SAVEMAPHEX("keyb_us_hex.txt");
     // And map file for loading from ESXDOS
 
-//    SAVEMAPBIN("SEV2.KB");
-    SAVEMAPBIN("USV2.KB");
+//    SAVEMAPBIN("../ChloeVM.app/Contents/Resources/chloehd/SYSTEM/KEYBOARD.S/SEV2.KB");
+    SAVEMAPBIN("../ChloeVM.app/Contents/Resources/chloehd/SYSTEM/KEYBOARD.S/USV2.KB");
 	
 	return 0;
 }
