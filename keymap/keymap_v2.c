@@ -1,3 +1,21 @@
+/*
+SE Basic IV 4.2 Cordelia - A classic BASIC interpreter for the Z80 architecture.
+Copyright (c) 1999-2020 Source Solutions, Inc.
+
+SE Basic IV is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+SE Basic IV is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty o;
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -31,8 +49,7 @@ D + 2: reset signals and joystick, 0 if there is no
 D + 3: modifiers and user signals, 0 if there is no
 */
 
-// You shouldn't have to touch these defs unless your Uno has a different keyboard
-// layout (because, for example, you are using a different ROM)
+// You shouldn't have to touch these defs unless you modify SE Basic IV.
 #define SE_1       0x61
 #define SE_2       0x62
 #define SE_3       0x64
@@ -239,9 +256,9 @@ D + 3: modifiers and user signals, 0 if there is no
 #define PC_F10      0x09
 #define PC_F11      0x78
 #define PC_F12      0x07
-#define PC_F13      0x2F		// 0x7C | EXT	// PR SCR
-#define PC_F14		0x37		// 0x7E			// SCR LK
-#define PC_F15      0x7F		// 0x77 | EXT	// PAUSE
+#define PC_F13      0x7C | EXT	// PR SCR
+#define PC_F14		0x7E		// SCR LK
+#define PC_F15      0x77 | EXT	// PAUSE
 
 #define PC_1        0x16        // also !
 #define PC_2        0x1E        // also @
@@ -436,8 +453,7 @@ int main()
     MAPANY(PC_RIGHT,SE_RIGHT,0,0);
 
     MAP(PC_F0,0,NMI,0);					// F0 for NMI (not present on US layout)
-    
-	MAP(PC_F12,0,URESET,0);				// SYS REQ
+    MAP(PC_F12,0,URESET,0);				// SYS REQ
 	
     //keypad
     MAPANY(PC_KP_DIVIS,SE_SLASH,0,0);
@@ -448,15 +464,15 @@ int main()
     MAPANY(PC_KP_DOT,SE_DOT,0,0); 
 
     // a 8-way keyboard joystick on the keypad
-    MAPANY(PC_KP_7,0,SE_7,0);
-    MAPANY(PC_KP_8,0,SE_8,0);
-    MAPANY(PC_KP_9,0,SE_9,0);
-    MAPANY(PC_KP_4,0,SE_4,0);
-    MAPANY(PC_KP_5,0,SE_5,0);
-    MAPANY(PC_KP_6,0,SE_6,0);
-    MAPANY(PC_KP_1,0,SE_1,0);
-    MAPANY(PC_KP_2,0,SE_2,0);
-    MAPANY(PC_KP_3,0,SE_3,0);
+    MAPANY(PC_KP_7,SE_7,0,0);
+    MAPANY(PC_KP_8,SE_8,0,0);
+    MAPANY(PC_KP_9,SE_9,0,0);
+    MAPANY(PC_KP_4,SE_4,0,0);
+    MAPANY(PC_KP_5,SE_5,0,0);
+    MAPANY(PC_KP_6,SE_6,0,0);
+    MAPANY(PC_KP_1,SE_1,0,0);
+    MAPANY(PC_KP_2,SE_2,0,0);
+    MAPANY(PC_KP_3,SE_3,0,0);
 
     //Some keys and shift+key mappings for the US keyboard
     MAP(MD1|PC_1,SE_BANG,0,0);
