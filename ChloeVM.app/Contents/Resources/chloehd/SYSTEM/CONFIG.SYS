@@ -97,7 +97,7 @@ cp=1252-EUW
 # kb=SEV4
 
 ## US v2
-kb=USV2
+# kb=USV2
 
 ## US v4
-# kb=USV4
+kb=USV4
