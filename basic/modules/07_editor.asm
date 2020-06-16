@@ -33,7 +33,7 @@ ed_loop:
 	push hl;							// return address
 	cp ctrl_delete;						// delete?
 	jr z, ed_delete;					// jump with delete
-	cp 23;								// printable character?
+	cp 24;								// printable character?
 	jr c, ed_keys;						// jump with control keys
 
 ;	// add character subroutine
@@ -54,7 +54,7 @@ ed_delete:
 	ld hl, (k_cur);						// get current cursor
 	call ed_right;						// move it right
 	ret z;								// return if no character
-	jr ed_backspace;					// delete it
+	jp ed_backspace;					// delete it
 
 ed_keys:
 	ld e, a;							// code
@@ -86,10 +86,53 @@ ed_keys_t:
 	defb ed_symbol - $;					// $0e
 	defb ed_graph - $;					// $0f
 	defb ed_help - $;					// $10
+	defb ed_f1 - $;						// $11
+	defb ed_f2 - $;						// $12
+	defb ed_f3 - $;						// $13
+	defb ed_f4 - $;						// $14
+	defb ed_f5 - $;						// $15
+	defb ed_f6 - $;						// $16
+	defb ed_f7 - $;						// $17
+
+;	// change value in ed_loop when adding to this table
+
+ed_f1:
+	ld a, tk_list;						// LIST
+	jr ed_add_char;						// immedaite jump
+
+ed_f2:
+	ld a, tk_run;						// RUN
+	jr ed_add_char;						// immedaite jump
+
+ed_f3:
+	ld a, tk_load;						// LOAD
+
+ed_ins_quot:
+	call add_char;						// add token
+	ld a, '"';";						// quote
+	jr ed_add_char;						// immedaite jump
+
+ed_f4:
+	ld a, tk_save;						// SAVE
+	jr ed_ins_quot;						// immedaite jump
+
+ed_f5:
+	ld a, tk_cont;						// CONT
+	jr ed_add_char;						// immedaite jump
+
+ed_f6:
+	ld a, tk_tron;						// TRON
+	jr ed_add_char;						// immedaite jump
+
+ed_f7:
+	ld a, tk_troff;						// TROFF
+	jr ed_add_char;						// immedaite jump
 
 ;	// tab editing subroutine
 ed_tab:
 	ld a, 6;							// tab stop
+
+ed_add_char:
 	jp add_char;						// immedaite jump
 
 ;	// cursor left editing subroutine

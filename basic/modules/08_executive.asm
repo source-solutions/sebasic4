@@ -96,6 +96,8 @@ ram_set:
 
 ;	// default NMI routine
 initial:
+	call flush_kb;						// flush the keyboard buffer
+
 	ld hl, (ramtop);					// ramtop to HL
 	ld (hl), $3e;						// set it to the GOSUB end marker
 	dec hl;

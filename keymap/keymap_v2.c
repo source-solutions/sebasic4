@@ -453,7 +453,7 @@ int main()
     MAPANY(PC_RIGHT,SE_RIGHT,0,0);
 
     MAP(PC_F0,0,NMI,0);					// F0 for NMI (not present on US layout)
-    MAP(PC_F12,0,URESET,0);				// SYS REQ
+    MAP(PC_F13,0,URESET,0);				// SYS REQ
 	
     //keypad
     MAPANY(PC_KP_DIVIS,SE_SLASH,0,0);

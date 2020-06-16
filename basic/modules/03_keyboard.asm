@@ -367,4 +367,11 @@ flush_kb:
 	ld a, (hl);							// pointer to A
 	inc l;								// point to k_tail
 	ld (hl), a;							// signal no key
+
+	ld bc, uno_reg;						// Uno register port
+	ld a, 5;							// Key state
+	out (c), a;							// Select key state
+	inc b;								// Uno data port
+	in a, (c);							// clear key state
+
 	ret;								// end of subroutine
