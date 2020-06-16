@@ -797,37 +797,6 @@ any_load:
 	defb f_close;						// 
 	ret;								// end of subroutine
 
-kb_found:
-	ld a, (hl);		                 	// get character
-	cp ctrl_cr;		                  	// test for CR
-	jr z, kb_end;	                	// jump if so
-	cp ctrl_lf;		                  	// test for LF
-	jr z, kb_end;	                	// jump if so
-
-	ld (de), a;							// write character
-	inc hl;								// next character source
-	inc de;								// next character destination
-	jr kb_found;	              		// loop until done
-
-kb_end:
-	ld hl, (kb_ext-cf_ram)+$c100;		// file extension (LD HL, kb_ext)
-	ld bc, 4;							// four bytes to copy
-	ldir;								// DE already points to destination so copy it
-
-kb_load:
-	ld ix, (kb_path-cf_ram)+$c100;		// path to keyboard file (kb_path)
-;	ld a, '*';							// use current drive
-;	ld b, fa_read | fa_open_ex;			// open for reading if file exists
-;	and a;								// signal no error (clear carry flag)
-;	rst divmmc;							// issue a hookcode
-;	defb f_open;						// open file
-	call (open_ex-cf_ram)+$c100;		// open file if it exits
-
-	ret c;								// return if error
-	ld ix, $4240;						// file destination
-	ld bc, 85;							// 85 bytes of data to load
-	jr any_load;						// continue to common code
-
 ln_found:
 	ld a, (hl);		                 	// get character
 	cp ctrl_cr;			               	// test for CR
@@ -858,6 +827,66 @@ ln_load:
 	ld ix, $4000;						// file destination
 	ld bc, 576;							// 576 bytes of data to load
 	jr any_load;						// continue to common code
+
+kb_found:
+	ld a, (hl);		                 	// get character
+	cp ctrl_cr;		                  	// test for CR
+	jr z, kb_end;	                	// jump if so
+	cp ctrl_lf;		                  	// test for LF
+	jr z, kb_end;	                	// jump if so
+
+	ld (de), a;							// write character
+	inc hl;								// next character source
+	inc de;								// next character destination
+	jr kb_found;	              		// loop until done
+
+kb_end:
+	ld hl, (kb_ext-cf_ram)+$c100;		// file extension (LD HL, kb_ext)
+	ld bc, 4;							// four bytes to copy
+	ldir;								// DE already points to destination so copy it
+
+kb_load:
+	ld ix, (kb_path-cf_ram)+$c100;		// path to keyboard file (kb_path)
+	call (open_ex-cf_ram)+$c100;		// open file if it exits
+	ret c;								// return if error
+
+	ld (handle_c), a;					// store handle
+
+ReadMap:
+	ld bc, uno_reg;						// uno register port
+	ld a, 7;							// keymap register
+	out (c), a;							// select keymap register
+	ld b, 4;							// four chunks of 4K
+
+ReadMapFromFile:
+	push bc;							// store count
+	ld bc, 4096;						// bytes to read
+	ld ix, $d000;						// buffer (top 4K of RAM)
+	ld a, (handle_c);					// get handle
+	rst divmmc;							// issue a hookcode
+	defb f_read;						// read bytes
+	ret c;								// end if premature end
+
+	ld hl, $d000;						// buffer
+	ld bc, uno_dat;						// Uno data port
+	ld de, 4096;						// byte count
+
+WriteMapToFPGA:
+	ld a, (hl);							// get byte from buffer
+	out (c), a;							// write it to the FPGA
+	inc hl;								// next byte
+	dec de;								// reduce count
+	ld a, e;							// test for zero
+	or d;
+	jr nz, WriteMapToFPGA;				// loop until done
+
+	pop bc;								// get chunk count
+	djnz ReadMapFromFile;				// do remaining chunks
+
+	ld a, (handle_c);					// get handle
+	rst divmmc;							// issue a hookcode
+	defb f_close;						// close file
+	ret;								// done
 
 ;   // open a file if it exists (called four times)
 open_ex:
