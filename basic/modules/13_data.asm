@@ -262,7 +262,70 @@ rpt_mesgs:
 
 ;	// A total of 576 bytes are allocated for translated error messages
 
-	org $4240
+	org $4300
+
+;	// used in 07_editor
+ed_f_keys_t:
+	defb s_f1 - $;						// $11
+	defb s_f2 - $;						// $12
+	defb s_f3 - $;						// $13
+	defb s_f4 - $;						// $14
+	defb s_f5 - $;						// $15
+	defb s_f6 - $;						// $16
+	defb s_f7 - $;						// $17
+	defb s_f8 - $;						// $18
+	defb s_f9 - $;						// $19
+	defb s_f10 - $;						// $1a
+	defb s_f11 - $;						// $1b
+	defb s_f12 - $;						// $1c
+	defb s_f13 - $;						// $1d
+	defb s_f14 - $;						// $1e
+	defb s_f15 - $;						// $1f
+
+s_f1:
+	defb "LIST", 0
+
+s_f2:
+	defb "RUN", ctrl_enter, 0;
+
+s_f3:
+	defb "LOAD",'"', 0;";
+
+s_f4:
+	defb "SAVE",'"', 0;";
+
+s_f5:
+	defb "CONT", ctrl_enter, 0;
+
+s_f6:
+	defb "COLOR 7,1", ctrl_enter, 0;
+
+s_f7:
+	defb "TRON", ctrl_enter, 0;
+
+s_f8:
+	defb "TROFF", ctrl_enter, 0;
+
+s_f9:
+	defb "EDIT", 0;
+
+s_f10:
+	defb "SCREEN", 0;
+
+s_f11:
+	defb "BLOAD",'"', 0;";
+
+s_f12:
+	defb "BSAVE",'"', 0;";
+
+s_f13:
+	defb "AUTO", 0;
+
+s_f14:
+	defb "GOTO", 0;
+
+s_f15:
+	defb "KEY", 0;
 
 ;	// used in 03_keyboard
 kt_main:

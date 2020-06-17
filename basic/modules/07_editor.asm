@@ -33,7 +33,7 @@ ed_loop:
 	push hl;							// return address
 	cp ctrl_delete;						// delete?
 	jr z, ed_delete;					// jump with delete
-	cp 24;								// printable character?
+	cp ' ';								// printable character?
 	jr c, ed_keys;						// jump with control keys
 
 ;	// add character subroutine
@@ -56,7 +56,28 @@ ed_delete:
 	ret z;								// return if no character
 	jp ed_backspace;					// delete it
 
+ed_f_keys;
+	sub $11;							// reduce range (0 to 14)
+	ld e, a;							// code
+	ld d, 0;							// to DE
+	ld hl, ed_f_keys_t;					// offset to table
+	add hl, de;							// get entry
+	ld e, (hl);							// store in E
+	add hl, de;							// address of first character in string
+
+loop_f_keys:
+	ld a, (hl);							// get character
+	and a;								// test for zero
+	ret z;								// return if end of string reached
+	inc hl;								// next character
+	push hl;							// stack next character address
+	call k_end;							// insert character into keyboard buffer
+	pop hl;								// unstack next character address
+	jr loop_f_keys;						// loop until done
+
 ed_keys:
+	cp k_f1;							// function key?
+	jr nc, ed_f_keys;					// jump if so
 	ld e, a;							// code
 	ld d, 0;							// to DE
 	ld hl, ed_keys_t;					// offset to table
@@ -65,7 +86,7 @@ ed_keys:
 	add hl, de;							// address of handling routine
 	push hl;							// stack it
 	ld hl, (k_cur);						// sysvar to HL
-	ret;								// indirect hump
+	ret;								// indirect Jump
 
 ;	// editing keys table
 ed_keys_t:
@@ -86,47 +107,6 @@ ed_keys_t:
 	defb ed_symbol - $;					// $0e
 	defb ed_graph - $;					// $0f
 	defb ed_help - $;					// $10
-	defb ed_f1 - $;						// $11
-	defb ed_f2 - $;						// $12
-	defb ed_f3 - $;						// $13
-	defb ed_f4 - $;						// $14
-	defb ed_f5 - $;						// $15
-	defb ed_f6 - $;						// $16
-	defb ed_f7 - $;						// $17
-
-;	// change value in ed_loop when adding to this table
-
-ed_f1:
-	ld a, tk_list;						// LIST
-	jr ed_add_char;						// immedaite jump
-
-ed_f2:
-	ld a, tk_run;						// RUN
-	jr ed_add_char;						// immedaite jump
-
-ed_f3:
-	ld a, tk_load;						// LOAD
-
-ed_ins_quot:
-	call add_char;						// add token
-	ld a, '"';";						// quote
-	jr ed_add_char;						// immedaite jump
-
-ed_f4:
-	ld a, tk_save;						// SAVE
-	jr ed_ins_quot;						// immedaite jump
-
-ed_f5:
-	ld a, tk_cont;						// CONT
-	jr ed_add_char;						// immedaite jump
-
-ed_f6:
-	ld a, tk_tron;						// TRON
-	jr ed_add_char;						// immedaite jump
-
-ed_f7:
-	ld a, tk_troff;						// TROFF
-	jr ed_add_char;						// immedaite jump
 
 ;	// tab editing subroutine
 ed_tab:
@@ -449,3 +429,4 @@ remove_fp:
 	cp ctrl_enter;						// carriage return?
 	jr nz, remove_fp;					// jump if not
 	ret;								// end of subroutine
+

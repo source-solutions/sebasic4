@@ -124,7 +124,7 @@ key_done:
 ;	// additional keys scanning subroutine
 f_key_scan:
 
-;	// temporary code
+;	// test code (f-keys are not supported in emulator)
 ;	ld bc, mouse_b;						// substitute mouse click for keypress
 ;	in a, (c);							// read mouse button
 ;	cp 253;								// left button pressed?
@@ -133,7 +133,7 @@ f_key_scan:
 ;	jr f_key_found;						// and jump 
 ;
 ;f_key_scan_1:
-;	// end of temporary code
+;	// end of test code
 
 	ld bc, uno_reg;						// Uno register port
 	ld a, 5;							// Key state
