@@ -131,7 +131,7 @@ initial:
 	ld a, %01110001;					// light gray foreground, dark blue background
 	ld (bordcr), a;						// set border color
 	ld (attr_p), a;						// set permanent attribute
-	ld hl, $0119;						// set initial values (repdel = 25, repper = 1)
+	ld hl, $031e;						// set initial values (repdel = 30, repper = 3)
 	ld (repdel), hl;					// for repdel and repper
 	ld hl, initial;						// address of routine to jump to on NMI
 	ld (nmiadd), hl;					// set sysvar
