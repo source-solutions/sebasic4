@@ -28,7 +28,8 @@ copyright:
 	defb "Copyright (C)2020 Source Solutions, Inc.", ctrl_enter;
 	defb ctrl_enter;
 ;	defb "Release 200715", ctrl_enter;	// Morton
- 	defb "YY-MM-DD HH:MM", ctrl_enter;
+	defb "Release 200715 RC2", ctrl_enter;	// Morton
+;	defb "YY-MM-DD HH:MM", ctrl_enter;
 	defb ctrl_enter, 0;
 
 bytes_free:
@@ -192,7 +193,7 @@ dir_msg:
 ;	// used in 14_screen_40
 ;	// attributes are stored internally with the foreground in the high nibble and the background in the low nibble
 ;	// this table converts an attribute to its 64-color equivalent in the default palette.
-;	org $3f00
+	org $3f00
 attributes:
 	defb $00, $08, $10, $18, $20, $28, $30, $38, $80, $88, $90, $98, $a0, $a8, $b0, $b8; background 0-15, foreground 0
 	defb $01, $09, $11, $19, $21, $29, $31, $39, $81, $89, $91, $99, $a1, $a9, $b1, $b9; background 0-15, foreground 1
