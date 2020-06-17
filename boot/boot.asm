@@ -861,13 +861,13 @@ ReadMap:
 ReadMapFromFile:
 	push bc;							// store count
 	ld bc, 4096;						// bytes to read
-	ld ix, $d000;						// buffer (top 4K of RAM)
+	ld ix, $5c00;						// buffer (will be wiped during start)
 	ld a, (handle_c);					// get handle
 	rst divmmc;							// issue a hookcode
 	defb f_read;						// read bytes
 	ret c;								// end if premature end
 
-	ld hl, $d000;						// buffer
+	ld hl, $5c00;						// buffer
 	ld bc, uno_dat;						// Uno data port
 	ld de, 4096;						// byte count
 
