@@ -156,7 +156,7 @@ rndl:
 	adc a, a;							//
 	rl c;								//
 	jr nc, noadd;						//
-	ccf;								//
+	and a;								// fast CCF
 	adc hl, de;							//
 	adc a, 0;							//
 

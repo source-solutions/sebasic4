@@ -327,7 +327,7 @@ fp_peek:
 in_pk_stk:
 	jp stack_a;							// indirect exit
 
-;	// USR function
+;	// USR function						// (should restore IY to err-nr on return)
 fp_usr_no:
 	call find_int2;						// get address in BC
 	ld hl, stack_bc;					// stack
