@@ -149,7 +149,7 @@ s_rnd:
 	ld e, l;							// store it
 	ld d, h;							// in DE
 	xor a;								//
-	ld bc, $062c;						//
+	ld bc, $062c;						// B = loop counter, C = %00101100 (read bit by bit in reverse)
 
 rndl:
 	adc hl, hl;							//
@@ -165,15 +165,6 @@ noadd:
 	ld c, 75;							//
 	adc hl, bc;							//
 	adc a, b;							//
-	call s_seed;						//
-	ld a, (hl);							//
-	or a;								//
-	jr z, s_pi_end;						//
-	sub a, $10;							//
-	ld (hl), a;							//
-	jr s_pi_end;						//
-
-s_seed:
 	jr z, nomod;						//
 	ld c, a;							//
 	sbc hl, bc;							//
@@ -187,7 +178,13 @@ domod:
 	ld c, l;							//
 	ld b, h;							//
 	call stack_bc;						//
-	jp fp_re_stack;						//
+	call fp_re_stack;					//
+	ld a, (hl);							//
+	or a;								//
+	jr z, s_pi_end;						//
+	sub $10;							//
+	ld (hl), a;							//
+	jr s_pi_end;						//
 
 s_pi:
 	call syntax_z;						// checking syntax?
