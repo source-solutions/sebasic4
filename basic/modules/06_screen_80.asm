@@ -325,7 +325,7 @@ po_ctrl:
 
 ctlchrtab:
 	defb po_bel - $;					// 07, BEL
-	defb po_bs - $;						// 08, BS
+	defb po_able - $;					// 08, BS
 	defb po_tab - $;					// 09, HT
 	defb po_cr - $;				 		// 10, LF
 	defb po_vt - $;						// 11, VT
@@ -339,13 +339,6 @@ ctlchrtab:
 ;	// sound bell subroutine
 po_bel:
 	jp bell;
-
-;	// print backspace subroutine
-po_bs:
-	call po_left;						// cursor left
-	ld a, ' ';							// print a space
-	rst print_a;						// erasing previous character;
-	jr po_left;							// move cursor left again
 
 ;	// print tab subroutine
 po_tab:
