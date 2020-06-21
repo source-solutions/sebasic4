@@ -312,46 +312,64 @@ ENDM
 	white			equ 7;
 
 
-;	// control characters
+;	// control keys
 
-	ctrl_ins		equ $00;
-	ctrl_clr		equ $01;
-	ctrl_home		equ $02;
-	ctrl_end		equ $03;
-	ctrl_pg_up		equ $04;
-	ctrl_pg_dn		equ $05;
-	ctrl_caps		equ $06;
-	ctrl_comma		equ $06;
-	ctrl_tab		equ $07;
-	ctrl_left		equ $08;
-	ctrl_right		equ $09;
-	ctrl_down		equ $0a;
-	ctrl_up			equ $0b;
-	ctrl_backspace	equ $0c;
-	ctrl_enter		equ $0d;
-	ctrl_symbol		equ $0e;
-	ctrl_number		equ $0e;
-	ctrl_graphics	equ $0f;
-	ctrl_help		equ $10;
-	ctrl_delete		equ $7f;
+	key_ins			equ $00;
+	key_clr			equ $01;
+	key_home		equ $02;
+	key_end			equ $03;
+	key_pg_up		equ $04;
+	key_pg_dn		equ $05;
+	key_caps		equ $06;
+	key_tab			equ $07;
+	key_left		equ $08;
+	key_right		equ $09;
+	key_down		equ $0a;
+	key_up			equ $0b;
+	key_backspace	equ $0c;
+	key_return		equ $0d;
+	key_koru		equ $0e;
+	key_control		equ $0f;
+	key_help		equ $10;
+	key_delete		equ $7f;
 
 ;	// function keys
 
-	k_f1			equ $11
-	k_f2			equ $12
-	k_f3			equ $13
-	k_f4			equ $14
-	k_f5			equ $15
-	k_f6			equ $16
-	k_f7			equ $17
-	k_f8			equ $18
-	k_f9			equ $19
-	k_f10			equ $1a
-	k_f11			equ $1b
-	k_f12			equ $1c
-	k_f13			equ $1d
-	k_f14			equ $1e
-	k_f15			equ $1f
+	key_f1			equ $11
+	key_f2			equ $12
+	key_f3			equ $13
+	key_f4			equ $14
+	key_f5			equ $15
+	key_f6			equ $16
+	key_f7			equ $17
+	key_f8			equ $18
+	key_f9			equ $19
+	key_f10			equ $1a
+	key_f11			equ $1b
+	key_f12			equ $1c
+	key_f13			equ $1d
+	key_f14			equ $1e
+	key_f15			equ $1f
+
+
+;	// control characters
+
+	ctrl_bel		equ $07;
+	ctrl_bs			equ $08;
+	ctrl_ht			equ $09;
+	ctrl_lf			equ $0a;
+	ctrl_vt			equ $0b;
+	ctrl_ff			equ $0c;
+	ctrl_cr			equ $0d;
+	ctrl_fs			equ $1c;
+	ctrl_gs			equ $1d;
+	ctrl_rs			equ $1e;
+	ctrl_us			equ $1f;
+
+
+;	// hidden number marker
+	number_mark		equ $0e;
+
 
 ;	// printable characters
 
@@ -422,7 +440,7 @@ ENDM
 	tk_while		equ $b0;
 	tk_wend			equ $b1;
 	tk_sound		equ $b2;
-	tk_files		equ $b3;
+	tkey_files		equ $b3;
 	tk_kill			equ $b4;
 	tk_load			equ $b5;
 	tk_mkdir		equ $b6;
@@ -441,7 +459,7 @@ ENDM
 	tk_cont			equ $c3;
 	tk_dim			equ $c4;
 	tk_rem			equ $c5;
-	tk_for			equ $c6;
+	tkey_for			equ $c6;
 	tk_goto			equ $c7;
 	tk_gosub		equ $c8;
 	tk_input		equ $c9;

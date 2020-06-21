@@ -334,7 +334,7 @@ k_enter:
 	ret z;								// return if not
 	bit 5, b;							// shift?
 	ret nz;								// return if so
-	ld a, ctrl_clr;						// make it CLR key
+	ld a, key_clr;						// make it CLR key
 	ret;								// done
 
 k_space:
@@ -342,7 +342,7 @@ k_space:
 	ret z;								// return if not
 	bit 5, b;							// shift?
 	ret nz;								// return if so
-	ld a, ctrl_help;					// make it HELP key
+	ld a, key_help;						// make it HELP key
 	ret;								// done
 
 k_digit:

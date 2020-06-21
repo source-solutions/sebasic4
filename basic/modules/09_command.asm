@@ -38,7 +38,7 @@ stmt_l_1:
 	jp m, report_syntax_err;			// error if more than 127 statements
 	rst get_char;						// get current character
 	ld b, 0;							// clear B
-	cp ctrl_enter;						// carriage return?
+	cp ctrl_cr;							// carriage return?
 	jp z, line_end;						// jump if so
 	cp ':';								// colon?
 	jr z, stmt_loop;					// loop if so
@@ -210,7 +210,7 @@ check_end:
 ;	// statement next subroutine
 stmt_next:
 	rst get_char;						// get current character
-	cp ctrl_enter;						// carriage return
+	cp ctrl_cr;							// carriage return
 	jr z, line_end;						// jump if so
 	cp ':';								// colon?
 	jp z, stmt_loop;					// jump if so
@@ -365,7 +365,7 @@ expt_exp:
 
 ;	// fetch a number subroutine
 fetch_num:
-	cp ctrl_enter;						// carriage return?
+	cp ctrl_cr;							// carriage return?
 	jr z, use_zero;						// jump if so
 	cp ':';								// colon?
 	jr nz, expt_1num;					// jump if not
@@ -729,7 +729,7 @@ report_overflow:
 ;	// RUN command
 c_run:
 	rst get_char;						// get character
-	cp ctrl_enter;						// test for carriage return
+	cp ctrl_cr;							// carriage return?
 	jr z, run_zero;						// jump if so
 	cp ':';								// test for next statement
 	jr z, run_zero;						// jump if so
@@ -939,7 +939,7 @@ def_fn_5:
 	call make_room;						// make space
 	inc hl;								// point to first new location
 	inc hl;								// new location
-	ld (hl), ctrl_number;				// store number marker
+	ld (hl), number_mark;				// store number marker
 	cp ',';								// comma in A?
 	jr nz, def_fn_6;					// jump if so
 	rst next_char;						// next character
@@ -1000,7 +1000,7 @@ print_4:
 ;	// print carraige return subroutine
 print_cr:
 	call unstack_z;						// return if checking syntax
-	ld a, ctrl_enter;					// carriage return
+	ld a, ctrl_cr;						// carriage return
 	rst print_a;						// print it
 	ret;								// end of subroutine
 
@@ -1057,7 +1057,7 @@ pr_end_z:
 ;	// UnoDOS 3 entry point
 	org $2048;
 pr_st_end:
-	cp ctrl_enter;						// carriage return?
+	cp ctrl_cr;							// carriage return?
 	ret z;								// return if so
 	cp ':';								// colon?
 	ret;								// end of subroutine
@@ -1071,7 +1071,7 @@ pr_posn_1:
 	jr nz, pr_posn_2;					// jump if not
 	call syntax_z;						// checking syntax?
 	jr z, pr_posn_3;					// jump if so
-	ld a, ctrl_comma;					// comma control character
+	ld a, ctrl_ht;						// tab control character
 	rst print_a;						// print it
 	jr pr_posn_3;						// immediate jump
 
@@ -1192,7 +1192,7 @@ in_pr_1:
 
 in_pr_2:
 	rst bc_spaces;						// make space
-	ld (hl), ctrl_enter;				// set last location to carriage return
+	ld (hl), ctrl_cr;					// set last location to carriage return
 	ld a, c
 	rrca
 	rrca
@@ -1285,7 +1285,7 @@ in_assign:
 	ld a, (flagx);						// sysvar to A
 	call val_fet_2;						// get value
 	rst get_char;						// get current character
-	cp ctrl_enter;						// carriage return?
+	cp ctrl_cr;							// carriage return?
 	ret z;								// return if so
 	rst error;							// else
 	defb syntax_error;					// error
@@ -1333,7 +1333,7 @@ stk_to_a:
 renum:
 	ld hl, (stkend);					// value on stack end to HL
 	ld b, 2;							// two values required
-	cp ctrl_enter;						// carriage return?
+	cp ctrl_cr;							// carriage return?
 	jr z, renum_1;						// jump if so
 	cp ':';								// next statement?
 	jr z, renum_1;						// jump if so
@@ -1412,7 +1412,7 @@ renum_3:
 renum_4:
 	ld a, (hl);							// get character
 	call number;						// skip floating point if required
-	cp ctrl_enter;						// carriage return?
+	cp ctrl_cr;							// carriage return?
 	jr z, renum_5;						// jump if so
 	call renum_line;					// parse line
 	jr renum_4;							// loop until done
@@ -1477,7 +1477,7 @@ renum_line_1:
 	jr nc, renum_line_3;				// jump if so
 	cp '.';								// decimal point?
 	jr z, renum_line_3;					// jump if so
-	cp ctrl_number;						// hidden number?
+	cp number_mark;						// hidden number?
 	jr z, renum_line_4;					// jump if so
 	or %00100000;						// make lower case
 	cp 'e';								// exponent?
@@ -1504,7 +1504,7 @@ renum_line_4:
 	pop hl;								// unstack current character address
 	cp ':';								// next statement?
 	jr z, renum_line_5;					// jump if so
-	cp ctrl_enter;						// end of line?
+	cp ctrl_cr;							// end of line?
 	ret nz;								// return if not
 
 renum_line_5:

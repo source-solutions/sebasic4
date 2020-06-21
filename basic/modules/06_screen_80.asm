@@ -303,15 +303,20 @@ print_out:
 ;	bit 1, (iy + _flags2);				// test for 40 column mode
 ;	jp nz, s40_print_out;				// jump if so
 	call po_fetch;						// current print position
-	cp 14;								// characters from 16d are printable
+	cp ' ';								// space or higher?
 	jp nc, po_able;						// jump if so
-	cp 6;								// character in the range 0-5?
+	cp 7;								// character in the range 0 - 6?
+	jp c, po_able;						// jump if so
+	cp 14;								// character in the range 7 to 13?
+	jr c, po_ctrl;						// jump if so
+	cp 28;								// characters in the range 14 to 27?
 	jr c, po_able;						// jump if so
-	cp 14;								// non-printable character?
-	jr nc, po_quest;					// jump if so
+	sub 14;								// reduce range
+
+po_ctrl:
 	ld e, a;							// move character
 	ld d, 0;							// to DE
-	ld hl, ctlchrtab - 6;				// base of control table
+	ld hl, ctlchrtab - 7;				// base of control table
 	add hl, de;							// index into table
 	ld e, (hl);							// get offset
 	add hl, de;							// add offset
@@ -319,88 +324,35 @@ print_out:
 	jp po_fetch;						// indirect return
 
 ctlchrtab:
-	defb po_comma - $;					// 06, comma
-	defb po_quest - $;					// 07, BEL
-	defb po_back_1 - $;					// 08, BS
-	defb po_right - $;					// 09, right
-	defb po_down - $;					// 10, LF
-	defb po_up - $;				 		// 11, up
-	defb po_quest - $;					// 12, delete FIXME: implement CLR from ZX85 project
-	defb po_enter - $;					// 13, CR
+	defb po_bel - $;					// 07, BEL
+	defb po_bs - $;						// 08, BS
+	defb po_tab - $;					// 09, HT
+	defb po_cr - $;				 		// 10, LF
+	defb po_vt - $;						// 11, VT
+	defb po_clr - $;					// 12, FF
+	defb po_cr - $;						// 13, CR
+	defb po_right - $;					// 28, FS
+	defb po_left - $;					// 29, GS
+	defb po_up - $;						// 30, RS
+	defb po_down - $;					// 31, US
 
-;	// cursor left subroutine
-po_back_1:
-	inc c;								// move column left
-	ld a, 82;							// left side
-	cp c;								// against left side?
-	jr nz, po_back_3;					// jump if so
-	dec c;								// down one line
-	ld a, 25;							// top line
-	cp b;								// is it?
-	jr nz, po_back_3;					// jump if so
-	ld c, 2;							// set column value
-	inc b;								// up one line
+;	// FIXME: sound bell subroutine
+po_bel:
+	ret;
 
-po_back_3:
-	jr jp_cl_set;						// indirect return
+;	// print backspace subroutine
+po_bs:
+	call po_left;						// cursor left
+	ld a, ' ';							// print a space
+	rst print_a;						// erasing previous character;
+	jr po_left;							// move cursor left again
 
-;	// cursor right subroutine
-po_right:
-	ld hl, p_flag;						// point to sysvar
-	ld d, (hl);							// sysvar to D
-	ld (hl), 1;							// set printing to OVER
-	call po_sv_sp;						// print a space with alt regs
-	ld (hl), d;							// restore sysvar
-	ret;								// end of subroutine
-
-;	// cursor down subroutine
-po_down:
-	ld a, c;							// 
-	push af;							// 
-	call po_enter;						// 
-	pop af;								// 
-	cp c;								// 
-	ret z;								// 
-	ld c, a;							// 
-
-cl_scrl:
-	call po_scr;						// test for scroll
-
-cl_set2:
-	jr jp_cl_set;						// indirect return
-
-;	// cursor up subroutine
-po_up:
-	inc b;								// move one line up
-	ld a, 25;							// screen has 24 lines
-	cp b;								// top of screen reached?
-	jr nz, jp_cl_set;					// set position, if not
-	dec b;								// do nothing
-	ret;								// end of subroutine
-
-;	// carriage return subroutine
-po_enter:
-	ld c, 81;							// left column
-	call po_scr;						// scroll if required
-	dec b;								// down a line
-
-jp_cl_set:
-	jp cl_set;							// indirect return
-
-;	// print a question mark subroutine
-po_quest:
-	ld a, '?';							// change character
-	jr po_able;							// print it
-
-;	// print comma subroutine
-po_comma:
+;	// print tab subroutine
+po_tab:
 	ld a, c;							// current column
 	dec a;								// move right
 	dec a;								// twice
 	and %00010000;						// test
-;	jr po_fill;							// indirect return
-
-po_fill:
 	call po_fetch;						// current position
 	add a, c;							// add column
 	dec a;								// number of spaces
@@ -415,8 +367,72 @@ po_space:
 	jr nz, po_space;					// until
 	ret;								// done
 
-;po_tab:
-;	call po_fetch;
+;	// print home subroutine
+po_vt:
+	jp cl_home;							// indirect return
+
+;	// print clr subroutine
+po_clr:
+	jp cls;
+
+;	// print carriage return subroutine
+po_cr:
+	ld c, 81;							// left column
+	call po_scr;						// scroll if required
+	dec b;								// down a line
+
+jp_cl_set:
+	jp cl_set;							// indirect return
+
+;	// print cursor right subroutine
+po_right:
+	ld hl, p_flag;						// point to sysvar
+	ld d, (hl);							// sysvar to D
+	ld (hl), 1;							// set printing to OVER
+	call po_sv_sp;						// print a space with alt regs
+	ld (hl), d;							// restore sysvar
+	ret;								// end of subroutine
+
+;	// print cursor left subroutine
+po_left:
+	inc c;								// move column left
+	ld a, 82;							// left side
+	cp c;								// against left side?
+	jr nz, po_left_1;					// jump if so
+	dec c;								// down one line
+	ld a, 25;							// top line
+	cp b;								// is it?
+	jr nz, po_left_1;					// jump if so
+	ld c, 2;							// set column value
+	inc b;								// up one line
+
+po_left_1:
+	jr jp_cl_set;						// indirect return
+
+;	// print cursor up subroutine
+po_up:
+	inc b;								// move one line up
+	ld a, 25;							// screen has 24 lines
+	cp b;								// top of screen reached?
+	jr nz, jp_cl_set;					// set position, if not
+	dec b;								// do nothing
+	ret;								// end of subroutine
+
+;	// print cursor down subroutine
+po_down:
+	ld a, c;							// column to A
+	push af;							// stack it
+	call po_cr;							// down one row
+	pop af;								// unstack A
+	cp c;								// compare against current column
+	ret z;								// return if nothing to do
+	ld c, a;							// restore old column 
+
+cl_scrl:
+	call po_scr;						// test for scroll
+
+cl_set2:
+	jr jp_cl_set;						// indirect return
 
 ;	// printable character codes
 po_able:
@@ -840,6 +856,8 @@ cl_all:
 	ld (hl), e;							// set
 	inc hl;								// output
 	ld (hl), d;							// address
+
+cl_home:
 	ld (iy + _scr_ct), 1;				// reset scroll count
 	ld bc, $1851;						// row 24, column 81
 

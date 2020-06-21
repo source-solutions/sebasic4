@@ -42,7 +42,7 @@ s_loop_1:
 s_quote_s:
 	call ch_add_plus_1;					// next character
 	inc bc;								// increase count
-	cp ctrl_enter;						// carriage return?
+	cp ctrl_cr;							// carriage return?
 	jp z, report_syntax_err;			// error if so?
 	cp '"';";							// quote?
 	jr nz, s_quote_s;					// jump if not
@@ -244,7 +244,7 @@ s_decimal:
 	ld bc, 6;							// six locations
 	call make_room;						// make room
 	inc hl;								// point to first free space
-	ld (hl), ctrl_number;				// store hidden number marker
+	ld (hl), number_mark;				// store hidden number marker
 	inc hl;								// next location
 	ex de, hl;							// pointer to DE
 	ld hl, (stkend);					// get old stack end
@@ -264,7 +264,7 @@ s_stk_dec:
 s_sd_skip:
 	inc hl;								// next character
 	ld a, (hl);							// get it
-	cp ctrl_number;						// test for hidden number marker
+	cp number_mark;						// test for hidden number marker
 	jr nz, s_sd_skip;					// loop until found
 	inc hl;								// first byte of number
 	call stack_num;						// move floating point number
@@ -528,7 +528,7 @@ sf_values:
 sf_arg_lp:
 	inc hl;								// point to next code
 	ld a, (hl);							// put it in A
-	cp ctrl_number;						// hidden number marker
+	cp number_mark;						// hidden number marker
 	ld d, 64;							// set bit 6 of D
 	jr z, sf_arg_vl;					// jump if numerical argument
 	dec hl;								// point to string character
@@ -573,7 +573,7 @@ cntargs:
 
 cntarg:
 	ld a, (de);							// 
-	cp ctrl_number;						// 
+	cp number_mark;						// 
 	inc de;								// 
 	jr nz, cnoarg;						// 
 	sbc hl, bc;							// 
@@ -595,7 +595,7 @@ rstargs:
 
 resarg:
 	ld a, (de);							// 
-	cp ctrl_number;						// 
+	cp number_mark;						// 
 	inc de;								// 
 	jr nz, rnoarg;						// 
 	push bc;							// 
@@ -622,7 +622,7 @@ savargs:
 
 savarg:
 	inc hl;								// 
-	cp ctrl_number;						// 
+	cp number_mark;						// 
 	call z, fp_exchange;				// 
 	ld a, (hl);							// 
 	cp ')';								// 
@@ -805,7 +805,7 @@ sfa_loop:
 	inc hl;								// next code
 	ld b, a;							// variable to B
 	ld a, (hl);							// code to A
-	cp ctrl_number;						// hidden number marker?
+	cp number_mark;						// hidden number marker?
 	jr z, sfa_cp_vr;					// jump if so
 	dec hl;								// point to character
 	call fn_skpovr;						// skip spaces

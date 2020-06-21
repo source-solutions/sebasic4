@@ -610,10 +610,10 @@ fp_val_str:
 	ldir;								// copy the string to the workspace
 	ex de, hl;							// swap pointers
 	dec hl;								// last byte of string
-	ld (hl), ctrl_enter;				// replace with carriage return
+	ld (hl), ctrl_cr;					// replace with carriage return
 	res 7, (iy + _flags);				// reset syntax flag
 	call scanning;						// check syntax
-	cp ctrl_enter;						// end of expression?
+	cp ctrl_cr;							// end of expression?
 	jr nz, v_rport_c;					// error if not
 	pop hl;								// unstack start address
 	pop af;								// unstack flag

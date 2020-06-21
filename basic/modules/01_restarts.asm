@@ -158,7 +158,7 @@ skip_over:
 	ret z;								// and return if so
 	cp 16;								// test for characters 16-31
 	ret nc;								// and return if so with carry cleared
-	cp ctrl_enter;						// test for enter
+	cp ctrl_cr;							// test for carraige return
 	ret z;								// and return if so
 	cp 6;								// test for characters 0-5 (tokens)
 	ccf;								// complement carry flag

@@ -21,20 +21,20 @@
 
 	org $3d00
 copyright:
-	defb "CHLOE 280SE 512K Personal Color Computer", ctrl_enter;
-	defb "Copyright (C)1999 Chloe Corporation", ctrl_enter;
-	defb ctrl_enter;
-	defb "SE BASIC IV 4.2 Cordelia", ctrl_enter;
-	defb "Copyright (C)2020 Source Solutions, Inc.", ctrl_enter;
-	defb ctrl_enter;
-;	defb "Release 200715", ctrl_enter;	// Morton
-	defb "Release 200715 RC3", ctrl_enter;	// Morton
-;	defb "YY-MM-DD HH:MM", ctrl_enter;
-	defb ctrl_enter, 0;
+	defb "CHLOE 280SE 512K Personal Color Computer", ctrl_cr;
+	defb "Copyright (C)1999 Chloe Corporation", ctrl_cr;
+	defb ctrl_cr;
+	defb "SE BASIC IV 4.2 Cordelia", ctrl_cr;
+	defb "Copyright (C)2020 Source Solutions, Inc.", ctrl_cr;
+	defb ctrl_cr;
+;	defb "Release 200715", ctrl_cr;	// Morton
+	defb "Release 200715 RC4", ctrl_cr;	// Morton
+;	defb "YY-MM-DD HH:MM", ctrl_cr;
+	defb ctrl_cr, 0;
 
 bytes_free:
-	defb " BASIC bytes free", ctrl_enter;
-	defb ctrl_enter, 0;
+	defb " BASIC bytes free", ctrl_cr;
+	defb ctrl_cr, 0;
 
 ;	// used in 04_audio
 semi_tone:
@@ -286,7 +286,7 @@ s_f1:
 	defb "LIST", 0
 
 s_f2:
-	defb "RUN", ctrl_enter, 0;
+	defb "RUN", ctrl_cr, 0;
 
 s_f3:
 	defb "LOAD",'"', 0;";
@@ -295,16 +295,16 @@ s_f4:
 	defb "SAVE",'"', 0;";
 
 s_f5:
-	defb "CONT", ctrl_enter, 0;
+	defb "CONT", ctrl_cr, 0;
 
 s_f6:
-	defb "COLOR 7,1", ctrl_enter, 0;
+	defb "COLOR 7,1", ctrl_cr, 0;
 
 s_f7:
-	defb "TRON", ctrl_enter, 0;
+	defb "TRON", ctrl_cr, 0;
 
 s_f8:
-	defb "TROFF", ctrl_enter, 0;
+	defb "TROFF", ctrl_cr, 0;
 
 s_f9:
 	defb "EDIT", 0;
@@ -329,24 +329,24 @@ s_f15:
 
 ;	// used in 03_keyboard
 kt_main:
-	defb "BHY65TGVNJU74RFCMKI83EDX", ctrl_symbol;
-	defb "LO92WSZ ", ctrl_enter, "P01QA",0;
+	defb "BHY65TGVNJU74RFCMKI83EDX", key_koru;
+	defb "LO92WSZ ", key_return, "P01QA",0;
 
 kt_ctrl:
-	defb k_f9
-	defb k_f7;										// substitution
-	defb k_f5, k_f3, k_f1, k_f2, k_f12
-	defb k_f11;										// substitution
-	defb k_f10;
-	defb k_f8, k_f6, k_f4;
-	defb k_f13, k_f14, k_f15;						// substitution
+	defb key_f9
+	defb key_f7;										// substitution
+	defb key_f5, key_f3, key_f1, key_f2, key_f12
+	defb key_f11;										// substitution
+	defb key_f10;
+	defb key_f8, key_f6, key_f4;
+	defb key_f13, key_f14, key_f15;						// substitution
 
 kt_dig_shft:
-	defb ctrl_backspace, ctrl_tab, ctrl_caps, ctrl_pg_up, ctrl_pg_dn;
-	defb ctrl_left, ctrl_down, ctrl_up, ctrl_right, ctrl_graphics;
+	defb key_backspace, key_tab, key_caps, key_pg_up, key_pg_dn;
+	defb key_left, key_down, key_up, key_right, key_control;
 
 kt_alpha_sym:
-	defb "~*?\\", ctrl_end, "{}^", ctrl_ins, "-+=.,;", '"', ctrl_home, "<|>]/", ctrl_delete, "`[:";"
+	defb "~*?\\", key_end, "{}^", key_ins, "-+=.,;", '"', key_home, "<|>]/", key_delete, "`[:";"
 
 kt_dig_sym:
 	defb "_!@#$%&'()";

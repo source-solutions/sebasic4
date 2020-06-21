@@ -222,7 +222,7 @@ main_3:
 	or b;								// line?
 	jp nz, main_add;					// jump if so
 	rst get_char;						// else get character
-	cp ctrl_enter;						// carriage return?
+	cp ctrl_cr;							// carriage return?
 	jr z, main_exec;					// jump if so
 	bit 0, (iy + _flags2);				// clear whole display?
 	call nz, cl_all;					// call if so
@@ -661,7 +661,7 @@ reserve:
 set_min:
 	ld hl, (e_line);					// sysvar to HL
 	ld (k_cur), hl;						// store it in k_cur
-	ld (hl), ctrl_enter;				// store a carriage return
+	ld (hl), ctrl_cr;					// store a carriage return
 	inc hl;								// next
 	ld (hl), end_marker;				// store the end marker
 	inc hl;								// next
@@ -865,7 +865,7 @@ list_2:
 	rst get_char;						// get character
 	cp ':';								// colon?
 	jr z, list_9;						// jump if so
-	cp ctrl_enter;						// enter?
+	cp ctrl_cr;							// carraige return?
 	jr z, list_9;						// jump if so
 	cp ',';								// comma?
 	jr z, list_3;						// jump if so
@@ -983,7 +983,7 @@ out_line5:
 	ld a, (hl);							// character to A
 	call number;						// test for hidden number marker
 	inc hl;								// next
-	cp ctrl_enter;						// carriage return?
+	cp ctrl_cr;							// carriage return?
 	jr z, out_line6;					// jump if so
 	ex de, hl;							// swap pointers
 	call out_char;						// print character
@@ -995,7 +995,7 @@ out_line6:
 
 ;	// number subroutine
 number:
-	cp ctrl_number;						// hidden number marker?
+	cp number_mark;						// hidden number marker?
 	ret nz;								// return if not
 	inc hl;								// advance pointer six times
 	inc hl;
@@ -1144,7 +1144,7 @@ each_s_5:
 	jr z, each_s_1;						// jump at statement end
 
 each_s_6:
-	cp ctrl_enter;						// carriage return?
+	cp ctrl_cr;							// carriage return?
 	jr nz, each_s_2;					// jump if not
 	dec d;								// decrease statement counter
 	scf;								// set carry flag

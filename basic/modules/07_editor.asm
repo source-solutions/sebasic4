@@ -31,7 +31,7 @@ ed_loop:
 	call wait_key;						// get a key
 	ld hl, ed_loop;						// stack
 	push hl;							// return address
-	cp ctrl_delete;						// delete?
+	cp key_delete;						// delete?
 	jr z, ed_delete;					// jump with delete
 	cp ' ';								// printable character?
 	jr c, ed_keys;						// jump with control keys
@@ -76,7 +76,7 @@ loop_f_keys:
 	jr loop_f_keys;						// loop until done
 
 ed_keys:
-	cp k_f1;							// function key?
+	cp key_f1;							// function key?
 	jr nc, ed_f_keys;					// jump if so
 	ld e, a;							// code
 	ld d, 0;							// to DE
@@ -110,7 +110,7 @@ ed_keys_t:
 
 ;	// tab editing subroutine
 ed_tab:
-	ld a, 6;							// tab stop
+	ld a, ctrl_ht;						// tab stop
 
 ed_add_char:
 	jp add_char;						// immedaite jump
@@ -126,7 +126,7 @@ ed_cur:
 ;	// cursor right editing subroutine
 ed_right:
 	ld a, (hl);							// get current character
-	cp ctrl_enter;						// test for carriage return
+	cp ctrl_cr;							// test for carriage return
 	ret z;								// return if so
 	inc hl;								// advance cursor position
 	jr ed_cur;							// immediate jump
@@ -316,7 +316,7 @@ key_input_1:
 	jr key_flag;						// immediate jump
 
 key_mode:
-	cp ctrl_symbol;						// lower limit?
+	cp key_koru;						// lower limit?
 	ret c;								// return if so
 	sub 13;								// reduce range
 	ld hl, mode;						// address system variable
@@ -421,12 +421,12 @@ get_cols:
 	org $11a7
 remove_fp:
 	ld a, (hl);							// get character
-	cp ctrl_number;						// hidden number marker
+	cp number_mark;						// hidden number marker
 	ld bc, 6;							// six locations 
 	call z, reclaim_2;					// recliam if so
 	ld a, (hl);							// get character
 	inc hl;								// next
-	cp ctrl_enter;						// carriage return?
+	cp ctrl_cr;							// carriage return?
 	jr nz, remove_fp;					// jump if not
 	ret;								// end of subroutine
 

@@ -545,7 +545,7 @@ report_path_not_found:
 ;	// print a folder listing to the main screen
 files:
 	rst get_char;						// get character
-	cp ctrl_enter;						// test for carriage return
+	cp ctrl_cr;							// carriage return?
 	jr z, use_cwd;						// jump if so
 	cp ':';								// test for next statement
 	jr z, use_cwd;						// jump if so
@@ -599,7 +599,7 @@ pr_asciiz_any:
 	jr pr_asciiz_uc;					// loop until done
 
 pr_asciiz_uc_end:
-	ld a, ctrl_enter;					// newline
+	ld a, ctrl_cr;						// carriage return
 	rst print_a;						// print it
 
 read_folders:
@@ -729,7 +729,7 @@ pr_spaces:
 	jr read_files_2;					// do next entry
 
 last_entry:
-	ld a, ctrl_enter;					// carriage return
+	ld a, ctrl_cr;						// carriage return
 	rst print_a;						// print it
 	ld a, (handle);						// get folder handle
 	rst divmmc;							// issue a hookcode

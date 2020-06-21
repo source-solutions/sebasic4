@@ -28,7 +28,7 @@ dot_test:
 	ld a, (hl);							// get character
 	cp 'A';								// start of command
 	jr nc, tokenizer_0;					// jump if so
-	cp ctrl_enter;						// end of line?
+	cp ctrl_cr;							// end of line?
 	jr z, tokenizer_0;					// jump if so
 ;	cp '.';								// dot command?
 ;	jr nz, dot_test;					// jump if not;
@@ -58,7 +58,7 @@ tokenizer_4:
 	jr z, tokenizer_14;					// jump if so
 	cp tk_rem;							// REM token?
 	jr z, tokenizer_14;					// jump if so
-	cp ctrl_enter;						// enter?
+	cp ctrl_cr;							// carraige return?
 	jr z, tokenizer_14;					// jump if so
 	cp $22;								// in quotes?
 	jr nz, tokenizer_5;					// jump if not
