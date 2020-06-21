@@ -7,7 +7,7 @@
 # ln=EN-US 
 
 ## español
-# ln=ES-1252
+ln=ES-1252
 
 ## français
 # ln=FR-1252
@@ -61,7 +61,7 @@
 # cp=0932-JAP
 
 ## Latin 1 / Western European
-# cp=1252-EUW
+cp=1252-EUW
 
 ## Latin 2 / Central European
 # cp=1250-EUC
