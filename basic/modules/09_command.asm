@@ -734,7 +734,7 @@ c_run:
 	cp ':';								// test for next statement
 	jr z, run_zero;						// jump if so
 
-;	FIXME: replace this with call to expt_exp?
+;	// FIXME: replace this with call to expt_exp?
 
 	call scanning;						// evaluate expression
 	bit 6, (iy + _flags);				// string or numeric?

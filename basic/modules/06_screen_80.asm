@@ -336,7 +336,7 @@ ctlchrtab:
 	defb po_up - $;						// 30, RS
 	defb po_down - $;					// 31, US
 
-;	// FIXME: sound bell subroutine
+;	// sound bell subroutine
 po_bel:
 	jp bell;
 
