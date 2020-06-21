@@ -338,7 +338,7 @@ ctlchrtab:
 
 ;	// FIXME: sound bell subroutine
 po_bel:
-	ret;
+	jp bell;
 
 ;	// print backspace subroutine
 po_bs:
