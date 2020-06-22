@@ -686,7 +686,7 @@ config:
 	or %11011100;						// 28MHz CPU / 60Hz interrupt
 	out (c),a;							// set it
 	ld bc, $8e3b;						// Prism port
-	ld a, %00000111;					// 28 MHz / VGA sync
+	ld a, %00000110;					// 28 MHz
 	out (c), a;							// set it
 
 ;	// switch ROMs
