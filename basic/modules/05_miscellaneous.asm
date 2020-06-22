@@ -34,7 +34,8 @@
 ;	// but provide a useful check that these points have not moved
 	jp print_a_2;						// RST $10 - print character in A ($04c6 must never be called)
 	jp jp_get_char;						// RST $18 - get character 
-	jp $20;								// RST $20 - next character
+	jp $0020;							// RST $20 - next character
+	jp reentry;							// IF1 reentry point
 	jp cls_lower;						// clear lower screen
 	jp add_char;						// add character
 	jp remove_fp;						// remove floating point from line
@@ -49,21 +50,19 @@
 	jp syntax_z;						// checking syntax test 
 	jp stk_fetch;						// stack fetch
 
-	jp $ffff;							// read a character from keyboard
-	jp print_a_2;						// write a character to screen
-	jp cls;								// clear screen
-	jp $ffff;							// set colors
-	jp $ffff;							// load a file
-	jp $ffff;							// save a file
-	jp $ffff;							// read elapsed time
-	jp $ffff;							// make a sound
-	jp $ffff;							// read text position
-	jp $ffff;							// read character definition
-	jp $ffff;							// write character definition
-	jp $ffff;							// read character at a point on screen
-	jp $ffff;							// change screen geometry
-	jp $ffff;							// change palette settings
-
+	jp $ffff;							//
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							//
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
 	jp $ffff;							//
 	jp $ffff;							// 
 	jp $ffff;							// 

@@ -148,6 +148,8 @@ temp_ptr1:
 
 temp_ptr2:
 	ld (ch_add), hl;					// store it
+
+reentry:
 	ld a, (hl);							// copy character at current address to A
 	ret;								// end of ch_add_plus_1
 
