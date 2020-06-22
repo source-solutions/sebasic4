@@ -40,7 +40,7 @@
 ;	// FIXME - further optimization is possible
 
 ;	// NEW command
-	org $11b7;
+;	org $11b7;
 new:
 	di;									// interrupts off
 	xor a;								// LD A, 0
@@ -53,7 +53,7 @@ new:
 	exx;								// main register set
 
 ;	// initialization routine
-	org $11cb;
+;	org $11cb;
 start_new:;
 	ex af, af';							// store A
 
@@ -189,6 +189,8 @@ initial:
 	ld de, ready;						// ready message
 
 	call po_asciiz_0;					// print it
+
+	call msg_pause;						// pause in case of NEW
 
 	set 3, (iy + _flags2);				// enable CAPS LOCK
 

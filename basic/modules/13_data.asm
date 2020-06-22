@@ -28,7 +28,7 @@ copyright:
 	defb "Copyright (C)2020 Source Solutions, Inc.", ctrl_cr;
 	defb ctrl_cr;
 ;	defb "Release 200715", ctrl_cr;	// Morton
-	defb "Release 200715 RC4", ctrl_cr;	// Morton
+	defb "20-06-22 07:30", ctrl_cr;	// Morton
 ;	defb "YY-MM-DD HH:MM", ctrl_cr;
 	defb ctrl_cr, 0;
 

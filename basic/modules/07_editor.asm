@@ -17,7 +17,7 @@
 ;	// --- EDITOR ROUTINES -----------------------------------------------------
 
 ;	// line editor
-	org $0f60;
+	org $0f66;
 editor:
 	ld hl, (err_sp);					// get current error pointer
 	push hl;							// and stack it

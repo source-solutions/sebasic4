@@ -20,7 +20,7 @@
 ;	//         BIN$ and OCT$ are not yet implemented
 
 ;	// scanning subroutine
-	org $24f0;
+	org $24fc;
 scanning:
 	rst get_char;						// get current character
 

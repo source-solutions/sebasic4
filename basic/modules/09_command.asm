@@ -16,7 +16,7 @@
 
 ;	// --- BASIC LINE AND COMMAND INTERPRETATINO -------------------------------
 
-	org $1ae0
+	org $1ae9
 
 ;	// BASIC main parser
 line_scan:
@@ -104,15 +104,7 @@ separator:
 stmt_ret:
 	call break_key;						// break?
 	jr c, stmt_r_1;						// jump if not
-
-	ld bc, 0;							// set delaty to 65536 
-
-brk_loop:
-	dec bc;								// reduce count
-	ld a, c;							// test against zero
-	or b;								// prevents keypress immediately erasing BREAK message
-	jr nz, brk_loop;					// loop until done
-
+	call msg_loop;
 	jp report_break;					// clear keyboard buffer and report break
 
 stmt_r_1:

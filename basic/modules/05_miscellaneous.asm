@@ -89,7 +89,7 @@
 	jp $c900;							// ($0562 must never be called)
 
 ;	// permits extension of vector table if required
-	org $0590
+;	org $0590
 
 ;;	// CALL command
 c_call:
@@ -456,6 +456,17 @@ test_0_or_1:
 	pop af;								// else drop return address
 	rst error;							// and call
 	defb illegal_function_call;			// error handler
+
+;	// pause after printing a message (prevents messages being cleared after NEW or BREAK)
+msg_pause:
+	ld bc, 0;							// set delaty to 65536 
+
+msg_loop:
+	dec bc;								// reduce count
+	ld a, c;							// test against zero
+	or b;								// prevents keypress immediately erasing BREAK message
+	ret z;								// return when done
+	jr msg_loop;						// loop until done
 
 ;	// AUTO command
 auto:

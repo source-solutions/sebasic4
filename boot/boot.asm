@@ -667,7 +667,7 @@ config:
 	xor a;								// master config
 	out (c), a;							// set register
 	inc b;								// Uno data port
-	ld a, %01100110;					// bit 0 - 0: don't use boot mode (cannot access all RAM)
+	ld a, %01100111;					// bit 0 - 1: use boot mode (can access all RAM)
 ;										//     1 - 1: enable divMMC
 ;										//     2 - 1: disblae divMMC NMI
 ;										//     3 - 0: Port #FE behaves as issue 3
@@ -683,8 +683,11 @@ config:
 	out (c),a;							// select it
 	inc b;								// LD BC, uno_dat
 	in a, (c);							// get current value
-	or %11000000;						// 28MHz mode
+	or %11011100;						// 28MHz CPU / 60Hz interrupt
 	out (c),a;							// set it
+	ld bc, $8e3b;						// Prism port
+	ld a, %00000111;					// 28 MHz / VGA sync
+	out (c), a;							// set it
 
 ;	// switch ROMs
 	jp to_rom1;							// start BASIC
@@ -738,20 +741,28 @@ cf_exit:
 	ret;								// return (with carry set if error)
 
 cf_parse:
+;	// handle codepages
 	ld de, (cp_def-cf_ram)+$c100;		// string to match (LD DE, cp_def)
 	call (match_string-cf_ram)+$c100;	// test for it (CALL match_string)
 	ld de, (cp_file-cf_ram)+$c100;		// point to filename buffer (LD DE, cp_file)
 	call z, (cp_found-cf_ram)+$c100;	// call with match (CALL cp_found)
 
+;	// handle keyboard maps
 	ld de, (kb_def-cf_ram)+$c100;		// string to match (LD DE, kb_def)
 	call (match_string-cf_ram)+$c100;	// test for it (CALL match_string)
 	ld de, (kb_file-cf_ram)+$c100;		// point to filename buffer (LD DE, kb_file)
 	call z, (kb_found-cf_ram)+$c100;	// call with match (CALL kb_found)
 
+;	// handle langauge files
 	ld de, (ln_def-cf_ram)+$c100;		// string to match (LD DE, ln_def)
 	call (match_string-cf_ram)+$c100;	// test for it (CALL match_string)
 	ld de, (ln_file-cf_ram)+$c100;		// point to filename buffer (LD DE, ln_file)
 	call z, (ln_found-cf_ram)+$c100;	// call with match (CALL ln_found)
+
+;	// handle scandoubler setting
+	ld de, (sc_def-cf_ram)+$c100;		// string to match (LD DE, sc_def)
+	call (match_string-cf_ram)+$c100;	// test for it (CALL match_string)
+	call z, (sc_found-cf_ram)+$c100;	// call with match (CALL sc_found)
 
 	ret;			                	// done
 
@@ -775,11 +786,6 @@ cp_end:
 
 cp_load:
 	ld ix, (cp_path-cf_ram)+$c100;		// path to code page file (cp_path)
-;	ld a, '*';							// use current drive
-;	ld b, fa_read | fa_open_ex;			// open for reading if file exists
-;	and a;								// signal no error (clear carry flag)
-;	rst divmmc;							// issue a hookcode
-;	defb f_open;						// open file
 	call (open_ex-cf_ram)+$c100;		// open file if it exits
 
 	ret c;								// return if error
@@ -816,11 +822,6 @@ ln_end:
 
 ln_load:
 	ld ix, (ln_path-cf_ram)+$c100;		// path to language file (ln_path)
-;	ld a, '*';							// use current drive
-;	ld b, fa_read | fa_open_ex;			// open for reading if file exists
-;	and a;								// signal no error (clear carry flag)
-;	rst divmmc;							// issue a hookcode
-;	defb f_open;						// open file
 	call (open_ex-cf_ram)+$c100;		// open file if it exits
 
 	ret c;								// return if error
@@ -866,7 +867,6 @@ ReadMapFromFile:
 	rst divmmc;							// issue a hookcode
 	defb f_read;						// read bytes
 	ret c;								// end if premature end
-
 	ld hl, $5c00;						// buffer
 	ld bc, uno_dat;						// Uno data port
 	ld de, 4096;						// byte count
@@ -879,14 +879,23 @@ WriteMapToFPGA:
 	ld a, e;							// test for zero
 	or d;
 	jr nz, WriteMapToFPGA;				// loop until done
-
 	pop bc;								// get chunk count
 	djnz ReadMapFromFile;				// do remaining chunks
-
 	ld a, (handle_c);					// get handle
 	rst divmmc;							// issue a hookcode
 	defb f_close;						// close file
 	ret;								// done
+
+;	// switch off scandoubler
+sc_found:
+	ld bc, uno_reg;						// Uno register select
+	ld a, scandbl_ctrl;					// scan double and control register
+	out (c),a;							// select it
+	inc b;								// LD BC, uno_dat
+	in a, (c);							// get current value
+	and %11111110;						// switch off scandoubler
+	out (c),a;							// set it
+	ret;								// end of subroutine
 
 ;   // open a file if it exists (called four times)
 open_ex:
@@ -975,6 +984,9 @@ kb_def:
 
 ln_def:
 	defb "ln=", 0;		               	// error messages
+
+sc_def:
+	defb "sc=off", 0;					// scan-doubbler control
 
 cf_end:
 

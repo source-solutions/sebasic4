@@ -101,3 +101,8 @@ cp=1252-EUW
 
 ## US v4
 kb=USV4
+
+
+### scandoubler setting (default is on)
+
+# sc=off
