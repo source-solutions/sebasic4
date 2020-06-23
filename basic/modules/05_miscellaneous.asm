@@ -188,7 +188,7 @@ get_line:
 	call line_addr;						// get line address
 	ret;								// end of subroutine
 
-;	// EDIT command
+;	// EDIT command FIXME: ED. should do nothing if there is no program
 edit:
 	call get_line;						// get a valid line number
 	ld a, c;							// test
