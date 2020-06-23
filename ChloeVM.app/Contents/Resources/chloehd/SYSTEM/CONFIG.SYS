@@ -97,12 +97,13 @@ cp=1252-EUW
 # kb=SEV4
 
 ## US v2
-# kb=USV2
+#kb=USV2
 
 ## US v4
 kb=USV4
 
 
-### scandoubler setting (default is on)
+### scandoubler setting (default depends on hardware)
 
-# sc=off
+# sc=on
+sc=off
