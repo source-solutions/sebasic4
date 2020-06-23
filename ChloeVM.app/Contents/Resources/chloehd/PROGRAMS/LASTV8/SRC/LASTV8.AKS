@@ -5992,7 +5992,7 @@
     <aks:subsong>
       <aks:title>Main</aks:title>
 
-      <aks:initialSpeed>5</aks:initialSpeed>
+      <aks:initialSpeed>6</aks:initialSpeed>
 
       <aks:endIndex>49</aks:endIndex>
 
@@ -6026,9 +6026,9 @@
 
       <aks:digiChannel>1</aks:digiChannel>
 
-      <aks:highlightSpacing>5</aks:highlightSpacing>
+      <aks:highlightSpacing>4</aks:highlightSpacing>
 
-      <aks:secondaryHighlight>5</aks:secondaryHighlight>
+      <aks:secondaryHighlight>4</aks:secondaryHighlight>
 
       <aks:tracks>
         <aks:track>
@@ -11881,7 +11881,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>5</aks:trackNumber>
+            <aks:trackNumber>20</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -11925,7 +11925,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>7</aks:trackNumber>
+            <aks:trackNumber>20</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -11969,7 +11969,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>9</aks:trackNumber>
+            <aks:trackNumber>20</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -12013,7 +12013,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>11</aks:trackNumber>
+            <aks:trackNumber>20</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -12057,7 +12057,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>13</aks:trackNumber>
+            <aks:trackNumber>26</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -12101,7 +12101,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>15</aks:trackNumber>
+            <aks:trackNumber>26</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -12145,7 +12145,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>17</aks:trackNumber>
+            <aks:trackNumber>26</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -12189,7 +12189,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>19</aks:trackNumber>
+            <aks:trackNumber>26</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -12233,7 +12233,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>3</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -12277,7 +12277,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>3</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -12321,7 +12321,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>3</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -12365,7 +12365,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>3</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -12409,7 +12409,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>32</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -12453,7 +12453,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>34</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -12497,7 +12497,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>36</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -12541,7 +12541,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>34</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -12585,7 +12585,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>37</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -12629,7 +12629,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>40</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -12673,7 +12673,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>36</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -12717,7 +12717,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>34</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -12761,7 +12761,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>37</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -12805,7 +12805,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>43</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -12849,7 +12849,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>32</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -12893,7 +12893,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>34</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -12937,7 +12937,7 @@
           <aks:patternCell>
             <aks:transposition>5</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>47</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -12981,7 +12981,7 @@
           <aks:patternCell>
             <aks:transposition>5</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>53</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -13025,7 +13025,7 @@
           <aks:patternCell>
             <aks:transposition>-2</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>47</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -13069,7 +13069,7 @@
           <aks:patternCell>
             <aks:transposition>-2</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>53</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -13113,7 +13113,7 @@
           <aks:patternCell>
             <aks:transposition>2</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>56</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -13157,7 +13157,7 @@
           <aks:patternCell>
             <aks:transposition>2</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>69</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -13201,7 +13201,7 @@
           <aks:patternCell>
             <aks:transposition>-5</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>56</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -13245,7 +13245,7 @@
           <aks:patternCell>
             <aks:transposition>-5</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>69</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -13289,7 +13289,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>32</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -13333,7 +13333,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>34</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -13377,7 +13377,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>36</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -13421,7 +13421,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>34</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -13465,7 +13465,7 @@
           <aks:patternCell>
             <aks:transposition>-5</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>76</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -13509,7 +13509,7 @@
           <aks:patternCell>
             <aks:transposition>-5</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>77</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -13553,7 +13553,7 @@
           <aks:patternCell>
             <aks:transposition>-5</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>76</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -13597,7 +13597,7 @@
           <aks:patternCell>
             <aks:transposition>-5</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>80</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -13641,7 +13641,7 @@
           <aks:patternCell>
             <aks:transposition>-5</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>76</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -13685,7 +13685,7 @@
           <aks:patternCell>
             <aks:transposition>-5</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>77</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -13729,7 +13729,7 @@
           <aks:patternCell>
             <aks:transposition>-5</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>76</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -13773,7 +13773,7 @@
           <aks:patternCell>
             <aks:transposition>-5</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>80</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -13817,7 +13817,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>32</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -13861,7 +13861,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>34</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -13905,7 +13905,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>36</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
@@ -13949,7 +13949,7 @@
           <aks:patternCell>
             <aks:transposition>0</aks:transposition>
 
-            <aks:trackNumber>30</aks:trackNumber>
+            <aks:trackNumber>34</aks:trackNumber>
           </aks:patternCell>
 
           <aks:patternCell>
