@@ -65,6 +65,13 @@
 	ld bc, $8e3b;						// Prism port
 	ld a, %00000000;					// 3.5 MHz
 	out (c), a;							// set it
+
+
+;	// change to `roms` folder
+	ld a, '*';							// use current drive
+	ld ix, path;						// pointer to path
+	rst divmmc;							// issue a hookcode
+	defb f_chdir;						// change folder
 	jp shadow_ram;						// switch off shadow RAM
 
 filename:
@@ -72,6 +79,9 @@ filename:
 
 handle:
 	defb 0
+
+path:
+	defb "/PROGRAMS/TC2048/RSC/ROMS/", 0;
 
 ;	// skip middle 32K of shadow RAM that will be paged out
 	org $c000
