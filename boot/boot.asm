@@ -667,13 +667,13 @@ config:
 	xor a;								// master config
 	out (c), a;							// set register
 	inc b;								// Uno data port
-	ld a, %00100110;					// bit 0 - 0: don't use boot mode (cannot access all RAM)
+	ld a, %01110110;					// bit 0 - 0: don't use boot mode (cannot access all RAM)
 ;										//     1 - 1: enable divMMC
 ;										//     2 - 1: disblae divMMC NMI
 ;										//     3 - 0: Port #FE behaves as issue 3
-;										//     4 - 0: 312 scanlines per frame
+;										//     4 - 1: 262 scanlines per frame (NTSC)
 ;										//     5 - 1: Disable video contention
-;										//     6 - 0: 312 scanlines per frame
+;										//     6 - 1: 262 scanlines per frame (NTSC)
 ;										//     7 - 0: unlock SPI (necessary to switch to boot mode)
 	out (c), a;							// write data
 
