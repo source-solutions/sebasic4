@@ -667,7 +667,7 @@ config:
 	xor a;								// master config
 	out (c), a;							// set register
 	inc b;								// Uno data port
-	ld a, %01100111;					// bit 0 - 1: use boot mode (can access all RAM)
+	ld a, %01100110;					// bit 0 - 0: don't use boot mode (cannot access all RAM)
 ;										//     1 - 1: enable divMMC
 ;										//     2 - 1: disblae divMMC NMI
 ;										//     3 - 0: Port #FE behaves as issue 3
@@ -683,7 +683,7 @@ config:
 	out (c),a;							// select it
 	inc b;								// LD BC, uno_dat
 	in a, (c);							// get current value
-	or %11011100;						// 28MHz CPU / 60Hz interrupt
+	or %11111100;						// 28MHz | PAL sync | 60Hz | user scanlines | user scandouble
 	out (c),a;							// set it
 	ld bc, $8e3b;						// Prism port
 	ld a, %00000110;					// 28 MHz
@@ -699,11 +699,6 @@ cf_ram:
 
 cf_open:
 	ld ix, (cf_path-cf_ram)+$c100;		// path to config.sys file (cf_path)
-;	ld a, '*';							// use current drive
-;	ld b, fa_read | fa_open_ex;			// open for reading if file exists
-;	and a;								// signal no error (clear carry flag)
-;	rst divmmc;							// issue a hookcode
-;	defb f_open;						// open file
 	call (open_ex-cf_ram)+$c100;		// open file if it exits
 
 	jr c, cf_exit;						// return if error
@@ -759,10 +754,15 @@ cf_parse:
 	ld de, (ln_file-cf_ram)+$c100;		// point to filename buffer (LD DE, ln_file)
 	call z, (ln_found-cf_ram)+$c100;	// call with match (CALL ln_found)
 
-;	// handle scandoubler setting
-	ld de, (sc_def-cf_ram)+$c100;		// string to match (LD DE, sc_def)
+;	// handle scandoubler on
+	ld de, (sc_on-cf_ram)+$c100;		// string to match (LD DE, sc_on)
 	call (match_string-cf_ram)+$c100;	// test for it (CALL match_string)
-	call z, (sc_found-cf_ram)+$c100;	// call with match (CALL sc_found)
+	call z, (sc_on_found-cf_ram)+$c100;	// call with match (CALL sc_found)
+
+;	// handle scandoubler off
+	ld de, (sc_off-cf_ram)+$c100;		// string to match (LD DE, sc_off)
+	call (match_string-cf_ram)+$c100;	// test for it (CALL match_string)
+	call z, (sc_off_found-cf_ram)+$c100;// call with match (CALL sc_found)
 
 	ret;			                	// done
 
@@ -886,8 +886,19 @@ WriteMapToFPGA:
 	defb f_close;						// close file
 	ret;								// done
 
+;	// switch on scandoubler
+sc_on_found:
+	ld bc, uno_reg;						// Uno register select
+	ld a, scandbl_ctrl;					// scan double and control register
+	out (c),a;							// select it
+	inc b;								// LD BC, uno_dat
+	in a, (c);							// get current value
+	or %00000001;						// switch on scandoubler
+	out (c),a;							// set it
+	ret;								// end of subroutine
+
 ;	// switch off scandoubler
-sc_found:
+sc_off_found:
 	ld bc, uno_reg;						// Uno register select
 	ld a, scandbl_ctrl;					// scan double and control register
 	out (c),a;							// select it
@@ -985,7 +996,10 @@ kb_def:
 ln_def:
 	defb "ln=", 0;		               	// error messages
 
-sc_def:
+sc_on:
+	defb "sc=on", 0;					// scan-doubbler control
+
+sc_off:
 	defb "sc=off", 0;					// scan-doubbler control
 
 cf_end:
