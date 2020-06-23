@@ -318,11 +318,6 @@ wait2:
 	halt;								// wait one more frame
 	ret;								// return
 
-	uno_reg equ $fc3b
-	k_head equ k_tail - 1;				// (iy - $3c)	pointer to head of keyboard buffer
-	k_tail equ kstate - 1;				// (iy - $3b)	pointer to tail of keyboard buffer
-	kstate equ $5c00;					// (iy - $3a)	key state 0 to 3
-
 space:
 	ld b, 180;							// frames to wait
 

@@ -11,7 +11,7 @@
 ;   // * Set the `Reference frequency` to 440Hz
 ;   // * Set the `Sample player frequency` to 11025
 
- Until there is a dedicated Chloe core, forcing NTSC mode is the best way to write music code
+;   // Until there is a dedicated Chloe core, forcing NTSC mode is the best way to write music code
 ;   // now that will still work in future
 
 ;	// set 60Hz mode
