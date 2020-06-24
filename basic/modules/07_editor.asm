@@ -429,4 +429,3 @@ remove_fp:
 	cp ctrl_cr;							// carriage return?
 	jr nz, remove_fp;					// jump if not
 	ret;								// end of subroutine
-
