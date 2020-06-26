@@ -34,6 +34,8 @@ LBUFFER             equ 1024   ; DMA buffer length
 
 ;	// app entry point
 	org $6000
+
+;	// set palette
 	ld c, $3b;							// ZXI port
 	ld de, $ffbf;						// LD D, $ff; LD E, $bf (ULAplus ports)
 	ld b, e;							// register port
@@ -46,12 +48,37 @@ LBUFFER             equ 1024   ; DMA buffer length
 	out (c), a;							// select register
 	ld b, d;							// data port
 	out (c), d;							// bright white
+
+;	// set screen mode
 	xor a;								// LD A, 0
 	out ($ff), a;						// set low-res screen mode
-	jp Main
+
+	jp L8000
+
+                    org 8000h
+L8000:
+;	// move stack pointer
+	ld sp, $8000
+
+;	// swap out shadow RAM
+	ld bc, $7ffd;						// paging
+	ld a, %00010010;					// bank 2, ROM 1, screen 0
+	out (c), a;							// set it
+
+;	// copy shadow RAM to main RAM
+	ld hl, $8000;						// source (shadow RAM @ $8000)
+	ld de, $c000;						// destination (main RAM @ $8000)
+	ld bc, $4000;						// byte count;
+	ldir;								// copy it
+
+;	// page out shadow RAM
+	xor a;								// LD A, 0;
+	out ($f4), a;						// page out all shadow RAM
+
+	nop;								// wait a couple of instructions
+	nop;								// to allow paging to settle
 
 ;	// original code starts here
-                    org 8000h
                     jp Main
 
                     org 80FFh
@@ -77,12 +104,14 @@ Main:               ;Check whether we are using a PAL mode (50 fps) and reject i
 ;                     jr BucMenError
 ; MenError            db "Sorry, I need PAL timings.",0
 
+;	// Chloe uses NTSC mode
 ; PALMode             ;Keep current mode and force 48K ULA timings for this demo
-                    in a,(c)
-                    ; ld (Mode),a
-                    and 10101111b
-                    out (c),a
+;                    in a,(c)
+;                    ; ld (Mode),a
+;                    and 10101111b
+;                    out (c),a
 
+;	// Chloe is already running at 28MHz
                     ; ;Keep current speed settings and force 28 MHz for this demo
                     ; dec b
                     ; ld a,SCANDBLR
@@ -92,9 +121,6 @@ Main:               ;Check whether we are using a PAL mode (50 fps) and reject i
                     ; ld (ScanDblr),a
                     ; or 0c0h
                     ; out (c),a
-
-	ld a, %00110000;	// enable access to bank 5 at $4000
-	out ($f4), a;		// set it
 
                     ;setup screens
                     di
@@ -130,7 +156,7 @@ Main:               ;Check whether we are using a PAL mode (50 fps) and reject i
                     ld i,a
                     im 2
                     xor a
-                    ld (FramCont),a  ;signal interrupt every other frame (25 fps)
+                    ld (FramCont),a  ;signal interrupt every other frame (30 fps)
                     ei
 
                     xor a
@@ -194,6 +220,7 @@ ErrorLec:           ld a,(FHandle)
                     rst 08h
                     db f_close
 
+;	// this won't work in SE BASIC, so just reset the machine.
                     ;Restore machine to its previous settings
                     ld bc,ZXUNOADDR
                     ld a,DMACTRL
