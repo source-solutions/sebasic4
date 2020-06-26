@@ -78,10 +78,10 @@ Main:               ;Check whether we are using a PAL mode (50 fps) and reject i
 ; MenError            db "Sorry, I need PAL timings.",0
 
 ; PALMode             ;Keep current mode and force 48K ULA timings for this demo
-                    ; in a,(c)
+                    in a,(c)
                     ; ld (Mode),a
-                    ; and 10101111b
-                    ; out (c),a
+                    and 10101111b
+                    out (c),a
 
                     ; ;Keep current speed settings and force 28 MHz for this demo
                     ; dec b
@@ -202,24 +202,27 @@ ErrorLec:           ld a,(FHandle)
                     xor a
                     out (c),a
                     dec b
-                    ld a,SCANDBLR
-                    out (c),a
-                    inc b
-                    ld a,(ScanDblr)
-                    out (c),a
-                    dec b
-                    xor a
-                    out (c),a
-                    ld a,(Mode)
-                    inc b
-                    out (c),a
+                    ; ld a,SCANDBLR
+                    ; out (c),a
+                    ; inc b
+                    ; ld a,(ScanDblr)
+                    ; out (c),a
+                    ; dec b
+                    ; xor a
+                    ; out (c),a
+                    ; ld a,(Mode)
+                    ; inc b
+                    ; out (c),a
 
 Error:              ;Restore interrupt mode and memory settings
                     im 1
                     ld a,00010000b
                     ld bc,7ffdh
                     out (c),a
-                    ret  ; RETURN to BASIC
+;                    ret  ; RETURN to BASIC
+	ld a, %00111100;	// enable access to bank 5 at $4000
+	out ($f4), a;		// set it
+					rst 0; warm restart
 
 ;-----------------------------------------------------------------------------
 
