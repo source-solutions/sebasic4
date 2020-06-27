@@ -228,7 +228,7 @@ ErrorLec:           ld a,(FHandle)
                     inc b
                     xor a
                     out (c),a
-                    dec b
+;                    dec b
                     ; ld a,SCANDBLR
                     ; out (c),a
                     ; inc b
@@ -242,13 +242,13 @@ ErrorLec:           ld a,(FHandle)
                     ; out (c),a
 
 Error:              ;Restore interrupt mode and memory settings
-                    im 1
-                    ld a,00010000b
-                    ld bc,7ffdh
-                    out (c),a
+;                    im 1
+;                    ld a,00010000b
+;                    ld bc,7ffdh
+;                    out (c),a
 ;                    ret  ; RETURN to BASIC
-	ld a, %00111100;	// enable access to bank 5 at $4000
-	out ($f4), a;		// set it
+;	ld a, %00111100;	// enable access to bank 5 at $4000
+;	out ($f4), a;		// set it
 					rst 0; warm restart
 
 ;-----------------------------------------------------------------------------

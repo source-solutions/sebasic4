@@ -684,6 +684,9 @@ config:
 	inc b;								// LD BC, uno_dat
 	in a, (c);							// get current value
 	or %11111100;						// 28MHz | PAL sync | 60Hz | user scanlines | user scandouble
+
+	and %11011111;						// 48 sync
+
 	out (c),a;							// set it
 	ld bc, $8e3b;						// Prism port
 	ld a, %00000110;					// 28 MHz
