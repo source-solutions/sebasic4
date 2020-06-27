@@ -6,7 +6,7 @@
 ;	// the Free Software Foundation, either version 3 of the License, or
 ;	// (at your option) any later version.
 ;	// 
-;	// This program is distributed in the hope that it will be useful,
+;	// This program is distributed in the hope that it will be useful, 
 ;	// but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;	// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;	// GNU General Public License for more details.
@@ -17,20 +17,25 @@
 ;	// Conversion to app format / 60Hz by Source Solutions, Inc.
 
 ;	// OS hook codes
-include "UNODOS3.INC"
+	include "UNODOS3.INC"
 
-ZXUNOADDR           equ 64571  ; ZX-UNO ZXI register address
-ZXUNODATA           equ 64827  ; ZX-UNO ZXI register data
-SCANDBLR            equ 0bh    ; ZX-UNO register to set Z80 speed (we will use 28 MHz here)
-DMACTRL             equ 0a0h   ; ZX-UNO register to start/stop DMA
-DMASRC              equ 0a1h   ; ZX-UNO register to set DMA source
-DMADST              equ 0a2h   ; ZX-UNO register to set DMA destination
-DMAPRE              equ 0a3h   ; ZX-UNO register to set DMA preescaler
-DMALEN              equ 0a4h   ; ZX-UNO register to set DMA length
-DMASTAT             equ 0a6h
-SPECDRUM            equ 0ffdfh ; Specdrum I/O port in 16-bit format for DMA destination
-PREESCALER          equ 227    ; Preescaler for timed DMA. This number is got this way ( ROUND (3500000 / 15350) ) - 1
-LBUFFER             equ 1024   ; DMA buffer length
+;	// I/O ports
+	uno_reg equ $fc3b;
+	uno_dat equ $fd3b;
+ 	scandbl_ctrl equ 11;
+
+	dma_ctrl equ $a0;					// start/stop DMA
+	dma_src equ $a1;					// set DMA source
+	dma_dst equ $a2;					// set DMA destination
+	dma_pre equ $a3;					// set DMA prescaler
+	dma_len equ $a4;					// set DMA length
+	dma_stat equ $a6;
+
+	specdrum equ $ffdf;					// DMA destination
+
+;	// constants
+	prescaler equ 227;					// prescaler for timed DMA: (ROUND (3500000 / 15350)) - 1
+	lbuffer equ 1024;					// DMA buffer length
 
 ;	// app entry point
 	org $6000
@@ -55,10 +60,11 @@ LBUFFER             equ 1024   ; DMA buffer length
 
 	jp L8000
 
-                    org 8000h
+	org $8000
+
 L8000:
 ;	// move stack pointer
-	ld sp, $8000
+	ld sp, $8000;						// grows down from $7fff
 
 ;	// swap out shadow RAM
 	ld bc, $7ffd;						// paging
@@ -79,329 +85,314 @@ L8000:
 	nop;								// to allow paging to settle
 
 ;	// original code starts here
-                    jp Main
+	jp Main
 
-                    org 80FFh
-                    dw NuevaIM2
+;	// IM2 interrupt routine
+	org $80ff
+	defw NuevaIM2
 
-Main:               ;Check whether we are using a PAL mode (50 fps) and reject if in NTSC mode.
-;                     ld bc,ZXUNOADDR
-;                     xor a
-;                     out (c),a
-;                     inc b
-;                     in a,(c)
-;                     and 01010000b
-;                     cp  01010000b
-;                     jr nz,PALMode
-;                     ld a,2
-;                     call 1601h
-;                     ld hl,MenError
-; BucMenError         ld a,(hl)
-;                     or a
-;                     ret z
-;                     rst 10h
-;                     inc hl
-;                     jr BucMenError
-; MenError            db "Sorry, I need PAL timings.",0
+Main:
 
-;	// Chloe uses NTSC mode
-; PALMode             ;Keep current mode and force 48K ULA timings for this demo
-;                    in a,(c)
-;                    ; ld (Mode),a
-;                    and 10101111b
-;                    out (c),a
+;	// setup screens
+	di;
+	ld a, %00010111;					// bank 7, ROM 1, screen 0
+	ld bc, $7ffd;
+	out (c), a;
 
-;	// Chloe is already running at 28MHz
-                    ; ;Keep current speed settings and force 28 MHz for this demo
-                    ; dec b
-                    ; ld a,SCANDBLR
-                    ; out (c),a
-                    ; inc b
-                    ; in a,(c)
-                    ; ld (ScanDblr),a
-                    ; or 0c0h
-                    ; out (c),a
+	xor a;
+	out (254), a;
+	ld hl, 16384;
+	ld de, 16385;
+	ld bc, 6143;
+	ld (hl), 0;
+	ldir;
+	inc hl;
+	inc de;
+	ld (hl), 7;							// paper 0, ink 7, bright 0
+	ld bc, 767;
+	ldir;
 
-                    ;setup screens
-                    di
-                    ld a,00010111b  ;bank 7, ROM 1, screen 0
-                    ld bc,7ffdh
-                    out (c),a
+	ld hl, 49152;
+	ld de, 49153;
+	ld bc, 6143;
+	ld (hl), 0;
+	ldir;
+	inc hl;
+	inc de;
+	ld (hl), 7;							// paper 0, ink 7, bright 0
+	ld bc, 767;
+	ldir;
 
-                    xor a
-                    out (254),a
-                    ld hl,16384
-                    ld de,16385
-                    ld bc,6143
-                    ld (hl),0
-                    ldir
-                    inc hl
-                    inc de
-                    ld (hl),7       ;paper 0, ink 7, bright 0
-                    ld bc,767
-                    ldir
+	ld a, $80;
+	ld i, a;
+	im 2;
+	xor a;
+	ld (FramCont), a;					// signal interrupt every other frame (30 fps)
+	ei;
 
-                    ld hl,49152
-                    ld de,49153
-                    ld bc,6143
-                    ld (hl),0
-                    ldir
-                    inc hl
-                    inc de
-                    ld (hl),7       ;paper 0, ink 7, bright 0
-                    ld bc,767
-                    ldir
+	xor a;
+	rst $08;
+	defb m_getsetdrv;					// A = current drive
 
-                    ld a,80h
-                    ld i,a
-                    im 2
-                    xor a
-                    ld (FramCont),a  ;signal interrupt every other frame (30 fps)
-                    ei
+	ld b, fa_read;						// B = open mode
+	ld ix, MovieFile;					// HL = pointer to filename (ASCIIZ)
+	rst $08;
+	defb f_open;
 
-                    xor a
-                    rst 08h
-                    db m_getsetdrv  ;A = current drive
+	jp c, Error;						// return if error
+	ld (FHandle), a;
 
-                    ld b,fa_read    ;B = open mode
-                    ld ix,MovieFile   ;HL = pointer to filename (ASCIIZ)
-                    rst 08h
-                    db f_open
+;	// setup pointer to sound buffer
+	ld hl, SoundBuffer;
+	ld (PointerSoundBuffer), hl;
+	
+;	// setup pointer to current working screen and display screen
+	ld hl, 4000h;						// working screen is page 5
+	ld (ScreenAddr), hl;
+	ld a, %00011111;					// display screen is page 7
+	ld (ScreenPage), a;
 
-                    jp c,Error   ;return if error
-                    ld (FHandle),a
+;	// A movie is a list of frames, one after another, starting with frame 0.
+;	// Even numbered frames are processed in page 5. Odd numbered frames in page 7
+;	// Each frame begins with 512 bytes of audio, then a 4 byte header which indicates
+;	// type of frame, border value and length of frame (minus these 4 bytes), then 
+;	// the rest of the frame
 
-                    ;setup pointer to sound buffer
-                    ld hl,SoundBuffer
-                    ld (PointerSoundBuffer),hl
-                    
-                    ;setup pointer to current working screen and display screen
-                    ld hl,4000h       ;working screen is page 5
-                    ld (ScreenAddr),hl
-                    ld a,00011111b    ;display screen is page 7
-                    ld (ScreenPage),a
+	xor a;
+	ld r, a;							// reset interrupt signalling
+	call ReadAudioFrame;				// fill first half of DMA audio buffer
 
-                    ; A movie is a list of frames, one after another, starting with frame 0.
-                    ; Even numbered frames are processed in page 5. Odd numbered frames in page 7
-                    ; Each frame begins with 512 bytes of audio, then a 4 byte header which indicates
-                    ; type of frame, border value and length of frame (minus these 4 bytes), then 
-                    ; the rest of the frame
-                    xor a
-                    ld r,a  ;reset interrupt signalling
-                    call ReadAudioFrame   ;fill first half of DMA audio buffer
-WaitFirstINT:       ld a,r
-                    jp p,WaitFirstINT  ;wait until 40ms have happened
-                    call InitDMA       ;start DMA audio play
+WaitFirstINT:
+	ld a, r;
+	jp p, WaitFirstINT;					// wait until 40ms have happened
+	call InitDMA;						// start DMA audio play
 
-AnotherFrame:       ld a,7fh
-                    in a,(254)
-                    bit 0,a
-                    jp z,ErrorLec    ;check if SPACE pressed to stop playing
+AnotherFrame:
+	ld a, $7f;
+	in a, (254);
+	bit 0, a;
+	jp z, ErrorLec;						// check if SPACE pressed to stop playing
 
-                    ld ix,Buffer
-                    ld bc,4          ;read 4 byte header
-                    call Leer
-                    jp c,ErrorLec
-                    ld a,(Buffer)    ;get frame type
+	ld ix, Buffer;
+	ld bc, 4;							// read 4 byte header
+	call Leer;
+	jp c, ErrorLec;
+	ld a, (Buffer);						// get frame type
 
-                    cp 0   ;KEY_FRAME
-                    jp nz,NotKey
-                    call DoKeyFrame
-                    jp AnotherFrame
+	cp 0;								// KEY_FRAME
+	jp nz, NotKey;
+	call DoKeyFrame;
+	jp AnotherFrame;
 
-NotKey:             cp 1   ;DELTA_FRAME
-                    jp nz,NotDelta
-                    call DoDeltaFrame
-                    jp AnotherFrame
+NotKey:
+	cp 1;								// DELTA_FRAME
+	jp nz, NotDelta;
+	call DoDeltaFrame;
+	jp AnotherFrame;
 
-NotDelta:           ;if not keyframe and not deltaframe, stop playing
+NotDelta:;								// if not keyframe and not deltaframe, stop playing
 
-ErrorLec:           ld a,(FHandle)
-                    rst 08h
-                    db f_close
+ErrorLec:
+	ld a, (FHandle);
+	rst $08;
+	defb f_close;
 
-;	// this won't work in SE BASIC, so just reset the machine.
-                    ;Restore machine to its previous settings
-                    ld bc,ZXUNOADDR
-                    ld a,DMACTRL
-                    out (c),a
-                    inc b
-                    xor a
-                    out (c),a
-;                    dec b
-                    ; ld a,SCANDBLR
-                    ; out (c),a
-                    ; inc b
-                    ; ld a,(ScanDblr)
-                    ; out (c),a
-                    ; dec b
-                    ; xor a
-                    ; out (c),a
-                    ; ld a,(Mode)
-                    ; inc b
-                    ; out (c),a
+;	// reset DMA
+	ld bc, uno_reg
+	ld a, dma_ctrl
+	out (c), a
+	inc b
+	xor a
+	out (c), a
 
-Error:              ;Restore interrupt mode and memory settings
-;                    im 1
-;                    ld a,00010000b
-;                    ld bc,7ffdh
-;                    out (c),a
-;                    ret  ; RETURN to BASIC
-;	ld a, %00111100;	// enable access to bank 5 at $4000
-;	out ($f4), a;		// set it
-					rst 0; warm restart
+;	// do a warm restart on error to restore default settings
+Error:
+	rst 0;
 
-;-----------------------------------------------------------------------------
+;	// -------------------------------------------------------------------------
 
-;Read BC bytes to memory pointed by IX from current opened file
-Leer:               ld a,(FHandle)
-                    rst 08h
-                    db f_read
-                    ret
+;	// Read BC bytes to memory pointed by IX from current opened file
+Leer:
+	ld a, (FHandle);
+	rst $08;
+	defb f_read;
+	ret;
 
-DoKeyFrame:         xor a
-                    ld r,a             ;reset frame interrupt
-                    ld bc,(Buffer+2)   ;set frame length from header
-                    ld ix,(ScreenAddr) ;and frame destination (working screen)
-                    call Leer          ;read it from file direct to working screen
-                    jp c,ErrorLec
-                    jp SwitchScreens   ;go flipping
+DoKeyFrame:
+	xor a;
+	ld r, a;							// reset frame interrupt
+	ld bc, (Buffer + 2);				// set frame length from header
+	ld ix, (ScreenAddr);				// and frame destination (working screen)
+	call Leer;							// read it from file direct to working screen
+	jp c, ErrorLec;
+	jp SwitchScreens;					// go flipping
 
-DoDeltaFrame:       xor a              ;reset frame interrupt
-                    ld r,a
-                    ld bc,(Buffer+2)   ;set compressed frame length from header
-                    ld ix,Buffer+4     ;set destination to internal buffer
-                    call Leer
-                    jp c,ErrorLec
-                    ld hl,Buffer+4     ;HL to the beginning of the compressed buffer
-                    ld bc,(Buffer+2)   ;BC to hold the length in bytes of this buffer
-NextCell:           ld a,b             ;BC=0 ?
-                    or c
-                    jp z,SwitchScreens ;then go flipping
-                    ld e,(hl)          ;
-                    inc hl             ;DE = screen address for this character
-                    ld d,(hl)          ;
-                    inc hl             ;HL = character definition
-                    rept 8             ;unrolled loop (works wonders here!)
-                      ld a,(hl)        ;
-                      ld (de),a        ;transfer character to screen
-                      inc hl           ;
-                      inc d            ;
-                    endm               ;
-                    ld a,c             ;substracts 10 from BC
-                    sub 10             ;
-                    ld c,a             ;
-                    ld a,b             ;
-                    sbc a,0            ;
-                    ld b,a             ;
-                    jp NextCell
+DoDeltaFrame:
+	xor a;								// reset frame interrupt
+	ld r, a;
+	ld bc, (Buffer + 2);				// set compressed frame length from header
+	ld ix, Buffer + 4;					// set destination to internal buffer
+	call Leer;
+	jp c, ErrorLec;
+	ld hl, Buffer + 4;					// HL to the beginning of the compressed buffer
+	ld bc, (Buffer + 2);				// BC to hold the length in bytes of this buffer
 
-NuevaIM2:           push af
-                    ld a,(FramCont)
-                    or a
-                    jp nz,SignalIt
-                    inc a
-                    jp StoreAndExit
-SignalIt:           ld a,80h
-                    ld r,a   ;set bit 7 of R to signal 40ms interrupt
-                    xor a
-StoreAndExit:       ld (FramCont),a
-                    pop af
-                    rept 64  ;this waste of time is needed to avoid interrupt
-                      nop    ;retriggering because of the CPU working at 28 MHz
-                    endm     ;but interrupt length is still 32T states (T referred to 3.5 MHz CPU)
-                    ei
-                    ret
+NextCell:
+	ld a, b;							// BC=0 ?
+	or c;
+	jp z, SwitchScreens;				// then go flipping
+	ld e, (hl);
+	inc hl;								// DE = screen address for this character
+	ld d, (hl);
+	inc hl;								// HL = character definition
 
-SwitchScreens:      call ReadAudioFrame  ;keep DMA full!
-WaitINT:            ld a,r
-                    jp p,WaitINT         ;wait for 40ms mark
+	rept 8;								// unrolled loop (works wonders here!)
+		ld a, (hl);
+		ld (de), a;						// transfer character to screen
+		inc hl;
+		inc d;
+	endm;
 
-                    ;switch working and display screens
-                    ld a,(ScreenAddr+1)
-                    xor 80h
-                    ld (ScreenAddr+1),a
-                    ld a,(ScreenPage)
-                    xor 8
-                    ld (ScreenPage),a
-                    ld bc,7ffdh
-                    out (c),a
-                    ;just after switching screens, update border colour from the
-                    ;border value stored in the just uncompressed frame we are
-                    ;about to display
-                    ld a,(Buffer+1)
-                    out (254),a
-                    ret
+	ld a, c;							// substracts 10 from BC
+	sub 10;
+	ld c, a;
+	ld a, b;
+	sbc a, 0;
+	ld b, a;
+	jp NextCell;
 
-;Read 512 bytes to the (current) first or second half of the 1024 byte buffer. Switch
-;halves to have the next one ready for the next read operation. While the DMA is playing
-;the first half, the software is filling the second half. Once DMA begins to play this
-;second half, software fills the first half with next audio data. DMA hardware automatically
-;starts reading again from the start of the buffer when it reaches the end.
-ReadAudioFrame      ld ix,(PointerSoundBuffer)
-                    ld bc,512
-                    call Leer
+NuevaIM2:
+	push af;
+	ld a, (FramCont);
+	or a;
+	jp nz, SignalIt;
+	inc a;
+	jp StoreAndExit;
 
-                    ld a,(PointerSoundBuffer+1)
-                    cp HIGH(SoundBuffer)
-                    jp z,Add1024
-                    ld hl,SoundBuffer
-                    jp EndAudioFrame
-Add1024:            ld hl,SoundBuffer+512
-EndAudioFrame:      ld (PointerSoundBuffer),hl
-                    ret
+SignalIt:
+	ld a, $80;
+	ld r, a;							// set bit 7 of R to signal 40ms interrupt
+	xor a
+StoreAndExit:
+	ld (FramCont), a;
+	pop af;
 
-InitDMA:            ld hl,SoundBuffer  ;begin of circular play buffer
-                    ld bc,ZXUNOADDR
-                    ld a,DMASRC
-                    out (c),a
-                    inc b
-                    out (c),l
-                    out (c),h
-                    dec b
+	rept 64;							// this waste of time is needed to avoid interrupt
+		nop;							// retriggering because of the CPU working at 28 MHz
+	endm;								// but interrupt length is still 32T states (T referred to 3.5 MHz CPU)
 
-                    ld a,DMADST
-                    out (c),a
-                    inc b
-                    ld hl,SPECDRUM
-                    out (c),l
-                    out (c),h
-                    dec b
+	ei;
+	ret;
 
-                    ld a,DMAPRE
-                    out (c),a
-                    inc b
-                    ld hl,PREESCALER
-                    out (c),l
-                    out (c),h
-                    dec b
+SwitchScreens:
+	call ReadAudioFrame;				// keep DMA full!
 
-                    ld a,DMALEN
-                    out (c),a
-                    inc b
-                    ld hl,LBUFFER
-                    out (c),l
-                    out (c),h
-                    dec b
+WaitINT:
+	ld a, r
+	jp p, WaitINT;						// wait for 40ms mark
 
-                    ld a,DMACTRL
-                    out (c),a
-                    inc b
-                    ld a,00000111b  ;mem to I/O, retriggeable, timed
-                    out (c),a
-                    dec b
+;	// switch working and display screens
+	ld a, (ScreenAddr + 1);
+	xor $80;
+	ld (ScreenAddr + 1), a;
+	ld a, (ScreenPage);
+	xor 8;
+	ld (ScreenPage), a;
+	ld bc, 7ffdh;
+	out (c), a;
 
-                    ret
+;	// just after switching screens, update border colour from the
+;	// border value stored in the just uncompressed frame we are
+;	// about to display
 
-MovieFile:          db "BA.MVZ",0
-FHandle:            db 0
-FramCont:           db 0
-ScanDblr:           db 0
-Mode:               db 0
-ScreenAddr:         dw 04000h
-ScreenPage:         db 00011111b
-PointerSoundBuffer: dw SoundBuffer
-SoundBuffer:        equ $
-Buffer:             equ $+LBUFFER
+	ld a, (Buffer + 1);
+	out (254), a;
+	ret;
 
-;                    end 8000h
+;	// Read 512 bytes to the (current) first or second half of the 1024 byte buffer. Switch
+;	// halves to have the next one ready for the next read operation. While the DMA is playing
+;	// the first half, the software is filling the second half. Once DMA begins to play this
+;	// second half, software fills the first half with next audio data. DMA hardware automatically
+;	// starts reading again from the start of the buffer when it reaches the end.
+
+ReadAudioFrame:
+	ld ix, (PointerSoundBuffer);
+	ld bc, 512;
+	call Leer;
+
+	ld a, (PointerSoundBuffer + 1);
+	cp HIGH(SoundBuffer);
+	jp z, Add1024;
+	ld hl, SoundBuffer;
+	jp EndAudioFrame;
+
+Add1024:
+	ld hl, SoundBuffer + 512;
+
+EndAudioFrame:
+	ld (PointerSoundBuffer), hl;
+	ret;
+
+InitDMA:
+	ld hl, SoundBuffer;					// begin of circular play buffer
+	ld bc, uno_reg;
+	ld a, dma_src;
+	out (c), a;
+	inc b;
+	out (c), l;
+	out (c), h;
+	dec b;
+
+	ld a, dma_dst;
+	out (c), a;
+	inc b;
+	ld hl, specdrum;
+	out (c), l;
+	out (c), h;
+	dec b;
+
+	ld a, dma_pre;
+	out (c), a;
+	inc b;
+	ld hl, prescaler;
+	out (c), l;
+	out (c), h;
+	dec b;
+
+	ld a, dma_len;
+	out (c), a;
+	inc b;
+	ld hl, lbuffer;
+	out (c), l;
+	out (c), h;
+	dec b;
+
+	ld a, dma_ctrl;
+	out (c), a;
+	inc b;
+	ld a, %00000111;;					// mem to I/O, retriggeable, timed
+	out (c), a;
+	dec b;
+
+	ret;
+
+MovieFile:
+	defb "BA.MVZ", 0;
+
+FHandle:
+	defb 0;
+
+FramCont:
+	defb 0;
+
+ScreenAddr:
+	defw $4000;
+
+ScreenPage:
+	defb %00011111;
+
+PointerSoundBuffer:
+	defw SoundBuffer;
+
+SoundBuffer	equ $;
+Buffer equ $ + lbuffer;

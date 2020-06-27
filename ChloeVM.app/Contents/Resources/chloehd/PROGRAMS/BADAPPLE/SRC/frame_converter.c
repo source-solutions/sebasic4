@@ -51,7 +51,7 @@ int main()
     memset (bfa2, 0, sizeof bfa2);
     ifile=0;
 
-    // PCM audio, 8-bit, unsigned, 12820 Hz
+    // PCM audio, 8-bit, unsigned, 15350 Hz
     fs = fopen (AUDIO_FILE, "rb");
     if (!fs)
     {

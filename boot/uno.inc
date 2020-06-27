@@ -32,6 +32,14 @@
 	raster_line equ 12
 	raster_ctrl equ 13
 	dev_control equ 14
+
+	dma_ctrl equ $a0;	// start/stop DMA
+	dma_src equ $a1;	// set DMA source
+	dma_dst equ $a2;	// set DMA destination
+	dma_pre equ $a3;	// set DMA prescaler
+	dma_len equ $a4;	// set DMA length
+	dma_stat equ $a6;
+
 	core_addr equ $fc
 	core_boot equ $fd
 	cold_boot equ $fe
