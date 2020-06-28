@@ -32,7 +32,7 @@
 
 unsigned char bfa1[6144], bfn1[6144];  // storage for current and next frame for screen page 5
 unsigned char bfa2[6144], bfn2[6144];  // storage for current and next frame for screen page 7
-unsigned char bsound[512];  // 33.33ms of sound at 15350 Hz
+unsigned char bsound[512];  // 40ms of sound at 12820 Hz
 int borderactual = 0;       // current border colour that go with the current frame
 
 int procesa (unsigned short mask, unsigned char *oldframe, unsigned char *newframe, FILE *fs, FILE *fo);
@@ -51,7 +51,7 @@ int main()
     memset (bfa2, 0, sizeof bfa2);
     ifile=0;
 
-    // PCM audio, 8-bit, unsigned, 15350 Hz
+    // PCM audio, 8-bit, unsigned, 12820 Hz
     fs = fopen (AUDIO_FILE, "rb");
     if (!fs)
     {
@@ -118,7 +118,7 @@ int procesa (unsigned short mask, unsigned char *oldframe, unsigned char *newfra
     unsigned short addr;
     int pixelblanco;
 
-    // Add 33.33ms of sound (512 8-bit samples at 15350 Hz)
+    // Add 40ms of sound (512 8-bit samples at 12820 Hz)
     memset (bsound, 0x80, 512);
     fread (bsound, 512, 1, fs);
     fwrite (bsound, 512, 1, fo);
