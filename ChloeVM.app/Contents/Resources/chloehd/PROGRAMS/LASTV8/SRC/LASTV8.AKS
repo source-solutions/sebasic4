@@ -5992,7 +5992,7 @@
     <aks:subsong>
       <aks:title>Main</aks:title>
 
-      <aks:initialSpeed>6</aks:initialSpeed>
+      <aks:initialSpeed>5</aks:initialSpeed>
 
       <aks:endIndex>49</aks:endIndex>
 

@@ -332,7 +332,7 @@
     <aks:subsong>
       <aks:title>Main</aks:title>
 
-      <aks:initialSpeed>12</aks:initialSpeed>
+      <aks:initialSpeed>10</aks:initialSpeed>
 
       <aks:endIndex>20</aks:endIndex>
 
