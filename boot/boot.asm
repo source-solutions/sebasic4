@@ -683,10 +683,8 @@ config:
 	out (c),a;							// select it
 	inc b;								// LD BC, uno_dat
 	in a, (c);							// get current value
-	or %11111100;						// 28MHz | PAL sync | 60Hz | user scanlines | user scandouble
-
-	and %11011111;						// 48 sync
-
+	or %11100000;						// 28MHz | PAL sync | user refresh | user scanlines | user scandouble
+	and %11100011;						// 50Hz horizontal refresh (required to play audio at correct rate)
 	out (c),a;							// set it
 	ld bc, $8e3b;						// Prism port
 	ld a, %00000110;					// 28 MHz
