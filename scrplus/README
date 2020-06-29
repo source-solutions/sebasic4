@@ -10,6 +10,8 @@ And further modifications as described here:
 
 https://github.com/cheveron/sebasic4/wiki/Developer-guide#Encode-SCR-images
 
+Note: The output format for Timex images is MLT. The attributes must be converted to SCR order to display the image.
+
 Original content of the README file follows:
 
 
