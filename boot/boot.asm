@@ -678,7 +678,8 @@ config:
 	out (c), a;							// write data
 
 ;	// set speed
-	ld bc, uno_reg;						// Uno register select
+;	ld bc, uno_reg;						// Uno register select
+	dec b;
 	ld a, scandbl_ctrl;					// scan double and control register
 	out (c),a;							// select it
 	inc b;								// LD BC, uno_dat
@@ -688,6 +689,23 @@ config:
 	out (c),a;							// set it
 	ld bc, $8e3b;						// Prism port
 	ld a, %00000110;					// 28 MHz
+	out (c), a;							// set it
+
+;	// device setup
+	ld bc, uno_reg;						// Uno register select
+	ld a, dev_control;					// device control register
+	out (c),a;							// select it
+	inc b;								// LD BC, uno_dat
+	ld a, %01101000;					// SPI enabled     | MMU enabled     | $1FFD b2 mask 1 | $7FFD b4 mask 0
+;										// $1FFD disabled  | $7FFD enabled   | YM2 enabled     | YM1 enabled
+	out (c), a;							// set it
+
+;	ld bc, uno_reg;						// Uno register select
+	dec b;
+	ld a, dev_ctrl2;					// device control register 2
+	out (c),a;							// select it
+	inc b;								// LD BC, uno_dat
+	ld a, %00000100;					// 00000 | Radastan video disabled | Timex video enabled | ULAplus enabled 
 	out (c), a;							// set it
 
 ;	// switch ROMs

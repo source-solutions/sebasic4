@@ -32,6 +32,7 @@
 	raster_line equ 12
 	raster_ctrl equ 13
 	dev_control equ 14
+	dev_ctrl2 equ 15
 
 	dma_ctrl equ $a0;	// start/stop DMA
 	dma_src equ $a1;	// set DMA source
