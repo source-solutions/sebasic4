@@ -54,20 +54,57 @@
 	ld hl, $33fb;						// used to overwrite
 	ld (hl), a;							// restart 0
 
-;	// set speed
-	ld bc, uno_reg;						// Uno register select
-	ld a, scandbl_ctrl;					// scan double and control register
-	out (c),a;							// select it
-	inc b;								// LD BC, uno_dat
-	in a, (c);							// get current value
-	or %00111100;						// 3.5 MHz | PAL sync | 60Hz | user scanlines | user scandouble
-	out (c),a;							// set it
+;	// set speed for Prism
 	ld bc, $8e3b;						// Prism port
 	ld a, %00000000;					// 3.5 MHz
 	out (c), a;							// set it
 
+;	// configure hardware
+	ld bc, uno_reg;						// Uno register port
+	xor a;								// master config
+	out (c), a;							// set register
+	inc b;								// Uno data port
+	ld a, %00000010;					// bit 0 - 0: don't use boot mode (cannot access all RAM)
+;										//     1 - 1: enable divMMC
+;										//     2 - 0: enable divMMC NMI
+;										//     3 - 0: Port #FE behaves as issue 3
+;										//     4 - 0: 312 scanlines per frame (PAL)
+;										//     5 - 0: Enable video contention
+;										//     6 - 0: 312 scanlines per frame (PAL)
+;										//     7 - 0: unlock SPI (necessary to switch to boot mode)
+	out (c), a;							// write data
 
-;	// change to `roms` folder
+;	// set speed
+	dec b;								// Uno register select
+	ld a, scandbl_ctrl;					// scan double and control register
+	out (c),a;							// select it
+	inc b;								// LD BC, uno_dat
+	in a, (c);							// get current value
+	and, %00000011;						// 3.5 MHz | TC sync | 50Hz | user scanlines | user scandouble
+	out (c),a;							// set it
+
+;	// device setup
+	ld bc, uno_reg;						// Uno register select
+	ld a, dev_control;					// device control register
+	out (c),a;							// select it
+	inc b;								// LD BC, uno_dat
+	ld a, %01101000;					// SPI enabled     | MMU enabled     | $1FFD b2 mask 1 | $7FFD b4 mask 0
+;										// $1FFD disabled  | $7FFD enabled   | YM2 enabled     | YM1 enabled
+	out (c), a;							// set it
+
+;	ld bc, uno_reg;						// Uno register select
+	dec b;
+	ld a, dev_ctrl2;					// device control register 2
+	out (c),a;							// select it
+	inc b;								// LD BC, uno_dat
+	ld a, %00000000;					// 00000 | Radastan video enabled | Timex video enabled | ULAplus enabled 
+	out (c), a;							// set it
+
+;	// set pan
+	ld a, %10011111;					// ACB stereo
+	out ($f7), a;						// set it
+
+;	// change to `SNAPS` folder
 	ld a, '*';							// use current drive
 	ld ix, path;						// pointer to path
 	rst divmmc;							// issue a hookcode
@@ -81,7 +118,7 @@ handle:
 	defb 0
 
 path:
-	defb "/PROGRAMS/TC2048/RSC/ROMS/", 0;
+	defb "/PROGRAMS/TC2048/RSC/SNAPS/", 0;
 
 ;	// skip middle 32K of shadow RAM that will be paged out
 	org $c000
