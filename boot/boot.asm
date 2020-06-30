@@ -708,6 +708,10 @@ config:
 	ld a, %00000100;					// 00000 | Radastan video disabled | Timex video enabled | ULAplus enabled 
 	out (c), a;							// set it
 
+;	// set pan
+	ld a, %10011111;					// ACB stereo
+	out ($f7), a;						// set it
+
 ;	// switch ROMs
 	jp to_rom1;							// start BASIC
 
