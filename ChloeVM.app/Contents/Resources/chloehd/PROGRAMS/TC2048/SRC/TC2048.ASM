@@ -8,7 +8,23 @@
 
 	uno_reg equ $fc3b
 	uno_dat equ $fd3b
+ 
+	master_conf equ 0
+	master_mapper equ 1
+	flash_spi equ 2
+	flash_cs equ 3
+	scan_code equ 4
+	key_stat equ 5
+	joy_conf equ 6
+	key_map equ 7
+	nmi_event equ 8
+	mouse_data equ 9
+	mouse_status equ 10
 	scandbl_ctrl equ 11
+	raster_line equ 12
+	raster_ctrl equ 13
+	dev_control equ 14
+	dev_ctrl2 equ 15
 
 	org $6000
 
@@ -80,7 +96,7 @@
 	out (c),a;							// select it
 	inc b;								// LD BC, uno_dat
 	in a, (c);							// get current value
-	and, %00000011;						// 3.5 MHz | TC sync | 50Hz | user scanlines | user scandouble
+	and %00000011;						// 3.5 MHz | TC sync | 50Hz | user scanlines | user scandouble
 	out (c),a;							// set it
 
 ;	// device setup
