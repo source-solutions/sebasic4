@@ -223,8 +223,7 @@ get_path:
 	jp z, report_bad_fn_call;			// error if so
 	ex de, hl;							// start to HL
 	ld de, $5a00;						// destination - FIXME use workspace
-;	ldir;								// copy it
-	call ldir_space;
+	call ldir_space;					// copy it (converting spaces to underscores)
 	ex de, hl;							// end to HL
 	ld (hl), 0;							// set end marker
 	ret;								// done
@@ -236,8 +235,7 @@ get_dest:
 	jp z, report_bad_fn_call;			// error if so
 	ex de, hl;							// start to HL
 	ld de, $5900;						// destination - FIXME use workspace
-;	ldir;								// copy it
-	call ldir_space;
+	call ldir_space;					// copy it (converting spaces to underscores)
 	ex de, hl;							// end to HL
 	ld (hl), 0;							// set end marker
 	ret;								// done
