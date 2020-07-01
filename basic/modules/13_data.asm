@@ -29,7 +29,7 @@ copyright:
 	defb ctrl_cr;
 ;	defb "Release 200715", ctrl_cr;	// Morton
 ;	defb "YY-MM-DD HH:MM", ctrl_cr;
-	defb "20-06-30 01:00", ctrl_cr;
+	defb "20-07-01 23:11", ctrl_cr;
 	defb ctrl_cr, 0;
 
 bytes_free:

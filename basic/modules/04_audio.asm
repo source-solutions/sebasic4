@@ -167,10 +167,12 @@ report_overflow_0:
 
 ;	// play bell subroutine
 bell:
+	ld (iy + _err_nr), 255;				// clear error
+
+bell_1:
 	ld de, (rasp);						// pitch
 	ld hl, 2148;						// duration
 	call beeper;						// sound rasp
-	ld (iy + _err_nr), 255;				// clear error
 	ret;								// end of subroutine
 
 ;	// mute PSG subroutine

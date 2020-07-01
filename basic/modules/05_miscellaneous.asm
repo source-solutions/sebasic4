@@ -188,8 +188,13 @@ get_line:
 	call line_addr;						// get line address
 	ret;								// end of subroutine
 
-;	// EDIT command FIXME: ED. should do nothing if there is no program
+;	// EDIT command
 edit:
+	ld hl, (prog);						// prog contains pointer to program
+	ld a, (hl);							// get value at address in HL
+	cp $80;								// no program?
+	ret z;								// return if so
+
 	call get_line;						// get a valid line number
 	ld a, c;							// test
 	or b;								// for zero

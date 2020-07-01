@@ -970,28 +970,18 @@ out_line3:
 	res 2, (iy + _flags2);				// signal not in quotes
 
 out_line4:
-	ld hl, (x_ptr);						// error position to HL
-	and a;								// clear carry flag
-	sbc hl, de;							// error address reached?
-	jr nz, out_line5;					// jump if not
-	ld hl, (x_ptr);						// error position to HL
-	ld (k_cur), hl;						// move curosr to error position
-
-;	// FIXME - add test to see if error cursor will be used instead
-
-out_line5:
 	call out_curs;						// cursor reached?
 	ex de, hl;							// swap pointers
 	ld a, (hl);							// character to A
 	call number;						// test for hidden number marker
 	inc hl;								// next
 	cp ctrl_cr;							// carriage return?
-	jr z, out_line6;					// jump if so
+	jr z, out_line5;					// jump if so
 	ex de, hl;							// swap pointers
 	call out_char;						// print character
 	jr out_line4;						// loop until done
 
-out_line6:
+out_line5:
 	pop de;								// unstack DE
 	ret;								// end of subroutine
 

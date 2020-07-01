@@ -110,7 +110,7 @@ error_2:
 error_3:
 	ld (iy + _err_nr), l;				// then copy to err_nr
 	ld sp, (err_sp);					// put value of err_sp in SP
-	jp set_stk;							// then jump
+	jr error_4;							// then jump
 
 ;	// increment counter subroutine
 	org $005f;
@@ -152,6 +152,13 @@ temp_ptr2:
 reentry:
 	ld a, (hl);							// copy character at current address to A
 	ret;								// end of ch_add_plus_1
+
+;	// error routine continued
+error_4:
+	ld hl, (x_ptr);						// get error pointer
+	ld (k_cur), hl;						// move cursor to error
+	call bell_1;						// sound rasp
+	jp set_stk;							// then jump
 
 ;	// skip over characters subroutine
 skip_over:
