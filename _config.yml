@@ -1,0 +1,8 @@
+title: SE Basic IV Anya
+description: An open source firmware for the Chloe 280SE, Timex 2000 series and ZX Spectrum compatible microcomputers.
+google_analytics: 
+show_downloads: true
+theme: jekyll-theme-cayman
+
+gems:
+  - jekyll-mentions
