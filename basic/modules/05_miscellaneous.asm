@@ -259,7 +259,7 @@ locate:
 	cp 41;								// in range?
 	jr z, loc_err;						// error if not
 	ld a, b;							// get row
-	cp 23;								// upper screen?
+	cp 24;								// upper screen?
 	jr z, loc_err;						// jump if not
 	ld a, 42;							// left most
 	jr loc_40;							// immedaite jump
@@ -269,7 +269,7 @@ loc_80:
 	cp 81;								// in range?
 	jr z, loc_err;						// error if not
 	ld a, b;							// get row
-	cp 23;								// upper screen?
+	cp 24;								// upper screen?
 	jr z, loc_err;						// jump if not
 
 	ld a, 82;							// left most

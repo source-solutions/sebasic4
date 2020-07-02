@@ -141,7 +141,7 @@ initial:
 	ld de, strms;						// destination
 	ld hl, init_strm;					// source
 	ldir;								// copy initial streams table
-	ld (iy + _df_sz), 2;				// set lower display size
+	ld (iy + _df_sz), 1;				// set lower display size
 	call init_path;						// initialize path
 
 	ld de, $ffbf;						// d=data, e=reg
@@ -198,7 +198,7 @@ initial:
 
 ;	// main execution loop
 main_exec:
-	ld (iy + _df_sz), 2;				// set lower screen
+	ld (iy + _df_sz), 1;				// set lower screen
 	call auto_list;						// auto list
 
 main_1:

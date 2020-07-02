@@ -817,7 +817,7 @@ cls_lower:
 	res 5, (hl);						// signal no lower screen clear after key
 	call cl_line;						// clear lower part of screen
 	dec b;								// reduce counter
-	ld (iy + _df_sz), 2;				// two lines
+	ld (iy + _df_sz), 1;				// two lines
 
 cl_chan:
 	ld a, 253;							// channel K

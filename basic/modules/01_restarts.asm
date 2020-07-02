@@ -157,7 +157,6 @@ reentry:
 error_4:
 	ld hl, (x_ptr);						// get error pointer
 	ld (k_cur), hl;						// move cursor to error
-	call bell_1;						// sound rasp
 	jp set_stk;							// then jump
 
 ;	// skip over characters subroutine
