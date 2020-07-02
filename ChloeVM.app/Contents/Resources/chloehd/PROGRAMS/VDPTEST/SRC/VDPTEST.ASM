@@ -15,6 +15,7 @@
 
 ;	// SCLD control
 	scld equ $ff;
+	ula equ $fe;
 
 	lo_0 equ %000
 	lo_1 equ %001
@@ -67,6 +68,9 @@
 
 ;	// program
 	org $6000
+	xor a;								// LD A, 0
+	out (ula), a;						// border 0
+
 	ei;									// interrupts on
 
 ;	// set palette

@@ -157,8 +157,10 @@ reentry:
 error_4:
 	ld hl, (x_ptr);						// get error pointer
 	ld (k_cur), hl;						// move cursor to error
+	push af
 	bit 7, (iy + _flags);				// checking syntax?
 	call z, bell_1;						// sound bell without resetting error if so
+	pop af
 	jp set_stk;							// then jump
 
 ;	// skip over characters subroutine
