@@ -279,7 +279,6 @@ ed_edge_1:
 ed_error:
 	bit 4, (iy + _flags2);				// channel K?
 	jp z, ed_done;						// jump if not
-	call bell;							// sound rasp
 	jp ed_again;						// immediate jump
 
 ;	// keyboard input subroutine

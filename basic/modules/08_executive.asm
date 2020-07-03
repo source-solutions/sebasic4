@@ -211,6 +211,7 @@ main_2:
 	call line_scan;						// check syntax
 	bit 7, (iy + _err_nr);				// correct?
 	jr nz, main_3;						// jump if so
+	call bell;							// error sound
 	bit 4, (iy + _flags2);				// channel K?
 	jr z, main_4;						// jump if not
 	ld hl, (e_line);					// address error
