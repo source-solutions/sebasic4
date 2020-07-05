@@ -9,8 +9,8 @@
 	uno_reg equ $fc3b
 	uno_dat equ $fd3b
  
-	master_conf equ 0
-	master_mapper equ 1
+	uno_conf equ 0
+	uno_mapper equ 1
 	flash_spi equ 2
 	flash_cs equ 3
 	scan_code equ 4

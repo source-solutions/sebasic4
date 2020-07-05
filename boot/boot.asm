@@ -708,6 +708,31 @@ config:
 	ld a, %00000100;					// 00000 | Radastan video disabled | Timex video enabled | ULAplus enabled 
 	out (c), a;							// set it
 
+;	ld bc, uno_reg;						// Uno register select
+	dec b;
+	ld a, joy_conf;						// joystick configuration register
+	out (c),a;							// select it
+	inc b;								// LD BC, uno_dat
+	ld a, %00010000;					// K-stick, no auto-fire, no keyboard-mapped joystick
+	out (c), a;							// set it
+
+;	ld bc, uno_reg;						// Uno register select
+	dec b;
+	ld a, mouse_data;					// mouse data register
+	out (c),a;							// select it
+	inc b;								// LD BC, uno_dat
+	ld a, $f4;							// initialize mouse
+	out (c), a;							// set it
+
+;	ld bc, uno_reg;						// Uno register select
+	dec b;
+	ld a, ad724;						// video register
+	out (c),a;							// select it
+	inc b;								// LD BC, uno_dat
+	in a, (c);							// get value;
+	or %00000001;						// set NTSC
+	out (c), a;							// set it
+
 ;	// set pan
 	ld a, %10011111;					// ACB stereo
 	out ($f7), a;						// set it
