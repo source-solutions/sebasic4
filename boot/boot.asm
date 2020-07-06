@@ -662,7 +662,12 @@ config:
 ;	ld a, %10000010;					// enable lock (bit 1 keeps MMC enabled)
 ;	out (c), a;							// write data
 
-;	// configure hardware
+;	// configure Prism
+	ld bc, $8e3b;						// Prism port
+	ld a, %00000110;					// 28 MHz
+	out (c), a;							// set it
+
+;	// configure Uno
 	ld bc, uno_reg;						// Uno register port
 	xor a;								// master config
 	out (c), a;							// set register
@@ -678,8 +683,7 @@ config:
 	out (c), a;							// write data
 
 ;	// set speed
-;	ld bc, uno_reg;						// Uno register select
-	dec b;
+	dec b;								// LD BC, uno_reg
 	ld a, scandbl_ctrl;					// scan double and control register
 	out (c),a;							// select it
 	inc b;								// LD BC, uno_dat
@@ -687,12 +691,9 @@ config:
 	or %11100000;						// 28MHz | PAL sync | user refresh | user scanlines | user scandouble
 	and %11100011;						// 50Hz horizontal refresh (required to play audio at correct rate)
 	out (c),a;							// set it
-	ld bc, $8e3b;						// Prism port
-	ld a, %00000110;					// 28 MHz
-	out (c), a;							// set it
 
-;	// device setup
-	ld bc, uno_reg;						// Uno register select
+;	// device config
+	dec b;								// LD BC, uno_reg
 	ld a, dev_control;					// device control register
 	out (c),a;							// select it
 	inc b;								// LD BC, uno_dat
@@ -700,38 +701,52 @@ config:
 ;										// $1FFD disabled  | $7FFD enabled   | YM2 enabled     | YM1 enabled
 	out (c), a;							// set it
 
-;	ld bc, uno_reg;						// Uno register select
-	dec b;
+	dec b;								// LD BC, uno_reg
 	ld a, dev_ctrl2;					// device control register 2
 	out (c),a;							// select it
 	inc b;								// LD BC, uno_dat
 	ld a, %00000100;					// 00000 | Radastan video disabled | Timex video enabled | ULAplus enabled 
 	out (c), a;							// set it
 
-;	ld bc, uno_reg;						// Uno register select
-	dec b;
+;	// joystick config
+	dec b;								// LD BC, uno_reg
 	ld a, joy_conf;						// joystick configuration register
 	out (c),a;							// select it
 	inc b;								// LD BC, uno_dat
 	ld a, %00010000;					// K-stick, no auto-fire, no keyboard-mapped joystick
 	out (c), a;							// set it
 
-;	ld bc, uno_reg;						// Uno register select
-	dec b;
+;	// initialize mouse
+	dec b;								// LD BC, uno_reg
 	ld a, mouse_data;					// mouse data register
 	out (c),a;							// select it
 	inc b;								// LD BC, uno_dat
 	ld a, $f4;							// initialize mouse
 	out (c), a;							// set it
 
-;	ld bc, uno_reg;						// Uno register select
-	dec b;
+;	// configure AD724 chip
+	dec b;								// LD BC, uno_reg
 	ld a, ad724;						// video register
 	out (c),a;							// select it
 	inc b;								// LD BC, uno_dat
 	in a, (c);							// get value;
 	or %00000001;						// set NTSC
 	out (c), a;							// set it
+
+;	// configure interrupts
+	dec b;								// LD BC, uno_reg
+	ld a, raster_line;					// rasterline
+	out (c), a;							// select it
+	inc b;								// LD BC, uno_dat
+	ld a, 200;							// first line after maximum view window
+	out (c), a;							// set raster line to 0
+
+	dec b;								// LD BC, uno_reg
+	ld a, raster_ctrl;					// rasterctrl
+	out (c), a;							// select it
+	inc b;								// LD BC, uno_dat
+	ld a, %00000110;					// enable raster interrupt, switch off ULA interrupts
+	out (c), a;							// select it
 
 ;	// set pan
 	ld a, %10011111;					// ACB stereo

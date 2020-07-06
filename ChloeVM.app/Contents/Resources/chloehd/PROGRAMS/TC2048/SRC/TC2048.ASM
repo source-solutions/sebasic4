@@ -127,8 +127,19 @@
 	ld a, dev_ctrl2;					// device control register 2
 	out (c),a;							// select it
 	inc b;								// LD BC, uno_dat
-	ld a, %00000000;					// 00000 | Radastan video enabled | Timex video enabled | ULAplus enabled 
+;	ld a, %00000000;					// 00000 | Radastan video enabled | Timex video enabled | ULAplus enabled 
+	xor a;
 	out (c), a;							// set it
+
+;	ld bc, unoreg;						// register select
+	dec b;								// unoreg
+	ld a, raster_ctrl;					// rasterctrl
+	out (c), a;							// select it
+;	ld bc, unodat;						// data select
+	inc b;								// unodat
+;	ld a, %00000000;					// ULA interrupt on / raster interrupt off
+	xor a;
+	out (c), a;							// select it
 
 ;	// set pan
 	ld a, %10011111;					// ACB stereo
