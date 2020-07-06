@@ -26,6 +26,8 @@
 	dev_control equ 14
 	dev_ctrl2 equ 15
 
+	ad724 equ $fb;						// AD724 video encoder 
+
 	org $6000
 
 ;	// load ROM file
@@ -91,6 +93,7 @@
 	out (c), a;							// write data
 
 ;	// set speed
+;	ld bc, uno_reg;						// Uno register select
 	dec b;								// Uno register select
 	ld a, scandbl_ctrl;					// scan double and control register
 	out (c),a;							// select it
@@ -99,8 +102,19 @@
 	and %00000011;						// 3.5 MHz | TC sync | 50Hz | user scanlines | user scandouble
 	out (c),a;							// set it
 
+;	// set PAL output
+;	ld bc, uno_reg;						// Uno register select
+	dec b;
+	ld a, ad724;						// video register
+	out (c),a;							// select it
+	inc b;								// LD BC, uno_dat
+	in a, (c);							// get value;
+	and %11111110;						// set PAL
+	out (c), a;							// set it
+
 ;	// device setup
-	ld bc, uno_reg;						// Uno register select
+;	ld bc, uno_reg;						// Uno register select
+	dec b;								// Uno register select
 	ld a, dev_control;					// device control register
 	out (c),a;							// select it
 	inc b;								// LD BC, uno_dat
