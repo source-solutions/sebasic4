@@ -852,14 +852,6 @@ auto_l_4:
 
 ;	// LIST command
 c_list:
-	ld hl, (flags);						// get flags
-	push hl;							// stack flags
-	call list_1;						// do list
-	pop hl;								// unstack flags
-	ld (flags), hl;						// restore flags
-	ret;								// end of subroutine
-
-list_1:
 	ld a, 2;							// use stream #2
 	ld (iy + _vdu_flag), 0;				// signal normal listing
 	call syntax_z;						// checking syntax?
@@ -920,6 +912,7 @@ list_8:
 	res 7, (iy + _flags);				// force edit mode
 	call out_line;						// print a BASIC line
 	rst print_a;						// print carriage return
+	set 7, (iy + _flags);				// force runtime mode
 	ld bc, (t_addr);					// emporary pointer to parameter table to BC
 	call cp_lines;						// match or line after
 	jr c, list_8;						// jump
