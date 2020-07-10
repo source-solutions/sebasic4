@@ -950,7 +950,21 @@ list_all_2:
 	jr list_all_2;						// immediate jump
 
 ;	// print a whole BASIC line subroutine
+list_cursor:
+	bit 4, (iy + _vdu_flag);			// automatic listing?
+	ret z;								// return if not
+	ld d, '>';							// set cursor
+	scf;								// set carry flag
+	ret;								// done
+
 out_line:
+	ld bc, (e_ppc);						// line number
+	call cp_lines;						// match or line after
+	ld de, 0;							// no line cursor
+	call z, list_cursor;				// call with match
+	rl e;								// carry in E if line before current else zero
+
+out_line1:
 	ld (iy + _breg), e;					// store line marker
 	ld a, (hl);							// most significant byte of line number to A
 	cp $40;								// in range? (0 to 16383)
@@ -961,7 +975,12 @@ out_line:
 	inc hl;								// point to
 	inc hl;								// first
 	inc hl;								// command
-	jr out_line3;						// immediate jump
+
+	res 0, (iy + _flags);				// require leading spaces
+	ld a, d;							// cursor to A
+	and a;								// test for zero
+	jr z, out_line3;					// jump if no cursor to print
+	rst print_a;						// print current line cursor
 
 out_line2:
 	set 0, (iy + _flags);				// suppress leading space
