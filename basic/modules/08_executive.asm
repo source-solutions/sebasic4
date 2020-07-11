@@ -64,8 +64,9 @@ start_new:;
 	ld a, %00011000;					// ROM 1, FBUFF 1, HOME 0
 	out (c), a;							// set it
 
-	ld a, 63;							// set I
-	ld i, a;							// to 63
+	xor a;								// set I
+	ld i, a;							// to $00(ff)
+
 	ld iyh, d;							// ramtop
 	ld iyl, e;							// to IY
 	ex de, hl;							// swap pointers

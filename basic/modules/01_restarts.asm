@@ -217,3 +217,7 @@ mouse:
 	in a, (c);							// read it
 	ld (hl), a;							// store it
 	ret;								// end of subroutine
+
+	org $00ff
+im2:
+	defw $0038;							// if IM2 is enabled with I set to 0 it will behave as IM1 (prevents a crash if enabled accidentally)
