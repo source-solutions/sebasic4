@@ -27,9 +27,8 @@ copyright:
 	defb "SE BASIC IV 4.2 Cordelia", ctrl_cr;
 	defb "Copyright (C)2020 Source Solutions, Inc.", ctrl_cr;
 	defb ctrl_cr;
-;	defb "Release 200715", ctrl_cr;	// Morton
+	defb "Release 200715", ctrl_cr;	// Morton
 ;	defb "YY-MM-DD HH:MM", ctrl_cr;
-	defb "20-07-11 21:00", ctrl_cr;
 	defb ctrl_cr, 0;
 
 bytes_free:
