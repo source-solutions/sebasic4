@@ -26,7 +26,7 @@ AAADDDDD AAADDDDD MRN JJJJJ MMM XXXXX
 
 AAA      = semi-key of the keyboard to be modified               | this information is
 DDDDD    = data (AND denied with what there is) of that semifila | repeated for two keys
-MRN      = Master reset, User reset, NMI
+MRN      = Hard reset, soft reset, NMI
 JJJJJ    = joystick status when pressing key. UDLRX positions
 MMM      = the key is a modifier
 XXXXX = Reserved for future use
