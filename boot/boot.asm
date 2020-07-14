@@ -14,22 +14,21 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
-; 	// This source is compatible with Zeus (http://www.desdes.com/products/oldfiles)
+; 	// This source is compatible with RASM
+;	// (http://www.cpcwiki.eu/forum/programming/rasm-z80-assembler-in-beta/)
 
-	zoWarnFlow = false;					// prevent pseudo op-codes triggering warnings.
-	output_bin "../bin/boot.rom",0,$4000
 	include "uno.inc";					// label definitions
 	include "os.inc";					// label definitions
 
 ;	// restarts
-	divmmc equ $08
-	wreg equ $20
+	divmmc equ $08;
+	wreg equ $20;
 
 ;	// IO ports
-	mmu equ	$f4
-	ula equ $fe
-	scld equ $ff
-	paging equ $7ffd
+	mmu equ	$f4;
+	ula equ $fe;
+	scld equ $ff;
+	paging equ $7ffd;
 
 ;	// control codes
 	ctrl_cr			equ $0d;
@@ -57,7 +56,7 @@ to_rom1:
 
 ;	// write to SPI flash
 	org $0020;
-wreg:
+;wreg:
 	ld bc, uno_reg + $100;				// $fd3b. Will be decremented to $fc before the OUT by OUTI.
 	pop hl;								// drop return address.
 	outi;								// DEC B; OUT [BC], (HL); INC HL.
@@ -602,9 +601,7 @@ waits6:
 ;	// part two of BASIC
 	org $0400
 basic:
-	import_bin "basic.bin"
-
-	defb "The supreme art of war is to subdue the enemy without fighting-Sun Tzu"
+	incbin "basic.bin"
 
 ;	// wipe lower 8KiB of shadow RAM
 	org $2000;
@@ -665,29 +662,95 @@ config:
 ;	ld a, %10000010;					// enable lock (bit 1 keeps MMC enabled)
 ;	out (c), a;							// write data
 
-;	// configure hardware
+;	// configure Prism
+	ld bc, $8e3b;						// Prism port
+	ld a, %00000110;					// 28 MHz
+	out (c), a;							// set it
+
+;	// configure Uno
 	ld bc, uno_reg;						// Uno register port
 	xor a;								// master config
 	out (c), a;							// set register
 	inc b;								// Uno data port
-	ld a, %01100110;					// bit 0 - 0: don't use boot mode (cannot access all RAM)
+	ld a, %01110110;					// bit 0 - 0: don't use boot mode (cannot access all RAM)
 ;										//     1 - 1: enable divMMC
 ;										//     2 - 1: disblae divMMC NMI
 ;										//     3 - 0: Port #FE behaves as issue 3
-;										//     4 - 0: Pentagon timing
+;										//     4 - 1: 262 scanlines per frame (NTSC)
 ;										//     5 - 1: Disable video contention
-;										//     6 - 1: Pentagon timing
+;										//     6 - 1: 262 scanlines per frame (NTSC)
 ;										//     7 - 0: unlock SPI (necessary to switch to boot mode)
 	out (c), a;							// write data
 
 ;	// set speed
-	ld bc, uno_reg;						// Uno register select
+	dec b;								// LD BC, uno_reg
 	ld a, scandbl_ctrl;					// scan double and control register
 	out (c),a;							// select it
 	inc b;								// LD BC, uno_dat
 	in a, (c);							// get current value
-	or %11000000;						// 28MHz mode
+	or %11100000;						// 28MHz | PAL sync | user refresh | user scanlines | user scandouble
+	and %11100011;						// 50Hz horizontal refresh (required to play audio at correct rate)
 	out (c),a;							// set it
+
+;	// device config
+	dec b;								// LD BC, uno_reg
+	ld a, dev_control;					// device control register
+	out (c),a;							// select it
+	inc b;								// LD BC, uno_dat
+	ld a, %01101000;					// SPI enabled     | MMU enabled     | $1FFD b2 mask 1 | $7FFD b4 mask 0
+;										// $1FFD disabled  | $7FFD enabled   | YM2 enabled     | YM1 enabled
+	out (c), a;							// set it
+
+	dec b;								// LD BC, uno_reg
+	ld a, dev_ctrl2;					// device control register 2
+	out (c),a;							// select it
+	inc b;								// LD BC, uno_dat
+	ld a, %00000100;					// 00000 | Radastan video disabled | Timex video enabled | ULAplus enabled 
+	out (c), a;							// set it
+
+;	// joystick config
+	dec b;								// LD BC, uno_reg
+	ld a, joy_conf;						// joystick configuration register
+	out (c),a;							// select it
+	inc b;								// LD BC, uno_dat
+	ld a, %00010000;					// K-stick, no auto-fire, no keyboard-mapped joystick
+	out (c), a;							// set it
+
+;	// initialize mouse
+	dec b;								// LD BC, uno_reg
+	ld a, mouse_data;					// mouse data register
+	out (c),a;							// select it
+	inc b;								// LD BC, uno_dat
+	ld a, $f4;							// initialize mouse
+	out (c), a;							// set it
+
+;	// configure AD724 chip
+	dec b;								// LD BC, uno_reg
+	ld a, ad724;						// video register
+	out (c),a;							// select it
+	inc b;								// LD BC, uno_dat
+	in a, (c);							// get value;
+	or %00000001;						// set NTSC
+	out (c), a;							// set it
+
+;	// configure interrupts
+	dec b;								// LD BC, uno_reg
+	ld a, raster_line;					// rasterline
+	out (c), a;							// select it
+	inc b;								// LD BC, uno_dat
+	ld a, 200;							// first line after maximum view window
+	out (c), a;							// set raster line to 0
+
+	dec b;								// LD BC, uno_reg
+	ld a, raster_ctrl;					// rasterctrl
+	out (c), a;							// select it
+	inc b;								// LD BC, uno_dat
+	ld a, %00000110;					// enable raster interrupt, switch off ULA interrupts
+	out (c), a;							// select it
+
+;	// set pan
+	ld a, %10011111;					// ACB stereo
+	out ($f7), a;						// set it
 
 ;	// switch ROMs
 	jp to_rom1;							// start BASIC
@@ -699,11 +762,6 @@ cf_ram:
 
 cf_open:
 	ld ix, (cf_path-cf_ram)+$c100;		// path to config.sys file (cf_path)
-;	ld a, '*';							// use current drive
-;	ld b, fa_read | fa_open_ex;			// open for reading if file exists
-;	and a;								// signal no error (clear carry flag)
-;	rst divmmc;							// issue a hookcode
-;	defb f_open;						// open file
 	call (open_ex-cf_ram)+$c100;		// open file if it exits
 
 	jr c, cf_exit;						// return if error
@@ -741,20 +799,33 @@ cf_exit:
 	ret;								// return (with carry set if error)
 
 cf_parse:
+;	// handle codepages
 	ld de, (cp_def-cf_ram)+$c100;		// string to match (LD DE, cp_def)
 	call (match_string-cf_ram)+$c100;	// test for it (CALL match_string)
 	ld de, (cp_file-cf_ram)+$c100;		// point to filename buffer (LD DE, cp_file)
 	call z, (cp_found-cf_ram)+$c100;	// call with match (CALL cp_found)
 
+;	// handle keyboard maps
 	ld de, (kb_def-cf_ram)+$c100;		// string to match (LD DE, kb_def)
 	call (match_string-cf_ram)+$c100;	// test for it (CALL match_string)
 	ld de, (kb_file-cf_ram)+$c100;		// point to filename buffer (LD DE, kb_file)
 	call z, (kb_found-cf_ram)+$c100;	// call with match (CALL kb_found)
 
+;	// handle langauge files
 	ld de, (ln_def-cf_ram)+$c100;		// string to match (LD DE, ln_def)
 	call (match_string-cf_ram)+$c100;	// test for it (CALL match_string)
 	ld de, (ln_file-cf_ram)+$c100;		// point to filename buffer (LD DE, ln_file)
 	call z, (ln_found-cf_ram)+$c100;	// call with match (CALL ln_found)
+
+;	// handle scandoubler on
+	ld de, (sc_on-cf_ram)+$c100;		// string to match (LD DE, sc_on)
+	call (match_string-cf_ram)+$c100;	// test for it (CALL match_string)
+	call z, (sc_on_found-cf_ram)+$c100;	// call with match (CALL sc_found)
+
+;	// handle scandoubler off
+	ld de, (sc_off-cf_ram)+$c100;		// string to match (LD DE, sc_off)
+	call (match_string-cf_ram)+$c100;	// test for it (CALL match_string)
+	call z, (sc_off_found-cf_ram)+$c100;// call with match (CALL sc_found)
 
 	ret;			                	// done
 
@@ -778,11 +849,6 @@ cp_end:
 
 cp_load:
 	ld ix, (cp_path-cf_ram)+$c100;		// path to code page file (cp_path)
-;	ld a, '*';							// use current drive
-;	ld b, fa_read | fa_open_ex;			// open for reading if file exists
-;	and a;								// signal no error (clear carry flag)
-;	rst divmmc;							// issue a hookcode
-;	defb f_open;						// open file
 	call (open_ex-cf_ram)+$c100;		// open file if it exits
 
 	ret c;								// return if error
@@ -799,37 +865,6 @@ any_load:
 	rst divmmc;							// issue a hookcode
 	defb f_close;						// 
 	ret;								// end of subroutine
-
-kb_found:
-	ld a, (hl);		                 	// get character
-	cp ctrl_cr;		                  	// test for CR
-	jr z, kb_end;	                	// jump if so
-	cp ctrl_lf;		                  	// test for LF
-	jr z, kb_end;	                	// jump if so
-
-	ld (de), a;							// write character
-	inc hl;								// next character source
-	inc de;								// next character destination
-	jr kb_found;	              		// loop until done
-
-kb_end:
-	ld hl, (kb_ext-cf_ram)+$c100;		// file extension (LD HL, kb_ext)
-	ld bc, 4;							// four bytes to copy
-	ldir;								// DE already points to destination so copy it
-
-kb_load:
-	ld ix, (kb_path-cf_ram)+$c100;		// path to keyboard file (kb_path)
-;	ld a, '*';							// use current drive
-;	ld b, fa_read | fa_open_ex;			// open for reading if file exists
-;	and a;								// signal no error (clear carry flag)
-;	rst divmmc;							// issue a hookcode
-;	defb f_open;						// open file
-	call (open_ex-cf_ram)+$c100;		// open file if it exits
-
-	ret c;								// return if error
-	ld ix, $4240;						// file destination
-	ld bc, 85;							// 85 bytes of data to load
-	jr any_load;						// continue to common code
 
 ln_found:
 	ld a, (hl);		                 	// get character
@@ -850,17 +885,91 @@ ln_end:
 
 ln_load:
 	ld ix, (ln_path-cf_ram)+$c100;		// path to language file (ln_path)
-;	ld a, '*';							// use current drive
-;	ld b, fa_read | fa_open_ex;			// open for reading if file exists
-;	and a;								// signal no error (clear carry flag)
-;	rst divmmc;							// issue a hookcode
-;	defb f_open;						// open file
 	call (open_ex-cf_ram)+$c100;		// open file if it exits
 
 	ret c;								// return if error
 	ld ix, $4000;						// file destination
 	ld bc, 576;							// 576 bytes of data to load
 	jr any_load;						// continue to common code
+
+kb_found:
+	ld a, (hl);		                 	// get character
+	cp ctrl_cr;		                  	// test for CR
+	jr z, kb_end;	                	// jump if so
+	cp ctrl_lf;		                  	// test for LF
+	jr z, kb_end;	                	// jump if so
+
+	ld (de), a;							// write character
+	inc hl;								// next character source
+	inc de;								// next character destination
+	jr kb_found;	              		// loop until done
+
+kb_end:
+	ld hl, (kb_ext-cf_ram)+$c100;		// file extension (LD HL, kb_ext)
+	ld bc, 4;							// four bytes to copy
+	ldir;								// DE already points to destination so copy it
+
+kb_load:
+	ld ix, (kb_path-cf_ram)+$c100;		// path to keyboard file (kb_path)
+	call (open_ex-cf_ram)+$c100;		// open file if it exits
+	ret c;								// return if error
+
+	ld (handle_c), a;					// store handle
+
+ReadMap:
+	ld bc, uno_reg;						// uno register port
+	ld a, 7;							// keymap register
+	out (c), a;							// select keymap register
+	ld b, 4;							// four chunks of 4K
+
+ReadMapFromFile:
+	push bc;							// store count
+	ld bc, 4096;						// bytes to read
+	ld ix, $5c00;						// buffer (will be wiped during start)
+	ld a, (handle_c);					// get handle
+	rst divmmc;							// issue a hookcode
+	defb f_read;						// read bytes
+	ret c;								// end if premature end
+	ld hl, $5c00;						// buffer
+	ld bc, uno_dat;						// Uno data port
+	ld de, 4096;						// byte count
+
+WriteMapToFPGA:
+	ld a, (hl);							// get byte from buffer
+	out (c), a;							// write it to the FPGA
+	inc hl;								// next byte
+	dec de;								// reduce count
+	ld a, e;							// test for zero
+	or d;
+	jr nz, WriteMapToFPGA;				// loop until done
+	pop bc;								// get chunk count
+	djnz ReadMapFromFile;				// do remaining chunks
+	ld a, (handle_c);					// get handle
+	rst divmmc;							// issue a hookcode
+	defb f_close;						// close file
+	ret;								// done
+
+;	// switch on scandoubler
+sc_on_found:
+	ld bc, uno_reg;						// Uno register select
+	ld a, scandbl_ctrl;					// scan double and control register
+	out (c),a;							// select it
+	inc b;								// LD BC, uno_dat
+	in a, (c);							// get current value
+	or %00000001;						// switch on scandoubler
+	out (c),a;							// set it
+	ret;								// end of subroutine
+
+;	// switch off scandoubler
+sc_off_found:
+	ld bc, uno_reg;						// Uno register select
+	ld a, scandbl_ctrl;					// scan double and control register
+	out (c),a;							// select it
+	inc b;								// LD BC, uno_dat
+	in a, (c);							// get current value
+	and %11111110;						// switch off scandoubler
+	out (c),a;							// set it
+	ret;								// end of subroutine
 
 ;   // open a file if it exists (called four times)
 open_ex:
@@ -950,12 +1059,18 @@ kb_def:
 ln_def:
 	defb "ln=", 0;		               	// error messages
 
+sc_on:
+	defb "sc=on", 0;					// scan-doubbler control
+
+sc_off:
+	defb "sc=off", 0;					// scan-doubbler control
+
 cf_end:
 
 ;	// code page 437 font
 	org $2a00
 font:
-	import_bin "0437-IBM.CP"
+	incbin "0437-IBM.CP"
 
 ;	// entry point from OS ROM
 	org $3200
@@ -966,9 +1081,7 @@ font:
 	ret;								// done (back to MMC ROM)
 
 os:
-;	import_bin "../bin/unodos-0.sys"
-;	import_bin "../bin/unodos-1.sys"
-	import_bin "../bin/unodos.sys"
+	incbin "../bin/unodos.sys"
 
 os_end:
 	defb "Source Solutions";

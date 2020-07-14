@@ -6,7 +6,12 @@
 		{
 			"label": "Build",
 			"type": "shell",
-			"command": "./scripts/build.sh",
+			"linux": {
+				"command": "./scripts/build-deb.sh",
+			},
+			"osx": {
+				"command": "./scripts/build-mac.sh",
+			},
 			"windows": {
 				"command": ".\\scripts\\build.cmd"
 			},
@@ -22,7 +27,12 @@
 		{
 			"label": "Run",
 			"type": "shell",
-			"command": "open ChloeVM.app",
+			"linux": {
+				"command": "./scripts/run-deb.sh",
+			},
+			"osx": {
+				"command": "open ChloeVM.app",
+			},
 			"windows": {
 				"command": ".\\scripts\\run.cmd"
 			},

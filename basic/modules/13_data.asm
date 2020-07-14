@@ -21,19 +21,19 @@
 
 	org $3d00
 copyright:
-	defb "CHLOE 280SE 512K Personal Color Computer", ctrl_enter;
-	defb "Copyright (C)1999 Chloe Corporation", ctrl_enter;
-	defb ctrl_enter;
-	defb "SE BASIC IV 4.2 Cordelia", ctrl_enter;
-	defb "Copyright (C)2020 Source Solutions, Inc.", ctrl_enter;
-	defb ctrl_enter;
-;	defb "Release 200715", ctrl_enter; Morton
- 	defb TIMESTR, ctrl_enter;
-	defb ctrl_enter, 0;
+	defb "CHLOE 280SE 512K Personal Color Computer", ctrl_cr;
+	defb "Copyright (C)1999 Chloe Corporation", ctrl_cr;
+	defb ctrl_cr;
+	defb "SE BASIC IV 4.2 Cordelia", ctrl_cr;
+	defb "Copyright (C)2020 Source Solutions, Inc.", ctrl_cr;
+	defb ctrl_cr;
+	defb "Release 200715", ctrl_cr;	// Morton
+;	defb "YY-MM-DD HH:MM", ctrl_cr;
+	defb ctrl_cr, 0;
 
 bytes_free:
-	defb " BASIC bytes free", ctrl_enter;
-	defb ctrl_enter, 0;
+	defb " BASIC bytes free", ctrl_cr;
+	defb ctrl_cr, 0;
 
 ;	// used in 04_audio
 semi_tone:
@@ -192,7 +192,7 @@ dir_msg:
 ;	// used in 14_screen_40
 ;	// attributes are stored internally with the foreground in the high nibble and the background in the low nibble
 ;	// this table converts an attribute to its 64-color equivalent in the default palette.
-;	org $3f00
+	org $3f00
 attributes:
 	defb $00, $08, $10, $18, $20, $28, $30, $38, $80, $88, $90, $98, $a0, $a8, $b0, $b8; background 0-15, foreground 0
 	defb $01, $09, $11, $19, $21, $29, $31, $39, $81, $89, $91, $99, $a1, $a9, $b1, $b9; background 0-15, foreground 1
@@ -261,44 +261,91 @@ rpt_mesgs:
 
 ;	// A total of 576 bytes are allocated for translated error messages
 
-	org $4240
+	org $4300
+
+;	// used in 07_editor
+ed_f_keys_t:
+	defb s_f1 - $;						// $11
+	defb s_f2 - $;						// $12
+	defb s_f3 - $;						// $13
+	defb s_f4 - $;						// $14
+	defb s_f5 - $;						// $15
+	defb s_f6 - $;						// $16
+	defb s_f7 - $;						// $17
+	defb s_f8 - $;						// $18
+	defb s_f9 - $;						// $19
+	defb s_f10 - $;						// $1a
+	defb s_f11 - $;						// $1b
+	defb s_f12 - $;						// $1c
+	defb s_f13 - $;						// $1d
+	defb s_f14 - $;						// $1e
+	defb s_f15 - $;						// $1f
+
+s_f1:
+	defb "LIST", 0
+
+s_f2:
+	defb "RUN", ctrl_cr, 0;
+
+s_f3:
+	defb "LOAD",'"', 0;";
+
+s_f4:
+	defb "SAVE",'"', 0;";
+
+s_f5:
+	defb "CONT", ctrl_cr, 0;
+
+s_f6:
+	defb "COLOR 7,1", ctrl_cr, 0;
+
+s_f7:
+	defb "TRON", ctrl_cr, 0;
+
+s_f8:
+	defb "TROFF", ctrl_cr, 0;
+
+s_f9:
+	defb "EDIT", 0;
+
+s_f10:
+	defb "SCREEN", 0;
+
+s_f11:
+	defb "BLOAD",'"', 0;";
+
+s_f12:
+	defb "BSAVE",'"', 0;";
+
+s_f13:
+	defb "AUTO", 0;
+
+s_f14:
+	defb "GOTO", 0;
+
+s_f15:
+	defb "KEY", 0;
 
 ;	// used in 03_keyboard
-;kt_main:
-;	defb "BHY65TGVNJU74RFCMKI83EDX", ctrl_symbol;
-;	defb "LO92WSZ ", ctrl_enter, "P01QA";
-;
-;kt_dig_shft:
-;	defb ")!@#$%^&*(";
-;
-;kt_alpha_sym:
-;	defb ctrl_left, ",>", ctrl_right, "_:", '"', "|};'\\/.[]~+", ctrl_down, "-{?", ctrl_up, "<=`"
-;
-;kt_dig_sym:
-;	defb ctrl_backspace, ctrl_tab, ctrl_caps, ctrl_ins, ctrl_home;
-;	defb ctrl_pg_up, ctrl_delete, ctrl_end, ctrl_pg_dn, ctrl_graphics;
-
 kt_main:
-	defb "BHY65TGVNJU74RFCMKI83EDX", ctrl_symbol;
-	defb "LO92WSZ ", ctrl_enter, "P01QA", 0;
+	defb "BHY65TGVNJU74RFCMKI83EDX", key_koru;
+	defb "LO92WSZ ", key_return, "P01QA",0;
 
-kt_ext:
-	defb "975312CBA864DEF"
-
-;	defb k_f9
-;	defb k_f7;										// substitution
-;	defb k_f5, k_f3, k_f1, k_f2, k_f12
-;	defb k_f11;										// substitution
-;	defb k_f10;
-;	defb k_f8, k_f6, k_f4;
-;	defb k_f13, k_f14, k_f15;						// substitution
+kt_ctrl:
+	defb key_f9
+	defb key_f7;										// substitution
+	defb key_f5, key_f3, key_f1, key_f2, key_f12
+	defb key_f11;										// substitution
+	defb key_f10;
+	defb key_f8, key_f6, key_f4;
+	defb key_f13, key_f14, key_f15;						// substitution
 
 kt_dig_shft:
-	defb ctrl_backspace, ctrl_tab, ctrl_caps, ctrl_pg_up, ctrl_pg_dn;
-	defb ctrl_left, ctrl_down, ctrl_up, ctrl_right, ctrl_graphics;
+	defb key_backspace, key_tab, key_caps, key_pg_up, key_pg_dn;
+	defb key_left, key_down, key_up, key_right, key_control;
 
 kt_alpha_sym:
-	defb "~*?\\", ctrl_end, "{}^", ctrl_ins, "-+=.,;", '"', ctrl_home, "<|>]/", ctrl_delete, "`[:";"
+	defb "~*?\\", key_end, "{}^", key_ins, "-+=.,;", '"', key_home, "<|>]/", key_delete, "`[:";"
 
 kt_dig_sym:
 	defb "_!@#$%&'()";
@@ -308,46 +355,46 @@ token_table:
 	defb end_marker;
 
 ;	// functions
-	dbtb "RND", "INKEY$", "PI", "FN";
-	dbtb "BIN$", "OCT$", "HEX$", "SPC";
-	dbtb "TAB", "VAL$", "ASC", "VAL";
-	dbtb "LEN", "SIN", "COS", "TAN";
-	dbtb "ASIN", "ACOS", "ATAN", "LOG";
-	dbtb "EXP", "INT", "SQR", "SGN";
-	dbtb "ABS", "PEEK", "INP", "USR";
-	dbtb "STR$", "CHR$", "NOT", "MOD";
-	dbtb "OR", "AND", "<=", ">=";
-	dbtb "<>", "LINE", "THEN", "TO";
-	dbtb "STEP";
+	str "RND", "INKEY$", "PI", "FN";
+	str "BIN$", "OCT$", "HEX$", "SPC";
+	str "TAB", "VAL$", "ASC", "VAL";
+	str "LEN", "SIN", "COS", "TAN";
+	str "ASIN", "ACOS", "ATAN", "LOG";
+	str "EXP", "INT", "SQR", "SGN";
+	str "ABS", "PEEK", "INP", "USR";
+	str "STR$", "CHR$", "NOT", "MOD";
+	str "OR", "AND", "<=", ">=";
+	str "<>", "LINE", "THEN", "TO";
+	str "STEP";
 
 ;	// commands
-	dbtb "DEF FN", "BLOAD", "BSAVE", "CHDIR";
-	dbtb "COPY", "OPEN #", "CLOSE #", "WHILE";
-	dbtb "WEND", "SOUND", "FILES", "KILL";
-	dbtb "LOAD", "MKDIR", "NAME", "RMDIR";
-	dbtb "SAVE", "OUT", "LOCATE", "END";
-	dbtb "STOP", "READ", "DATA", "RESTORE";
-	dbtb "NEW", "ERROR", "CONT", "DIM";
+	str "DEF FN", "BLOAD", "BSAVE", "CHDIR";
+	str "COPY", "OPEN #", "CLOSE #", "WHILE";
+	str "WEND", "SOUND", "FILES", "KILL";
+	str "LOAD", "MKDIR", "NAME", "RMDIR";
+	str "SAVE", "OUT", "LOCATE", "END";
+	str "STOP", "READ", "DATA", "RESTORE";
+	str "NEW", "ERROR", "CONT", "DIM";
 
 tk_ptr_rem:
-	dbtb "REM", "FOR", "GOTO", "GOSUB";
-	dbtb "INPUT", "PALETTE", "LIST", "LET";
-	dbtb "WAIT", "NEXT", "POKE", "PRINT"
-	dbtb "DELETE", "RUN", "EDIT", "RANDOMIZE";
-	dbtb "IF", "CLS", "CALL", "CLEAR"
-	dbtb "RETURN", "COLOR", "TRON", "TROFF"
-	dbtb "ON", "RENUM", "AUTO", "SCREEN";
-	dbtb "XOR", "_E2", "_E3", "_E4"
-	dbtb "_E5", "_E6", "_E7", "_E8";
-	dbtb "_E9", "_EA", "_EB", "_EC";
-	dbtb "_ED", "_EE", "_EF", "_F0";
-	dbtb "_F1", "_F2", "_F3", "_F4";
-	dbtb "_F5", "_F6", "_F7", "_F8";
-	dbtb "_F9", "_FA", "_FB", "_FC";
-	dbtb "_FD", "_FE";
+	str "REM", "FOR", "GOTO", "GOSUB";
+	str "INPUT", "PALETTE", "LIST", "LET";
+	str "WAIT", "NEXT", "POKE", "PRINT"
+	str "DELETE", "RUN", "EDIT", "RANDOMIZE";
+	str "IF", "CLS", "CALL", "CLEAR"
+	str "RETURN", "COLOR", "TRON", "TROFF"
+	str "ON", "RENUM", "AUTO", "SCREEN";
+	str "XOR", "_E2", "_E3", "_E4"
+	str "_E5", "_E6", "_E7", "_E8";
+	str "_E9", "_EA", "_EB", "_EC";
+	str "_ED", "_EE", "_EF", "_F0";
+	str "_F1", "_F2", "_F3", "_F4";
+	str "_F5", "_F6", "_F7", "_F8";
+	str "_F9", "_FA", "_FB", "_FC";
+	str "_FD", "_FE";
 	
 tk_ptr_last:
-	dbtb "_FF";
+	str "_FF";
 
 ;	// used in 09_command
 offst_tbl:
@@ -505,7 +552,7 @@ p_rmdir:
 
 p_save:
 	defb str_exp_no_f_ops;
-	defw save;
+	defw c_save;
 
 p_out:
 	defb two_c_s_num_no_f_ops;
@@ -521,11 +568,11 @@ p_end:
 
 p_stop:
 	defb no_f_ops;
-	defw stop;
+	defw c_stop;
 
 p_read:
 	defb var_syn;
-	defw read;
+	defw c_read;
 
 p_data:
 	defb var_syn;
@@ -556,7 +603,7 @@ p_rem:
 	defw rem;
 
 p_for:
-	defb chr_var, '=', num_exp, tk_to, num_exp, var_syn;
+	defb chr_var, "=", num_exp, tk_to, num_exp, var_syn;
 	defw c_for;
 
 p_goto:
@@ -577,7 +624,7 @@ p_palette:
 
 p_list:
 	defb var_syn;
-	defw list;
+	defw c_list;
 
 p_let:
 	defb var_rqd, '=', expr_num_str;
@@ -596,7 +643,7 @@ p_poke:
 
 p_print:
 	defb var_syn;
-	defw print;
+	defw c_print;
 
 p_delete:
 	defb num_exp, ',', num_exp_no_f_ops;
@@ -604,7 +651,7 @@ p_delete:
 
 p_run:
 	defb var_syn;
-	defw run;
+	defw c_run;
 
 p_edit:
 	defb num_exp_0;

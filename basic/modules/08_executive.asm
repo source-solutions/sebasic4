@@ -40,7 +40,7 @@
 ;	// FIXME - further optimization is possible
 
 ;	// NEW command
-	org $11b7;
+;	org $11b7;
 new:
 	di;									// interrupts off
 	xor a;								// LD A, 0
@@ -53,7 +53,7 @@ new:
 	exx;								// main register set
 
 ;	// initialization routine
-	org $11cb;
+;	org $11cb;
 start_new:;
 	ex af, af';							// store A
 
@@ -64,8 +64,9 @@ start_new:;
 	ld a, %00011000;					// ROM 1, FBUFF 1, HOME 0
 	out (c), a;							// set it
 
-	ld a, 63;							// set I
-	ld i, a;							// to 63
+	xor a;								// set I
+	ld i, a;							// to $00(ff)
+
 	ld iyh, d;							// ramtop
 	ld iyl, e;							// to IY
 	ex de, hl;							// swap pointers
@@ -96,6 +97,8 @@ ram_set:
 
 ;	// default NMI routine
 initial:
+	call flush_kb;						// flush the keyboard buffer
+
 	ld hl, (ramtop);					// ramtop to HL
 	ld (hl), $3e;						// set it to the GOSUB end marker
 	dec hl;
@@ -109,7 +112,7 @@ initial:
 	ld a, (chans);						// coming from
 	and a;								// start or new?
 	ld (iy - _onerr_h), 255;			// signal on error stop
-	ld a, break + 1;					// prepare error
+	ld a, msg_break + 1;				// prepare error
 	jp nz, main_g;						// jump if NMI Break
 	ld bc, 21;							// byte count
 	ld de, init_chan;					// destination
@@ -129,7 +132,7 @@ initial:
 	ld a, %01110001;					// light gray foreground, dark blue background
 	ld (bordcr), a;						// set border color
 	ld (attr_p), a;						// set permanent attribute
-	ld hl, $0119;						// set initial values (repdel = 25, repper = 1)
+	ld hl, $031e;						// set initial values (repdel = 30, repper = 3)
 	ld (repdel), hl;					// for repdel and repper
 	ld hl, initial;						// address of routine to jump to on NMI
 	ld (nmiadd), hl;					// set sysvar
@@ -139,7 +142,7 @@ initial:
 	ld de, strms;						// destination
 	ld hl, init_strm;					// source
 	ldir;								// copy initial streams table
-	ld (iy + _df_sz), 2;				// set lower display size
+	ld (iy + _df_sz), 1;				// set lower display size
 	call init_path;						// initialize path
 
 	ld de, $ffbf;						// d=data, e=reg
@@ -188,13 +191,15 @@ initial:
 
 	call po_asciiz_0;					// print it
 
+	call msg_pause;						// pause in case of NEW
+
 	set 3, (iy + _flags2);				// enable CAPS LOCK
 
 	jp main_1;							// immediate jump
 
 ;	// main execution loop
 main_exec:
-	ld (iy + _df_sz), 2;				// set lower screen
+	ld (iy + _df_sz), 1;				// set lower screen
 	call auto_list;						// auto list
 
 main_1:
@@ -207,6 +212,7 @@ main_2:
 	call line_scan;						// check syntax
 	bit 7, (iy + _err_nr);				// correct?
 	jr nz, main_3;						// jump if so
+	call bell;							// error sound
 	bit 4, (iy + _flags2);				// channel K?
 	jr z, main_4;						// jump if not
 	ld hl, (e_line);					// address error
@@ -220,7 +226,7 @@ main_3:
 	or b;								// line?
 	jp nz, main_add;					// jump if so
 	rst get_char;						// else get character
-	cp ctrl_enter;						// carriage return?
+	cp ctrl_cr;							// carriage return?
 	jr z, main_exec;					// jump if so
 	bit 0, (iy + _flags2);				// clear whole display?
 	call nz, cl_all;					// call if so
@@ -462,9 +468,9 @@ open:
 open_nf:
 	call check_end;						// end of syntax checking
 
-	fwait();							// enter calculator
-	fxch();								// swap stream number and channel code
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fxch;								// swap stream number and channel code
+	fce;								// exit calculator
 	call str_data;						// get stream data, zero flag set if stream closed
 	ld a, c;							// stream
 	or b;								// closed?
@@ -659,7 +665,7 @@ reserve:
 set_min:
 	ld hl, (e_line);					// sysvar to HL
 	ld (k_cur), hl;						// store it in k_cur
-	ld (hl), ctrl_enter;				// store a carriage return
+	ld (hl), ctrl_cr;					// store a carriage return
 	inc hl;								// next
 	ld (hl), end_marker;				// store the end marker
 	inc hl;								// next
@@ -846,15 +852,7 @@ auto_l_4:
 	ret;								// end of subroutine
 
 ;	// LIST command
-list:
-	ld hl, (flags);						// get flags
-	push hl;							// stack flags
-	call list_1;						// do list
-	pop hl;								// unstack flags
-	ld (flags), hl;						// restore flags
-	ret;								// end of subroutine
-
-list_1:
+c_list:
 	ld a, 2;							// use stream #2
 	ld (iy + _vdu_flag), 0;				// signal normal listing
 	call syntax_z;						// checking syntax?
@@ -871,7 +869,7 @@ list_2:
 	rst get_char;						// get character
 	cp ':';								// colon?
 	jr z, list_9;						// jump if so
-	cp ctrl_enter;						// enter?
+	cp ctrl_cr;							// carraige return?
 	jr z, list_9;						// jump if so
 	cp ',';								// comma?
 	jr z, list_3;						// jump if so
@@ -915,6 +913,7 @@ list_8:
 	res 7, (iy + _flags);				// force edit mode
 	call out_line;						// print a BASIC line
 	rst print_a;						// print carriage return
+	set 7, (iy + _flags);				// force runtime mode
 	ld bc, (t_addr);					// emporary pointer to parameter table to BC
 	call cp_lines;						// match or line after
 	jr c, list_8;						// jump
@@ -952,7 +951,21 @@ list_all_2:
 	jr list_all_2;						// immediate jump
 
 ;	// print a whole BASIC line subroutine
+list_cursor:
+	bit 4, (iy + _vdu_flag);			// automatic listing?
+	ret z;								// return if not
+	ld d, '>';							// set cursor
+	scf;								// set carry flag
+	ret;								// done
+
 out_line:
+	ld bc, (e_ppc);						// line number
+	call cp_lines;						// match or line after
+	ld de, 0;							// no line cursor
+	call z, list_cursor;				// call with match
+	rl e;								// carry in E if line before current else zero
+
+out_line1:
 	ld (iy + _breg), e;					// store line marker
 	ld a, (hl);							// most significant byte of line number to A
 	cp $40;								// in range? (0 to 16383)
@@ -963,7 +976,12 @@ out_line:
 	inc hl;								// point to
 	inc hl;								// first
 	inc hl;								// command
-	jr out_line3;						// immediate jump
+
+	res 0, (iy + _flags);				// require leading spaces
+	ld a, d;							// cursor to A
+	and a;								// test for zero
+	jr z, out_line3;					// jump if no cursor to print
+	rst print_a;						// print current line cursor
 
 out_line2:
 	set 0, (iy + _flags);				// suppress leading space
@@ -974,34 +992,24 @@ out_line3:
 	res 2, (iy + _flags2);				// signal not in quotes
 
 out_line4:
-	ld hl, (x_ptr);						// error position to HL
-	and a;								// clear carry flag
-	sbc hl, de;							// error address reached?
-	jr nz, out_line5;					// jump if not
-	ld hl, (x_ptr);						// error position to HL
-	ld (k_cur), hl;						// move curosr to error position
-
-;	// FIXME - add test to see if error cursor will be used instead
-
-out_line5:
 	call out_curs;						// cursor reached?
 	ex de, hl;							// swap pointers
 	ld a, (hl);							// character to A
 	call number;						// test for hidden number marker
 	inc hl;								// next
-	cp ctrl_enter;						// carriage return?
-	jr z, out_line6;					// jump if so
+	cp ctrl_cr;							// carriage return?
+	jr z, out_line5;					// jump if so
 	ex de, hl;							// swap pointers
 	call out_char;						// print character
 	jr out_line4;						// loop until done
 
-out_line6:
+out_line5:
 	pop de;								// unstack DE
 	ret;								// end of subroutine
 
 ;	// number subroutine
 number:
-	cp ctrl_number;						// hidden number marker?
+	cp number_mark;						// hidden number marker?
 	ret nz;								// return if not
 	inc hl;								// advance pointer six times
 	inc hl;
@@ -1150,7 +1158,7 @@ each_s_5:
 	jr z, each_s_1;						// jump at statement end
 
 each_s_6:
-	cp ctrl_enter;						// carriage return?
+	cp ctrl_cr;							// carriage return?
 	jr nz, each_s_2;					// jump if not
 	dec d;								// decrease statement counter
 	scf;								// set carry flag

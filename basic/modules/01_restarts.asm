@@ -110,7 +110,7 @@ error_2:
 error_3:
 	ld (iy + _err_nr), l;				// then copy to err_nr
 	ld sp, (err_sp);					// put value of err_sp in SP
-	jp set_stk;							// then jump
+	jr error_4;							// then jump
 
 ;	// increment counter subroutine
 	org $005f;
@@ -148,8 +148,16 @@ temp_ptr1:
 
 temp_ptr2:
 	ld (ch_add), hl;					// store it
+
+reentry:
 	ld a, (hl);							// copy character at current address to A
 	ret;								// end of ch_add_plus_1
+
+;	// error routine continued
+error_4:
+	ld hl, (x_ptr);						// get error pointer
+	ld (k_cur), hl;						// move cursor to error
+	jp set_stk;							// then jump
 
 ;	// skip over characters subroutine
 skip_over:
@@ -158,7 +166,7 @@ skip_over:
 	ret z;								// and return if so
 	cp 16;								// test for characters 16-31
 	ret nc;								// and return if so with carry cleared
-	cp ctrl_enter;						// test for enter
+	cp ctrl_cr;							// test for carraige return
 	ret z;								// and return if so
 	cp 6;								// test for characters 0-5 (tokens)
 	ccf;								// complement carry flag
@@ -209,3 +217,7 @@ mouse:
 	in a, (c);							// read it
 	ld (hl), a;							// store it
 	ret;								// end of subroutine
+
+	org $00ff
+im2:
+	defw $0038;							// if IM2 is enabled with I set to 0 it will behave as IM1 (prevents a crash if enabled accidentally)

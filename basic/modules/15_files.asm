@@ -35,7 +35,8 @@
 ;	// File commands page out the BASIC ROM.
 ;	// They must be stored at $4000 or later.
 
-	include "../boot/os.inc";				// label definitions
+	include "../../boot/os.inc";				// label definitions
+	include "../../boot/uno.inc";				// label definitions
 
 	org $5000;
 
@@ -222,8 +223,7 @@ get_path:
 	jp z, report_bad_fn_call;			// error if so
 	ex de, hl;							// start to HL
 	ld de, $5a00;						// destination - FIXME use workspace
-;	ldir;								// copy it
-	call ldir_space;
+	call ldir_space;					// copy it (converting spaces to underscores)
 	ex de, hl;							// end to HL
 	ld (hl), 0;							// set end marker
 	ret;								// done
@@ -235,8 +235,7 @@ get_dest:
 	jp z, report_bad_fn_call;			// error if so
 	ex de, hl;							// start to HL
 	ld de, $5900;						// destination - FIXME use workspace
-;	ldir;								// copy it
-	call ldir_space;
+	call ldir_space;					// copy it (converting spaces to underscores)
 	ex de, hl;							// end to HL
 	ld (hl), 0;							// set end marker
 	ret;								// done
@@ -477,7 +476,7 @@ name:
 	or a;								// clear flags
 	ret;								// done
 
-save:
+c_save:
 	call unstack_z;						// return if checking syntax
 	call get_path;						// path to buffer
 	ld ix, $5a00;						// pointer to path
@@ -544,7 +543,7 @@ report_path_not_found:
 ;	// print a folder listing to the main screen
 files:
 	rst get_char;						// get character
-	cp ctrl_enter;						// test for carriage return
+	cp ctrl_cr;							// carriage return?
 	jr z, use_cwd;						// jump if so
 	cp ':';								// test for next statement
 	jr z, use_cwd;						// jump if so
@@ -598,7 +597,7 @@ pr_asciiz_any:
 	jr pr_asciiz_uc;					// loop until done
 
 pr_asciiz_uc_end:
-	ld a, ctrl_enter;					// newline
+	ld a, ctrl_cr;						// carriage return
 	rst print_a;						// print it
 
 read_folders:
@@ -728,7 +727,7 @@ pr_spaces:
 	jr read_files_2;					// do next entry
 
 last_entry:
-	ld a, ctrl_enter;					// carriage return
+	ld a, ctrl_cr;						// carriage return
 	rst print_a;						// print it
 	ld a, (handle);						// get folder handle
 	rst divmmc;							// issue a hookcode
@@ -743,7 +742,3 @@ print_f:
 no_:
 	rst print_a;						// print it
 	ret;								// return
-
-;	// last byte
-org $5bb9;
-	defb $A0;							// end marker

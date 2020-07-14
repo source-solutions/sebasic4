@@ -17,7 +17,7 @@
 ;	// --- EDITOR ROUTINES -----------------------------------------------------
 
 ;	// line editor
-	org $0f60;
+	org $0f66;
 editor:
 	ld hl, (err_sp);					// get current error pointer
 	push hl;							// and stack it
@@ -31,9 +31,9 @@ ed_loop:
 	call wait_key;						// get a key
 	ld hl, ed_loop;						// stack
 	push hl;							// return address
-	cp ctrl_delete;						// delete?
+	cp key_delete;						// delete?
 	jr z, ed_delete;					// jump with delete
-	cp 23;								// printable character?
+	cp ' ';								// printable character?
 	jr c, ed_keys;						// jump with control keys
 
 ;	// add character subroutine
@@ -54,9 +54,30 @@ ed_delete:
 	ld hl, (k_cur);						// get current cursor
 	call ed_right;						// move it right
 	ret z;								// return if no character
-	jr ed_backspace;					// delete it
+	jp ed_backspace;					// delete it
+
+ed_f_keys;
+	sub $11;							// reduce range (0 to 14)
+	ld e, a;							// code
+	ld d, 0;							// to DE
+	ld hl, ed_f_keys_t;					// offset to table
+	add hl, de;							// get entry
+	ld e, (hl);							// store in E
+	add hl, de;							// address of first character in string
+
+loop_f_keys:
+	ld a, (hl);							// get character
+	and a;								// test for zero
+	ret z;								// return if end of string reached
+	inc hl;								// next character
+	push hl;							// stack next character address
+	call k_end;							// insert character into keyboard buffer
+	pop hl;								// unstack next character address
+	jr loop_f_keys;						// loop until done
 
 ed_keys:
+	cp key_f1;							// function key?
+	jr nc, ed_f_keys;					// jump if so
 	ld e, a;							// code
 	ld d, 0;							// to DE
 	ld hl, ed_keys_t;					// offset to table
@@ -65,7 +86,7 @@ ed_keys:
 	add hl, de;							// address of handling routine
 	push hl;							// stack it
 	ld hl, (k_cur);						// sysvar to HL
-	ret;								// indirect hump
+	ret;								// indirect Jump
 
 ;	// editing keys table
 ed_keys_t:
@@ -89,7 +110,9 @@ ed_keys_t:
 
 ;	// tab editing subroutine
 ed_tab:
-	ld a, 6;							// tab stop
+	ld a, ctrl_ht;						// tab stop
+
+ed_add_char:
 	jp add_char;						// immedaite jump
 
 ;	// cursor left editing subroutine
@@ -103,7 +126,7 @@ ed_cur:
 ;	// cursor right editing subroutine
 ed_right:
 	ld a, (hl);							// get current character
-	cp ctrl_enter;						// test for carriage return
+	cp ctrl_cr;							// test for carriage return
 	ret z;								// return if so
 	inc hl;								// advance cursor position
 	jr ed_cur;							// immediate jump
@@ -256,7 +279,6 @@ ed_edge_1:
 ed_error:
 	bit 4, (iy + _flags2);				// channel K?
 	jp z, ed_done;						// jump if not
-	call bell;							// sound rasp
 	jp ed_again;						// immediate jump
 
 ;	// keyboard input subroutine
@@ -293,7 +315,7 @@ key_input_1:
 	jr key_flag;						// immediate jump
 
 key_mode:
-	cp ctrl_symbol;						// lower limit?
+	cp key_koru;						// lower limit?
 	ret c;								// return if so
 	sub 13;								// reduce range
 	ld hl, mode;						// address system variable
@@ -304,7 +326,7 @@ key_mode:
 
 key_flag:
 	set 3, (iy + _vdu_flag);			// signal possible mode change
-	cp a;								// clear carry and reset zero flag
+	cp a;								// clear carry and set zero flag
 	ret;								// and return
 
 key_done2:
@@ -398,11 +420,11 @@ get_cols:
 	org $11a7
 remove_fp:
 	ld a, (hl);							// get character
-	cp ctrl_number;						// hidden number marker
+	cp number_mark;						// hidden number marker
 	ld bc, 6;							// six locations 
 	call z, reclaim_2;					// recliam if so
 	ld a, (hl);							// get character
 	inc hl;								// next
-	cp ctrl_enter;						// carriage return?
+	cp ctrl_cr;							// carriage return?
 	jr nz, remove_fp;					// jump if not
 	ret;								// end of subroutine

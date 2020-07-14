@@ -28,7 +28,7 @@ dot_test:
 	ld a, (hl);							// get character
 	cp 'A';								// start of command
 	jr nc, tokenizer_0;					// jump if so
-	cp ctrl_enter;						// end of line?
+	cp ctrl_cr;							// end of line?
 	jr z, tokenizer_0;					// jump if so
 ;	cp '.';								// dot command?
 ;	jr nz, dot_test;					// jump if not;
@@ -58,7 +58,7 @@ tokenizer_4:
 	jr z, tokenizer_14;					// jump if so
 	cp tk_rem;							// REM token?
 	jr z, tokenizer_14;					// jump if so
-	cp ctrl_enter;						// enter?
+	cp ctrl_cr;							// carraige return?
 	jr z, tokenizer_14;					// jump if so
 	cp $22;								// in quotes?
 	jr nz, tokenizer_5;					// jump if not
@@ -180,24 +180,9 @@ tokenizer_17:
 	ret;								// end of subroutine
 
 ;	// detokenizer routine
-;	// FIXME: remove redundant code (mainly control code handling)
 detokenizer:
-	bit 2, (iy + _flags);				// was detokenized character a control code?
-	jr nz, detokenizer_3;				// jump if not
-	cp 21;								// range 0 to 21?
-	jr nc, detokenizer_1;				// jump if not
-	cp 15;								// range 0 to 14?
-	jr c, detokenizer_1;				// jump if so
-	set 2, (iy + _flags);				// signal control code found
-	jr detokenizer_4;					// immediate jump
-
-detokenizer_1:
-	cp 6;								// extended tokens?
-	jr c, detokenizer_2;				// jump if range is 0 to 5
-
     bit 2, (iy + _flags2);				// in quotes?
     jr nz, detokenizer_4;				// jump if so
-
 	cp tk_rnd;							// normal tokens?
 	jr c, detokenizer_4;				// jump if not
 
@@ -210,9 +195,6 @@ detokenizer_2:
 	pop de;								// unstack DE'
 	exx;								// main register set
 	ret;								// return
-
-detokenizer_3:
-	res 2, (iy + _flags);				// signal no control code
 
 detokenizer_4:
 	jp add_char;						// immediate jump

@@ -124,26 +124,26 @@ key_done:
 ;	// additional keys scanning subroutine
 f_key_scan:
 
-;	// temporary code
-	ld bc, mouse_b;						// substitute mouse click for keypress
-	in a, (c);							// read mouse button
-	cp 253;								// left button pressed?
-	jr nz, f_key_scan_1;				// jump if not
-	ld a, 1;							// else set scan code to F9
-	jr f_key_found;						// and jump 
-
-f_key_scan_1:
-;	// end of temporary code
+;	// test code (f-keys are not supported in emulator)
+;	ld bc, mouse_b;						// substitute mouse click for keypress
+;	in a, (c);							// read mouse button
+;	cp 253;								// left button pressed?
+;	jr nz, f_key_scan_1;				// jump if not
+;	ld a, 1;							// else set scan code to F9
+;	jr f_key_found;						// and jump 
+;
+;f_key_scan_1:
+;	// end of test code
 
 	ld bc, uno_reg;						// Uno register port
-;	ld a, 5;							// Key state
-;	out (c), a;							// Select key state
-;	inc b;								// Uno data port
-;	in a, (c);							// Get key state
-;	bit 0, a;							// test for a key (also does RES 0, a)
-;	ret z;								// back if no key pressed
+	ld a, 5;							// Key state
+	out (c), a;							// Select key state
+	inc b;								// Uno data port
+	in a, (c);							// Get key state
+	bit 0, a;							// test for a key (also does RES 0, a)
+	ret z;								// back if no key pressed
 
-;	dec b;								// Uno register port
+	dec b;								// Uno register port
 	ld a, 4;							// PS/2 scancode port
 	out (c), a;							// select port
 	inc b;								// Uno data port
@@ -209,7 +209,7 @@ k_st_loop:
 
 k_ch_set:
 	ld a, l;							// low address to A
-	ld l, low kstate_4;					// has second set
+	ld l, kstate_4;						// has second set
 	cp l;								// been considered?
 	jr nz, k_st_loop;					// jump if not
 	call k_test;						// change key to main code
@@ -217,12 +217,12 @@ k_ch_set:
 	ld hl, kstate;						// kstate_0 to HL
 	cp (hl);							// jump if match
 	jr z, k_repeat;						// including repeat
-	ld l, low kstate_4;					// kstate_4 to HL
+	ld l, kstate_4;						// kstate_4 to HL
 	cp (hl);							// jump if match
 	jr z, k_repeat;						// including repeat
 	bit 7, (hl);						// test second set
 	jr nz, k_new;						// jump if free
-	ld l,  low kstate;					// kstate_0 to HL
+	ld l, kstate;						// kstate_0 to HL
 	bit 7, (hl);						// test first set
 	ret z;								// return if not free
 
@@ -236,9 +236,9 @@ k_new:
 	ld (hl), a;							// store A
 	inc hl;								// kstate 3/7 to HL
 	push hl;							// stack pointer
-	ld l, low flags;					// HL points to flags
+	ld l, flags;						// HL points to flags
 	ld d, (hl);							// flags to D
-	ld l, low mode;						// HL points to mode
+	ld l, mode;							// HL points to mode
 	ld c, (hl);							// mode to C
 	call k_meta;						// decode with test for meta and control
 	pop hl;								// unstack pointer
@@ -334,7 +334,7 @@ k_enter:
 	ret z;								// return if not
 	bit 5, b;							// shift?
 	ret nz;								// return if so
-	ld a, ctrl_clr;						// make it CLR key
+	ld a, key_clr;						// make it CLR key
 	ret;								// done
 
 k_space:
@@ -342,7 +342,7 @@ k_space:
 	ret z;								// return if not
 	bit 5, b;							// shift?
 	ret nz;								// return if so
-	ld a, ctrl_help;					// make it HELP key
+	ld a, key_help;						// make it HELP key
 	ret;								// done
 
 k_digit:
@@ -367,4 +367,11 @@ flush_kb:
 	ld a, (hl);							// pointer to A
 	inc l;								// point to k_tail
 	ld (hl), a;							// signal no key
+
+	ld bc, uno_reg;						// Uno register port
+	ld a, 5;							// Key state
+	out (c), a;							// Select key state
+	inc b;								// Uno data port
+	in a, (c);							// clear key state
+
 	ret;								// end of subroutine
