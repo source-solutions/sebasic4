@@ -21,8 +21,17 @@
 
 	org $3d00
 copyright:
+
+ifndef slam
 	defb "CHLOE 280SE 512K Personal Color Computer", ctrl_cr;
 	defb "Copyright (C)1999 Chloe Corporation", ctrl_cr;
+endif
+
+ifdef slam
+	defb "ZX Spectrum 128 Personal Computer", ctrl_cr;
+	defb "Copyright (C)1985 Sinclair Research Ltd.", ctrl_cr;
+endif
+
 	defb ctrl_cr;
 	defb "SE BASIC IV 4.2 Cordelia", ctrl_cr;
 	defb "Copyright (C)2020 Source Solutions, Inc.", ctrl_cr;
