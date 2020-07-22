@@ -36,8 +36,10 @@ endif
 	defb "SE BASIC IV 4.2 Cordelia", ctrl_cr;
 	defb "Copyright (C)2020 Source Solutions, Inc.", ctrl_cr;
 	defb ctrl_cr;
-	defb "Release 200715", ctrl_cr;	// Morton
+;	defb "Release 200930", ctrl_cr;		// Iggy
 ;	defb "YY-MM-DD HH:MM", ctrl_cr;
+	defb "20-07-23 00:00", ctrl_cr;
+
 	defb ctrl_cr, 0;
 
 bytes_free:
@@ -91,11 +93,16 @@ init_strm:
 init_chan:
 	defw print_out, key_input;			// keyboard
 	defb 'K';							// channel
-	defw print_out, report_bad_io_dev;	// screen
+	defw print_out, file_in;			// screen
 	defb 'S';							// channel
 	defw detokenizer, report_bad_io_dev;// workspace
 	defb 'W';							// channel
 	defb end_marker;					// no more channels
+
+file_chan:
+	defw file_out, file_in;				// file
+	defb 'F';							// channel
+	defw 8;								// length of channel
 
 ;	// used in 10_expression
 tbl_ops_priors:
@@ -393,7 +400,7 @@ tk_ptr_rem:
 	str "IF", "CLS", "CALL", "CLEAR"
 	str "RETURN", "COLOR", "TRON", "TROFF"
 	str "ON", "RENUM", "AUTO", "SCREEN";
-	str "XOR", "_E2", "_E3", "_E4"
+	str "XOR", "EOF", "LOC", "LOF"
 	str "_E5", "_E6", "_E7", "_E8";
 	str "_E9", "_EA", "_EB", "_EC";
 	str "_ED", "_EE", "_EF", "_F0";

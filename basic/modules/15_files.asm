@@ -240,21 +240,6 @@ get_dest:
 	ld (hl), 0;							// set end marker
 	ret;								// done
 
-ldir_space:
-	ld a, (hl);							// get character
-	ldi;								// copy bytes
-	cp ' ';								// is it space?
-	jr nz, no_space;					// jump if not
-	ld a, '_';							// underscore
-	dec de;								// back one place
-	ld (de), a;							// replace space
-	inc de;								// forward one place
-
-no_space:
-	ld a, c;							// test count
-	or b;								// for zero
-	jr nz, ldir_space;					// loop until done
-	ret;
 
 ;	// file commands
 
@@ -374,61 +359,6 @@ write_chunk:
 	jp c, report_file_not_found;		// jump if error
 	ret;								// else done
 
-; dload:
-; 	call unstack_z;						// return if checking syntax
-; 	call get_path;						// path to buffer
-; 	ld ix, $5a00;						// pointer to path
-
-; 	call f_open_read_ex;				// open file for reading
-; 	call f_get_stats;					// get program length
-
-; ;	// remove garbage
-; 	ld de, (vars);						// VARS to DE
-; 	call var_end_hl;					// varaibles end marker location to HL
-; 	call reclaim_1;						// reclaim varibales area
-
-; ;	// make space
-; 	ld bc, (f_size);					// length of data to BC
-; 	push hl;							// save PROG
-; 	push bc;							// save length
-; 	call make_room;						// make space for data
-	
-; ;	// load data
-; 	ld a, (handle);						// restore handle
-; 	pop bc;								// restore length
-; 	pop ix;								// restore PROG
-
-; 	jp f_read_in;						// load data
-
-; dsave:
-; 	call unstack_z;						// return if checking syntax
-; 	call get_path;						// path to buffer
-; 	ld ix, $5a00;						// pointer to path
-; 	call f_open_write_al;				// open file for writing
-
-; ;	// get data length
-;  	ld hl, (e_line);					// end of variables to HL
-;  	ld de, (vars);						// start of variables to DE
-;  	sbc hl, de;							// get program length
-; 	ld ixh, d;							// start of variables to
-; 	ld ixl, e;							// IX
-; 	ld c, l;							// length of variables to
-; 	ld b, h;							// BC
-
-; 	jp f_write_out;						// save data
-
-kill:
-	call unstack_z;						// return if checking syntax
-	call get_path;						// path to buffer
-	ld a, '*';							// use current drive
-	ld ix, $5a00;						// pointer to path
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_unlink;						// release file
-	jp c, report_file_not_found;		// jump if error
-	or a;								// clear flags
-	ret;								// done
-
 load:
 	call unstack_z;						// return if checking syntax
 	call get_path;						// path to buffer
@@ -492,53 +422,7 @@ c_save:
 	ld b, h;							// BC
 	jp f_write_out;						// save program
 
-;	// folder commands
 
-init_path:
-	ld a, '*';							// use current drive
-	ld ix, rootpath;					// default path
-	rst divmmc;							// issue a hookcode
-	defb f_chdir;						// change folder
-	or a;								// clear flags
-	ret;								// done
-
-chdir:
-	call unstack_z;						// return if checking syntax
-	call get_path;						// path to buffer
-	ld a, '*';							// use current drive
-	ld ix, $5a00;						// pointer to path
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_chdir;						// change folder
-	jr chk_path_error;					// test for error
-
-mkdir:
-	call unstack_z;						// return if checking syntax
-	call get_path;						// path to buffer
-	ld a, '*';							// use current drive
-	ld ix, $5a00;						// pointer to path
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_mkdir;						// change folder
-	jr chk_path_error;					// test for error
-
-rmdir:
-	call unstack_z;						// return if checking syntax
-	call get_path;						// path to buffer
-	ld a, '*';							// use current drive
-	ld ix, $5a00;						// pointer to path
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_rmdir;						// change folder
-
-chk_path_error:
-	jr c, report_path_not_found;		// jump if error
-	or a;								// clear flags
-	ret;								// done
-
-report_path_not_found:
-	rst error;
-	defb path_not_found;
 
 ;	// print a folder listing to the main screen
 files:
@@ -559,7 +443,7 @@ use_cwd:
 	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_getcwd;						// get current working folder
-	jr c, report_path_not_found;		// jump if error
+	jp c, report_path_not_found;		// jump if error
 
 open_folder:
 ;	rst divmmc;							// issue a hookcode
@@ -742,3 +626,128 @@ print_f:
 no_:
 	rst print_a;						// print it
 	ret;								// return
+
+;	// updates disk commands
+
+;	// delete a file
+kill:
+	call unstack_z;						// return if checking syntax
+	call path_to_ix;					// path to buffer
+	ld a, '*';							// use current drive
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_unlink;						// release file
+	jp c, report_file_not_found;		// jump if error
+	or a;								// clear flags
+	ret;								// done
+
+;	// folder commands
+init_path:
+	ld a, '*';							// use current drive
+	ld ix, rootpath;					// default path
+	rst divmmc;							// issue a hookcode
+	defb f_chdir;						// change folder
+	or a;								// clear flags
+	ret;								// done
+
+chdir:
+	call unstack_z;						// return if checking syntax
+	call path_to_ix;					// path to buffer
+	ld a, '*';							// use current drive
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_chdir;						// change folder
+	jr chk_path_error;					// test for error
+
+mkdir:
+	call unstack_z;						// return if checking syntax
+	call path_to_ix;					// path to buffer
+	ld a, '*';							// use current drive
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_mkdir;						// change folder
+	jr chk_path_error;					// test for error
+
+rmdir:
+	call unstack_z;						// return if checking syntax
+	call path_to_ix;					// path to buffer
+	ld a, '*';							// use current drive
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_rmdir;						// change folder
+
+chk_path_error:
+	jr c, report_path_not_found;		// jump if error
+	or a;								// clear flags
+	ret;								// done
+
+report_path_not_found:
+	rst error;
+	defb path_not_found;
+
+;	// copy path to workspace
+path_to_ix:
+	ld hl, (ch_add);					// get current value of ch-add
+	push hl;							// stack it
+	call stk_fetch;						// get parameters
+	push de;							// stack start address
+	inc bc;								// increase length by one
+	rst bc_spaces;						// make space
+	pop hl;								// unstack start address
+	ld (ch_add), de;					// pointer to ch_add
+	push de;							// stack it
+	call ldir_space;					// copy the string to the workspace (converting spaces to underscores)
+	ex de, hl;							// swap pointers
+	dec hl;								// last byte of string
+	ld (hl), 0;							// replace with zero
+	pop ix;								// pointer to ch_add
+	pop hl;								// get last value
+	ld (ch_add), hl;					// and restore ch_add
+	ret;								// done
+
+ldir_space:
+	ld a, (hl);							// get character
+	ldi;								// copy bytes
+	cp ' ';								// is it space?
+	jr nz, no_space;					// jump if not
+	ld a, '_';							// underscore
+	dec de;								// back one place
+	ld (de), a;							// replace space
+	inc de;								// forward one place
+
+no_space:
+	ld a, c;							// test count
+	or b;								// for zero
+	jr nz, ldir_space;					// loop until done
+	ret;
+
+;	// file channels
+get_handle:
+	ld ix, (curchl);					// get current channel
+	ld a, (ix + 7);						// get file handle
+	ld bc, 1;							// one byte to transfer
+	ret;								// done
+
+file_in:
+	call get_handle;					// get the file descriptor in A
+	ld ix, membot;						// store character in membot
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_read;						// read a byte
+	dec c;								// decrement C (bytes read: should now be zero)
+	ld a, (membot);						// character to A
+	scf;								// set carry flag
+	ret z;								// return if zero flag set
+	or c;								// OR 0
+	ret;								// done
+
+file_out:
+	ld (membot), a;						// store character to write in membot
+	call get_handle;					// get the file descriptor in A
+	ld ix, membot;						// get character from membot
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_write;						// write a byte
+	jp c, report_bad_io_dev;			// jump if error
+	or a;								// clear flags
+	ret;								// done
