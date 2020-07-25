@@ -422,10 +422,8 @@ open_f:
 ;	// open I subroutine
 open_i:
 	call open_f;						// get parameters, copy to workspace and set IX to point to it
-
-;	// FIXME: this is just test code
-	ld a, (ix);							// get first character
-	ld ($5a00), a;						// store it to verify it's working
+	ld b, fa_read | fa_open_ex;			// open for reading if file exists
+	call open_file;						// open the file
 
 	ld de, 6;							// data bytes 6, 0
 	jr open_end;						// immediate jump
@@ -433,18 +431,32 @@ open_i:
 ;	// open O subroutine
 open_o:
 	call open_f;						// get parameters, copy to workspace and set IX to point to it
+	ld b, fa_write | fa_open_al;		// create or open for writing if file exists
+	call open_file;						// open the file
+
 	ld de, 6;							// data bytes 6, 0
 	jr open_end;						// immediate jump
 
 ;	// open A subroutine
 open_a:
 	call open_f;						// get parameters, copy to workspace and set IX to point to it
+	ld b, fa_write | fa_open_ex;		// open for writing if file exists
+	call open_file;						// open the file
+	call f_length;						// get information about file to f_stats
+	ld bc, (f_size);					// low word to BC
+	ld de, (f_size + 2);				// high word to DE
+	ld ixl, 0;							// seek from start of file
+	call seek_f;						// seek to end of file
+
 	ld de, 6;							// data bytes 6, 0
 	jr open_end;						// immediate jump
 
 ;	// open R subroutine
 open_r:
 	call open_f;						// get parameters, copy to workspace and set IX to point to it
+	ld b, fa_read | fa_write | fa_open_al;	// create or open for reading / writing if file exists
+	call open_file;						// open the file
+
 	ld de, 6;							// data bytes 6, 0
 	jr open_end;						// immediate jump
 

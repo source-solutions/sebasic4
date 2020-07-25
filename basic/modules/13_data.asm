@@ -38,7 +38,7 @@ endif
 	defb ctrl_cr;
 ;	defb "Release 200930", ctrl_cr;		// Iggy
 ;	defb "YY-MM-DD HH:MM", ctrl_cr;
-	defb "20-07-23 00:00", ctrl_cr;
+	defb "20-07-25 09:55", ctrl_cr;
 
 	defb ctrl_cr, 0;
 

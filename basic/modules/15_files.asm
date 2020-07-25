@@ -751,3 +751,23 @@ file_out:
 	jp c, report_bad_io_dev;			// jump if error
 	or a;								// clear flags
 	ret;								// done
+
+open_file:
+   	ld a, '*';							// use current drive
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_open;						// open file
+	jp c, report_bad_io_dev;			// jump if error
+	or a;								// clear flags
+	ret;								// done
+
+f_length:
+	ld ix, f_stats;						// buffer for file stats
+	rst divmmc;							// issue a hookcode
+	defb f_fstat;						// get file stats
+	ret;								// done
+
+seek_f:
+	rst divmmc;							// issue a hookcode
+	defb f_seek;						// seek to position in BCDE
+	ret;								// done
