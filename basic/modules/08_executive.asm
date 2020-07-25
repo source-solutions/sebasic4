@@ -551,7 +551,10 @@ open_3:
 cl_str_lu:
 	defb 'K', close_str - 1 - $;		// keyboard
 	defb 'S', close_str - 1 - $;		// screen
+	defb 'F', close_file - 1 - $;		// file
 	defb 0;								// null termniator
+
+close_file:
 
 close_str:
 	pop hl;								// unstack channel information pointer
