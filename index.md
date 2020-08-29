@@ -11,3 +11,5 @@ Localization is carried out in partnership with [Translation Commons](https://tr
 <img src="images/TC-logo.png" style="width:200px"/>
 
 Copyright © 1981-2020 Source Solutions, Inc.
+
+<img src="images/ssi.png"/>
