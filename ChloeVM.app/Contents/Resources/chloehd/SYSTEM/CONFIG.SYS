@@ -38,6 +38,7 @@ ln=ES-1252
 
 ## русский
 # ln=RU-1251
+# ln=RU-KOI8R
 
 ## українська
 # ln=UA-1251
@@ -53,6 +54,7 @@ ln=ES-1252
 
 ## Cyrillic
 # cp=1251-CYR
+# cp=KOI8-R
 
 ## Greek
 # cp=1253-GRE
