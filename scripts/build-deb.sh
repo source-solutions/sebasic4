@@ -8,5 +8,7 @@ cd ../boot
 rm basic.bin
 cp ../bin/boot.rom ../ChloeVM.app/Contents/Resources/se.rom
 cat ../bin/basic.rom >> ../ChloeVM.app/Contents/Resources/se.rom
+cd ../rasm
+rasm firmware.asm -ob ../bin/FIRMWA~1.BIN
 cd ..
 ./scripts/run-deb.sh

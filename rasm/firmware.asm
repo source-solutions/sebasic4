@@ -14,9 +14,9 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
-    org $2000
+    org $5ffd
     incbin "../ChloeVM.app/Contents/Resources/unodos3.rom";
     incbin "../ChloeVM.app/Contents/Resources/se.rom";
 
-	xormem $0000, $9fff;
-	summem $0000, $9fff;
+	xormem $5ffd, $fffd;
+	summem $5ffd, $fffd;
