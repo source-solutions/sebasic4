@@ -23,6 +23,10 @@
 
 ;	// export program in separate ROM and RAM segments
 
+	save "../bin/basic.rom", 0, 16384
+	save "../boot/basic.bin", 16384, 7168
+	save "../bin/23.bin", 0, 23552
+
 ;	// modules
 
 	include "modules/01_restarts.asm"
