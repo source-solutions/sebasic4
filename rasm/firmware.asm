@@ -14,8 +14,9 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
-	output_bin "../bin/basic.rom",$0000,16384
-	output_bin "../boot/basic.bin",$4000,7168
+    org $5ffd
+    incbin "../ChloeVM.app/Contents/Resources/unodos3.rom";
+    incbin "../ChloeVM.app/Contents/Resources/se.rom";
 
-    org $0000
-    import_bin "../bin/23.bin";
+	xormem $5ffd, $fffd;
+	summem $5ffd, $fffd;

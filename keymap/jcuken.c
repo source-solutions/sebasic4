@@ -162,18 +162,18 @@ D + 1: key2 (or 0 if there is none)
 // Scan code 2 list. First, non localized keys
 
 // chloe layout
-//#define PC_ESC		0x0e        // key to left of '1'
-//#define PC_CPSLOCK  0x14		// LCTRL on PC
-//#define PC_LCTRL    0x58		// CAPS LOCK on PC
-//#define PC_GRAVEAC  0x61        // also ~
-//#define PC_F0		0x76		// key to left of 'F1'
+#define PC_ESC		0x0e        // key to left of '1'
+#define PC_CPSLOCK  0x14		// LCTRL on PC
+#define PC_LCTRL    0x58		// CAPS LOCK on PC
+#define PC_GRAVEAC  0x61        // also ~
+#define PC_F0		0x76		// key to left of 'F1'
 
 // us layout
-#define PC_GRAVEAC  0x0e        // key to left of '1'
-#define PC_LCTRL    0x14		//
-#define PC_CPSLOCK  0x58		//
-#define PC_F0		0x61		// non-US keyboards will not generate this code
-#define PC_ESC		0x76        // key to left of 'F1'
+//#define PC_GRAVEAC  0x0e        // key to left of '1'
+//#define PC_LCTRL    0x14		//
+//#define PC_CPSLOCK  0x58		//
+//#define PC_F0		0x61		// non-US keyboards will not generate this code
+//#define PC_ESC		0x76        // key to left of 'F1'
 
 #define PC_A       0x1C
 #define PC_B       0x32
@@ -498,8 +498,7 @@ int main()
     //SAVEMAP2HEX("keyb2_us_hex.txt");
     // And map file for loading from ESXDOS
 
-//    SAVEMAPBIN("../ChloeVM.app/Contents/Resources/chloehd/SYSTEM/KEYBOARD.S/CHLOE.KB");
-    SAVEMAPBIN("../ChloeVM.app/Contents/Resources/chloehd/SYSTEM/KEYBOARD.S/US.KB");
+    SAVEMAPBIN("../ChloeVM.app/Contents/Resources/chloehd/SYSTEM/KEYBOARD.S/JCUKEN.KB");
 	
 	return 0;
 }

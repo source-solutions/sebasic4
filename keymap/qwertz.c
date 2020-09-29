@@ -162,18 +162,18 @@ D + 1: key2 (or 0 if there is none)
 // Scan code 2 list. First, non localized keys
 
 // chloe layout
-//#define PC_ESC		0x0e        // key to left of '1'
-//#define PC_CPSLOCK  0x14		// LCTRL on PC
-//#define PC_LCTRL    0x58		// CAPS LOCK on PC
-//#define PC_GRAVEAC  0x61        // also ~
-//#define PC_F0		0x76		// key to left of 'F1'
+#define PC_ESC		0x0e        // key to left of '1'
+#define PC_CPSLOCK  0x14		// LCTRL on PC
+#define PC_LCTRL    0x58		// CAPS LOCK on PC
+#define PC_GRAVEAC  0x61        // also ~
+#define PC_F0		0x76		// key to left of 'F1'
 
 // us layout
-#define PC_GRAVEAC  0x0e        // key to left of '1'
-#define PC_LCTRL    0x14		//
-#define PC_CPSLOCK  0x58		//
-#define PC_F0		0x61		// non-US keyboards will not generate this code
-#define PC_ESC		0x76        // key to left of 'F1'
+//#define PC_GRAVEAC  0x0e        // key to left of '1'
+//#define PC_LCTRL    0x14		//
+//#define PC_CPSLOCK  0x58		//
+//#define PC_F0		0x61		// non-US keyboards will not generate this code
+//#define PC_ESC		0x76        // key to left of 'F1'
 
 #define PC_A       0x1C
 #define PC_B       0x32
@@ -366,7 +366,7 @@ int main()
     MAP(PC_E,SE_E);
     MAP(PC_R,SE_R);
     MAP(PC_T,SE_T);
-    MAP(PC_Y,SE_Y);
+    MAP(PC_Y,SE_Z);
     MAP(PC_U,SE_U);
     MAP(PC_I,SE_I);
     MAP(PC_O,SE_O);
@@ -380,7 +380,7 @@ int main()
     MAP(PC_J,SE_J);
     MAP(PC_K,SE_K);
     MAP(PC_L,SE_L);
-    MAP(PC_Z,SE_Z);
+    MAP(PC_Z,SE_Y);
     MAP(PC_X,SE_X);
     MAP(PC_C,SE_C);
     MAP(PC_V,SE_V);
@@ -396,7 +396,7 @@ int main()
     MAP(MD_SHIFT|PC_E,SE_CAPS<<8|SE_E);
     MAP(MD_SHIFT|PC_R,SE_CAPS<<8|SE_R);
     MAP(MD_SHIFT|PC_T,SE_CAPS<<8|SE_T);
-    MAP(MD_SHIFT|PC_Y,SE_CAPS<<8|SE_Y);
+    MAP(MD_SHIFT|PC_Y,SE_CAPS<<8|SE_Z);
     MAP(MD_SHIFT|PC_U,SE_CAPS<<8|SE_U);
     MAP(MD_SHIFT|PC_I,SE_CAPS<<8|SE_I);
     MAP(MD_SHIFT|PC_O,SE_CAPS<<8|SE_O);
@@ -410,7 +410,7 @@ int main()
     MAP(MD_SHIFT|PC_J,SE_CAPS<<8|SE_J);
     MAP(MD_SHIFT|PC_K,SE_CAPS<<8|SE_K);
     MAP(MD_SHIFT|PC_L,SE_CAPS<<8|SE_L);
-    MAP(MD_SHIFT|PC_Z,SE_CAPS<<8|SE_Z);
+    MAP(MD_SHIFT|PC_Z,SE_CAPS<<8|SE_Y);
     MAP(MD_SHIFT|PC_X,SE_CAPS<<8|SE_X);
     MAP(MD_SHIFT|PC_C,SE_CAPS<<8|SE_C);
     MAP(MD_SHIFT|PC_V,SE_CAPS<<8|SE_V);
@@ -498,8 +498,7 @@ int main()
     //SAVEMAP2HEX("keyb2_us_hex.txt");
     // And map file for loading from ESXDOS
 
-//    SAVEMAPBIN("../ChloeVM.app/Contents/Resources/chloehd/SYSTEM/KEYBOARD.S/CHLOE.KB");
-    SAVEMAPBIN("../ChloeVM.app/Contents/Resources/chloehd/SYSTEM/KEYBOARD.S/US.KB");
+    SAVEMAPBIN("../ChloeVM.app/Contents/Resources/chloehd/SYSTEM/KEYBOARD.S/QWERTZ.KB");
 	
 	return 0;
 }

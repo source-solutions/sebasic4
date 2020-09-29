@@ -21,15 +21,24 @@
 
 	org $3d00
 copyright:
+
+ifndef slam
 	defb "CHLOE 280SE 512K Personal Color Computer", ctrl_cr;
 	defb "Copyright (C)1999 Chloe Corporation", ctrl_cr;
+endif
+
+ifdef slam
+	defb "ZX Spectrum 128 Personal Computer", ctrl_cr;
+	defb "Copyright (C)1985 Sinclair Research Ltd.", ctrl_cr;
+endif
+
 	defb ctrl_cr;
 	defb "SE BASIC IV 4.2 Cordelia", ctrl_cr;
 	defb "Copyright (C)2020 Source Solutions, Inc.", ctrl_cr;
 	defb ctrl_cr;
-	defb "Release 200715", ctrl_cr;	// Morton
-;	defb "YY-MM-DD HH:MM", ctrl_cr;
-	defb ctrl_cr, 0;
+;	timestamp 'YY-MM-DD h:m';			// RASM directive
+	defb "Release 200930";				// Iggy
+	defb ctrl_cr, ctrl_cr, 0;
 
 bytes_free:
 	defb " BASIC bytes free", ctrl_cr;
@@ -49,6 +58,19 @@ semi_tone:
 	defb $89, $5c, $00, $00, $00;		// A  - 440.000000000000 Hz
 	defb $89, $69, $14, $f6, $23;		// A# - 466.163761518090 Hz
 	defb $89, $76, $f1, $10, $04;		// B  - 493.883301256124 Hz
+
+;	deff 261.625565300599;				// C
+;	deff 277.182630976872;				// C#
+;	deff 293.664767917408;				// D
+;	deff 311.126983722081;				// D#
+;	deff 329.627556912870;				// E
+;	deff 349.228231433004;				// F
+;	deff 369.994422711634;				// F#
+;	deff 391.995435981749;				// G
+;	deff 415.304697579945;				// G#
+;	deff 440.000000000000;				// A
+;	deff 466.163761518090;				// A#
+;	deff 493.883301256124;				// B
 
 ;	// used in 05_miscellaneous
 renum_tbl:
@@ -82,11 +104,16 @@ init_strm:
 init_chan:
 	defw print_out, key_input;			// keyboard
 	defb 'K';							// channel
-	defw print_out, report_bad_io_dev;	// screen
+	defw print_out, file_in;			// screen
 	defb 'S';							// channel
 	defw detokenizer, report_bad_io_dev;// workspace
 	defb 'W';							// channel
 	defb end_marker;					// no more channels
+
+file_chan:
+	defw file_out, file_in;				// file
+	defb 'F';							// channel
+	defw 8;								// length of channel
 
 ;	// used in 10_expression
 tbl_ops_priors:
@@ -384,7 +411,7 @@ tk_ptr_rem:
 	str "IF", "CLS", "CALL", "CLEAR"
 	str "RETURN", "COLOR", "TRON", "TROFF"
 	str "ON", "RENUM", "AUTO", "SCREEN";
-	str "XOR", "_E2", "_E3", "_E4"
+	str "XOR", "EOF", "LOC", "LOF"
 	str "_E5", "_E6", "_E7", "_E8";
 	str "_E9", "_EA", "_EB", "_EC";
 	str "_ED", "_EE", "_EF", "_F0";

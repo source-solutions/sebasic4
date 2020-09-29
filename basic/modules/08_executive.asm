@@ -405,69 +405,89 @@ call_sub:
 
 ;	// open stream lookup table
 op_str_lu:
+	defb 'I', open_i - 1 - $;			// input file
+	defb 'O', open_o - 1 - $;			// output file
+	defb 'A', open_a - 1 - $;			// append file
+	defb 'R', open_r - 1 - $;			// random file
 	defb 'K', open_k - 1 - $;			// keyboard
 	defb 'S', open_s - 1 - $;			// screen
 	defb 0;								// null terminator
 
-;	// opne K subroutine
-open_k:
-	ld e, 1;							// data bytes 1, 0
+;	// open F subroutine
+open_f:
+	rst next_char;						// skip comma
+	call expt_exp;						// string expression follows
+	jp path_to_ix;						// exit and get path
+
+;	// open I subroutine
+open_i:
+	call open_f;						// get parameters, copy to workspace and set IX to point to it
+	ld b, fa_read | fa_open_ex;			// open for reading if file exists
+	call open_file;						// open the file
+
+	ld de, 6;							// data bytes 6, 0
 	jr open_end;						// immediate jump
 
-;	// opne S subroutine
-open_s:
-	ld e, 6;							// data bytes 6, 0
+;	// open O subroutine
+open_o:
+	call open_f;						// get parameters, copy to workspace and set IX to point to it
+	ld b, fa_write | fa_open_al;		// create or open for writing if file exists
+	call open_file;						// open the file
+
+	ld de, 6;							// data bytes 6, 0
 	jr open_end;						// immediate jump
+
+;	// open A subroutine
+open_a:
+	call open_f;						// get parameters, copy to workspace and set IX to point to it
+	ld b, fa_write | fa_open_ex;		// open for writing if file exists
+	call open_file;						// open the file
+	call f_length;						// get information about file to f_stats
+	ld bc, (f_size);					// low word to BC
+	ld de, (f_size + 2);				// high word to DE
+	ld ixl, 0;							// seek from start of file
+	call seek_f;						// seek to end of file
+
+	ld de, 6;							// data bytes 6, 0
+	jr open_end;						// immediate jump
+
+;	// open R subroutine
+open_r:
+	call open_f;						// get parameters, copy to workspace and set IX to point to it
+	ld b, fa_read | fa_write | fa_open_al;	// create or open for reading / writing if file exists
+	call open_file;						// open the file
+
+	ld de, 6;							// data bytes 6, 0
+	jr open_end;						// immediate jump
+
+;	// open K subroutine
+open_k:
+	ld de, 1;							// data bytes 1, 0
+	jr open_end;						// immediate jump
+
+;	// open S subroutine
+open_s:
+	ld de, 6;							// data bytes 6, 0
+;	jr open_end;						// immediate jump
 
 open_end:
-	dec bc;								// reduce length
-	ld a, c;							// single
-	or b;								// character?
-	jp nz, report_undef_chan;			// error if not
-	ld d, a;							// clear D
 	pop hl;								// unstack HL
-	ret;								// end of subroutine
-
-;	// close stream lookup table
-cl_str_lu:
-	defb 'K', close_str - 1 - $;		// keyboard
-	defb 'S', close_str - 1 - $;		// screen
-	defb 0;								// null termniator
-
-close_str:
-	pop hl;								// unstack channel information pointer
-	ret;								// end of routine
-
-;	// channel code lookup table
-chn_cd_lu:
-	defb 'K', chan_k - 1 - $;			// keyboard
-	defb 'S', chan_s - 1 - $;			// screen
-	defb 0;								// null terminator
-
-;	// channel K flag subroutine
-chan_k:
-	set 4, (iy + _flags2);				// signal using channel K
-	set 0, (iy + _vdu_flag);			// signal lower screen
-	xor a;								// clear A
-	ret;								// end of subroutine
-
-;	// channel S flag subroutine
-chan_s:
-	res 0, (iy + _vdu_flag);			// signal main screen
-	xor a;								// clear A
 	ret;								// end of subroutine
 
 ; 	// OPEN # command
 open:
 	rst get_char;						// get character
 	cp ',';								// test for comma
-	jr nz, open_nf;						// jump if no filename provided
+	jr nz, open_syn;					// end of syntax checking if not
+	call syntax_z;						// checking syntax?
+	jr nz, open_0;						// jump if not	
 	rst next_char;						// next character
 	call expt_exp;						// expect string expression
 
-open_nf:
+open_syn:
 	call check_end;						// end of syntax checking
 
+open_0:
 	fwait;								// enter calculator
 	fxch;								// swap stream number and channel code
 	fce;								// exit calculator
@@ -475,6 +495,7 @@ open_nf:
 	ld a, c;							// stream
 	or b;								// closed?
 	jr z, open_1;						// jump if so
+
 	ex de, hl;							// swap pointers
 	ld hl, (chans);						// base address of channel
 	add hl, bc;							// channel address to HL
@@ -508,18 +529,55 @@ report_undef_chan:
 	defb undefined_channel;				// error
 
 open_3:
-	push bc;							// stack length
+	dec bc;								// reduce length
+	ld a, c;							// single
+	or b;								// character?
+	jr nz, report_undef_chan;			// error if not
+
 	ld a, (de);							// get first character
 	and %11011111;						// make upper case
 	ld c, a;							// store in C
 	ld hl, op_str_lu;					// address look up table
 	call indexer;						// get offset
+
+;	// FIXME: add test for sysvar for user defined channels
 	jr nc, report_undef_chan;			// error if not found
 	ld c, (hl);							// offset
 	ld b, 0;							// to BC
 	add hl, bc;							// real address to HL
-	pop bc;								// unstack length
 	jp (hl);							// immediate jump
+
+;	// close stream lookup table
+cl_str_lu:
+	defb 'K', close_str - 1 - $;		// keyboard
+	defb 'S', close_str - 1 - $;		// screen
+	defb 'F', close_file - 1 - $;		// file
+	defb 0;								// null termniator
+
+close_file:
+
+close_str:
+	pop hl;								// unstack channel information pointer
+	ret;								// end of routine
+
+;	// channel code lookup table
+chn_cd_lu:
+	defb 'K', chan_k - 1 - $;			// keyboard
+	defb 'S', chan_s - 1 - $;			// screen
+	defb 0;								// null terminator
+
+;	// channel K flag subroutine
+chan_k:
+	set 4, (iy + _flags2);				// signal using channel K
+	set 0, (iy + _vdu_flag);			// signal lower screen
+	xor a;								// clear A
+	ret;								// end of subroutine
+
+;	// channel S flag subroutine
+chan_s:
+	res 0, (iy + _vdu_flag);			// signal main screen
+	xor a;								// clear A
+	ret;								// end of subroutine
 
 	org $15ff
 chan_open_fe:

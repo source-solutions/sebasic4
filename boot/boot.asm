@@ -20,6 +20,8 @@
 	include "uno.inc";					// label definitions
 	include "os.inc";					// label definitions
 
+;	slam equ 1;							// uncomment to build SLAM+128/divMMC version
+
 ;	// restarts
 	divmmc equ $08;
 	wreg equ $20;
@@ -102,20 +104,25 @@ init:
 	lddr;								// zero attributes (22528 to 23295) in reverse to avoid tearing
 	out ($ff), a;						// set low res screen
 
+ifndef slam
 	ld sp, $5f00;						// set stack pointer for update
+endif
 
 	call mute_psg;						// mute AY-1
 
+ifndef slam
 ;	// copy update code to RAM and call it
 	ld hl, fwupdate;					// firmware update routine
 	ld de, $5f00;						// destination
 	ld bc, updatefw - fwupdate;			// length
 	ldir;								// copy routine to RAM
 	call $5f00;							// call it (returns if no firmware update present)
+endif
 
 	ld sp, $8000;						// set stack pointer to top of HOME page 5
 
 ;	// RAM clearing routines
+ifndef slam
 	call low_8;							// wipe the lowest 8KiB of sideways RAM
 	ld a, %11111110;					// page in all but the lower 8KiB of EX bank
 	out (mmu),a;						// set it
@@ -139,6 +146,7 @@ init:
 
 ;	// page out shadow RAM
 	out (mmu),a;						// set it
+endif
 
 ;	// wipe home bank
 ;	//
@@ -236,8 +244,10 @@ read_pal:
 	ldir;								// wipe it
 
 ;	// map in 32K of sideways RAM where available
+ifndef slam
 	ld a, %00111100;					// page shadow RAM over
 	out (mmu), a;						// the middle 32K
+endif
 
 ;	// copy second part of ROM to correct place
 ;	// (basic goes up to $5bb9, sysvars start at $5bba)
@@ -246,7 +256,13 @@ read_pal:
 	ld bc, 7098;
 	ldir;
 
+ifndef slam
 	jp config;							// handle CONFIG.SYS file
+endif
+
+ifdef slam
+	jp to_rom1;							// ignore config.sys file
+endif
 
 ega_pal:
 ;										// #	name			G R B
