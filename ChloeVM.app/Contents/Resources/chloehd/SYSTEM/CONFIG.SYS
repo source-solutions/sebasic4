@@ -128,7 +128,7 @@ cp=1252-EUW
 kb=ES
 
 ## United States
-kb=US
+# kb=US
 
 
 ### scandoubler setting (default depends on hardware, on recommended for VGA)
