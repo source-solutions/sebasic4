@@ -333,6 +333,7 @@ int main()
 
 	MAPANY(PC_ESC,SE_BREAK);
 
+	// row 1
 	MAP(PC__1,SE_STAR);					// ALT:* = º
 	MAP(MD_SHIFT|PC__1,SE_COLON);		// ALT:: = ª
 	MAP(PC_1,SE_1);
@@ -366,6 +367,7 @@ int main()
 	MAP(MD_SHIFT|PC_HOME,SE_CLR);
 	MAPANY(PC_PGUP,SE_TRUE);
 
+	// row 2
 	MAPANY(PC_TAB,SE_EXTEND);
 	MAP(PC_Q,SE_Q);
 	MAP(MD_SHIFT|PC_Q,SE_CAPS<<8|SE_Q);
@@ -396,6 +398,7 @@ int main()
 	MAPANY(PC_END,SE_END);
 	MAPANY(PC_PGDOWN,SE_INVERSE);
 
+	// row 3
 	MAPANY(PC_CPSLOCK,SE_CPSLOCK);
 	MAP(PC_A,SE_A);
 	MAP(MD_SHIFT|PC_A,SE_CAPS<<8|SE_A);
@@ -422,6 +425,7 @@ int main()
 	MAP(PC_L3,SE_CURCLOS);					// }
 	MAP(MD_SHIFT|PC_L3,SE_BRACLOS);			// ]
 
+	// row 4
 	MAP(PC__Z,SE_LESS);						// <
 	MAP(MD_SHIFT|PC__Z,SE_GREATER);			// >
 	MAP(PC_Z,SE_Z);
