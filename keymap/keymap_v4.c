@@ -349,7 +349,7 @@ int main()
     MAPANY(PC_RWIN,SE_SYMBOL);          // SYMBOL SHIFT  
 	MAPANY(PC_APPS,SE_COMPOSE);          //  
 
-    // Basic mapping: each key from PC is mapped to a key in the Spectrum
+    // Basic mapping: each key from PC is mapped to a key in the Chloe
     MAP(PC_1,SE_1);
     MAP(PC_2,SE_2);
     MAP(PC_3,SE_3);

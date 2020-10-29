@@ -6,6 +6,9 @@
 ## Bulgarian
 # ln=BG-1251
 
+## Croatian
+# ln=HR-1252
+
 ## Danish
 # ln=DA-1252
 
@@ -16,7 +19,7 @@
 # ln=EN
 
 ## Finnish
-# ln=FI=1252
+# ln=FI-1252
 
 ## French
 # ln=FR-1252
@@ -42,14 +45,19 @@
 ## Polish
 # ln=PL-1250
 
-## Portugese
+## Portuguese
 # ln=PT-1252
 
 ## Romanian
 # ln=RM-1252
 
-## Russian
+## Russian (KOI8R required for JCUKEN keyboard layout)
 # ln=RU-KOI8R
+# ln=RU-1251
+
+## Serbian (1251=Cyrillic, 1252=Latin)
+# ln=SR-1251
+# ln=SR-1252
 
 ## Spanish
 ln=ES-1252
@@ -117,6 +125,12 @@ cp=1252-EUW
 
 ## Brazilian
 # kb=BR
+
+## Colemak
+# kb=COLEMAK
+
+## Dvorak
+# kb=DVORAK
 
 ## jcuken
 # kb=JCUKEN
