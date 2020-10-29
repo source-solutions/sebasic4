@@ -340,89 +340,120 @@ int main()
 
     CLEANMAP;
 
-    MAPANY(PC_LCTRL,SE_GRAPH);   // MD2 is CTRL
-    MAPANY(PC_RCTRL,SE_GRAPH); // MD2 is CTRL
-    MAPANY(PC_LALT,SE_EXTEND);    // MD3 is ALT. Also is FIRE for keyboard joystick
-    MAPANY(PC_RALT,SE_EXTEND);    // MD3 is ALT. Also is FIRE for keyboard joystick
+    MAPANY(PC_LCTRL,SE_GRAPH);	// MD2 is CTRL
+    MAPANY(PC_RCTRL,SE_GRAPH);	// MD2 is CTRL
+    MAPANY(PC_LALT,SE_EXTEND);	// MD3 is ALT. Also is FIRE for keyboard joystick
+    MAPANY(PC_RALT,SE_EXTEND);	// MD3 is ALT. Also is FIRE for keyboard joystick
     
-    MAPANY(PC_LWIN,SE_SYMBOL);          // SYMBOL SHIFT
-    MAPANY(PC_RWIN,SE_SYMBOL);          // SYMBOL SHIFT  
-	MAPANY(PC_APPS,SE_COMPOSE);          //  
+    MAPANY(PC_LWIN,SE_SYMBOL);	// SYMBOL SHIFT
+    MAPANY(PC_RWIN,SE_SYMBOL);	// SYMBOL SHIFT  
+	MAPANY(PC_APPS,SE_COMPOSE);	//  
 
-    // Basic mapping: each key from PC is mapped to a key in the Spectrum
-    MAP(PC_1,SE_1);
-    MAP(PC_2,SE_2);
-    MAP(PC_3,SE_3);
-    MAP(PC_4,SE_4);
-    MAP(PC_5,SE_5);
-    MAP(PC_6,SE_6);
-    MAP(PC_7,SE_7);
-    MAP(PC_8,SE_8);
-    MAP(PC_9,SE_9);
-    MAP(PC_0,SE_0);
+	// row 1
+    MAP(PC_1,SE_AMP);
+    MAP(MD_SHIFT|PC_1,SE_1);
+    MAP(PC_2,SE_TILDE);
+    MAP(MD_SHIFT|PC_2,SE_2);
+    MAP(PC_3,SE_QUOTE);
+    MAP(MD_SHIFT|PC_3,SE_3);
+    MAP(PC_4,PC_APOSTRO);
+    MAP(MD_SHIFT|PC_4,SE_4);
+    MAP(PC_5,SE_PAROPEN);
+    MAP(MD_SHIFT|PC_5,SE_5);
+    MAP(PC_6,SE_MINUS);
+    MAP(MD_SHIFT|PC_6,SE_6);
+    MAP(PC_7,SE_POUND);
+    MAP(MD_SHIFT|PC_7,SE_7);
+    MAP(PC_8,SE_UNDERSC);
+    MAP(MD_SHIFT|PC_8,SE_8);
+    MAP(PC_9,SE_CARET);
+    MAP(MD_SHIFT|PC_9,SE_9);
+    MAP(PC_0,SE_AT);
+    MAP(MD_SHIFT|PC_0,SE_0);
+    MAP(PC_MINUS,SE_PARCLOS);
+    MAP(MD_SHIFT|PC_MINUS,SE_PIPE);
+    MAP(PC_EQUAL,SE_EQUAL);
+    MAP(MD_SHIFT|PC_EQUAL,SE_PLUS);
 
+	// row 2
     MAP(PC_Q,SE_A);
-    MAP(PC_W,SE_Z);
-    MAP(PC_E,SE_E);
-    MAP(PC_R,SE_R);
-    MAP(PC_T,SE_T);
-    MAP(PC_Y,SE_Y);
-    MAP(PC_U,SE_U);
-    MAP(PC_I,SE_I);
-    MAP(PC_O,SE_O);
-    MAP(PC_P,SE_P);
-    MAP(PC_A,SE_Q);
-    MAP(PC_S,SE_S);
-    MAP(PC_D,SE_D);
-    MAP(PC_F,SE_F);
-    MAP(PC_G,SE_G);
-    MAP(PC_H,SE_H);
-    MAP(PC_J,SE_J);
-    MAP(PC_K,SE_K);
-    MAP(PC_L,SE_L);
-    MAP(PC_Z,SE_W);
-    MAP(PC_X,SE_X);
-    MAP(PC_C,SE_C);
-    MAP(PC_V,SE_V);
-    MAP(PC_B,SE_B);
-    MAP(PC_N,SE_N);
-    MAP(PC_M,SE_M);
-
-    MAP(PC_GRAVEAC,SE_POUND);
-    MAP(MD_SHIFT|PC_GRAVEAC,SE_TILDE);
-
     MAP(MD_SHIFT|PC_Q,SE_CAPS<<8|SE_A);
+    MAP(PC_W,SE_Z);
     MAP(MD_SHIFT|PC_W,SE_CAPS<<8|SE_Z);
+    MAP(PC_E,SE_E);
     MAP(MD_SHIFT|PC_E,SE_CAPS<<8|SE_E);
+    MAP(PC_R,SE_R);
     MAP(MD_SHIFT|PC_R,SE_CAPS<<8|SE_R);
+    MAP(PC_T,SE_T);
     MAP(MD_SHIFT|PC_T,SE_CAPS<<8|SE_T);
+    MAP(PC_Y,SE_Y);
     MAP(MD_SHIFT|PC_Y,SE_CAPS<<8|SE_Y);
+    MAP(PC_U,SE_U);
     MAP(MD_SHIFT|PC_U,SE_CAPS<<8|SE_U);
+    MAP(PC_I,SE_I);
     MAP(MD_SHIFT|PC_I,SE_CAPS<<8|SE_I);
+    MAP(PC_O,SE_O);
     MAP(MD_SHIFT|PC_O,SE_CAPS<<8|SE_O);
+    MAP(PC_P,SE_P);
     MAP(MD_SHIFT|PC_P,SE_CAPS<<8|SE_P);
-    MAP(MD_SHIFT|PC_A,SE_CAPS<<8|SE_Q);
-    MAP(MD_SHIFT|PC_S,SE_CAPS<<8|SE_S);
-    MAP(MD_SHIFT|PC_D,SE_CAPS<<8|SE_D);
-    MAP(MD_SHIFT|PC_F,SE_CAPS<<8|SE_F);
-    MAP(MD_SHIFT|PC_G,SE_CAPS<<8|SE_G);
-    MAP(MD_SHIFT|PC_H,SE_CAPS<<8|SE_H);
-    MAP(MD_SHIFT|PC_J,SE_CAPS<<8|SE_J);
-    MAP(MD_SHIFT|PC_K,SE_CAPS<<8|SE_K);
-    MAP(MD_SHIFT|PC_L,SE_CAPS<<8|SE_L);
-    MAP(MD_SHIFT|PC_Z,SE_CAPS<<8|SE_W);
-    MAP(MD_SHIFT|PC_X,SE_CAPS<<8|SE_X);
-    MAP(MD_SHIFT|PC_C,SE_CAPS<<8|SE_C);
-    MAP(MD_SHIFT|PC_V,SE_CAPS<<8|SE_V);
-    MAP(MD_SHIFT|PC_B,SE_CAPS<<8|SE_B);
-    MAP(MD_SHIFT|PC_N,SE_CAPS<<8|SE_N);
-    MAP(MD_SHIFT|PC_M,SE_CAPS<<8|SE_M);
+    MAP(PC_BRAOPEN,SE_BRAOPEN);
+    MAP(MD_SHIFT|PC_BRAOPEN,SE_CUROPEN);
+    MAP(PC_BRACLOS,SE_DOLLAR);
+    MAP(MD_SHIFT|PC_BRACLOS,SE_HASH);
 
+	// row 3
+    MAP(PC_A,SE_Q);
+    MAP(MD_SHIFT|PC_A,SE_CAPS<<8|SE_Q);
+    MAP(PC_S,SE_S);
+    MAP(MD_SHIFT|PC_S,SE_CAPS<<8|SE_S);
+    MAP(PC_D,SE_D);
+    MAP(MD_SHIFT|PC_D,SE_CAPS<<8|SE_D);
+    MAP(PC_F,SE_F);
+    MAP(MD_SHIFT|PC_F,SE_CAPS<<8|SE_F);
+    MAP(PC_G,SE_G);
+    MAP(MD_SHIFT|PC_G,SE_CAPS<<8|SE_G);
+    MAP(PC_H,SE_H);
+    MAP(MD_SHIFT|PC_H,SE_CAPS<<8|SE_H);
+    MAP(PC_J,SE_J);
+    MAP(MD_SHIFT|PC_J,SE_CAPS<<8|SE_J);
+    MAP(PC_K,SE_K);
+    MAP(MD_SHIFT|PC_K,SE_CAPS<<8|SE_K);
+    MAP(PC_L,SE_L);
+    MAP(MD_SHIFT|PC_L,SE_CAPS<<8|SE_L);
+    MAP(PC_SEMICOL,SE_M);
+    MAP(MD_SHIFT|PC_SEMICOL,SE_CAPS<<8|SE_M);
+    MAP(PC_APOSTRO,SE_BRACLOS);
+    MAP(MD_SHIFT|PC_APOSTRO,SE_CURCLOS);
+    MAP(PC_BACKSLA,SE_STAR);
+    MAP(MD_SHIFT|PC_BACKSLA,SE_PERCEN);
+
+	// row 4
+    MAP(PC_GRAVEAC,SE_LESS);
+    MAP(MD_SHIFT|PC_GRAVEAC,SE_GREATER);
+    MAP(PC_Z,SE_W);
+    MAP(MD_SHIFT|PC_Z,SE_CAPS<<8|SE_W);
+    MAP(PC_X,SE_X);
+    MAP(MD_SHIFT|PC_X,SE_CAPS<<8|SE_X);
+    MAP(PC_C,SE_C);
+    MAP(MD_SHIFT|PC_C,SE_CAPS<<8|SE_C);
+    MAP(PC_V,SE_V);
+    MAP(MD_SHIFT|PC_V,SE_CAPS<<8|SE_V);
+    MAP(PC_B,SE_B);
+    MAP(MD_SHIFT|PC_B,SE_CAPS<<8|SE_B);
+    MAP(PC_N,SE_N);
+    MAP(MD_SHIFT|PC_N,SE_CAPS<<8|SE_N);
+    MAP(PC_M,SE_COMMA);
+    MAP(MD_SHIFT|PC_M,SE_QUEST);
+    MAP(PC_COMMA,SE_SEMICOL);
+    MAP(MD_SHIFT|PC_COMMA,SE_DOT);
+    MAP(PC_DOT,SE_COLON);
+    MAP(MD_SHIFT|PC_DOT,SE_SLASH);
+    MAP(PC_SLASH,SE_BANG);
+    MAP(MD_SHIFT|PC_SLASH,SE_BACKSLA);
+
+	// complex mapping
     MAPANY(PC_SPACE,SE_SPACE);
     MAPANY(PC_ENTER,SE_ENTER);
-
-    //Complex mapping. This is for the US keyboard although many
-    //combos can be used with any other PC keyboard
     MAPANY(PC_ESC,SE_BREAK);
     MAPANY(PC_CPSLOCK,SE_CPSLOCK);
     MAPANY(PC_TAB,SE_EXTEND);
@@ -432,8 +463,7 @@ int main()
     MAPANY(PC_LEFT,SE_LEFT);
     MAPANY(PC_RIGHT,SE_RIGHT);
 
-
-    //keypad
+	// keypad
     MAPANY(PC_KP_DIVIS,SE_SLASH);
     MAPANY(PC_KP_MULT,SE_STAR);
     MAPANY(PC_KP_MINUS,SE_MINUS);
@@ -451,39 +481,7 @@ int main()
     MAPANY(PC_KP_2,SE_2);
     MAPANY(PC_KP_3,SE_3);
 
-    //Some keys and shift+key mappings for the US keyboard
-    MAP(MD_SHIFT|PC_1,SE_BANG);
-    MAP(MD_SHIFT|PC_2,SE_AT);
-    MAP(MD_SHIFT|PC_3,SE_HASH);
-    MAP(MD_SHIFT|PC_4,SE_DOLLAR);
-    MAP(MD_SHIFT|PC_5,SE_PERCEN);
-    MAP(MD_SHIFT|PC_6,SE_CARET);
-    MAP(MD_SHIFT|PC_7,SE_AMP);
-    MAP(MD_SHIFT|PC_8,SE_STAR);
-    MAP(MD_SHIFT|PC_9,SE_PAROPEN);
-    MAP(MD_SHIFT|PC_0,SE_PARCLOS);
-    MAP(PC_MINUS,SE_MINUS);
-    MAP(MD_SHIFT|PC_MINUS,SE_UNDERSC);
-    MAP(PC_EQUAL,SE_EQUAL);
-    MAP(MD_SHIFT|PC_EQUAL,SE_PLUS);
-    MAP(PC_BRAOPEN,SE_BRAOPEN);
-    MAP(MD_SHIFT|PC_BRAOPEN,SE_CUROPEN);
-    MAP(PC_BRACLOS,SE_BRACLOS);
-    MAP(MD_SHIFT|PC_BRACLOS,SE_CURCLOS);
-    MAP(PC_BACKSLA,SE_BACKSLA);
-    MAP(MD_SHIFT|PC_BACKSLA,SE_PIPE);
-    MAP(PC_APOSTRO,SE_APOSTRO);
-    MAP(MD_SHIFT|PC_APOSTRO,SE_QUOTE);
-    MAP(PC_COMMA,SE_COMMA);
-    MAP(MD_SHIFT|PC_COMMA,SE_LESS);
-    MAP(PC_DOT,SE_DOT);
-    MAP(MD_SHIFT|PC_DOT,SE_GREATER);
-    MAP(PC_SLASH,SE_SLASH);
-    MAP(MD_SHIFT|PC_SLASH,SE_QUEST);
-    MAP(PC_SEMICOL,SE_SEMICOL);
-    MAP(MD_SHIFT|PC_SEMICOL,SE_COLON);
-
-// editing cluster
+	// editing cluster
 	MAP(PC_INSERT,SE_INSERT);
 	MAP(MD_SHIFT|PC_INSERT,SE_HELP);
 	MAPANY(PC_DELETE,SE_DEL);
@@ -494,9 +492,9 @@ int main()
 	MAPANY(PC_PGDOWN,SE_INVERSE);
 
     // End of mapping. Save .HEX file for Verilog
-    //SAVEMAP1HEX("keyb1_us_hex.txt");
-    //SAVEMAP2HEX("keyb2_us_hex.txt");
-    // And map file for loading from ESXDOS
+    //SAVEMAP1HEX("keyb1_az_hex.txt");
+    //SAVEMAP2HEX("keyb2_az_hex.txt");
+    // And map file for loading from UnoDOS 3
 
     SAVEMAPBIN("../ChloeVM.app/Contents/Resources/chloehd/SYSTEM/KEYBOARD.S/AZERTY.KB");
 	

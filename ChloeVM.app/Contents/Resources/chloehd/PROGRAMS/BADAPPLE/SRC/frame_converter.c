@@ -142,7 +142,7 @@ int procesa (unsigned short mask, unsigned char *oldframe, unsigned char *newfra
     //  0x01 = DELTA_FRAME (only changes from previous frame (in the same page) are stored
     //  0xFF = END_FRAME. No further info. Just 4 bytes with this value
 
-    // Scan the image using 8x8 pixel blocks (characters in the Spectrum)
+    // Scan the image using 8x8 pixel blocks (characters in the Chloe)
     // and for each character, compare it against the same character in the
     // previous frame. If there is a difference, store the complete character
     for (row=0;row<24;row++)
@@ -158,7 +158,7 @@ int procesa (unsigned short mask, unsigned char *oldframe, unsigned char *newfra
             {
                 sizebcomp += 10;
                 bcomp = realloc (bcomp, sizebcomp);
-                addr = mask + (row/8)*2048 + 32*(row%8) + col; // address in the Spectrum screen of this character
+                addr = mask + (row/8)*2048 + 32*(row%8) + col; // address in the Chloe screen of this character
                 bcomp[icomp++] = addr&0xFF;        // store it
                 bcomp[icomp++] = (addr>>8)&0xFF;
                 for (scan=0;scan<8;scan++)  // store the eight scan lines for this character
