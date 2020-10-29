@@ -356,29 +356,33 @@ int main()
 
     MAP(PC_Q,SE_Q);
     MAP(PC_W,SE_W);
-    MAP(PC_E,SE_E);
-    MAP(PC_R,SE_R);
-    MAP(PC_T,SE_T);
-    MAP(PC_Y,SE_Y);
-    MAP(PC_U,SE_U);
-    MAP(PC_I,SE_I);
-    MAP(PC_O,SE_O);
-    MAP(PC_P,SE_P);
+    MAP(PC_E,SE_F);
+    MAP(PC_R,SE_P);
+    MAP(PC_T,SE_G);
+    MAP(PC_Y,SE_J);
+    MAP(PC_U,SE_L);
+    MAP(PC_I,SE_U);
+    MAP(PC_O,SE_Y);
+
+    MAP(PC_P,SE_SEMICOL);
+
     MAP(PC_A,SE_A);
-    MAP(PC_S,SE_S);
-    MAP(PC_D,SE_D);
-    MAP(PC_F,SE_F);
-    MAP(PC_G,SE_G);
+    MAP(PC_S,SE_R);
+    MAP(PC_D,SE_S);
+    MAP(PC_F,SE_T);
+    MAP(PC_G,SE_D);
     MAP(PC_H,SE_H);
-    MAP(PC_J,SE_J);
-    MAP(PC_K,SE_K);
-    MAP(PC_L,SE_L);
+    MAP(PC_J,SE_N);
+    MAP(PC_K,SE_E);
+    MAP(PC_L,SE_I);
+    MAP(PC_SEMICOL,SE_O);
+
     MAP(PC_Z,SE_Z);
     MAP(PC_X,SE_X);
     MAP(PC_C,SE_C);
     MAP(PC_V,SE_V);
     MAP(PC_B,SE_B);
-    MAP(PC_N,SE_N);
+    MAP(PC_N,SE_K);
     MAP(PC_M,SE_M);
 
     MAP(PC_GRAVEAC,SE_POUND);
@@ -386,29 +390,33 @@ int main()
 
     MAP(MD_SHIFT|PC_Q,SE_CAPS<<8|SE_Q);
     MAP(MD_SHIFT|PC_W,SE_CAPS<<8|SE_W);
-    MAP(MD_SHIFT|PC_E,SE_CAPS<<8|SE_E);
-    MAP(MD_SHIFT|PC_R,SE_CAPS<<8|SE_R);
-    MAP(MD_SHIFT|PC_T,SE_CAPS<<8|SE_T);
-    MAP(MD_SHIFT|PC_Y,SE_CAPS<<8|SE_Y);
-    MAP(MD_SHIFT|PC_U,SE_CAPS<<8|SE_U);
-    MAP(MD_SHIFT|PC_I,SE_CAPS<<8|SE_I);
-    MAP(MD_SHIFT|PC_O,SE_CAPS<<8|SE_O);
-    MAP(MD_SHIFT|PC_P,SE_CAPS<<8|SE_P);
-    MAP(MD_SHIFT|PC_A,SE_CAPS<<8|SE_A);
-    MAP(MD_SHIFT|PC_S,SE_CAPS<<8|SE_S);
-    MAP(MD_SHIFT|PC_D,SE_CAPS<<8|SE_D);
-    MAP(MD_SHIFT|PC_F,SE_CAPS<<8|SE_F);
-    MAP(MD_SHIFT|PC_G,SE_CAPS<<8|SE_G);
+    MAP(MD_SHIFT|PC_E,SE_CAPS<<8|SE_F);
+    MAP(MD_SHIFT|PC_R,SE_CAPS<<8|SE_P);
+    MAP(MD_SHIFT|PC_T,SE_CAPS<<8|SE_G);
+    MAP(MD_SHIFT|PC_Y,SE_CAPS<<8|SE_J);
+    MAP(MD_SHIFT|PC_U,SE_CAPS<<8|SE_L);
+    MAP(MD_SHIFT|PC_I,SE_CAPS<<8|SE_U);
+    MAP(MD_SHIFT|PC_O,SE_CAPS<<8|SE_Y);
+
+    MAP(MD_SHIFT|PC_P,SE_COLON);
+    
+	MAP(MD_SHIFT|PC_A,SE_CAPS<<8|SE_A);
+    MAP(MD_SHIFT|PC_S,SE_CAPS<<8|SE_R);
+    MAP(MD_SHIFT|PC_D,SE_CAPS<<8|SE_S);
+    MAP(MD_SHIFT|PC_F,SE_CAPS<<8|SE_T);
+    MAP(MD_SHIFT|PC_G,SE_CAPS<<8|SE_D);
     MAP(MD_SHIFT|PC_H,SE_CAPS<<8|SE_H);
-    MAP(MD_SHIFT|PC_J,SE_CAPS<<8|SE_J);
-    MAP(MD_SHIFT|PC_K,SE_CAPS<<8|SE_K);
-    MAP(MD_SHIFT|PC_L,SE_CAPS<<8|SE_L);
+    MAP(MD_SHIFT|PC_J,SE_CAPS<<8|SE_N);
+    MAP(MD_SHIFT|PC_K,SE_CAPS<<8|SE_E);
+    MAP(MD_SHIFT|PC_L,SE_CAPS<<8|SE_I);
+    MAP(MD_SHIFT|PC_SEMICOL,SE_CAPS<<8|SE_O);
+
     MAP(MD_SHIFT|PC_Z,SE_CAPS<<8|SE_Z);
     MAP(MD_SHIFT|PC_X,SE_CAPS<<8|SE_X);
     MAP(MD_SHIFT|PC_C,SE_CAPS<<8|SE_C);
     MAP(MD_SHIFT|PC_V,SE_CAPS<<8|SE_V);
     MAP(MD_SHIFT|PC_B,SE_CAPS<<8|SE_B);
-    MAP(MD_SHIFT|PC_N,SE_CAPS<<8|SE_N);
+    MAP(MD_SHIFT|PC_N,SE_CAPS<<8|SE_K);
     MAP(MD_SHIFT|PC_M,SE_CAPS<<8|SE_M);
 
     MAPANY(PC_SPACE,SE_SPACE);
@@ -491,7 +499,7 @@ int main()
     //SAVEMAP2HEX("keyb2_us_hex.txt");
     // And map file for loading from ESXDOS
 
-    SAVEMAPBIN("../ChloeVM.app/Contents/Resources/chloehd/SYSTEM/KEYBOARD.S/COLEMAN.KB");
+    SAVEMAPBIN("../ChloeVM.app/Contents/Resources/chloehd/SYSTEM/KEYBOARD.S/COLEMAK.KB");
 	
 	return 0;
 }
