@@ -45,6 +45,30 @@
 				"panel": "new"
 			},
 			"problemMatcher": []
+		},
+
+		{
+			"label": "asmdoc",
+			"type": "shell",
+			"linux": {
+				"command": "",
+			},
+			"osx": {
+				"command": "",
+			},
+			"windows": {
+				"command": ".\\scripts\\asmdoc.cmd",
+			},
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"problemMatcher": []
 		}
+
 	]
 }
