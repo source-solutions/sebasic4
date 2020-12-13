@@ -90,7 +90,7 @@
 ;	// permits extension of vector table if required
 ;	org $0590
 
-;;	// CALL command
+;	// CALL command
 c_call:
 	call find_int2;						// get address
 	ld l, c;							// address
