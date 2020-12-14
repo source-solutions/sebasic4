@@ -1,4 +1,4 @@
-[Online user guide](https://github.com/cheveron/sebasic4/wiki) | [User forum](https://sourcesolutions.itch.io/sebasic4/community)
+[API docs](https://cheveron.github.io/sebasic4/api/) | [Online user guide](https://github.com/cheveron/sebasic4/wiki) | [User forum](https://sourcesolutions.itch.io/sebasic4/community)
 
 SE Basic IV includes over 12,000 lines of code, and if developed in a conventional proprietary way would have required many years of work and cost over $500,000.
 
