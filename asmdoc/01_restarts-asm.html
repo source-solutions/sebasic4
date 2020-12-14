@@ -14,11 +14,12 @@
 <TR ALIGN="center" VALIGN="top">
 <TD BGCOLOR="#FFFFFF" CLASS="NavBarCell1Rev"> &nbsp;<FONT CLASS="NavBarFont1Rev"><B>File</B></FONT>&nbsp;</TD>
 <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="index-all.html"><FONT CLASS="NavBarFont1"><B>Index</B></FONT></A>&nbsp;</TD>
+<TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="constant-values.html"><FONT CLASS="NavBarFont1"><B>Constants</B></FONT></A>&nbsp;</TD>
 <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="help-doc.html"><FONT CLASS="NavBarFont1"><B>Help</B></FONT></A>&nbsp;</TD>
 </TR></TABLE></TD>
 <TD ALIGN="right" VALIGN="top" ROWSPAN="3"></TD></TR>
 <TR><TD BGCOLOR="white" CLASS="NavBarCell2">
-PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;
+<A HREF="basic-inc.html" TITLE="File"><B>PREVIOUS FILE</B></A>&nbsp;&nbsp;
 <A HREF="02_tokenizer-asm.html" TITLE="File"><B>NEXT FILE</B></A></TD>
 <TD BGCOLOR="white" CLASS="NavBarCell2">
 <A HREF="index.html?01_restarts-asm.html" TARGET="_top"><B>FRAMES</B></A>  &nbsp;&nbsp;
@@ -33,6 +34,177 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <A NAME="skip_navbar_top" ID="skip_navbar_top"></A>
 
 <HR><H2>File 01_restarts.asm</H2>
+
+<HR>
+<A NAME="function_summary" ID="function_summary"><!-- --></A>
+<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
+<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
+<TH ALIGN="left" COLSPAN="2">
+<B>Function summary</B></TH></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="01_restarts-asm.html#bc_1_space">bc_1_space</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ make one space
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="01_restarts-asm.html#ch_add_plus_1">ch_add_plus_1</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ increment ch-add
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="01_restarts-asm.html#error_2">error_2</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ error-2
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="01_restarts-asm.html#nmi">nmi</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ non-maskable interrupt
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="01_restarts-asm.html#rst_00">rst_00</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+ start
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="01_restarts-asm.html#rst_08">rst_08</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ error
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="01_restarts-asm.html#rst_10">rst_10</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ print a character
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="01_restarts-asm.html#rst_18">rst_18</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ collect character
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="01_restarts-asm.html#rst_20">rst_20</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ collect next character
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="01_restarts-asm.html#rst_28">rst_28</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ calculator
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="01_restarts-asm.html#rst_30">rst_30</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ make spaces
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="01_restarts-asm.html#rst_38">rst_38</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ maskable interrupt
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="01_restarts-asm.html#skip_over">skip_over</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ skip over
+</TD></TR>
+</TABLE><BR>
+
+<A NAME="function_detail" ID="function_detail"><!-- --></A>
+<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
+<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
+<TH ALIGN="left" COLSPAN="1">
+<B>Function detail</B></TH></TR></TABLE>
+<A NAME="bc_1_space" ID="bc_1_space"><!-- --></A><H3>bc_1_space</H3>
+<DL><DD>
+ make one space
+
+</DD></DL><HR>
+
+<A NAME="ch_add_plus_1" ID="ch_add_plus_1"><!-- --></A><H3>ch_add_plus_1</H3>
+<DL><DD>
+ increment ch-add
+
+</DD></DL><HR>
+
+<A NAME="error_2" ID="error_2"><!-- --></A><H3>error_2</H3>
+<DL><DD>
+ error-2
+
+</DD></DL><HR>
+
+<A NAME="nmi" ID="nmi"><!-- --></A><H3>nmi</H3>
+<DL><DD>
+ non-maskable interrupt
+
+</DD></DL><HR>
+
+<A NAME="rst_00" ID="rst_00"><!-- --></A><H3>rst_00</H3>
+<DL><DD>
+
+ start
+
+</DD></DL><HR>
+
+<A NAME="rst_08" ID="rst_08"><!-- --></A><H3>rst_08</H3>
+<DL><DD>
+ error
+
+</DD></DL><HR>
+
+<A NAME="rst_10" ID="rst_10"><!-- --></A><H3>rst_10</H3>
+<DL><DD>
+ print a character
+ 
+<DT><B>See Also: </B><DD> UnoDOS 3 entry points
+
+</DD></DL><HR>
+
+<A NAME="rst_18" ID="rst_18"><!-- --></A><H3>rst_18</H3>
+<DL><DD>
+ collect character
+ 
+<DT><B>See Also: </B><DD> UnoDOS 3 entry points
+
+</DD></DL><HR>
+
+<A NAME="rst_20" ID="rst_20"><!-- --></A><H3>rst_20</H3>
+<DL><DD>
+ collect next character
+ 
+<DT><B>See Also: </B><DD> UnoDOS 3 entry points
+
+</DD></DL><HR>
+
+<A NAME="rst_28" ID="rst_28"><!-- --></A><H3>rst_28</H3>
+<DL><DD>
+ calculator
+
+</DD></DL><HR>
+
+<A NAME="rst_30" ID="rst_30"><!-- --></A><H3>rst_30</H3>
+<DL><DD>
+ make spaces
+ 
+<DT><B>Parameter: </B><DD> <code>BC</code> - number of spaces
+
+</DD></DL><HR>
+
+<A NAME="rst_38" ID="rst_38"><!-- --></A><H3>rst_38</H3>
+<DL><DD>
+ maskable interrupt
+
+</DD></DL><HR>
+
+<A NAME="skip_over" ID="skip_over"><!-- --></A><H3>skip_over</H3>
+<DL><DD>
+ skip over
+
+</DD></DL><HR>
+
 <HR>
 <A HREF="#skip_navbar_bottom" TITLE="Skip navigation links">Skip navbar</A>
 <TABLE BORDER="0" WIDTH="100%" CELLPADDING="1" CELLSPACING="0" SUMMARY="">
@@ -41,11 +213,12 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <TR ALIGN="center" VALIGN="top">
 <TD BGCOLOR="#FFFFFF" CLASS="NavBarCell1Rev"> &nbsp;<FONT CLASS="NavBarFont1Rev"><B>File</B></FONT>&nbsp;</TD>
 <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="index-all.html"><FONT CLASS="NavBarFont1"><B>Index</B></FONT></A>&nbsp;</TD>
+<TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="constant-values.html"><FONT CLASS="NavBarFont1"><B>Constants</B></FONT></A>&nbsp;</TD>
 <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="help-doc.html"><FONT CLASS="NavBarFont1"><B>Help</B></FONT></A>&nbsp;</TD>
 </TR></TABLE></TD>
 <TD ALIGN="right" VALIGN="top" ROWSPAN="3"></TD></TR>
 <TR><TD BGCOLOR="white" CLASS="NavBarCell2">
-PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;
+<A HREF="basic-inc.html" TITLE="File"><B>PREVIOUS FILE</B></A>&nbsp;&nbsp;
 <A HREF="02_tokenizer-asm.html" TITLE="File"><B>NEXT FILE</B></A></TD>
 <TD BGCOLOR="white" CLASS="NavBarCell2">
 <A HREF="index.html?01_restarts-asm.html" TARGET="_top"><B>FRAMES</B></A>  &nbsp;&nbsp;

@@ -14,9 +14,13 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
+;;
 ;	// --- TOKENIZER AND DETOKENIZER ROUTINES ----------------------------------
+;;
 
-;	// tokenizer routine
+;;
+; tokenizer
+;;
 tokenizer:
 	res 7, (iy + _flags);				// force edit mode
 	set 7, (iy + _err_nr);				// set no error
@@ -179,7 +183,9 @@ tokenizer_17:
 	set 7, c;							// set flag if alpha
 	ret;								// end of subroutine
 
-;	// detokenizer routine
+;;
+; detokenizer
+;;
 detokenizer:
     bit 2, (iy + _flags2);				// in quotes?
     jr nz, detokenizer_4;				// jump if so

@@ -40,265 +40,486 @@
 ;	// fchrs
 ;	// fetof
 
-
 ;	// parameter definitions
 
-	le equ 0;							// less than or equal
-	ge equ 1;							// greater or equal
-	ne equ 2;							// not equal
-	gt equ 3;							// greater than
-	lt equ 4;							// less than
-	eq equ 5;							// equal
-	lz equ $2d;							// less than zero
-	gz equ $2e;							// greater than zero
+;;
+; asmdoc eats the first description
+;;
+	foo equ $f00;
+
+;;
+; X80 parameter: less than or equal
+;;
+	le equ 0;
+
+;;
+; X80 parameter: greater or equal
+;;
+	ge equ 1;
+
+;;
+; X80 parameter: not equal
+;;
+	ne equ 2;
+
+;;
+; X80 parameter: greater than
+;;
+	gt equ 3;
+
+;;
+; X80 parameter: less than
+;;
+	lt equ 4;
+
+;;
+; X80 parameter: equal
+;;
+	eq equ 5;
+
+;;
+; X80 parameter: less than zero
+;;
+	lz equ $2d;
+
+;;
+; X80 parameter: greater than zero
+;;
+	gz equ $2e;
 
 
 ;	// instruction macros
 
-MACRO fwait;							// stop the Z80
+;;
+; X80 op-code: CPU wait
+;;
+MACRO fwait;
 	rst $28;
 ENDM
 
-MACRO fjpt n;							// jump if true
+;;
+; X80 op-code: jump if true
+;;
+MACRO fjpt n;
 	defb 0, {n} - $ - 1;
 ENDM
 
-MACRO fxch;								// exchange
+;;
+; X80 op-code: exchange
+;;
+MACRO fxch;
 	defb 1;
 ENDM
 
-MACRO fdel;								// delete
+;;
+; X80 op-code: delete
+;;
+MACRO fdel;
 	defb 2;
 ENDM
 
-MACRO fsub;								// subtract
+;;
+; X80 op-code: subtract
+;;
+MACRO fsub;
 	defb 3;
 ENDM
 
-MACRO fmul;								// multiply
+;;
+; X80 op-code: multiply
+;;
+MACRO fmul;
 	defb 4;
 ENDM
 
-MACRO fdiv;								// divide
+;;
+; X80 op-code: divide
+;;
+MACRO fdiv;
 	defb 5;
 ENDM
 
-MACRO ftop;								// to power
+;;
+; X80 op-code: to power
+;;
+MACRO ftop;
 	defb 6;
 ENDM
 
-MACRO fbor;								// binary or
+;;
+; X80 op-code: binary OR
+;;
+MACRO fbor;
 	defb 7;
 ENDM
 
-MACRO fband;							// binary and
+;;
+; X80 op-code: binary AND
+;;
+MACRO fband;
 	defb 8;
 ENDM
 
-MACRO fcp n;							// compare (_le to gz)
+;;
+; X80 op-code: compare
+; @param eq, ge, gt, gz, lt, lz, ne
+;;
+MACRO fcp n;
 	defb 9 + {n}
 ENDM
 
-MACRO fadd;								// add
+;;
+; X80 op-code: add
+;;
+MACRO fadd;
 	defb $0f;
 ENDM
 
-MACRO fbands;							// binary and string
+;;
+; X80 op-code: binary and string
+;;
+MACRO fbands;
 	defb $10;
 ENDM
 
-MACRO fcps n;							// compare string (_le to _eq)
+;;
+; X80 op-code: compare string
+; @param eq, ge, gt, gz, lt, lz, ne
+;;
+MACRO fcps n;
 	defb $11 + {n};
 ENDM
 
-MACRO fcat;								// concatenate string
+;;
+; X80 op-code: concatenate string
+;;
+MACRO fcat;
 	defb $17;
 ENDM
 
-MACRO fvals;							// value string
+;;
+; X80 op-code: value string
+;;
+MACRO fvals;
 	defb $18;
 ENDM
 
-MACRO fusrs;							// user string
+;;
+; X80 op-code: user string
+;;
+MACRO fusrs;
 	defb $19;
 ENDM
 
-MACRO fread;							// read in
+;;
+; X80 op-code: read in
+;;
+MACRO fread;
 	defb $1a;
 ENDM
 
-MACRO fneg;								// negate
+;;
+; X80 op-code: negate
+;;
+MACRO fneg;
 	defb $1b;
 ENDM
 
-MACRO fasc;								// character to ASCII
+;;
+; X80 op-code: character to ASCII
+;;
+MACRO fasc;
 	defb $1c;
 ENDM
 
-MACRO fval;								// value
+;;
+; X80 op-code: value
+;;
+MACRO fval;
 	defb $1d;
 ENDM
 
-MACRO flen;								// length of string
+;;
+; X80 op-code: length of string
+;;
+MACRO flen;
 	defb $1e;
 ENDM
 
-MACRO fsin;								// sine
+;;
+; X80 op-code: sine
+;;
+MACRO fsin;
 	defb $1f;
 ENDM
 
-MACRO fcos;								// cosine
+;;
+; X80 op-code: cosine
+;;
+MACRO fcos;
 	defb $20;
 ENDM
 
-MACRO ftan;								// tangent
+;;
+; X80 op-code: tangent
+;;
+MACRO ftan;
 	defb $21;
 ENDM
 
-MACRO fasin;							// arcsine
+;;
+; X80 op-code: arcsine
+;;
+MACRO fasin;
 	defb $22;
 ENDM
 
-MACRO facos;							// arc-cosine
+;;
+; X80 op-code: arc-cosine
+;;
+MACRO facos;
 	defb $23;
 ENDM
 
-MACRO fatan;							// arctangent
+;;
+; X80 op-code: arctangent
+;;
+MACRO fatan;
 	defb $24;
 ENDM
 
-MACRO flogn;							// natural logarithm
+;;
+; X80 op-code: natural logarithm
+;;
+MACRO flogn;
 	defb $25;
 ENDM
 
-MACRO fexp;								// exponential
+;;
+; X80 op-code: exponential
+;;
+MACRO fexp;
 	defb $26;
 ENDM
 
-MACRO fint;								// integer (rounded down)
+;;
+; X80 op-code: integer (rounded down)
+;;
+MACRO fint;
 	defb $27;
 ENDM
 
-MACRO fsqrt;							// square root
+;;
+; X80 op-code: square root
+;;
+MACRO fsqrt;
 	defb $28;
 ENDM
 
-MACRO fsgn;								// signum
+;;
+; X80 op-code: signum
+;;
+MACRO fsgn;
 	defb $29;
 ENDM
 
-MACRO fabs;								// absolute value
+;;
+; X80 op-code: absolute value
+;;
+MACRO fabs;
 	defb $2a;
 ENDM
 
-MACRO fpeek;							// PEEK
+;;
+; X80 op-code: PEEK
+;;
+MACRO fpeek;
 	defb $2b;
 ENDM
 
-MACRO fin;								// IN
+;;
+; X80 op-code: IN
+;;
+MACRO fin;
 	defb $2c;
 ENDM
 
-MACRO fusr;								// user address
+;;
+; X80 op-code: user address
+;;
+MACRO fusr;
 	defb $2d;
 ENDM
 
-MACRO fstrs;							// string
+;;
+; X80 op-code: string
+;;
+MACRO fstrs;
 	defb $2e;
 ENDM
 
-MACRO fchrs;							// character
+;;
+; X80 op-code: character
+;;
+MACRO fchrs;
 	defb $2f;
 ENDM
 
-MACRO fnot;								// not
+;;
+; X80 op-code: NOT
+;;
+MACRO fnot;
 	defb $30;
 ENDM
 
-MACRO fmove;							// move
+;;
+; X80 op-code: move
+;;
+MACRO fmove;
 	defb $31;
 ENDM
 
-MACRO fmod;								// modulus
+;;
+; X80 op-code: modulus
+;;
+MACRO fmod;
 	defb $32;
 ENDM
 
-MACRO fjp n;							// jump
+;;
+; X80 op-code: jump
+; @param address to jump to
+;;
+MACRO fjp n;
 	defb $33, {n} - $ - 1;
 ENDM
 
-MACRO fstk;								// stack data
+;;
+; X80 op-code: stack data
+;;
+MACRO fstk;
 	defb $34;
 ENDM
 
+;;
+; X80 op-code: decrement and jump if not zero
+; @param address to jump to
+;;
 MACRO fdjnz n;							// djnz
 	defb $35, {n} - $ - 1;
 ENDM
 
-MACRO fce;								// chip enable
+;;
+; X80 op-code: CPU enable
+;;
+MACRO fce;
 	defb $38;
 ENDM
 
-MACRO fget;								// get
+;;
+; X80 op-code: get
+;;
+MACRO fget;
 	defb $39;
 ENDM
 
-MACRO ftrn;								// truncate
+;;
+; X80 op-code: truncate
+;;
+MACRO ftrn;
 	defb $3a;
 ENDM
 
-MACRO fsgl;								// single operation
+;;
+; X80 op-code: single operation
+;;
+MACRO fsgl;
 	defb $3b;
 ENDM
 
-MACRO fhex;								// HEX$
+;;
+; X80 op-code: HEX$
+;;
+MACRO fhex;
 	defb $3c;
 ENDM
 
-MACRO frstk;							// restack
+;;
+; X80 op-code: restack
+;;
+MACRO frstk;
 	defb $3d;
 ENDM
 
-MACRO fnew1;							// reserved
+;;
+; X80 op-code: reserved
+;;
+MACRO fnew1;
 	defb $3e;
 ENDM
 
-MACRO fnew2;							// reserved
+;;
+; X80 op-code: reserved
+;;
+MACRO fnew2;
 	defb $3f;
 ENDM
 
-MACRO fstk0;							// stack 0
+;;
+; X80 op-code: stack 0
+;;
+MACRO fstk0;
 	defb $a0;
 ENDM
 
-MACRO fstk1;							// stack 1
+;;
+; X80 op-code: stack 1
+;;
+MACRO fstk1;
 	defb $a1
 ENDM
 
-MACRO fstkhalf;							// stack half
+;;
+; X80 op-code: stack half
+;;
+MACRO fstkhalf;
 	defb $a2
 ENDM
 
-MACRO fstkhalfpi;						// stack pi/2
+;;
+; X80 op-code: stack pi / 2
+;;
+MACRO fstkhalfpi;
 	defb $a3
 ENDM
 
-MACRO fstk10;							// stack 10
+;;
+; X80 op-code: stack 10
+;;
+MACRO fstk10;
 	defb $a4
 ENDM
 
-MACRO fst n;						// store (mem 0-5)
+;;
+; X80 op-code: store (mem 0 to 5)
+;;
+MACRO fst n;
 	defb $c0 + {n};
 ENDM
 
-MACRO fgt n;						// get (mem 0-5)
+;;
+; X80 op-code: get (mem 0 to 5)
+;;
+MACRO fgt n;
 	defb $e0 + {n};
 ENDM
+
 
 ;	// miscellaneous
 
 	end_marker		equ $80;
 	k_buff			equ $5b00;
+
 
 ;	// colors
 
@@ -332,6 +553,7 @@ ENDM
 	key_control		equ $0f;
 	key_help		equ $10;
 	key_delete		equ $7f;
+
 
 ;	// function keys
 
@@ -368,6 +590,7 @@ ENDM
 
 
 ;	// hidden number marker
+
 	number_mark		equ $0e;
 
 
@@ -378,6 +601,7 @@ ENDM
 
 
 ;	// operators
+
 	op_and			equ '&';
 	op_bin			equ '%';
 	op_comp			equ '~';
@@ -389,6 +613,7 @@ ENDM
 
 
 ;	// tokens
+
 	tk_rnd			equ $80;
 	tk_inkey_str	equ $81;
 	tk_pi			equ $82;
@@ -459,7 +684,7 @@ ENDM
 	tk_cont			equ $c3;
 	tk_dim			equ $c4;
 	tk_rem			equ $c5;
-	tkey_for			equ $c6;
+	tk_for			equ $c6;
 	tk_goto			equ $c7;
 	tk_gosub		equ $c8;
 	tk_input		equ $c9;
