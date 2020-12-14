@@ -66,8 +66,7 @@ hr {
     border-top: 1px solid rgba(38,50,56,0.5);
     border-left: 0px;
     border-right: 0px;
-    border-bottom: 0px;
-    size: 1;}
+    border-bottom: 0px;}
 
 /* tables */
 table {
@@ -178,6 +177,5 @@ table {
 body a[title="Skip navigation links"] {
     visibility: hidden;}
 
-frame a[target="classFrame"] {
-    border: 0;
-    margin: 0;}
+body hr[size="4"] {
+	visibility: hidden;}
