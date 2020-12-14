@@ -1,16 +1,45 @@
-/* AsmDoc style sheet; see http://rudy.mif.pg.gda.pl/~bogdro/inne/ */
+/* Style sheet for AsmDoc; see http://rudy.mif.pg.gda.pl/~bogdro/inne/ */
+/* Copyright (c) 2020 Source Solutions, Inc. */
 
-/* Define colors, fonts and other style attributes here to override the defaults */
+/* Google fonts */
 @import url('https://fonts.googleapis.com/css?family=Montserrat&display=swap');
 @import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
 
-/* Page background color */
-body {font-family: Montserrat, sans-serif;
+/* body */
+body {
+    font-family: Roboto, sans-serif;
     color: #333333;
-    font-size: 14px;}
+    background: #f9f9f9;
+    font-size: 14px;
+    padding: 0px;}
 
-/* Headings */
-h1 {font-family: Montserrat,sans-serif;
+/* defined term */
+dt {
+    padding-top: 7px;
+    padding-bottom: 7px;
+    font-weight: bold;
+    color: #0e7c86;
+    font-size: 13px;}
+
+dd code {
+    color: #e53935;
+    background-color: rgba(38,50,56,0.05);
+    font-family: Courier,monospace;
+    border-radius: 2px;
+    border: 1px solid rgba(38,50,56,0.1);
+    padding: 0 5px;
+    font-size: 13px;
+    font-weight: 400;
+    word-break: break-word;}
+
+/* links */
+a {
+    text-decoration: none;
+    color: #32329f;}
+
+/* headings */
+h1 {
+    font-family: Montserrat,sans-serif;
     font-weight: 400;
     font-size: 1.85714em;
     line-height: 1.6em;
@@ -18,44 +47,136 @@ h1 {font-family: Montserrat,sans-serif;
     margin-top: 0;
     margin-bottom: 0.5em;}
 
-h2 {font-family: Montserrat,sans-serif;
+h2 {
+    font-family: Montserrat,sans-serif;
     font-weight: 400;
     font-size: 1.85714em;
     line-height: 1.6em;
 	color: #32329f;}
 
-/* Table colors */
-.TableHeadingColor {font-family: Roboto, sans-serif;
+h3 {
+    font-size: 1.3em;
+    padding: 0.2em 0;
+    margin: 14px 0 14px;
+    color: #333333;
+    font-weight: normal;}
+
+/* horizontal rule */
+hr {
+    border-top: 1px solid rgba(38,50,56,0.5);
+    border-left: 0px;
+    border-right: 0px;
+    border-bottom: 0px;}
+
+/* tables */
+table {
+    border-collapse: collapse;}
+
+/* table colors */
+.TableHeadingColor {
+    font-family: Roboto, sans-serif;
     font-size: 1.17em;
     font-weight: bold;
 	background: #333333;
-	color: #ffffff; }
-.TableSubHeadingColor  {color: #333333;}
-.TableRowColor         {background: #fcfcfc; color: #333333; font-size: 14px;}
+    color: #ffffff;
+    border: 1px solid #333333;}
+.TableSubHeadingColor {
+    font-family: Roboto, sans-serif;
+    font-size: 1.17em;
+    font-weight: bold;
+	background: #333333;
+    color: #ffffff;
+    border: 1px solid #333333;}
+.TableSubHeadingColor a {
+    color: white;}
+.TableRowColor {
+    font-size: 13px;
+    background: #f9f9f9;
+    color: rgba(102,102,102,0.9);}
+.TableRowColor a {
+    font-family: Courier, monospace;
+    font-size: 13px;
+    font-weight: normal;
+    color: #333333;}
+.TableRowColor a:hover {
+    font-weight: bold;}
 
-/* Font used in left-hand frame lists */
-.FrameTitleFont   {font-family: Montserrat, sans-serif;
-		           font-size: 0.929em;
-				   text-transform: none;
-				   color: #333333;}
-.FrameHeadingFont {font-family: Montserrat, sans-serif;
-		           font-size: 0.929em;
-				   text-transform: none;
-				   color: #333333;}
-.FrameItemFont    {font-family: Montserrat, sans-serif;
-		           font-size: 0.929em;
-				   text-transform: none;
-				   color: #333333;}
+/* font used in left-hand frame lists */
+.FrameTitleFont {
+    font-family: Montserrat, sans-serif;
+    font-size: 0.929em;
+    text-transform: none;
+    color: #333333;}
+.FrameHeadingFont {
+    font-family: Montserrat, sans-serif;
+    font-size: 0.929em;
+    text-transform: none;
+    color: #333333;}
+.FrameItemFont {
+    font-family: Montserrat, sans-serif;
+    font-size: 0.929em;
+    text-transform: none;
+    color: #333333;
+    margin: 0px;
+    border: 0px;}
+.FrameItemFont a {
+    cursor: pointer;
+    color: rgb(51, 51, 51);
+    background-color: #f9f9f9;
+    margin: 0px;
+    border: 0px;
+    padding: 6px;
+    display: flex;
+    -webkit-box-pack: justify;
+    justify-content: space-between;
+    font-family: Montserrat, sans-serif;
+    font-size: 0.929em;
+    text-transform: none;}
+.FrameItemFont a:hover {
+    color: #32329f;
+    background-color: #e1e1e1;}
 
+/* navigation bar fonts and colors */
+.NavBarCell1 {
+    background-color: #333333;
+    color:#e1e1e1;
+    padding: 3px;
+}
+.NavBarCell1Rev {
+    background-color: #333333;
+    color: #e1e1e1;
+    padding: 3px;}
 
-/* Navigation bar fonts and colors */
-.NavBarCell1    { background-color: #eeeeee; color: #333333; }
-.NavBarCell1Rev { background-color: #333333; color: #FFFFFF; }
-.NavBarFont1    { font-family: Montserrat, sans-serif; color: #333333; }
-.NavBarFont1Rev { font-family: Montserrat, sans-serif; color: #FFFFFF; }
+.NavBarFont1 {
+    color: #e1e1e1;
+    background-color: #333333;
+    font-family: Roboto, sans-serif;
+    border-radius: 2px;
+    border: 1px solid rgba(38,50,56,0.1);
+    padding: 0 5px;
+    font-size: 13px;
+    font-weight: 400;
+    word-break: break-word;
+}
+.NavBarFont1Rev {
+    color: #333333;
+    background-color: #ffffff;
+    font-family: Roboto, sans-serif;
+    border-radius: 2px;
+    border: 1px solid rgba(38,50,56,0.1);
+    padding: 0 5px;
+    font-size: 13px;
+    font-weight: bold;
+    word-break: break-word;}
 
-.NavBarCell2    { font-family: Montserrat, sans-serif; background-color: #FFFFFF; color:#333333; }
-.NavBarCell3    { font-family: Montserrat, sans-serif; background-color: #FFFFFF; color:#333333; }
+.NavBarCell2 {
+    visibility: hidden;}
+.NavBarCell3 {
+    visibility: hidden;}
 
-/* Links */
-a {text-decoration: none; color: #32329f; }
+body a[title="Skip navigation links"] {
+    visibility: hidden;}
+
+frame a[target="classFrame"] {
+    border: 0;
+    margin: 0;}
