@@ -14,9 +14,13 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
+;;
 ;	// --- PSG AND LOUDSPEAKER ROUTINES ----------------------------------------
+;;
 
-;	// 1-bit speaker subroutine
+;;
+; 1-bit speaker
+;;
 beeper:
 	di;									// interrupts off
 	ld a, l;							// store L
@@ -71,8 +75,11 @@ be_end:
 	ei;									// restore interrupts
 	ret;								// end of beeper subroutine
 
-;	// SOUND command
 ;	// SOUND <pitch integer>, <duration in seconds>
+;;
+; SOUND command
+;;
+c_sound:
 sound:
 	fwait;								// enter calc with pitch and duration on stack
 	fxch;								// d, p
@@ -165,14 +172,18 @@ report_overflow_0:
 	rst error;
 	defb overflow;
 
-;	// play bell subroutine
+;;
+; play bell
+;;
 bell:
 ;	ld (iy + _err_nr), 255;				// clear error
 	ld de, (rasp);						// pitch
 	ld hl, 2148;						// duration
 	jp beeper;							// sound rasp and exit
 
-;	// mute PSG subroutine
+;;
+; mute PSG
+;;
 mute_psg:
 	ld hl, $fe07;						// H = AY-0, L = Volume register (7)
 	ld de, $bfff;						// D = data port, E = register port / mute

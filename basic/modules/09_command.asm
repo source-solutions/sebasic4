@@ -14,11 +14,14 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
+	org $1ae9;
+;;
 ;	// --- BASIC LINE AND COMMAND INTERPRETATINO -------------------------------
+;;
 
-	org $1ae9
-
-;	// BASIC main parser
+;;
+; BASIC main parser
+;;
 line_scan:
 	res 7, (iy + _flags);				// signal checking syntax
 	call e_line_no;						// point to first code after a line number
@@ -28,7 +31,9 @@ line_scan:
 	ld (err_nr), a;						// set err_nr to OK
 	jr stmt_l_1;						// immediate jump
 
-;	// statement loop
+;;
+; statement loop
+;;
 stmt_loop:
 	rst next_char;						// get next character
 
@@ -70,6 +75,9 @@ stmt_l_2:
 	ld l, c;							// low byte to L
 	jr get_param;						// immediate jump
 
+;;
+; scan loop
+;;
 scan_loop:
 	ld hl, (t_addr);					// temporary pointer to parameter table
 
@@ -92,7 +100,9 @@ get_param:
 	dec b;								// LD B, 255
 	ret;								// indirect jump
 
-;	// separator subroutine
+;;
+; separator
+;;
 separator:
 	rst get_char;						// get current character
 	cp c;								// compare with entry
@@ -100,7 +110,9 @@ separator:
 	rst next_char;						// get next character
 	ret;								// end of subroutine
 
-;	// statement return subroutine
+;;
+; statement return
+;;
 stmt_ret:
 	call break_key;						// break?
 	jr c, stmt_r_1;						// jump if not
@@ -114,7 +126,9 @@ stmt_r_1:
 	bit 7, h;							// statement in editing area?
 	jr z, line_new;						// jump if not
 
-;	// run line entry point
+;;
+; run line entry point
+;;
 line_run:
 	ld hl, -2;							// line in editing area
 	ld (ppc), hl;						// store in sysvar
@@ -125,7 +139,9 @@ line_run:
 	ld a, (nsppc);						// number of next statement to A
 	jr next_line;						// immediate jump
 
-;	// new line subroutine 
+;;
+; new line
+;; 
 line_new:
 	call line_addr;						// get starting address
 	ld a, (nsppc);						// statement number to A
@@ -136,19 +152,26 @@ line_new:
 	and %11000000;						// end of program?
 	jr z, line_use;						// jump if not
 
-;	// END command
 ;	// FIXME - END should close all files and streams
+;;
+; END command
+;;
 c_end:
 	ld bc, -2;							// line zero
 	ld (ppc), bc;						// set line number
 	ld l, ok;							// error to A
 	jp error_3;							// generate error message
 
-;	// REM command
+;;
+; REM command
+;;
+c_rem:
 rem:
 	pop af;								// discard statement return address
 
-;	// line end subroutine
+;;
+; line end
+;;
 line_end:
 	call unstack_z;						// return if checking syntax
 	ld hl, (nxtlin);					// get address
@@ -157,7 +180,9 @@ line_end:
 	ret nz;								// return if so
 	xor a;								// signal statement zero
 
-;	// line use routine
+;;
+; line use
+;;
 line_use:
 	cp 1;								// signal
 	adc a, 0;							// statement one
@@ -173,7 +198,9 @@ line_use:
 	add hl, de;							// first character to DE
 	inc hl;								// start of line after to HL
 
-;	// next line routine
+;;
+; next line
+;;
 next_line:
 	ld (nxtlin), hl;					// set next line
 	ex de, hl;							// swap pointers
@@ -192,14 +219,18 @@ report_stmt_msng:
 	rst error;							// else
 	defb statement_missing;				// error
 
-;	// check end subroutine
+;;
+; check end
+;;
 check_end:
 	call syntax_z;						// checking syntax?
 	ret nz;								// return if not
 	pop bc;								// discard scan_loop and
 	pop bc;								// stmt_ret return addresses
 
-;	// statement next subroutine
+;;
+; statement next
+;;
 stmt_next:
 	rst get_char;						// get current character
 	cp ctrl_cr;							// carriage return
@@ -225,24 +256,43 @@ class_tbl:
 	defb class_0b - $;					// class_0a with no furhter operands
 
 ;	// command classes 0, 1, 3, 5, 7, 9, B
+
+;;
+; command class 07
+;;
 class_07:
 	call class_06;						// a number must follow
 	jr class_00;						// no futher operands
 
+;;
+; command class 09
+;;
 class_09:
 	call class_08;						// two comma-separated numbers must follow
 	jr class_00;						// no futher operands
 
+;;
+; command class 0B
+;;
 class_0b:
 	call class_0a;						// an expression must follow
 	jr class_00;						// no futher operands
 
+;;
+; command class 03
+;;
 class_03:
 	call fetch_num;						// get number, default to zero
 
+;;
+; command class 00
+;;
 class_00:
 	cp a;								// set zero flag
 
+;;
+; command class 05
+;;
 class_05:
 	pop bc;								// discard scan-loop return address
 	call z, check_end;					// next statement if checking syntax
@@ -255,10 +305,15 @@ class_05:
 	push bc;							// stack entry
 	ret;								// end of subroutine
 
+;;
+; command class 01
+;;
 class_01:
 	call look_vars;						// variable exists?
 
-;	// variable in assignment subroutine
+;;
+; variable in assignment
+;;
 var_a_1:
 	ld (iy + _flagx), 0;				// clear flagx
 	jr nc, var_a_2;						// jump if variable exists
@@ -286,14 +341,18 @@ var_a_3:
 	ld (dest), hl;						// and destination
 	ret;								// end of subroutine
 
-;	// command class 2
+;;
+; command class 02
+;;
 class_02:
 	pop bc;								// discard scan_loop return address
 	call val_fet_1;						// make assignment
 	call check_end;						// next statement if checking syntax
 	ret;								// indirect jump to stmt-ret in runtime
 
-;	// fetch a value subroutine
+;;
+; fetch a value
+;;
 val_fet_1:
 	ld a, (flags);						// address system variable
 
@@ -309,7 +368,9 @@ val_fet_2:
 	jp nz, c_let;						// jump if not
 	ret;								// else return
 
-;	// command class 4
+;;
+; command class 04
+;;
 class_04:
 	call look_vars;						// find variable
 	push af;							// stack AF
@@ -320,12 +381,20 @@ class_04:
 	pop af;								// unstack AF
 	jr var_a_1;							// immediate jump
 
-;	// expect numeric / string expression subroutine
+;;
+; expect numeric / string expression
+;;
 next_2num:
 	rst next_char;						// advance ch_add
 
-;	// command class 8 / expect two numbers subroutine
+;;
+; command class 08
+;;
 class_08:
+
+;;
+; expect two numbers
+;;
 expt_2num:
 	call expt_1num;						// get expression
 	cp ',';								// comma?
@@ -334,8 +403,14 @@ expt_2num:
 expt_num:
 	rst next_char;						// advance ch_add
 
-;	// command class 6 / expect one number subroutine
+;;
+; command class 06
+;;
 class_06:
+
+;;
+; expect one number
+;;
 expt_1num:
 	call scanning;						// evaluate expression
 	bit 6, (iy + _flags);				// numeric result
@@ -345,24 +420,35 @@ report_syntax_err:
 	rst error;							// ekse
 	defb syntax_error;					// error
 
-;	// command class A / expect string expression subroutine
-;	// UnoDOS 3 entry point
+
 	org $1c8c
+;;
+; command class 0A
+;;
 class_0a:
+
+;;
+; expect string expression
+; @see: UnoDOS 3 entry points
+;;
 expt_exp:
 	call scanning;						// evaluate expression
 	bit 6, (iy + _flags);				// string result?
 	ret z;								// return if so
 	jr report_syntax_err;				// else error
 
-;	// fetch a number subroutine
+;;
+; fetch a number
+;;
 fetch_num:
 	cp ctrl_cr;							// carriage return?
 	jr z, use_zero;						// jump if so
 	cp ':';								// colon?
 	jr nz, expt_1num;					// jump if not
 
-;	// use zero subroutine
+;;
+; use zero
+;;
 use_zero:
 	call unstack_z;						// return if checking syntax
 	fwait;								// enter calculator
@@ -370,7 +456,9 @@ use_zero:
 	fce;								// exit calculator
 	ret;								// end of subroutine
 
-;	// IF command
+;;
+; IF command
+;;
 c_if:
 	pop bc;								// discard stmt-ret return address
 	call syntax_z;						// checking syntax
@@ -385,7 +473,9 @@ c_if:
 if_1:
 	jp stmt_l_1;						// next statement
 
-;	// FOR command
+;;
+; FOR command
+;;
 c_for:
 	cp tk_step;							// step token?
 	jr nz, f_use_1;						// jump if not
@@ -476,7 +566,9 @@ report_for_wo_next:
 	rst error;
 	defb for_without_next;
 
-;	// look program subroutine
+;;
+; look program
+;;
 look_prog:
 	ld a, (hl);							// current character
 	cp ':';								// colon?
@@ -510,7 +602,9 @@ look_p_2:
 	ret nc;								// return with occurence
 	jr look_p_1;						// immediate jump
 
-;	// NEXT command
+;;
+; NEXT command
+;;
 c_next:
 	bit 1, (iy + _flagx);				// variable found
 	jp nz, report_undef_var;			// jump if not
@@ -543,7 +637,9 @@ report_next_wo_for:
 	rst error;
 	defb next_without_for;
 
-;	// next loop subroutine
+;;
+; next loop
+;;
 next_loop:
 	fwait;								// enter calculator
 	fgt 1;								// l
@@ -570,6 +666,9 @@ next_2:
 read_3:
 	rst next_char;						// next character
 
+;;
+; READ command
+;;
 c_read:
 	call class_01;						// get entry for existing variable
 	call syntax_z;						// checking syntax?
@@ -602,7 +701,10 @@ read_2:
 	call check_end;						// ext statement if checking syntax
 	ret;								// end of routine
 
-;	// DATA command
+;;
+; DATA command
+;;
+c_data:
 data:
 	call syntax_z;						// checking syntax?
 	jr nz, data_2;						// jump if so
@@ -617,14 +719,19 @@ data_1:
 data_2:
 	ld a, tk_data;						// data
 
-;	// pass by subroutine
+;;
+; pass by
+;;
 pass_by:
 	ld b, a;							// token to B
 	cpdr;								// back to find token
 	ld de, $0200;						// find following statement (D - 1)
 	jp each_stmt;						// immediate jump
 
-;	// RESTORE command
+;;
+; RESTORE command
+;;
+c_restore:
 restore:
 	call find_line;						// valid line number to HL and BC
 
@@ -636,7 +743,10 @@ rest_run:
 	ld (datadd), hl;					// and store in dat_add
 	ret;								// end of routine
 
-;	// RANDOMIZE command
+;;
+; RANDOMIZE command
+;;
+c_randomize:
 randomize:
 	call find_int2;						// get operand
 	ld a, c;							// is it
@@ -648,13 +758,18 @@ rand_1:
 	ld (seed), bc;						// result to seed
 	ret;								// end of routine
 
-;	// CONT command
+;;
+; CONT command
+;;
+c_cont:
 cont:
 	ld hl, (oldppc);					// line number to HL
 	ld d, (iy + _osppc);				// statement number to D
 	jr goto_2;							// immediate jump
 
-;	// find line subroutine
+;;
+; find line
+;;
 find_line:
 	call find_int2;						// line number to BC
 	ld l, c;							// resault
@@ -667,7 +782,10 @@ report_undef_ln_no:
 	rst error;							// else
 	defb undefined_line_number;			// error
 
-;	// GOTO command
+;;
+; GOTO command
+;;
+c_goto:
 goto:
 	call find_line;						// valid line number to HL and BC
 	ld d, 0;							// zero statement
@@ -677,19 +795,26 @@ goto_2:
 	ld (iy + _nsppc), d;				// store statement number
 	ret;								// end of routine
 
-;	// OUT command
+;;
+; OUT command
+;;
 c_out:
 	call two_param;						// get operands
 	out (c), a;							// perform out
 	ret;								// end of routine
 
-;	// POKE command
+;;
+; POKE command
+;;
+c_poke:
 poke:
 	call two_param;						// get operands
 	ld (bc), a;							// store A in address BC
 	ret;								// end of routine
 
-;	// two parameters subroutine
+;;
+; two parameters
+;;
 two_param:
 	call fp_to_a;						// first parameter
 	jr c, report_overflow;				// error if out of range
@@ -702,7 +827,9 @@ two_p_1:
 	pop af;								// unstack first parameter
 	ret;								// end of subroutine
 
-;	// find integer subroutine
+;;
+; find integer
+;;
 find_int1:
 	call fp_to_a;						// value on calculator stack to A
 	jr find_i_1;						// immediate jump
@@ -718,7 +845,9 @@ report_overflow:
 	rst error;							// else
 	defb overflow;						// error
 
-;	// RUN command
+;;
+; RUN command
+;;
 c_run:
 	rst get_char;						// get character
 	cp ctrl_cr;							// carriage return?
@@ -745,7 +874,10 @@ run_zero:
 	call use_zero;						// use line zero
 	jr l_run;							// run
 
-;	// CLEAR command
+;;
+; CLEAR command
+;;
+c_clear:
 clear:
 	call find_int2;						// get operand
 
@@ -790,7 +922,10 @@ clear_2:
 	ex de, hl;							// stmt_ret address to HL
 	jp (hl);							// immediate jump
 
-;	// GOSUB command
+;;
+; GOSUB command
+;;
+c_gosub:
 gosub:
 	pop de;								// stmt_ret address to DE
 	ld h, (iy + _subppc);				// get statement number
@@ -805,7 +940,9 @@ gosub:
 	call goto;							// set newppc and nsppc
 	ld bc, 20;							// 20 bytes required
 
-;	// test room subroutine
+;;
+; test room
+;;
 test_room:
 	ld hl, (stkend);					// stack end to HL
 	add hl, bc;							// add value in BC
@@ -828,7 +965,10 @@ report_oo_mem:
 ;	ld b, h;
 ;	ret;
 
-;	// RETURN command
+;;
+; RETURN command
+;;
+c_return:
 return:
 	pop bc;								// stmt-ret address to BC
 	pop hl;								// error address to HL
@@ -849,7 +989,10 @@ report_ret_wo_gosub:
 	rst error;							// then
 	defb return_without_gosub;			// error
 
-;	// WAIT command
+;;
+; WAIT command
+;;
+c_wait:
 wait:
 	call flush_kb;						// signal no key
 	call find_int2;						// jump here from entry point to get operand
@@ -890,6 +1033,10 @@ break_key:
 
 ;	// DEF FN command
 ;	// FIXME: extend DEF functionality
+;;
+; DEF command
+;;
+c_def:
 def_fn:
 	call syntax_z;						// checking syntax?
 	jr z, def_fn_1;						// jump if not
@@ -962,7 +1109,9 @@ unstack_z:
 	ret z;								// return if not in runtime
 	jp (hl);							// else immediate jump
 
-;	// PRINT command
+;;
+; PRINT command
+;;
 c_print:
 	ld a, 2;							// channel S
 
@@ -989,14 +1138,18 @@ print_4:
 	cp ')';								// closing parenthesis?
 	ret z;								// return if so
 
-;	// print carraige return subroutine
+;;
+; print carraige return
+;;
 print_cr:
 	call unstack_z;						// return if checking syntax
 	ld a, ctrl_cr;						// carriage return
 	rst print_a;						// print it
 	ret;								// end of subroutine
 
-;	// print items subroutine
+;;
+; print items
+;;
 pr_item_1:
 	rst get_char;						// get current character
 	cp tk_spc;							// is it SPC?
@@ -1041,7 +1194,9 @@ pr_string:
 	rst print_a;						// print it
 	jr pr_string;						// loop until done
 
-;	// end of printing subroutine
+;;
+; end of printing
+;;
 pr_end_z:
 	cp ')';								// closing parenthesis
 	ret z;								// return if so
@@ -1054,7 +1209,9 @@ pr_st_end:
 	cp ':';								// colon?
 	ret;								// end of subroutine
 
-;	// print position subroutine
+;;
+; print position
+;;
 pr_posn_1:
 	rst get_char;						// get current character
 	cp ';';								// semi-colon?
@@ -1082,7 +1239,9 @@ pr_posn_4:
 	cp a;								// clear zero flag
 	ret;								// end of subroutine
 
-;	// alter stream subroutine
+;;
+; alter stream
+;;
 str_alter:
 	cp '#';								// number sign?
 	scf;								// set carry flag
@@ -1100,7 +1259,10 @@ str_alter_1:
 	and a;								// clear carry flag
 	ret;								// end of subroutine
 
-;	// INPUT command
+;;
+; INPUT command
+;;
+c_input:
 input:
 	call syntax_z;						// checking syntax?
 	jr z, input_1;						// jump if so
@@ -1267,7 +1429,9 @@ in_next_2:
 	jp z, in_item_1;					// loop until done
 	ret;								// end of subroutine
 
-;	// in assign subroutine
+;;
+; IN assign
+;;
 in_assign:
 	ld hl, (worksp);					// first location of workspace
 	ld (ch_add), hl;					// set ch_add to point to it
@@ -1285,11 +1449,15 @@ in_assign:
 in_stop:
 	call unstack_z;						// return if checking syntax
 
-;	// STOP command
+;;
+; STOP command
+;;
 c_stop:
 	jp report_break;					// clear keyboard buffer and report break
 
-;	// in channel K subroutine
+;;
+; IN channel K
+;;
 in_chan_k:
 	ld hl, (curchl);					// base address of current channel
 	inc hl;								// high byte of output routine
@@ -1300,7 +1468,9 @@ in_chan_k:
 	cp 'K';								// K?
 	ret;								// end of subroutine
 
-;	// calculator stack to BC subroutine
+;;
+; calculator stack to BC
+;;
 stk_to_bc:
 	call stk_to_a;						// first number to A
 	ld b, a;							// store in B
@@ -1312,7 +1482,9 @@ stk_to_bc:
 	ld c, a;							// second number to C
 	ret;								// end of subroutine
 
-;	// calculator stack to A subroutine
+;;
+; calculator stack to A
+;;
 stk_to_a:
 	call fp_to_a;						// last value to A
 	jp c, report_overflow;				// error if out of range
@@ -1321,7 +1493,10 @@ stk_to_a:
 	ld c, 255;							// negative sign to C
 	ret;								// end of subroutine
 
-;	// RENUM command
+;;
+; RENUM command
+;;
+c_renum:
 renum:
 	ld hl, (stkend);					// value on stack end to HL
 	ld b, 2;							// two values required

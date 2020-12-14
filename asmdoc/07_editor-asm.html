@@ -14,6 +14,7 @@
 <TR ALIGN="center" VALIGN="top">
 <TD BGCOLOR="#FFFFFF" CLASS="NavBarCell1Rev"> &nbsp;<FONT CLASS="NavBarFont1Rev"><B>File</B></FONT>&nbsp;</TD>
 <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="index-all.html"><FONT CLASS="NavBarFont1"><B>Index</B></FONT></A>&nbsp;</TD>
+<TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="constant-values.html"><FONT CLASS="NavBarFont1"><B>Constants</B></FONT></A>&nbsp;</TD>
 <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="help-doc.html"><FONT CLASS="NavBarFont1"><B>Help</B></FONT></A>&nbsp;</TD>
 </TR></TABLE></TD>
 <TD ALIGN="right" VALIGN="top" ROWSPAN="3"></TD></TR>
@@ -33,6 +34,303 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <A NAME="skip_navbar_top" ID="skip_navbar_top"></A>
 
 <HR><H2>File 07_editor.asm</H2>
+
+<HR>
+<A NAME="function_summary" ID="function_summary"><!-- --></A>
+<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
+<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
+<TH ALIGN="left" COLSPAN="2">
+<B>Function summary</B></TH></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#add_char">add_char</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ add character
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#clear_sp">clear_sp</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ clear SP
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#ed_backspace">ed_backspace</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ backspace editing
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#ed_clr">ed_clr</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ clr editing
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#ed_copy">ed_copy</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ lower screen copying
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#ed_down">ed_down</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ cursor down editing
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#ed_edge">ed_edge</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ edge editing
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#ed_end">ed_end</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ end editing
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#ed_enter">ed_enter</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ enter editing
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#ed_error">ed_error</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ error editing
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#ed_help">ed_help</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ help editing
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#ed_home">ed_home</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ home editing
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#ed_ins">ed_ins</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ insert editing
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#ed_keys_t">ed_keys_t</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ editing keys table
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#ed_left">ed_left</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ cursor left editing
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#ed_pg_dn">ed_pg_dn</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ page down editing
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#ed_pg_up">ed_pg_up</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ page up editing
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#ed_right">ed_right</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ cursor right editing
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#ed_symbol">ed_symbol</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ symbol editing
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#ed_tab">ed_tab</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ tab editing
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#ed_up">ed_up</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ cursor up editing
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#editor">editor</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+ line editor
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#key_input">key_input</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ keyboard input
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#remove_fp">remove_fp</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ remove floating point
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="07_editor-asm.html#set_hl">set_hl</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ set HL
+</TD></TR>
+</TABLE><BR>
+
+<A NAME="function_detail" ID="function_detail"><!-- --></A>
+<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
+<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
+<TH ALIGN="left" COLSPAN="1">
+<B>Function detail</B></TH></TR></TABLE>
+<A NAME="add_char" ID="add_char"><!-- --></A><H3>add_char</H3>
+<DL><DD>
+ add character
+ 
+<DT><B>See Also: </B><DD> UnoDOS 3 entry points
+
+</DD></DL><HR>
+
+<A NAME="clear_sp" ID="clear_sp"><!-- --></A><H3>clear_sp</H3>
+<DL><DD>
+ clear SP
+
+</DD></DL><HR>
+
+<A NAME="ed_backspace" ID="ed_backspace"><!-- --></A><H3>ed_backspace</H3>
+<DL><DD>
+ backspace editing
+
+</DD></DL><HR>
+
+<A NAME="ed_clr" ID="ed_clr"><!-- --></A><H3>ed_clr</H3>
+<DL><DD>
+ clr editing
+
+</DD></DL><HR>
+
+<A NAME="ed_copy" ID="ed_copy"><!-- --></A><H3>ed_copy</H3>
+<DL><DD>
+ lower screen copying
+
+</DD></DL><HR>
+
+<A NAME="ed_down" ID="ed_down"><!-- --></A><H3>ed_down</H3>
+<DL><DD>
+ cursor down editing
+
+</DD></DL><HR>
+
+<A NAME="ed_edge" ID="ed_edge"><!-- --></A><H3>ed_edge</H3>
+<DL><DD>
+ edge editing
+
+</DD></DL><HR>
+
+<A NAME="ed_end" ID="ed_end"><!-- --></A><H3>ed_end</H3>
+<DL><DD>
+ end editing
+
+</DD></DL><HR>
+
+<A NAME="ed_enter" ID="ed_enter"><!-- --></A><H3>ed_enter</H3>
+<DL><DD>
+ enter editing
+
+</DD></DL><HR>
+
+<A NAME="ed_error" ID="ed_error"><!-- --></A><H3>ed_error</H3>
+<DL><DD>
+ error editing
+
+</DD></DL><HR>
+
+<A NAME="ed_help" ID="ed_help"><!-- --></A><H3>ed_help</H3>
+<DL><DD>
+ help editing
+
+</DD></DL><HR>
+
+<A NAME="ed_home" ID="ed_home"><!-- --></A><H3>ed_home</H3>
+<DL><DD>
+ home editing
+
+</DD></DL><HR>
+
+<A NAME="ed_ins" ID="ed_ins"><!-- --></A><H3>ed_ins</H3>
+<DL><DD>
+ insert editing
+
+</DD></DL><HR>
+
+<A NAME="ed_keys_t" ID="ed_keys_t"><!-- --></A><H3>ed_keys_t</H3>
+<DL><DD>
+ editing keys table
+
+</DD></DL><HR>
+
+<A NAME="ed_left" ID="ed_left"><!-- --></A><H3>ed_left</H3>
+<DL><DD>
+ cursor left editing
+
+</DD></DL><HR>
+
+<A NAME="ed_pg_dn" ID="ed_pg_dn"><!-- --></A><H3>ed_pg_dn</H3>
+<DL><DD>
+ page down editing
+
+</DD></DL><HR>
+
+<A NAME="ed_pg_up" ID="ed_pg_up"><!-- --></A><H3>ed_pg_up</H3>
+<DL><DD>
+ page up editing
+
+</DD></DL><HR>
+
+<A NAME="ed_right" ID="ed_right"><!-- --></A><H3>ed_right</H3>
+<DL><DD>
+ cursor right editing
+
+</DD></DL><HR>
+
+<A NAME="ed_symbol" ID="ed_symbol"><!-- --></A><H3>ed_symbol</H3>
+<DL><DD>
+ symbol editing
+
+</DD></DL><HR>
+
+<A NAME="ed_tab" ID="ed_tab"><!-- --></A><H3>ed_tab</H3>
+<DL><DD>
+ tab editing
+
+</DD></DL><HR>
+
+<A NAME="ed_up" ID="ed_up"><!-- --></A><H3>ed_up</H3>
+<DL><DD>
+ cursor up editing
+
+</DD></DL><HR>
+
+<A NAME="editor" ID="editor"><!-- --></A><H3>editor</H3>
+<DL><DD>
+
+ line editor
+
+</DD></DL><HR>
+
+<A NAME="key_input" ID="key_input"><!-- --></A><H3>key_input</H3>
+<DL><DD>
+ keyboard input
+
+</DD></DL><HR>
+
+<A NAME="remove_fp" ID="remove_fp"><!-- --></A><H3>remove_fp</H3>
+<DL><DD>
+ remove floating point
+ 
+<DT><B>See Also: </B><DD> UnoDOS 3 entry points
+
+</DD></DL><HR>
+
+<A NAME="set_hl" ID="set_hl"><!-- --></A><H3>set_hl</H3>
+<DL><DD>
+ set HL
+
+</DD></DL><HR>
+
 <HR>
 <A HREF="#skip_navbar_bottom" TITLE="Skip navigation links">Skip navbar</A>
 <TABLE BORDER="0" WIDTH="100%" CELLPADDING="1" CELLSPACING="0" SUMMARY="">
@@ -41,6 +339,7 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <TR ALIGN="center" VALIGN="top">
 <TD BGCOLOR="#FFFFFF" CLASS="NavBarCell1Rev"> &nbsp;<FONT CLASS="NavBarFont1Rev"><B>File</B></FONT>&nbsp;</TD>
 <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="index-all.html"><FONT CLASS="NavBarFont1"><B>Index</B></FONT></A>&nbsp;</TD>
+<TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="constant-values.html"><FONT CLASS="NavBarFont1"><B>Constants</B></FONT></A>&nbsp;</TD>
 <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="help-doc.html"><FONT CLASS="NavBarFont1"><B>Help</B></FONT></A>&nbsp;</TD>
 </TR></TABLE></TD>
 <TD ALIGN="right" VALIGN="top" ROWSPAN="3"></TD></TR>

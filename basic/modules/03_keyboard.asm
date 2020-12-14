@@ -73,10 +73,13 @@
 ;	// F14 - $7E		- 14 (52)
 ;	// F15 - $77 EXT	- 15 (53)
 
-
+;;
 ;	// --- KEYBOARD ROUTINES ---------------------------------------------------
+;;
 
-;	// keyboard scanning subroutine
+;;
+; keyboard scanning
+;;
 key_scan:
 	ld de, $ffff;						// set DE to no key
 	call f_key_scan;					// test F-keys
@@ -192,7 +195,9 @@ f_key_found:
 	ld e, a;							// key value to E
 	ret;								// return;
 
-;	// keyboard subroutine
+;;
+; keyboard
+;;
 keyboard:
 	call key_scan;						// get key pair in DE
 	ret nz;								// return if no key
@@ -254,7 +259,9 @@ k_end:
 	ld (iy - _k_head), a;				// new head pointer to sysvar
 	ret;								// end of subroutine
 
-;	// repeating key subroutine
+;;
+; repeating key
+;;
 k_repeat:
 	inc hl;								// set 5 call counter
 	ld (hl), 5;							// to 5
@@ -267,7 +274,9 @@ k_repeat:
 	ld a, (hl);							// get code
 	jr k_end;							// immediate jump
 
-;	// key test subroutine
+;;
+; key test
+;;
 k_test:
 	ld b, d;							// copy shift byte
 	ld a, e;							// move key number
@@ -304,7 +313,9 @@ k_set_7:
 	or %10000000;						// set high bit
 	ret;								// end of subroutine
 
-;	// keyboard decoding subroutine
+;;
+; keyboard decoding
+;;
 k_decode:
 	ld a, e;							// copy main code
 

@@ -14,7 +14,9 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
+;;
 ;	// --- FILE HANDLING ROUTINES ----------------------------------------------
+;;
 
 ; 	// MS-DOS records file dates and times as packed 16-bit values.
 ;	// An MS-DOS date has the following format:
@@ -40,6 +42,9 @@
 
 	org $5000;
 
+;;
+; RUN application
+;;
 run_app:
 	call unstack_z;						// return if checking syntax
 	call get_dest;						// app name to second buffer
@@ -248,6 +253,10 @@ get_dest:
 ;	call use_zero;						// use line zero
 ;	jp run;								// run
 
+;;
+; BLOAD command
+;;
+c_bload:
 bload:
 	call unstack_z;						// return if checking syntax
 	call find_int2;						// get address
@@ -266,6 +275,10 @@ bload_2:
 
 	jp f_read_in;						// load binary
 
+;;
+; BSAVE command
+;;
+c_bsave:
 bsave:
 	call unstack_z;						// return if checking syntax
 	call find_int2;						// get length
@@ -282,6 +295,10 @@ bsave:
 
 	jp f_write_out;						// save binary
 
+;;
+; COPY command
+;;
+c_copy:
 copy:
 	call unstack_z;						// return if checking syntax
 	call get_dest;						// path to buffer (dest)
@@ -359,6 +376,10 @@ write_chunk:
 	jp c, report_file_not_found;		// jump if error
 	ret;								// else done
 
+;;
+; LOAD command
+;;
+c_load:
 load:
 	call unstack_z;						// return if checking syntax
 	call get_path;						// path to buffer
@@ -392,6 +413,10 @@ load:
 	or a;								// clear flags
 	ret;								// done	
 
+;;
+; NAME command
+;;
+c_name:
 name:
 	call unstack_z;						// return if checking syntax
 	call get_dest;						// path to buffer (dest)
@@ -406,6 +431,9 @@ name:
 	or a;								// clear flags
 	ret;								// done
 
+;;
+; SAVE command
+;;
 c_save:
 	call unstack_z;						// return if checking syntax
 	call get_path;						// path to buffer
@@ -425,6 +453,10 @@ c_save:
 
 
 ;	// print a folder listing to the main screen
+;;
+; FILES command
+;;
+c_files:
 files:
 	rst get_char;						// get character
 	cp ctrl_cr;							// carriage return?
@@ -630,6 +662,10 @@ no_:
 ;	// updates disk commands
 
 ;	// delete a file
+;;
+; KILL command
+;;
+c_kill:
 kill:
 	call unstack_z;						// return if checking syntax
 	call path_to_ix;					// path to buffer
@@ -650,6 +686,10 @@ init_path:
 	or a;								// clear flags
 	ret;								// done
 
+;;
+; CHDIR command
+;;
+c_chdir:
 chdir:
 	call unstack_z;						// return if checking syntax
 	call path_to_ix;					// path to buffer
@@ -659,6 +699,10 @@ chdir:
 	defb f_chdir;						// change folder
 	jr chk_path_error;					// test for error
 
+;;
+; MKDIR command
+;;
+c_mkdir:
 mkdir:
 	call unstack_z;						// return if checking syntax
 	call path_to_ix;					// path to buffer
@@ -668,6 +712,10 @@ mkdir:
 	defb f_mkdir;						// change folder
 	jr chk_path_error;					// test for error
 
+;;
+; RMDIR command
+;;
+c_rmdir:
 rmdir:
 	call unstack_z;						// return if checking syntax
 	call path_to_ix;					// path to buffer
