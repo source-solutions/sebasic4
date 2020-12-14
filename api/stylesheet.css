@@ -1,0 +1,61 @@
+/* AsmDoc style sheet; see http://rudy.mif.pg.gda.pl/~bogdro/inne/ */
+
+/* Define colors, fonts and other style attributes here to override the defaults */
+@import url('https://fonts.googleapis.com/css?family=Montserrat&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
+
+/* Page background color */
+body {font-family: Montserrat, sans-serif;
+    color: #333333;
+    font-size: 14px;}
+
+/* Headings */
+h1 {font-family: Montserrat,sans-serif;
+    font-weight: 400;
+    font-size: 1.85714em;
+    line-height: 1.6em;
+    color: #32329f;
+    margin-top: 0;
+    margin-bottom: 0.5em;}
+
+h2 {font-family: Montserrat,sans-serif;
+    font-weight: 400;
+    font-size: 1.85714em;
+    line-height: 1.6em;
+	color: #32329f;}
+
+/* Table colors */
+.TableHeadingColor {font-family: Roboto, sans-serif;
+    font-size: 1.17em;
+    font-weight: bold;
+	background: #333333;
+	color: #ffffff; }
+.TableSubHeadingColor  {color: #333333;}
+.TableRowColor         {background: #fcfcfc; color: #333333; font-size: 14px;}
+
+/* Font used in left-hand frame lists */
+.FrameTitleFont   {font-family: Montserrat, sans-serif;
+		           font-size: 0.929em;
+				   text-transform: none;
+				   color: #333333;}
+.FrameHeadingFont {font-family: Montserrat, sans-serif;
+		           font-size: 0.929em;
+				   text-transform: none;
+				   color: #333333;}
+.FrameItemFont    {font-family: Montserrat, sans-serif;
+		           font-size: 0.929em;
+				   text-transform: none;
+				   color: #333333;}
+
+
+/* Navigation bar fonts and colors */
+.NavBarCell1    { background-color: #eeeeee; color: #333333; }
+.NavBarCell1Rev { background-color: #333333; color: #FFFFFF; }
+.NavBarFont1    { font-family: Montserrat, sans-serif; color: #333333; }
+.NavBarFont1Rev { font-family: Montserrat, sans-serif; color: #FFFFFF; }
+
+.NavBarCell2    { font-family: Montserrat, sans-serif; background-color: #FFFFFF; color:#333333; }
+.NavBarCell3    { font-family: Montserrat, sans-serif; background-color: #FFFFFF; color:#333333; }
+
+/* Links */
+a {text-decoration: none; color: #32329f; }
