@@ -51,10 +51,10 @@
 			"label": "asmdoc",
 			"type": "shell",
 			"linux": {
-				"command": "",
+				"command": "./scripts/asmdoc.sh",
 			},
 			"osx": {
-				"command": "",
+				"command": "./scripts/asmdoc.sh",
 			},
 			"windows": {
 				"command": ".\\scripts\\asmdoc.cmd",
