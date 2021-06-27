@@ -166,7 +166,6 @@ c_end:
 ; REM command
 ;;
 c_rem:
-rem:
 	pop af;								// discard statement return address
 
 ;;
@@ -705,7 +704,6 @@ read_2:
 ; DATA command
 ;;
 c_data:
-data:
 	call syntax_z;						// checking syntax?
 	jr nz, data_2;						// jump if so
 
@@ -732,7 +730,6 @@ pass_by:
 ; RESTORE command
 ;;
 c_restore:
-restore:
 	call find_line;						// valid line number to HL and BC
 
 rest_run:
@@ -747,7 +744,6 @@ rest_run:
 ; RANDOMIZE command
 ;;
 c_randomize:
-randomize:
 	call find_int2;						// get operand
 	ld a, c;							// is it
 	or b;								// zero?
@@ -762,7 +758,6 @@ rand_1:
 ; CONT command
 ;;
 c_cont:
-cont:
 	ld hl, (oldppc);					// line number to HL
 	ld d, (iy + _osppc);				// statement number to D
 	jr goto_2;							// immediate jump
@@ -786,7 +781,6 @@ report_undef_ln_no:
 ; GOTO command
 ;;
 c_goto:
-goto:
 	call find_line;						// valid line number to HL and BC
 	ld d, 0;							// zero statement
 
@@ -807,7 +801,6 @@ c_out:
 ; POKE command
 ;;
 c_poke:
-poke:
 	call two_param;						// get operands
 	ld (bc), a;							// store A in address BC
 	ret;								// end of routine
@@ -864,7 +857,7 @@ c_run:
 
 ;	// RUN <line> command
 l_run:
-	call goto;							// set newppc
+	call c_goto;						// set newppc
 	ld bc, 0;							// restore value
 	call rest_run;						// perform restore
 	jr clear_run;						// immediate jump
@@ -878,7 +871,6 @@ run_zero:
 ; CLEAR command
 ;;
 c_clear:
-clear:
 	call find_int2;						// get operand
 
 clear_run:
@@ -893,7 +885,7 @@ clear_1:
 	call var_end_hl;					// location before varaibles end marker location to HL
 	call reclaim_1;						// reclaim all bytes of current variables area
 	call rest_run;						// data restore
-	call cls;							// clear display
+	call c_cls;							// clear display
 	ld de, 50;							// add 
 	ld hl, (stkend);					// fifty
 	add hl, de;							// to stasck end
@@ -926,7 +918,6 @@ clear_2:
 ; GOSUB command
 ;;
 c_gosub:
-gosub:
 	pop de;								// stmt_ret address to DE
 	ld h, (iy + _subppc);				// get statement number
 	inc h;								// increment it
@@ -937,7 +928,7 @@ gosub:
 	push hl;							// stack error address
 	ld (err_sp), sp;					// point sysvar to it
 	push de;							// stack stmt_ret address
-	call goto;							// set newppc and nsppc
+	call c_goto;						// set newppc and nsppc
 	ld bc, 20;							// 20 bytes required
 
 ;;
@@ -969,7 +960,6 @@ report_oo_mem:
 ; RETURN command
 ;;
 c_return:
-return:
 	pop bc;								// stmt-ret address to BC
 	pop hl;								// error address to HL
 	pop de;								// last entry on gosub stack to DE
@@ -993,7 +983,6 @@ report_ret_wo_gosub:
 ; WAIT command
 ;;
 c_wait:
-wait:
 	call flush_kb;						// signal no key
 	call find_int2;						// jump here from entry point to get operand
 
@@ -1037,7 +1026,6 @@ break_key:
 ; DEF command
 ;;
 c_def:
-def_fn:
 	call syntax_z;						// checking syntax?
 	jr z, def_fn_1;						// jump if not
 	ld a, tk_def_fn;					// DEF FN?
@@ -1263,7 +1251,6 @@ str_alter_1:
 ; INPUT command
 ;;
 c_input:
-input:
 	call syntax_z;						// checking syntax?
 	jr z, input_1;						// jump if so
 	ld a, 1;							// channel K
@@ -1497,7 +1484,6 @@ stk_to_a:
 ; RENUM command
 ;;
 c_renum:
-renum:
 	ld hl, (stkend);					// value on stack end to HL
 	ld b, 2;							// two values required
 	cp ctrl_cr;							// carriage return?

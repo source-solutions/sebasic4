@@ -1387,7 +1387,6 @@ stk_fetch:
 ; DIM command
 ;;
 c_dim:
-dim:
 	call look_vars;						// search variables
 
 d_rport_c:
