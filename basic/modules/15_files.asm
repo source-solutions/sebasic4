@@ -257,7 +257,6 @@ get_dest:
 ; BLOAD command
 ;;
 c_bload:
-bload:
 	call unstack_z;						// return if checking syntax
 	call find_int2;						// get address
 	ld (f_addr), bc;					// store it
@@ -279,7 +278,6 @@ bload_2:
 ; BSAVE command
 ;;
 c_bsave:
-bsave:
 	call unstack_z;						// return if checking syntax
 	call find_int2;						// get length
 	ld (f_size), bc;					// store it
@@ -299,7 +297,6 @@ bsave:
 ; COPY command
 ;;
 c_copy:
-copy:
 	call unstack_z;						// return if checking syntax
 	call get_dest;						// path to buffer (dest)
 	call get_path;						// path to buffer (source)
@@ -380,7 +377,6 @@ write_chunk:
 ; LOAD command
 ;;
 c_load:
-load:
 	call unstack_z;						// return if checking syntax
 	call get_path;						// path to buffer
 	ld ix, $5a00;						// pointer to path
@@ -417,7 +413,6 @@ load:
 ; NAME command
 ;;
 c_name:
-name:
 	call unstack_z;						// return if checking syntax
 	call get_dest;						// path to buffer (dest)
 	call get_path;						// path to buffer (source)
@@ -457,7 +452,6 @@ c_save:
 ; FILES command
 ;;
 c_files:
-files:
 	rst get_char;						// get character
 	cp ctrl_cr;							// carriage return?
 	jr z, use_cwd;						// jump if so
@@ -666,7 +660,6 @@ no_:
 ; KILL command
 ;;
 c_kill:
-kill:
 	call unstack_z;						// return if checking syntax
 	call path_to_ix;					// path to buffer
 	ld a, '*';							// use current drive
@@ -690,7 +683,6 @@ init_path:
 ; CHDIR command
 ;;
 c_chdir:
-chdir:
 	call unstack_z;						// return if checking syntax
 	call path_to_ix;					// path to buffer
 	ld a, '*';							// use current drive
@@ -703,7 +695,6 @@ chdir:
 ; MKDIR command
 ;;
 c_mkdir:
-mkdir:
 	call unstack_z;						// return if checking syntax
 	call path_to_ix;					// path to buffer
 	ld a, '*';							// use current drive
@@ -716,7 +707,6 @@ mkdir:
 ; RMDIR command
 ;;
 c_rmdir:
-rmdir:
 	call unstack_z;						// return if checking syntax
 	call path_to_ix;					// path to buffer
 	ld a, '*';							// use current drive

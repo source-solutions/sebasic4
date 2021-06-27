@@ -80,7 +80,6 @@ be_end:
 ; SOUND command
 ;;
 c_sound:
-sound:
 	fwait;								// enter calc with pitch and duration on stack
 	fxch;								// d, p
 	fmove;								// d, p, p

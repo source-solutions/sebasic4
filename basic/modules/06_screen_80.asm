@@ -376,7 +376,7 @@ po_vt:
 
 ;	// print clr subroutine
 po_clr:
-	jp cls;
+	jp c_cls;
 
 ;;
 ; print carriage return
@@ -846,7 +846,6 @@ po_scr_4b:
 ; CLS command
 ;;
 c_cls:
-cls:
 	set 0, (iy + _flags);				// suppress leading space
 
 ;	// old CLS entry point

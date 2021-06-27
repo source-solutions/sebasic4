@@ -112,7 +112,6 @@ c_call:
 ; COLOR command
 ;;
 c_color:
-color:
 	call fp_to_a;						// background color to A
 	cp 16;								// higher than 15?
 	jr nc, bad_color;					// jump if out of range
@@ -182,7 +181,6 @@ col_lookup:
 ; DELETE command
 ;;
 c_delete:
-delete:
 	call get_line;						// get a valid line number
 	call next_one;						// find address
 	push de;							// stack it
@@ -204,7 +202,6 @@ get_line:
 ; EDIT command
 ;;
 c_edit:
-edit:
 	ld hl, (prog);						// prog contains pointer to program
 	ld a, (hl);							// get value at address in HL
 	cp $80;								// no program?
@@ -263,7 +260,6 @@ c_error:
 ; LOCATE command
 ;;
 c_locate:
-locate:
 	fwait;								// enter calculator
 	fxch;								// swap values
 	fce;								// exit calculator
@@ -314,7 +310,6 @@ loc_err:
 ; PALETTE command
 ;;
 c_palette:
-palette:
 	call two_param;						// get parameters
 	rlca;								// BGR value
 	rlca;								// to GRB
@@ -387,7 +382,6 @@ set_pal:
 ; TRON command
 ;;
 c_tron:
-tron:
 	set 7, (iy + _flags2);				// switch trace on
 	ret;								// end of routine
 
@@ -396,7 +390,6 @@ tron:
 ; TROFF command
 ;;
 c_troff:
-troff:
 	res 7, (iy + _flags2);				// switch trace off
 	ret;								// end of routine
 
@@ -472,7 +465,6 @@ onerr_test_1:
 ; SCREEN command
 ;;
 c_screen:
-screen:
 	call test_0_or_1;					// get variable
 	and a;								// test for zero
 ;	jr nz, screen_1;					// jump for 40 column
@@ -481,7 +473,7 @@ screen_0:
 	res 1, (iy + _flags2);				// signal 80 columns
 	ld a, %00110110;					// yellow on blue (with no ULAplus), hi-res mode
 	out (scld), a;						// set it
-	jp cls;								// exit via CLS 80
+	jp c_cls;								// exit via CLS 80
 
 screen_1:
 	set 1, (iy + _flags2);				// signal 40 columns
@@ -513,7 +505,6 @@ msg_loop:
 ; AUTO command
 ;;
 c_auto:
-auto:
 	ret
 
 ;;

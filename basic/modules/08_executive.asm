@@ -49,7 +49,6 @@
 ; NEW command
 ;;
 c_new:
-new:
 	di;									// interrupts off
 	xor a;								// LD A, 0
 	dec a;								// LD A, 255
@@ -179,7 +178,7 @@ initial:
 	ld b, d;							// data select
 	out (c),a;							// set it
 
-	call cls;							// clear screen
+	call c_cls;							// clear screen
 	call set_min;						// set up workspace
 	ld a, 2;							// channel S
 	call chan_open;						// open it
