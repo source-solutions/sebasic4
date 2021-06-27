@@ -19,8 +19,14 @@
 ;	// FIXME - futher optimization is possible (see: indexer_0)
 ;	//         BIN$ and OCT$ are not yet implemented
 
-;	// scanning subroutine
 	org $24fc;
+;;
+;
+;;
+
+;;
+; scanning
+;;
 scanning:
 	rst get_char;						// get current character
 
@@ -60,9 +66,11 @@ s_2_coord:
 s_rport_c:
 	jp nz, report_syntax_err;			// error if not
 
-;	// syntax Z subroutine
-;	// UnoDOS 3 entry point
 	org $2530;
+;;
+; syntax z
+; @see: UnoDOS 3 entry points
+;;
 syntax_z:
 	bit 7, (iy + _flags);				// checking syntax?
 	ret;								// end of subroutine
@@ -85,7 +93,9 @@ scan_func:
 	defb tk_hex_str, s_hex_str - 1 - $;	// HEX$
 	defb 0;								// null terminator
 
-;	// scanning function routines
+;;
+; scanning function
+;;
 s_u_plus:
 	rst next_char;						// next character
 	jp s_loop_1;						// jump back
@@ -274,7 +284,9 @@ s_numeric:
 	set 6, (iy + _flags);				// set number marker flag
 	jr s_cont_2;						// immediate jump
 
-;	// scanning variable routine
+;;
+; scanning variable
+;;
 s_letter:
 	call look_vars;						// check for matching entry
 	jp c, report_undef_var;				// error if not
@@ -352,6 +364,9 @@ indexer_3:
 	inc hl;								// address priority
 	ld b, (hl);							// get priority
 
+;;
+; scanning main loop
+;;
 s_loop:
 	pop de;								// get last op-code and priority
 	ld a, d;							// priority to A
@@ -424,7 +439,9 @@ s_next:
 	rst next_char;						// next character
 	jp s_loop_1;						// loop until done
 
-;	// scanning functino subroutine
+;;
+; scanning function (FN)
+;;
 s_fn_sbrn:
 	call syntax_z;						// checking syntax?
 	jr nz, sf_run;						// jump if not
@@ -660,7 +677,9 @@ sf_value:
 	rst next_char;						// next character
 	jp s_cont_2;						// jump back
 
-;	// function skip over subroutine
+;;
+; function skip over
+;;
 fn_skpovr:
 	inc hl;								// next code
 
@@ -673,7 +692,9 @@ fn_skpovr_1:
 	jr z, fn_skpovr;
 	ret;								// end of subroutine
 
-;	// look variables subroutine
+;;
+; look variables
+;;
 look_vars:
 	set 6, (iy + _flags);				// assume numeric
 	rst get_char;						// first character to A
@@ -792,7 +813,9 @@ v_end:
 	bit 6, b;							// test bit 6
 	ret;								// end of subroutine
 
-;	// stack function argument subroutine
+;;
+; stack function argument
+;;
 stk_f_arg:
 	ld hl, (defadd);					// point to first character
 	ld a, (hl);							// store it in A
@@ -993,7 +1016,9 @@ sv_slice_query:
 	res 6, (iy + _flags);				// signal string
 	ret;								// end of subroutine
 
-;	// slicing subroutine
+;;
+; slicing
+;;
 slicing:
 	call syntax_z;						// checking syntax?
 	call nz, stk_fetch;					// get parameters if not
@@ -1065,7 +1090,9 @@ sl_over:
 sl_store:
 	call unstack_z;						// return if checking syntax
 
-;	// stack store subroutine
+;;
+; stack store
+;;
 stk_st_0:
 	xor a;								// signal array string or sliced string
 
@@ -1090,7 +1117,9 @@ stk_store:
 	ld (stkend), hl;					// set stack end
 	ret;								// end of subroutine
 
-;	// integer expression subroutine
+;;
+; integer expression
+;;
 int_exp1:
 	xor a;								// clear the error register
 
@@ -1123,7 +1152,9 @@ i_restore:
 	pop de;								// unstack DE
 	ret;								// end of subroutine
 
-;	// DE, (DE +1) subroutine
+;;
+; DE, (DE + 1)
+;;
 de_plus_1_to_de:
 	ex de, hl;							// use HL
 	inc hl;								// point to DE + 1
@@ -1132,7 +1163,9 @@ de_plus_1_to_de:
 	ld d, (hl);							// LD D, (DE + 2)
 	ret ;								// end of subroutine
 
-;	// get HL * DE subroutine
+;;
+; get HL * DE
+;;
 get_hl_x_de:
 	call syntax_z;						// checking syntax? return if so
 	ret z;								// (unstack_z would corrupt HL)
@@ -1140,7 +1173,9 @@ get_hl_x_de:
 	jp c, report_oo_mem;				// error if out of memory
 	ret;								// end ofS subroutine
 
-;	// LET command
+;;
+; LET command
+;;
 c_let:
 	ld hl, (dest);						// current address of dest
 	bit 1, (iy + _flagx);				// existing variable?
@@ -1328,9 +1363,11 @@ var_end_hl:
 	dec hl;								// to HL
 	ret;								// end of subroutine
 
-;	// stack fetch subroutine
-;	// UnoDOS 3 entry point
 	org $2bf1
+;;
+; stack fetch
+; @see: UnoDOS 3 entry points
+;;
 stk_fetch:
 	ld hl, (stkend);					// get stack end
 	dec hl;								// step back
@@ -1346,8 +1383,10 @@ stk_fetch:
 	ld (stkend), hl;					// set new stack end
 	ret;								// end of subroutine
 
-;	// DIM command
-dim:
+;;
+; DIM command
+;;
+c_dim:
 	call look_vars;						// search variables
 
 d_rport_c:
@@ -1448,13 +1487,17 @@ dim_sizes:
 	jr nz, dim_sizes;					// loop until done
 	ret;								// end of subroutine
 
-;	// alphanumeric subroutine
+;;
+; alphanumeric
+;;
 alphanum:
 	call numeric;						// digit?
 	ccf;								// complement carry flag
 	ret c;								// return with digit
 
-;	// alphabetic subroutine
+;;
+; alphabetic
+;;
 alpha:
 	cp 'A';								// A?
 	ccf;								// complement carry flag
@@ -1467,7 +1510,9 @@ alpha:
 	cp 'z' + 1;							// > z?
 	ret;								// end of subroutine
 
-;	// decimal to floating point subroutine
+;;
+; decimal to floating point
+;;
 dec_to_fp:
 	ld de, 0;							// clear DE
 	cp op_bin;							// %
@@ -1478,7 +1523,9 @@ dec_to_fp:
 	jr z, hex_digit;					// jump if so
 	jr not_bin;							// immedaite jump
 
-;	// binary digit
+;;
+; binary digit
+;;
 bin_digit:
 	rst next_char;						// get next character
 	sub '1';							// subtract ASCII '1'
@@ -1496,7 +1543,9 @@ bin_end:
 	ld b, d;							// to BC
 	jp stack_bc;						// immediate jump
 
-;	// octal digit
+;;
+; octal digit
+;;
 oct_digit:
 	rst next_char;						// get next character
 	sub '0';							// convert ASCII to real value
@@ -1517,7 +1566,9 @@ oct_end:
 	ex de, hl;							// swap pointers
 	jp oct_digit;						// immediate jump
 
-;	// hexadecimal digit
+;;
+; hexadecimal digit
+;;
 hex_digit:
 	rst next_char;						// get next character
 	call alphanum;						// alphanumeric?
@@ -1628,7 +1679,9 @@ st_e_part:
 e_fp_jump:
 	jp fp_e_to_fp;						// immediate jump
 
-;	// numeric subroutine
+;;
+; numeric
+;;
 numeric:
 	cp '0';								// zero character?
 	ret c;								// return if lower value
@@ -1636,18 +1689,24 @@ numeric:
 	ccf;								// set carry if higher value
 	ret;								// 
 
-;	// stack digit subroutine
+;;
+; stack digit
+;;
 stk_digit:
 	call numeric;						// digit?
 	ret c;								// return if not
 	sub '0';							// convert code to real number
 
-;	// stack A subroutine
+;;
+; stack A
+;;
 stack_a:
 	ld c, a;							// value to
 	ld b, 0;							// BC
 
-;	// stack BC subroutine
+;;
+; stack BC
+;;
 stack_bc:
 	xor a;								// LD A, 0
 	ld e, a;							// LD E, 0
@@ -1658,7 +1717,9 @@ stack_bc:
 	and a;								// clear carry flag
 	jp stk_pntrs;						// immediate jump
 
-;	// integer to floating point subroutine
+;;
+; integer to floating point
+;;
 int_to_fp:
 	push af;							// stack first digit
 	fwait;								// enter calculator

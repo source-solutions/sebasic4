@@ -298,7 +298,13 @@ inverse_6a:
 	org $09f4;
 	ret;								// immediate return
 
-;	// print out routines
+;;
+;
+;;
+
+;;
+; print out
+;;
 print_out:
 ;	bit 1, (iy + _flags2);				// test for 40 column mode
 ;	jp nz, s40_print_out;				// jump if so
@@ -340,7 +346,9 @@ ctlchrtab:
 po_bel:
 	jp bell;
 
-;	// print tab subroutine
+;;
+; print tab
+;;
 po_tab:
 	ld a, c;							// current column
 	dec a;								// move right
@@ -360,15 +368,19 @@ po_space:
 	jr nz, po_space;					// until
 	ret;								// done
 
-;	// print home subroutine
+;;
+; print home
+;;
 po_vt:
 	jp cl_home;							// indirect return
 
 ;	// print clr subroutine
 po_clr:
-	jp cls;
+	jp c_cls;
 
-;	// print carriage return subroutine
+;;
+; print carriage return
+;
 po_cr:
 	ld c, 81;							// left column
 	call po_scr;						// scroll if required
@@ -377,7 +389,9 @@ po_cr:
 jp_cl_set:
 	jp cl_set;							// indirect return
 
-;	// print cursor right subroutine
+;;
+; print cursor right
+;;
 po_right:
 	ld hl, p_flag;						// point to sysvar
 	ld d, (hl);							// sysvar to D
@@ -386,7 +400,9 @@ po_right:
 	ld (hl), d;							// restore sysvar
 	ret;								// end of subroutine
 
-;	// print cursor left subroutine
+;;
+; print cursor left
+;;
 po_left:
 	inc c;								// move column left
 	ld a, 82;							// left side
@@ -402,7 +418,9 @@ po_left:
 po_left_1:
 	jr jp_cl_set;						// indirect return
 
-;	// print cursor up subroutine
+;;
+; print cursor up
+;;
 po_up:
 	inc b;								// move one line up
 	ld a, 25;							// screen has 24 lines
@@ -411,7 +429,9 @@ po_up:
 	dec b;								// do nothing
 	ret;								// end of subroutine
 
-;	// print cursor down subroutine
+;;
+; print cursor down
+;;
 po_down:
 	ld a, c;							// column to A
 	push af;							// stack it
@@ -427,11 +447,15 @@ cl_scrl:
 cl_set2:
 	jr jp_cl_set;						// indirect return
 
-;	// printable character codes
+;;
+; printable character codes
+;;
 po_able:
 	call po_any;						// print character and continue
 
-;	// position store subroutine
+;;
+; position store
+;;
 po_store:
 	bit 0, (iy + _vdu_flag);			// test for lower screen
 	jr nz, po_st_e;						// jump if so
@@ -445,7 +469,9 @@ po_st_e:
 	ld (echo_e), bc;					// screen
 	ret;								// end of subroutine
 
-;	// position fetch suvroutine
+;;
+; position fetch
+;;
 po_fetch:
 	ld hl, (df_cc);						// get main
 	ld bc, (s_posn);					// screen values
@@ -455,7 +481,9 @@ po_fetch:
 	ld hl, (df_ccl);					// screen values
 	ret;								// and return
 
-;	// print any character subroutine
+;;
+; print any character
+;;
 po_any:
     bit 7, (iy + _flags);				// runtime?
     jr nz, po_char;						// jump if so
@@ -534,7 +562,9 @@ po_char_3:
 	ex de, hl;							// base address to DE
 	pop bc;								// unstack current position
 
-;	// print all characters subroutine
+;;
+; print all characters
+;;
 pr_all:
 	ld a, c;							// get column number
 	dec a;								// move it right one position
@@ -609,12 +639,18 @@ pr_all_f:
 	ret;								// return via po_store
 
 ;	// message printing subroutine
+;;
+; print first message
+;;
 po_asciiz_0:
 	xor a;								// select first message
 	set 2, (iy + _flags2);				// signal do not print tokens (for example, scroll during LIST)
 	set 5, (iy + _vdu_flag);			// signal lower screen to be cleared
 
 ;	// message number in A, start of table in DE
+;;
+; message printing
+;;
 po_asciiz:
 	and a;								// message zero?
 	call nz, po_srch_asciiz;			// if not, locate message
@@ -681,7 +717,9 @@ po_tr_sp:
 po_sv_sp:
 	ld a, ' ';							// print trailing space
 
-;	// print save subroutine
+;;
+; print save
+;;
 po_save:
 	push de;							// stack DE
 	exx;								// preserve HL and BC
@@ -690,7 +728,9 @@ po_save:
 	pop de;								// unstack DE
 	ret;								// end of subroutine
 
-;	// table search subroutine
+;;
+; table search
+;;
 po_search:
 	ex de, hl;							// base address to HL
 	push af;							// stack entry number
@@ -710,7 +750,9 @@ po_step:
 	sub 'A';							// test against letter, leading space if so
 	ret;								// end of subroutine
 
-;	// test for scroll subroutine
+;;
+; test for scroll
+;;
 po_scr:
 	ld de, cl_set;						// put sysvar
 	push de;							// on the stack
@@ -799,9 +841,11 @@ po_scr_4b:
 	pop bc;								// unstack line and column numbers
 	ret;								// end of subroutine
 
-;	// CLS command
 	org $0d67;
-cls:
+;;
+; CLS command
+;;
+c_cls:
 	set 0, (iy + _flags);				// suppress leading space
 
 ;	// old CLS entry point
@@ -837,7 +881,9 @@ cl_chan_a:
 	ld bc, $1751;						// row 23, column 81
 	jr cl_set;							// immediate jump
 
-;	// clear whole display area subroutine
+;;
+; clear whole display area
+;;
 cl_all:
 	res 0, (iy + _flags2);				// signal screen is clear
 	call cl_chan;						// house keeping tasks
@@ -854,7 +900,9 @@ cl_home:
 	ld (iy + _scr_ct), 1;				// reset scroll count
 	ld bc, $1851;						// row 24, column 81
 
-;	// clear set subroutine
+;;
+; clear set
+;;
 cl_set:
 	ld a, b;							// row to A
 	bit 0, (iy + _vdu_flag);			// main display?
@@ -869,7 +917,9 @@ cl_set_1:
 	pop bc;								// unstack row and column
 	jp po_store;						// immediate jump
 
-;	// scrolling subroutine
+;;
+; scrolling
+;;
 cl_sc_all:
 	ld b, 23;							// entry point after scroll message
 
@@ -947,7 +997,9 @@ cl_scr_3:
 	ei;									// interrupts on
 	ld bc, (oldsp);						// restore BC
 
-;	// clear lines subroutine
+;;
+; clear lines
+;;
 cl_line:
 	push bc;
 	ld (oldsp), bc;						// temporarily store BC
@@ -1048,7 +1100,9 @@ cls_2nd:
 	ldir;								// wipe bytes
 	ret;								// end of subroutine
 
-;	// clear address subroutine
+;;
+; clear address
+;;
 cl_addr:
 	ld a, 24;							// reverse line
 	sub b;								// number

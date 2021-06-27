@@ -90,7 +90,13 @@
 ;	// permits extension of vector table if required
 ;	org $0590
 
-;;	// CALL command
+;;
+;
+;;
+
+;;
+; CALL command
+;;
 c_call:
 	call find_int2;						// get address
 	ld l, c;							// address
@@ -101,9 +107,11 @@ c_call:
 	exx;								// main register set
 	ret;								// return to BASIC
 
-;	// COLOR command
 ;	// entered with PEN and PAPER on calculator stack
-color:
+;;
+; COLOR command
+;;
+c_color:
 	call fp_to_a;						// background color to A
 	cp 16;								// higher than 15?
 	jr nc, bad_color;					// jump if out of range
@@ -169,8 +177,10 @@ col_lookup:
 
 ; 	// FIXME - delete should accept:    x   x,y   ,y   x,   
 
-;	// DELETE command
-delete:
+;;
+; DELETE command
+;;
+c_delete:
 	call get_line;						// get a valid line number
 	call next_one;						// find address
 	push de;							// stack it
@@ -188,8 +198,10 @@ get_line:
 	call line_addr;						// get line address
 	ret;								// end of subroutine
 
-;	// EDIT command
-edit:
+;;
+; EDIT command
+;;
+c_edit:
 	ld hl, (prog);						// prog contains pointer to program
 	ld a, (hl);							// get value at address in HL
 	cp $80;								// no program?
@@ -235,14 +247,19 @@ edit_1:
 	pop af;								// drop address
 	jp main_2;							// immediate jump
 
-;	// ERROR command
+;;
+; ERROR command
+;;
 c_error:
 	call find_int1;						// get 8-bit integer
 	ld l, a;							// error to A
 	jp error_3;							// generate error message
 
 ;	// LOCATE command <row>,<column> (counts from 1)
-locate:
+;;
+; LOCATE command
+;;
+c_locate:
 	fwait;								// enter calculator
 	fxch;								// swap values
 	fce;								// exit calculator
@@ -289,8 +306,10 @@ loc_err:
 	rst error;
 	defb out_of_screen;
 
-; 	// PALETTE command
-palette:
+;;
+; PALETTE command
+;;
+c_palette:
 	call two_param;						// get parameters
 	rlca;								// BGR value
 	rlca;								// to GRB
@@ -358,17 +377,25 @@ set_pal:
 	out (c), e;							// write it
 	ret;								//
 
-;	// TRON command (trace on)
-tron:
+;	// trace on
+;;
+; TRON command
+;;
+c_tron:
 	set 7, (iy + _flags2);				// switch trace on
 	ret;								// end of routine
 
-;	// TROFF command (trace off)
-troff:
+;	// trace off
+;;
+; TROFF command
+;;
+c_troff:
 	res 7, (iy + _flags2);				// switch trace off
 	ret;								// end of routine
 
-;	// ON command
+;;
+; ON command
+;;
 c_on:
 	rst get_char;						// first character
 	cp tk_error;						// ERROR token?
@@ -434,8 +461,10 @@ onerr_test_1:
 	push hl;							// new return address
 	jp stmt_r_1;						// immediate jump
 
-;	// SCREEN command
-screen:
+;;
+; SCREEN command
+;;
+c_screen:
 	call test_0_or_1;					// get variable
 	and a;								// test for zero
 ;	jr nz, screen_1;					// jump for 40 column
@@ -444,7 +473,7 @@ screen_0:
 	res 1, (iy + _flags2);				// signal 80 columns
 	ld a, %00110110;					// yellow on blue (with no ULAplus), hi-res mode
 	out (scld), a;						// set it
-	jp cls;								// exit via CLS 80
+	jp c_cls;								// exit via CLS 80
 
 screen_1:
 	set 1, (iy + _flags2);				// signal 40 columns
@@ -472,14 +501,20 @@ msg_loop:
 	ret z;								// return when done
 	jr msg_loop;						// loop until done
 
-;	// AUTO command
-auto:
+;;
+; AUTO command
+;;
+c_auto:
 	ret
 
-;	// WHILE command
+;;
+; WHILE command
+;;
 c_while:
 	ret
 
-;	// WEND command
+;;
+; WEND command
+;;
 c_wend:
 	ret

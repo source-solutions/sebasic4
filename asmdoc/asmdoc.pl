@@ -619,7 +619,7 @@ my %helpdoc_msg = (
 				"Strona <a href=\"constant-values.$html_ext\">Wartości stałe</a> zawiera stałe ".
 				"oraz ich wartości.\n",
 
-		"EN"	=>	"<CENTER><H1>How This API Document Is Organized</H1></CENTER>\n".
+		"EN"	=>	"<CENTER><H1>How this API Document is Organized</H1></CENTER>\n".
 				"This API (Application Programming Interface) document has pages corresponding ".
 				"to the items in the navigation bar, described as follows.\n".
 				"<H3>File</H3><BLOCKQUOTE>\n".

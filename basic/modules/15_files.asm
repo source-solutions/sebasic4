@@ -14,7 +14,9 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
+;;
 ;	// --- FILE HANDLING ROUTINES ----------------------------------------------
+;;
 
 ; 	// MS-DOS records file dates and times as packed 16-bit values.
 ;	// An MS-DOS date has the following format:
@@ -40,6 +42,9 @@
 
 	org $5000;
 
+;;
+; RUN application
+;;
 run_app:
 	call unstack_z;						// return if checking syntax
 	call get_dest;						// app name to second buffer
@@ -248,7 +253,10 @@ get_dest:
 ;	call use_zero;						// use line zero
 ;	jp run;								// run
 
-bload:
+;;
+; BLOAD command
+;;
+c_bload:
 	call unstack_z;						// return if checking syntax
 	call find_int2;						// get address
 	ld (f_addr), bc;					// store it
@@ -266,7 +274,10 @@ bload_2:
 
 	jp f_read_in;						// load binary
 
-bsave:
+;;
+; BSAVE command
+;;
+c_bsave:
 	call unstack_z;						// return if checking syntax
 	call find_int2;						// get length
 	ld (f_size), bc;					// store it
@@ -282,7 +293,10 @@ bsave:
 
 	jp f_write_out;						// save binary
 
-copy:
+;;
+; COPY command
+;;
+c_copy:
 	call unstack_z;						// return if checking syntax
 	call get_dest;						// path to buffer (dest)
 	call get_path;						// path to buffer (source)
@@ -359,7 +373,10 @@ write_chunk:
 	jp c, report_file_not_found;		// jump if error
 	ret;								// else done
 
-load:
+;;
+; LOAD command
+;;
+c_load:
 	call unstack_z;						// return if checking syntax
 	call get_path;						// path to buffer
 	ld ix, $5a00;						// pointer to path
@@ -392,7 +409,10 @@ load:
 	or a;								// clear flags
 	ret;								// done	
 
-name:
+;;
+; NAME command
+;;
+c_name:
 	call unstack_z;						// return if checking syntax
 	call get_dest;						// path to buffer (dest)
 	call get_path;						// path to buffer (source)
@@ -406,6 +426,9 @@ name:
 	or a;								// clear flags
 	ret;								// done
 
+;;
+; SAVE command
+;;
 c_save:
 	call unstack_z;						// return if checking syntax
 	call get_path;						// path to buffer
@@ -425,7 +448,10 @@ c_save:
 
 
 ;	// print a folder listing to the main screen
-files:
+;;
+; FILES command
+;;
+c_files:
 	rst get_char;						// get character
 	cp ctrl_cr;							// carriage return?
 	jr z, use_cwd;						// jump if so
@@ -630,7 +656,10 @@ no_:
 ;	// updates disk commands
 
 ;	// delete a file
-kill:
+;;
+; KILL command
+;;
+c_kill:
 	call unstack_z;						// return if checking syntax
 	call path_to_ix;					// path to buffer
 	ld a, '*';							// use current drive
@@ -650,7 +679,10 @@ init_path:
 	or a;								// clear flags
 	ret;								// done
 
-chdir:
+;;
+; CHDIR command
+;;
+c_chdir:
 	call unstack_z;						// return if checking syntax
 	call path_to_ix;					// path to buffer
 	ld a, '*';							// use current drive
@@ -659,7 +691,10 @@ chdir:
 	defb f_chdir;						// change folder
 	jr chk_path_error;					// test for error
 
-mkdir:
+;;
+; MKDIR command
+;;
+c_mkdir:
 	call unstack_z;						// return if checking syntax
 	call path_to_ix;					// path to buffer
 	ld a, '*';							// use current drive
@@ -668,7 +703,10 @@ mkdir:
 	defb f_mkdir;						// change folder
 	jr chk_path_error;					// test for error
 
-rmdir:
+;;
+; RMDIR command
+;;
+c_rmdir:
 	call unstack_z;						// return if checking syntax
 	call path_to_ix;					// path to buffer
 	ld a, '*';							// use current drive

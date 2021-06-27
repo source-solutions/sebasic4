@@ -19,7 +19,7 @@
 
 ;	// --- DATA TABLES ---------------------------------------------------------
 
-	org $3d00
+	org $3d00;
 copyright:
 
 ifndef slam
@@ -425,7 +425,7 @@ tk_ptr_last:
 
 ;	// used in 09_command
 offst_tbl:
-	defw p_def_fn;						// 97 (DEF)
+	defw p_def;							// 97 (DEF)
 	defw p_bload;						// cf
 	defw p_bsave;						// d0
 	defw p_chdir;						// fe97 (BASICA)
@@ -513,33 +513,33 @@ offst_tbl:
 	defw p__fe;							// 
 	defw p__ff;							// 
 
-p_def_fn:
+p_def:
 	defb var_syn;
-	defw def_fn;
+	defw c_def;
 
 p_bload:
 	defb str_exp, ',', num_exp_no_f_ops;
-	defw bload;
+	defw c_bload;
 
 p_bsave:
 	defb str_exp, ',', num_exp, ',', num_exp_no_f_ops;
-	defw bsave;
+	defw c_bsave;
 
 p_chdir:
 	defb str_exp_no_f_ops;
-	defw chdir;
+	defw c_chdir;
 
 p_copy:
 	defb str_exp, tk_to, str_exp_no_f_ops;
-	defw copy;
+	defw c_copy;
 
 p_open:
 	defb num_exp, ',', str_exp, var_syn;
-	defw open;
+	defw c_open;
 
 p_close:
 	defb num_exp_no_f_ops;
-	defw close;
+	defw c_close;
 
 p_while:
 	defb var_syn;
@@ -551,31 +551,31 @@ p_wend:
 
 p_sound:
 	defb two_c_s_num_no_f_ops;
-	defw sound;
+	defw c_sound;
 
 p_files:
 	defb var_syn;
-	defw files;
+	defw c_files;
 
 p_kill:
 	defb str_exp_no_f_ops;
-	defw kill;
+	defw c_kill;
 
 p_load:
 	defb str_exp_no_f_ops;
-	defw load;
+	defw c_load;
 
 p_mkdir:
 	defb str_exp_no_f_ops;
-	defw mkdir;
+	defw c_mkdir;
 
 p_name:
 	defb str_exp, tk_to, str_exp_no_f_ops;
-	defw name;
+	defw c_name;
 
 p_rmdir:
 	defb str_exp_no_f_ops;
-	defw rmdir;
+	defw c_rmdir;
 
 p_save:
 	defb str_exp_no_f_ops;
@@ -587,7 +587,7 @@ p_out:
 
 p_locate:
 	defb two_c_s_num_no_f_ops;
-	defw locate;
+	defw c_locate;
 
 p_end:
 	defb no_f_ops;
@@ -603,15 +603,15 @@ p_read:
 
 p_data:
 	defb var_syn;
-	defw data;
+	defw c_data;
 
 p_restore:
 	defb num_exp_0;
-	defw restore;
+	defw c_restore;
 
 p_new:
 	defb no_f_ops;
-	defw new;
+	defw c_new;
 
 p_error:
 	defb num_exp_no_f_ops;
@@ -619,15 +619,15 @@ p_error:
 
 p_cont:
 	defb no_f_ops;
-	defw cont;
+	defw c_cont;
 
 p_dim:
 	defb var_syn;
-	defw dim;
+	defw c_dim;
 
 p_rem:
 	defb var_syn;
-	defw rem;
+	defw c_rem;
 
 p_for:
 	defb chr_var, "=", num_exp, tk_to, num_exp, var_syn;
@@ -635,19 +635,19 @@ p_for:
 
 p_goto:
 	defb num_exp_no_f_ops;
-	defw goto;
+	defw c_goto;
 
 p_gosub:
 	defb num_exp_no_f_ops;
-	defw gosub;
+	defw c_gosub;
 
 p_input:
 	defb var_syn;
-	defw input;
+	defw c_input;
 
 p_palette:
 	defb two_c_s_num_no_f_ops;
-	defw palette;
+	defw c_palette;
 
 p_list:
 	defb var_syn;
@@ -658,7 +658,7 @@ p_let:
 
 p_wait:
 	defb num_exp_no_f_ops;
-	defw wait;
+	defw c_wait;
 
 p_next:
 	defb chr_var, no_f_ops;
@@ -666,7 +666,7 @@ p_next:
 
 p_poke:
 	defb two_c_s_num_no_f_ops;
-	defw poke;
+	defw c_poke;
 
 p_print:
 	defb var_syn;
@@ -674,7 +674,7 @@ p_print:
 
 p_delete:
 	defb num_exp, ',', num_exp_no_f_ops;
-	defw delete;
+	defw c_delete;
 
 p_run:
 	defb var_syn;
@@ -682,11 +682,11 @@ p_run:
 
 p_edit:
 	defb num_exp_0;
-	defw edit;
+	defw c_edit;
 
 p_randomize:
 	defb num_exp_0;
-	defw randomize;
+	defw c_randomize;
 
 p_if:
 	defb num_exp, tk_then, var_syn;
@@ -694,7 +694,7 @@ p_if:
 
 p_cls:
 	defb no_f_ops;
-	defw cls;
+	defw c_cls;
 
 p_call:
 	defb num_exp_no_f_ops;
@@ -702,23 +702,23 @@ p_call:
 
 p_clear:
 	defb num_exp_0;
-	defw clear;
+	defw c_clear;
 
 p_return:
 	defb no_f_ops;
-	defw return;
+	defw c_return;
 
 p_color:
 	defb two_c_s_num_no_f_ops;
-	defw color;
+	defw c_color;
 
 p_tron:
 	defb no_f_ops;
-	defw tron;
+	defw c_tron;
 
 p_troff:
 	defb no_f_ops;
-	defw troff;
+	defw c_troff;
 
 p_on:
 	defb var_syn;
@@ -726,136 +726,136 @@ p_on:
 
 p_renum:
 	defb var_syn;
-	defw renum;
+	defw c_renum;
 
 p_auto:
 	defb no_f_ops;
-	defw auto;
+	defw c_auto;
 
 p_screen:
 	defb num_exp_no_f_ops;
-	defw screen;
+	defw c_screen;
 
 p__e1:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__e2:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__e3:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__e4:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__e5:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__e6:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__e7:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__e8:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__e9:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__ea:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__eb:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__ec:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__ed:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__ee:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__ef:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__f0:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__f1:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__f2:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__f3:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__f4:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__f5:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__f6:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__f7:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__f8:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__f9:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__fa:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__fb:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__fc:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__fd:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__fe:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
 
 p__ff:
 	defb no_f_ops;
-	defw rem;
+	defw c_rem;
