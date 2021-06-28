@@ -36,8 +36,8 @@ endif
 	defb "SE BASIC IV 4.2 Cordelia", ctrl_cr;
 	defb "Copyright (C)2020 Source Solutions, Inc.", ctrl_cr;
 	defb ctrl_cr;
-	timestamp 'YY-MM-DD h:m';			// RASM directive
-;	defb "Release 201120";				// Rick
+;	timestamp 'YY-MM-DD h:m';			// RASM directive
+	defb "Release 210628";				// 
 	defb ctrl_cr, ctrl_cr, 0;
 
 bytes_free:
