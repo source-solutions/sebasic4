@@ -809,3 +809,12 @@ seek_f:
 	rst divmmc;							// issue a hookcode
 	defb f_seek;						// seek to position in BCDE
 	ret;								// done
+	
+c_aload:
+	jp c_load;							// stub for ASCII BASIC loading
+	
+c_asave:
+	jp c_save;							// stub for ASCII BASIC saving
+
+
+
