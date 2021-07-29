@@ -1175,7 +1175,7 @@ get_hl_x_de:
 
 ;;
 ; <code>LET</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LET">Language reference</a>
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LET" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_let:
 	ld hl, (dest);						// current address of dest
@@ -1386,7 +1386,7 @@ stk_fetch:
 
 ;;
 ; <code>DIM</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#DIM">Language reference</a>
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#DIM" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_dim:
 	call look_vars;						// search variables

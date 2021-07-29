@@ -844,7 +844,7 @@ po_scr_4b:
 	org $0d67;
 ;;
 ; <code>CLS</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CLS">Language reference</a>
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CLS" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_cls:
 	set 0, (iy + _flags);				// suppress leading space

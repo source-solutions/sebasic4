@@ -47,7 +47,7 @@
 
 ;;
 ; <code>NEW</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#NEW">Language reference</a>
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#NEW" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_new:
 	di;									// interrupts off
@@ -498,7 +498,7 @@ open_end:
 
 ;;
 ; <code>OPEN</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#OPEN">Language reference</a>
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#OPEN" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_open:
 open:
@@ -834,7 +834,7 @@ indexer:
 
 ;;
 ; <code>CLOSE</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CLOSE">Language reference</a>
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CLOSE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_close:
 close:
@@ -965,7 +965,7 @@ auto_l_4:
 
 ;;
 ; <code>LIST</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LIST">Language reference</a>
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LIST" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_list:
 	ld a, 2;							// use stream #2
