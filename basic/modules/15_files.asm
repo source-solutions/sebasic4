@@ -43,7 +43,10 @@
 	org $5000;
 
 ;;
-; RUN application
+; <code>RUN</code> command with <i>string</i> parameter. Launches an application.
+; @param <code>string</code> (truncated to 11 characters).
+; @throws File not found.
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RUN">Language reference</a>
 ;;
 run_app:
 	call unstack_z;						// return if checking syntax
@@ -254,7 +257,8 @@ get_dest:
 ;	jp run;								// run
 
 ;;
-; BLOAD command
+; <code>BLOAD</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#BLOAD">Language reference</a>
 ;;
 c_bload:
 	call unstack_z;						// return if checking syntax
@@ -275,7 +279,8 @@ bload_2:
 	jp f_read_in;						// load binary
 
 ;;
-; BSAVE command
+; <code>BSAVE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#BSAVE">Language reference</a>
 ;;
 c_bsave:
 	call unstack_z;						// return if checking syntax
@@ -294,7 +299,8 @@ c_bsave:
 	jp f_write_out;						// save binary
 
 ;;
-; COPY command
+; <code>COPY</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#COPY">Language reference</a>
 ;;
 c_copy:
 	call unstack_z;						// return if checking syntax
@@ -374,7 +380,8 @@ write_chunk:
 	ret;								// else done
 
 ;;
-; LOAD command
+; <code>LOAD</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LOAD">Language reference</a>
 ;;
 c_load:
 	call unstack_z;						// return if checking syntax
@@ -410,7 +417,8 @@ c_load:
 	ret;								// done	
 
 ;;
-; NAME command
+; <code>NAME</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#NAME">Language reference</a>
 ;;
 c_name:
 	call unstack_z;						// return if checking syntax
@@ -427,7 +435,8 @@ c_name:
 	ret;								// done
 
 ;;
-; SAVE command
+; <code>SAVE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#SAVE">Language reference</a>
 ;;
 c_save:
 	call unstack_z;						// return if checking syntax
@@ -449,7 +458,8 @@ c_save:
 
 ;	// print a folder listing to the main screen
 ;;
-; FILES command
+; <code>FILES</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#FILES">Language reference</a>
 ;;
 c_files:
 	rst get_char;						// get character
@@ -657,7 +667,8 @@ no_:
 
 ;	// delete a file
 ;;
-; KILL command
+; <code>KILL</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#KILL">Language reference</a>
 ;;
 c_kill:
 	call unstack_z;						// return if checking syntax
@@ -680,7 +691,8 @@ init_path:
 	ret;								// done
 
 ;;
-; CHDIR command
+; <code>CHDIR</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CHDIR">Language reference</a>
 ;;
 c_chdir:
 	call unstack_z;						// return if checking syntax
@@ -692,7 +704,8 @@ c_chdir:
 	jr chk_path_error;					// test for error
 
 ;;
-; MKDIR command
+; <code>MKDIR</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#MKDIR">Language reference</a>
 ;;
 c_mkdir:
 	call unstack_z;						// return if checking syntax
@@ -704,7 +717,8 @@ c_mkdir:
 	jr chk_path_error;					// test for error
 
 ;;
-; RMDIR command
+; <code>RMDIR</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RMDIR">Language reference</a>
 ;;
 c_rmdir:
 	call unstack_z;						// return if checking syntax

@@ -162,7 +162,7 @@ ENDM
 
 ;;
 ; X80 op-code: compare
-; @param eq, ge, gt, gz, lt, lz, ne
+; @param eq, <code>ge</code>, <code>gt</code>, <code>gz</code>, <code>lt</code>, <code>lz</code>, <code>ne</code>
 ;;
 MACRO fcp n;
 	defb 9 + {n}
@@ -184,7 +184,7 @@ ENDM
 
 ;;
 ; X80 op-code: compare string
-; @param eq, ge, gt, gz, lt, lz, ne
+; @param eq, <code>ge</code>, <code>gt</code>, <code>gz</code>, <code>lt</code>, <code>lz</code>, <code>ne</code>
 ;;
 MACRO fcps n;
 	defb $11 + {n};

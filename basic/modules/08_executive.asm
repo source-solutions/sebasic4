@@ -46,7 +46,8 @@
 ;;
 
 ;;
-; NEW command
+; <code>NEW</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#NEW">Language reference</a>
 ;;
 c_new:
 	di;									// interrupts off
@@ -496,7 +497,8 @@ open_end:
 	ret;								// end of subroutine
 
 ;;
-; OPEN command
+; <code>OPEN</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#OPEN">Language reference</a>
 ;;
 c_open:
 open:
@@ -831,7 +833,8 @@ indexer:
 	ret;								// end of subroutine
 
 ;;
-; CLOSE command
+; <code>CLOSE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CLOSE">Language reference</a>
 ;;
 c_close:
 close:
@@ -961,7 +964,8 @@ auto_l_4:
 	ret;								// end of subroutine
 
 ;;
-; LIST command
+; <code>LIST</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LIST">Language reference</a>
 ;;
 c_list:
 	ld a, 2;							// use stream #2
