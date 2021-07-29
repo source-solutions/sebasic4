@@ -418,10 +418,10 @@ tk_ptr_rem:
 	str "_F1", "_F2", "_F3", "_F4";
 	str "_F5", "_F6", "_F7", "_F8";
 	str "_F9", "_FA", "_FB", "_FC";
-	str "_FD", "_FE";
+	str "_FD", "ALOAD";
 	
 tk_ptr_last:
-	str "_FF";
+	str "ASAVE";
 
 ;	// used in 09_command
 offst_tbl:
@@ -853,9 +853,9 @@ p__fd:
 	defw c_rem;
 
 p__fe:
-	defb no_f_ops;
-	defw c_rem;
+	defb str_exp_no_f_ops;
+	defw c_aload;
 
 p__ff:
-	defb no_f_ops;
-	defw c_rem;
+	defb str_exp_no_f_ops;
+	defw c_asave;
