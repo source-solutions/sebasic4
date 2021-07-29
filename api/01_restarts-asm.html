@@ -13,6 +13,7 @@
 <TABLE BORDER="0" CELLPADDING="0" CELLSPACING="3" SUMMARY="">
 <TR ALIGN="center" VALIGN="top">
 <TD BGCOLOR="#FFFFFF" CLASS="NavBarCell1Rev"> &nbsp;<FONT CLASS="NavBarFont1Rev"><B>File</B></FONT>&nbsp;</TD>
+<TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="deprecated-list.html"><FONT CLASS="NavBarFont1"><B>Deprecated</B></FONT></A>&nbsp;</TD>
 <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="index-all.html"><FONT CLASS="NavBarFont1"><B>Index</B></FONT></A>&nbsp;</TD>
 <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="constant-values.html"><FONT CLASS="NavBarFont1"><B>Constants</B></FONT></A>&nbsp;</TD>
 <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="help-doc.html"><FONT CLASS="NavBarFont1"><B>Help</B></FONT></A>&nbsp;</TD>
@@ -42,9 +43,8 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <TH ALIGN="left" COLSPAN="2">
 <B>Function summary</B></TH></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE><B><A HREF="01_restarts-asm.html#bc_1_space">bc_1_space</A></B></CODE><BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
- make one space
+<TD><CODE><B><A HREF="01_restarts-asm.html#call">call</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`					// restart frame counter
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="01_restarts-asm.html#ch_add_plus_1">ch_add_plus_1</A></B></CODE><BR>
@@ -65,7 +65,15 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <TD><CODE><B><A HREF="01_restarts-asm.html#rst_00">rst_00</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
- start
+ Short description of module.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="01_restarts-asm.html#rst_08">rst_08</A></B></CODE><BR>
@@ -96,17 +104,6 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
  calculator
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE><B><A HREF="01_restarts-asm.html#rst_30">rst_30</A></B></CODE><BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
- make spaces
- 
-</TD></TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE><B><A HREF="01_restarts-asm.html#rst_38">rst_38</A></B></CODE><BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
- maskable interrupt
-</TD></TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="01_restarts-asm.html#skip_over">skip_over</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  skip over
@@ -118,9 +115,8 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
 <TH ALIGN="left" COLSPAN="1">
 <B>Function detail</B></TH></TR></TABLE>
-<A NAME="bc_1_space" ID="bc_1_space"><!-- --></A><H3>bc_1_space</H3>
-<DL><DD>
- make one space
+<A NAME="call" ID="call"><!-- --></A><H3>call</H3>
+<DL><DD>`					// restart frame counter
 
 </DD></DL><HR>
 
@@ -145,7 +141,23 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <A NAME="rst_00" ID="rst_00"><!-- --></A><H3>rst_00</H3>
 <DL><DD>
 
- start
+ Short description of module.
+ 
+<DT><B>Author: </B><DD> Name of contributing author.
+ 
+<DT><B>Deprecated: </B><DD> Version deprecated in and replacement module.
+ 
+<DT><B>Parameter: </B><DD> <code>HL</code> - Register contents.
+ 
+<DT><B>Returns: </B><DD> Result in register, such as <code>HL</code>.
+ 
+<DT><B>See Also: </B><DD> <a href="www.example.com">External reference</a>.
+ 
+<DT><B>Since: </B><DD> Version in which module was introduced.
+ 
+<DT><B>Throws: </B><DD> Error number and description handled by RST 8 routine.
+ 
+<DT><B>Version: </B><DD> Version in which the module was last udpated. 
 
 </DD></DL><HR>
 
@@ -185,20 +197,6 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 
 </DD></DL><HR>
 
-<A NAME="rst_30" ID="rst_30"><!-- --></A><H3>rst_30</H3>
-<DL><DD>
- make spaces
- 
-<DT><B>Parameter: </B><DD> <code>BC</code> - number of spaces
-
-</DD></DL><HR>
-
-<A NAME="rst_38" ID="rst_38"><!-- --></A><H3>rst_38</H3>
-<DL><DD>
- maskable interrupt
-
-</DD></DL><HR>
-
 <A NAME="skip_over" ID="skip_over"><!-- --></A><H3>skip_over</H3>
 <DL><DD>
  skip over
@@ -212,6 +210,7 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <TABLE BORDER="0" CELLPADDING="0" CELLSPACING="3" SUMMARY="">
 <TR ALIGN="center" VALIGN="top">
 <TD BGCOLOR="#FFFFFF" CLASS="NavBarCell1Rev"> &nbsp;<FONT CLASS="NavBarFont1Rev"><B>File</B></FONT>&nbsp;</TD>
+<TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="deprecated-list.html"><FONT CLASS="NavBarFont1"><B>Deprecated</B></FONT></A>&nbsp;</TD>
 <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="index-all.html"><FONT CLASS="NavBarFont1"><B>Index</B></FONT></A>&nbsp;</TD>
 <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="constant-values.html"><FONT CLASS="NavBarFont1"><B>Constants</B></FONT></A>&nbsp;</TD>
 <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="help-doc.html"><FONT CLASS="NavBarFont1"><B>Help</B></FONT></A>&nbsp;</TD>
