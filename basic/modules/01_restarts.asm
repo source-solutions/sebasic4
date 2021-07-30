@@ -103,7 +103,36 @@ ident:
 	defb "SE";							// SE Basic identifier (here for historical reasons, it doens't stand for anything)
 
 	org $002d;
-;;`					// restart frame counter
+;;
+; make one space
+;;
+bc_1_space:
+	ld bc, 1;							// create one free location in workspace
+
+	org $0030;
+;;
+; make spaces
+; @param BC - number of spaces
+;;
+rst_30:
+	push bc;							// store number of spaces to create
+	ld hl, (worksp);					// get address of workspace
+	push hl; 							// and store it
+	jp reserve;							// then jump
+
+	org $0038;
+;;
+; maskable interrupt
+;;
+rst_38:
+	push af;							// stack AF (intercepted by divMMC hardware)
+	push hl;							// stack HL (return from divMMC ROM)
+	ld hl, frame;						// get current frame
+	inc (hl);							// increment it
+	ld a, 60;							// has one second elapsed? (change to 50 for 50Hz machines)
+	cp (hl);							// test it
+	jr nz, user_im1;					// jump if no rollover
+	ld (hl), 0;							// restart frame counter
 	call rollover;						// update first byte of time_t
 	call rollover;						// update second byte of time_t
 	call rollover;						// update third byte of time_t
