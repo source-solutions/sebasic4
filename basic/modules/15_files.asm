@@ -45,6 +45,7 @@
 ;;
 ; <code>RUN</code> command with <i>string</i> parameter
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RUN" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
 ;;
 run_app:
 	call unstack_z;						// return if checking syntax
@@ -257,6 +258,7 @@ get_dest:
 ;;
 ; <code>BLOAD</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#BLOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
 ;;
 c_bload:
 	call unstack_z;						// return if checking syntax
@@ -279,6 +281,7 @@ bload_2:
 ;;
 ; <code>BSAVE</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#BSAVE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
 ;;
 c_bsave:
 	call unstack_z;						// return if checking syntax
@@ -299,6 +302,7 @@ c_bsave:
 ;;
 ; <code>COPY</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#COPY" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
 ;;
 c_copy:
 	call unstack_z;						// return if checking syntax
@@ -380,6 +384,8 @@ write_chunk:
 ;;
 ; <code>LOAD</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @deprecared To be replaced with non-tokenized version
+; @throws File not found; Path not found.
 ;;
 c_load:
 	call unstack_z;						// return if checking syntax
@@ -417,6 +423,7 @@ c_load:
 ;;
 ; <code>NAME</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#NAME" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
 ;;
 c_name:
 	call unstack_z;						// return if checking syntax
@@ -435,6 +442,8 @@ c_name:
 ;;
 ; <code>SAVE</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#SAVE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @deprecated To be replaced with non-tokenized version.
+; @throws File not found; Path not found.
 ;;
 c_save:
 	call unstack_z;						// return if checking syntax
@@ -452,12 +461,11 @@ c_save:
 	ld b, h;							// BC
 	jp f_write_out;						// save program
 
-
-
 ;	// print a folder listing to the main screen
 ;;
 ; <code>FILES</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#FILES" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
 ;;
 c_files:
 	rst get_char;						// get character
@@ -667,6 +675,7 @@ no_:
 ;;
 ; <code>KILL</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#KILL" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
 ;;
 c_kill:
 	call unstack_z;						// return if checking syntax
@@ -691,6 +700,7 @@ init_path:
 ;;
 ; <code>CHDIR</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CHDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws Path not found.
 ;;
 c_chdir:
 	call unstack_z;						// return if checking syntax
@@ -704,6 +714,7 @@ c_chdir:
 ;;
 ; <code>MKDIR</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#MKDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws Path not found.
 ;;
 c_mkdir:
 	call unstack_z;						// return if checking syntax
@@ -717,6 +728,7 @@ c_mkdir:
 ;;
 ; <code>RMDIR</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RMDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws Path not found.
 ;;
 c_rmdir:
 	call unstack_z;						// return if checking syntax
