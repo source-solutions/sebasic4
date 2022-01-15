@@ -690,11 +690,13 @@ c_kill:
 
 ;	// folder commands
 init_path:
+ifndef no_fs
 	ld a, '*';							// use current drive
 	ld ix, rootpath;					// default path
 	rst divmmc;							// issue a hookcode
 	defb f_chdir;						// change folder
 	or a;								// clear flags
+endif
 	ret;								// done
 
 ;;

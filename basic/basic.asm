@@ -20,6 +20,7 @@
 	include "basic.inc";				// label definitions and X80 instruction set
 
 ;	slam equ 1;							// uncomment to build SLAM+128/divMMC version
+;   no_fs equ 1;						// uncomment to build without filesystem support to debug the interpreter with fuse-emulator
 
 ;	// export program in separate ROM and RAM segments
 
