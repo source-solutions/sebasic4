@@ -765,8 +765,8 @@ v_matches:
 v_spaces:
 	ld a, (de);							// each in turn
 	inc de;								// next character
-	cp ' ';								// space?
-	jr z, v_spaces;						// jump if so
+	cp ' ' + 1;								// space?
+	jr c, v_spaces;						// jump if so
 	or %00100000;						// test bit 5
 	cp (hl);							// match?
 	jr z, v_matches;					// jump if not
@@ -774,7 +774,7 @@ v_spaces:
 	cp (hl);							// match?
 	jr nz, v_get_ptr;					// jump if not
 	ld a, (de);							// character to A
-	call alphanum;						// letter?
+	call alphanums;						// letter, number or $ ?
 	jr nc, v_found_1;					// jump if end found
 
 v_get_ptr:
@@ -807,11 +807,40 @@ v_found_2:
 	push hl;							// stack last letter pointer
 	rst get_char;						// get current character
 
+v_pass:
+	cp '$';								// long string name
+	jr nz, v_end							// if not, v_end
+	rst next_char;							// advance
+	pop hl;								// retrieve address
+	inc hl;								// step over '$' + $80
+	cp a;								// clear CF, set ZF
+	jp sv_str;							// indicate string and return
+
 v_end:
 	pop hl;								// point to single letter or last character
 	rl b;								// rotate register
 	bit 6, b;							// test bit 6
 	ret;								// end of subroutine
+
+;;
+; Check last character of a long variable name
+;;
+v_cont:
+	inc de;								// advance pointer
+	ld a,(de);							// fetch next character
+
+alphanums:
+	call alphanum;							// alphanumeric?
+	ret c;								// return if so
+	cp $0D;								// enter?
+	ret z;								// return if so
+	cp ' ' + 1;							// whitespace?
+	jr c, v_cont							// loop, if so
+	cp '$';								// $?
+	scf;								// set CF, if so
+	ret z;								// and return
+	and a;								// otherwise clear CF
+	ret;								// and return
 
 ;;
 ; stack function argument
@@ -1013,6 +1042,8 @@ sv_dim:
 sv_slice_query:
 	cp '(';								// opening parenthesis?
 	jr z, sv_slice;						// jump back with slice
+
+sv_str:
 	res 6, (iy + _flags);				// signal string
 	ret;								// end of subroutine
 
@@ -1187,17 +1218,12 @@ l_each_ch:
 	inc bc;								// add one for each character in name
 
 l_no_sp:
-	inc hl;								// next position in variable name
-	ld a, (hl);							// get character
-	cp ' ';								// space?
-	jr z, l_no_sp;						// jump to skip if so
-	jr nc, l_test_ch;					// jump with code 33 to 255
-	cp 16;								// code 0 to 15?
-	jr c, l_spaces;						// jump if so
-	cp 22;								// code 22 to 31?
-	jr nc, l_spaces;					// jump if so
-	inc hl;								// skip control code
-	jr l_no_sp;							// jump back
+	inc hl;							// advance pointer
+	ld a, (hl);						// next character
+	cp $10;							// EOL?
+	jr c, l_test_ch;					// jump, if so
+	cp ' ' + 1;						// whitespace?
+	jr c, l_no_sp						// loop, if so
 
 l_test_ch:
 	call alphanum;						// alphanumeric?
@@ -1206,17 +1232,26 @@ l_test_ch:
 	jp z, l_new_str;					// jump with simple string
 
 l_spaces:
-	ld a, c;							// length to A
 	call make_string;					// make BC length string
 	ex de, hl;							// first new byte to HL
 	inc de;								// second new byte
 	inc de;								// to DE
  	push de;							// stack pointer
+
+	ld hl, -6;							// number of extra letters
+	xor a;								// clear A and CF
+	adc hl, bc;							// do the subtraction
+
+l_store:
+	cp l;
+	adc a, h;
+	ld b, l;
+	ld c, a;						// set up fast 16-bit loop
+
 	ld hl, (dest);						// pointer to start of name to HL
 	dec de;								// pointer to first new byte to DE
-	sub 6;								// number of extra letters
-	ld b, a;							// store it in A
 	jr z, l_single;						// jump with short name
+	push hl;							// HL points to start of variable name
 
 l_char:
 	inc hl;								// point to each extra code
@@ -1227,12 +1262,16 @@ l_char:
 	or %00100000;						// SET 5, A, change case
 	ld (de), a;							// store code
 	djnz l_char;						// loop until done
+	dec c;							// and loop further
+	jr nz, l_char						// until done (count in 16 bits)
 	or %10000000;						// SET 7, A, mark code
 	ld (de), a;							// replace last code
+	pop hl;							// restore (dest) to hl
+	cp '$' + $80						// long named string?
+	ret z
 	ld a, %11000000;					// prepare long name mark
 
 l_single:
-	ld hl, (dest);						// get pointer to the letter
 	xor (hl);							// A is 0 for short or 192 for long
 	or %00100000;						// SET 5, A, change case
 	pop hl;								// discard pointer
@@ -1332,19 +1371,20 @@ l_new_str:
 l_string:
 	push af;							// stack letter
 	call stk_fetch;						// get start and length
+
+l_strr:
+	pop af;								// unstack letter
 	ex de, hl;							// start to HL
 	add hl, bc;							// end of string plus one to HL
 	dec hl;								// end of string
 	ld (dest), hl;						// store pointer
-	push bc;							// stack length
 	inc bc;								// one byte for letter
 	inc bc;								// two for
 	inc bc;								// length
 	call make_string;					// make BC length string
+	dec bc;
+	dec bc;
 	ld hl, (dest);						// restore pointer
-	pop bc;								// length
-	push bc;							// to BC
-	inc bc;								// increment length
 	lddr;								// copy string plus one byte
 	ex de, hl;							// point to high length byte
 	pop bc;								// unstack length
@@ -1352,7 +1392,6 @@ l_string:
 	inc hl;								// next address
 	ld (hl), b;							// write high length byte
 	dec hl;								// restore address
-	pop af;								// unstack letter
 
 ;	// L first subroutine
 l_first:
