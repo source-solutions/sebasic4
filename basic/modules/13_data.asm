@@ -166,7 +166,7 @@ tbl_addrs:
 	defw fp_comparison;
 	defw fp_strs_add;
 	defw fp_val_str;
-	defw fp_usr_str;
+	defw fp_mul_str;
 	defw fp_read_in;
 	defw fp_negate;
 	defw fp_asc;

@@ -379,25 +379,10 @@ fp_usr_no:
 	ret;								// end of subroutine
 
 ;;
-; USR (string) function
+; multiplication of string by a number
 ;;
-fp_usr_str:
-	call stk_fetch;						// get parameters
-	dec bc;								// reduce length by one
-	ld a, c;							// test for
-	or b;								// empty string
-	jr nz, report_bad_fn_call;			// error if so
-	ld a, (de);							// else get character in A
-	ld l, a;							// A to
-	ld h, 0;							// HL
-	add hl, hl;							// multiply
-	add hl, hl;							// by
-	add hl, hl;							// eight
-	ld bc, font;						// font to BC
-	add hl, bc;							// offset to hl
-	ld c, l;							// HL to
-	ld b, h;							// BC
-	jp stack_bc;						// immediate jump
+fp_mul_str:
+	
 
 report_bad_fn_call:
 	rst error;							// in this case

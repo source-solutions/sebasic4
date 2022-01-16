@@ -397,13 +397,6 @@ s_loop:
 	and a;								// both zero?
 	jp z, jp_get_char;					// jump to get current character if so
 	push bc;							// stack present values
-	ld hl, flags;						// address sysvar
-	ld a, e;							// last op-code to A
-	cp 237;								// USR?
-	jr nz, s_stk_lst;					// jump if not
-	bit 6, (hl);						// USR number?
-	jr nz, s_stk_lst;					// jump if so
-	ld e, 153;							// modify last op-code
 
 s_stk_lst:
 	push de;							// stack last values
