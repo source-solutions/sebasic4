@@ -1355,6 +1355,8 @@ l_add_str:
 	push hl;							// stack pointer to existing
 	push bc;							// stack length of existing
 	call l_string;						// add new string to variables area
+
+l_addr:
 	pop bc;								// unstack length
 	pop hl;								// unstack pointer
 	inc bc;								// one byte for letter
@@ -1370,12 +1372,13 @@ l_new_str:
 ;	// L string subroutine
 l_string:
 	push af;							// stack letter
-	call stk_fetch;						// get start and length
+	call lstk_fetch;						// get start and length
 
 l_strr:
 	pop af;								// unstack letter
 	ex de, hl;							// start to HL
 	add hl, bc;							// end of string plus one to HL
+	push bc;							// save the length
 	dec hl;								// end of string
 	ld (dest), hl;						// store pointer
 	inc bc;								// one byte for letter
@@ -1422,6 +1425,80 @@ stk_fetch:
 	ld a, (hl);							// first value to A
 	ld (stkend), hl;					// set new stack end
 	ret;								// end of subroutine
+
+lstk_fetch:
+	jr nc,frstr;							// first assignment
+	and $E0;							// long variable name
+	jr z, rstrng;							// re-assignment of long-named string
+	jr stk_fetch;							// back to stk_fetch for short names
+
+frstr:
+	ld hl, -7;							// no numeric content
+	add hl, bc;							// do subtraction
+	jr c, lstrng;							// first assignment of long-named string
+	jr stk_fetch;							// back to stk_fetch for short names
+
+;;
+; long-named string re-assignment
+;;
+rstrng:	pop af;								// discard return address
+	pop af;								// discard zero AF
+	pop bc;								// discard return address
+	pop bc;								// length of old version
+	pop hl;								// pointer to old version
+	ld de, -2;							// net variable name length - 2
+	dec hl;								// skip zero byte
+	inc bc;								// account for it
+
+rstr_l:
+	inc bc;								// increment length
+	inc de;								// increment net variable name length
+	dec hl;								// step back with pointer
+	bit 6, (hl);							// first letter?
+	jr nz, rstr_l;							// loop till beginning
+	ld a, (hl);							// first character in long name format
+	ld (dest), hl;							// point DEST to variable name
+	push hl;							// put back pointer to old version
+	push bc;							// put back length of old version
+	ld hl, l_addr;							// return address
+	push hl;							// onto the stack
+	xor $E0;							// change to short name format
+	push af;							// put back first character
+	ld hl, l_strr							// return address
+	push hl;							// onto the stack
+	ex de, hl;							// net length - 2 to HL
+;;
+; long-named string variable assignment
+;;
+lstrng:
+	inc hl;								// HL = net variable name length - 1
+	inc hl;								// HL = net variable name length
+	push hl;							// save net variable name length
+	call stk_fetch;							// do stk_fetch
+	ld (k_cur), de;							// point cursor to string
+	pop hl;								// restore net variable name length
+	pop de;								// fetch return address
+	pop af;								// fetch first letter
+	inc de;								// skip POP AF
+	push de;							// store return address
+	push bc;							// save string length
+	push hl;							// save net variable name length
+	inc hl;								// HL = net variable name length + 1
+	ld c, l;							// BC =
+	ld b, h;							// net variable name length + 1
+	call make_string
+	ex de, hl;							// address - 1 to DE
+	inc de;								// DE = variable name address
+	xor $E0;							// indicate long variable name
+	ld (de), a;							// with the first character
+	inc de;								// point to next character
+	xor a;								// A = 0
+	pop hl;								// restore net variable name length
+	call l_store;							// store variable name
+	pop bc;								// restore string length
+	ld de, (k_cur)							// DE = string content
+	xor a;								// A = 0
+	ret;								// return
 
 ;;
 ; <code>DIM</code> command

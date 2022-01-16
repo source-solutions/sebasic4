@@ -310,7 +310,7 @@ class_05:
 ; command class 01
 ;;
 class_01:
-	call look_vars;						// variable exists?
+	call look_vars1;					// variable exists?
 
 ;;
 ; variable in assignment
@@ -1849,3 +1849,27 @@ insert_dgt_1:
 	ld (de), a;							// store in buffer
 	inc de;								// next location
 	ret;								// end of subroutine
+
+;;
+; long string variable name in assignment
+;;
+look_vars1:
+	call look_vars;							// find variable
+	push hl;							// save location
+	ex af, af';							// save AF
+	rst get_char;							// character after variable name
+	cp '$';								// is it '$'?
+	jr nz, lv_nstr;							// if not, exit
+	rst next_char;							// skip over '$'
+	res 6, (iy + _flags);						// indicate string
+	call syntax_z;							// checking syntax?
+	scf;								// set carry
+	jr nz, lv2;							// in runtime, not found CF=1, ZF=0
+	and a;								// in syntax check, found CF=0, ZF=0
+	defb $3E;							// LD A, skip next byte
+lv_nstr:
+	ex af,af';							// restore AF
+lv2:
+	pop hl;								// restore location
+	ret
+
