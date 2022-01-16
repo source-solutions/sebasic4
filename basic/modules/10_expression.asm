@@ -438,6 +438,12 @@ s_tighter:
 	and %00111111;						// clear bits 6 and 7
 	add a, 8;							// increase code by eight
 	ld c, a;							// code to C
+	cp 12;								// * ?
+	jr nz, s_not_mul;					// jump if not
+	ld c, $59;							// multiply string by number
+	jr s_next;							// immediate jump
+
+s_not_mul:
 	cp 16;								// AND?
 	jr nz, s_not_and;					// jump if not
 	set 6, c;							// assume numeric
