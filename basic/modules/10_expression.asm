@@ -340,6 +340,28 @@ s_cont_3:
 	rst next_char;						// next character
 	jr s_cont_3;						// immediate jump
 
+
+;;
+; '$' at the end of long variable names
+;;
+s_lstr:
+	ld a, c;							// test the last character
+	cp '$';								// is it a '$'?
+	jr nz, s_loop;							// jump, if not
+	call syntax_z;							// in runtime,
+	jp nz, report_undef_var;				// it's always an undefined variable
+	ld hl, flags;							// bit 6 of flags is type
+	bit 6, (hl);							// test type
+	jr z, s_loop;							// must be numeric
+	res 6, (hl);							// indicate string
+	ld a, d;							// check if it's after
+	or a;								// a numeric expression
+	jr z, s_loop;							// return, if so
+	ld hl, (stkbot);						// check if it's after
+	sbc hl, de;							// a numeric literal
+	jr c, s_loop;							// return if so
+	rst next_char;							// skip '$'
+
 ;	// uses a combined table of operators and priorities
 s_opertr:
 	ld hl, tbl_ops_priors - 3;			// table address - 3
@@ -353,7 +375,7 @@ indexer_3:
 
 	ld a, (hl);							// first triplet to A
 	and a;								// null termniator?
-	jr z, s_loop;						// jump if so
+	jr z, s_lstr;						// jump if so
 
 	cp c;								// matching code?
 	jr nz, indexer_3;					// jump with incorrect code
