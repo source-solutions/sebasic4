@@ -412,7 +412,7 @@ tk_ptr_rem:
 	str "RETURN", "COLOR", "TRON", "TROFF"
 	str "ON", "RENUM", "AUTO", "SCREEN";
 	str "XOR", "EOF", "LOC", "LOF"
-	str "_E5", "_E6", "_E7", "_E8";
+	str "LEFT$", "RIGHT$", "MID$", "_E8";
 	str "_E9", "_EA", "_EB", "_EC";
 	str "_ED", "_EE", "_EF", "_F0";
 	str "_F1", "_F2", "_F3", "_F4";
