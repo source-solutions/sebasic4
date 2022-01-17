@@ -744,7 +744,7 @@ po_step:
 	jr nz, po_step;						// loop until entry found 
 	ex de, hl;							// DE points to initial character
 	pop af;								// unstack entry number
-	cp ' ';								// one of the first 32 entries?
+	cp 31;								// one of the first 31 entries?
 	ret c;								// return with carry set if so
 	ld a, (de);							// get initial character
 	sub 'A';							// test against letter, leading space if so
