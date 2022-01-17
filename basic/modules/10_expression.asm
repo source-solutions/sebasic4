@@ -91,6 +91,9 @@ scan_func:
 	defb tk_bin_str, s_bin_str - 1 - $; // BIN$
 	defb tk_oct_str, s_oct_str - 1 - $;	// OCT$
 	defb tk_hex_str, s_hex_str - 1 - $;	// HEX$
+	defb tk_left, s_left - 1 - $;		// LEFT$
+	defb tk_right, s_right - 1 - $;		// RIGHT$
+	defb tk_mid, s_mid - 1 - $;		// MID$
 	defb 0;								// null terminator
 
 ;;
@@ -239,6 +242,28 @@ s_oct_str:
 s_hex_str:
 	ld bc, $107c;						// priority $10, op-code $bc (#3c)
 	jp s_push_po;						// jump
+
+s_left:
+	call s_leftright;
+	jp s_cont_2;
+
+s_right:
+	call s_leftright;
+	dec hl;
+	dec hl;
+	ld b, (hl);
+	dec hl;
+	ld c, (hl);
+	ex de, hl
+	add hl, bc
+	ex de, hl
+	ld (hl), e
+	inc hl
+	ld (hl), d
+	jp s_cont_2;
+
+s_mid:
+	jp s_mid_cont;
 
 s_alphnum:
 	call alphanum;						// alphanumeric character?
@@ -1877,3 +1902,110 @@ nxt_dgt_2:
 	fce;								// exit calculator
 	call ch_add_plus_1;					// next code to A
 	jr nxt_dgt_2;						// jump back
+
+s_str_num:
+	rst next_char;
+	cp "(";
+	jr nz, report_syntax_err2;
+	rst next_char;
+	call scanning;
+	bit 6, (iy + _flags);
+	jp z, expt_comma_1num;
+
+report_syntax_err2:
+	rst error
+	defb syntax_error
+
+s_closing:
+	cp ')';
+	jr nz, report_syntax_err2;
+	rst next_char;
+	ld hl, flags;
+	res 6, (hl);
+	bit 7, (hl);
+	ret nz;
+	pop hl;								// discard return address
+	pop hl;								// discard return address
+	jp s_cont_2
+
+s_length:
+	call find_int2;
+
+s_length2:
+	ld hl, (stkend);
+	dec hl;
+	ld d, (hl);
+	dec hl;
+	ld e, (hl);
+	ex de, hl;
+s_length_again:
+	and a;
+	sbc hl, bc;
+	ex de, hl;
+	ret nc;
+	ex de, hl;
+	add hl, bc;
+	ld c, l;
+	ld b, h;
+	jr s_length_again;
+
+s_leftright:
+	call s_str_num;
+	call s_closing;
+	call s_length;
+	ld (hl), c;
+	inc hl;
+	ld (hl), b;
+	ret
+
+s_mid_cont:
+	call s_str_num;
+	cp ')';
+	jr z, s_mid2
+	call expt_comma_1num
+	push af;
+	call s_closing;
+	pop af;
+	call find_int2;
+	push bc
+	call s_mid3
+	pop bc
+	call s_length2
+	ld (hl), c;
+	inc hl;
+	ld (hl), b;
+	jp s_cont_2
+
+s_mid2:
+	push af;
+	call s_closing;
+	pop af;
+	call s_mid3
+	jp s_cont_2
+
+s_mid3:
+	call s_length;
+	ld a, b
+	or c
+	jp z, report_sscrpt_oo_rng
+	dec bc
+	ld e, (hl);
+	inc hl;
+	ld d, (hl);
+	ex de, hl;
+	sbc hl, bc;
+	ex de, hl;
+	ld (hl), d;
+	dec hl;
+	ld (hl), e;
+	dec hl;
+	ld d, (hl);
+	dec hl;
+	ld e, (hl);
+	ex de, hl;
+	add hl, bc;
+	ex de, hl;
+	ld (hl), e;
+	inc hl;
+	ld (hl), d;
+	ret

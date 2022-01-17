@@ -398,6 +398,7 @@ class_08:
 ;;
 expt_2num:
 	call expt_1num;						// get expression
+expt_comma_1num:
 	cp ',';								// comma?
 	jr nz, report_syntax_err;			// error if not
 
