@@ -244,26 +244,26 @@ s_hex_str:
 	jp s_push_po;						// jump
 
 s_left:
-	call s_leftright;
-	jp s_cont_2;
+	call s_leftright;				// common code for LEFT$ and RIGHT$
+	jp s_cont_2;						// immediate jump
 
 s_right:
-	call s_leftright;
+	call s_leftright;				// common code for LEFT$ and RIGHT$
 	dec hl;
-	dec hl;
+	dec hl;							// (HL) = MSB of start address
 	ld b, (hl);
 	dec hl;
-	ld c, (hl);
+	ld c, (hl);						// BC = start address
 	ex de, hl
-	add hl, bc
-	ex de, hl
+	add hl, bc						// HL = new start address
+	ex de, hl						// DE = new start address
 	ld (hl), e
 	inc hl
-	ld (hl), d
-	jp s_cont_2;
+	ld (hl), d						// commit new start address
+	jp s_cont_2;						// immediate jump
 
 s_mid:
-	jp s_mid_cont;
+	jp s_mid_cont;						// immediate jump
 
 s_alphnum:
 	call alphanum;						// alphanumeric character?
@@ -1961,51 +1961,51 @@ s_leftright:
 s_mid_cont:
 	call s_str_num;
 	cp ')';
-	jr z, s_mid2
-	call expt_comma_1num
-	push af;
+	jr z, s_mid2							// two-argument MID$
+	call expt_comma_1num						// read third argument
+	push af;							// placeholder
 	call s_closing;
-	pop af;
-	call find_int2;
-	push bc
-	call s_mid3
-	pop bc
-	call s_length2
+	pop af;								// discard placeholder
+	call find_int2;							// BC = third argument
+	push bc								// stack BC
+	call s_mid3							// execute 2-argument MID$
+	pop bc								// BC = third argument
+	call s_length2							// MID$(a$,o,l) = LEFT$(MID$(a$,o),l)
 	ld (hl), c;
 	inc hl;
 	ld (hl), b;
 	jp s_cont_2
 
 s_mid2:
-	push af;
+	push af;							// placeholder
 	call s_closing;
-	pop af;
+	pop af;								// discard placeholder
 	call s_mid3
 	jp s_cont_2
 
 s_mid3:
-	call s_length;
-	ld a, b
-	or c
+	call s_length;							// get first argument between 0 and length
+	ld a, b								// 0 is not a valid first argument
+	or c								// for MID$
 	jp z, report_sscrpt_oo_rng
-	dec bc
+	dec bc								// make the first argument 0-based
 	ld e, (hl);
 	inc hl;
-	ld d, (hl);
-	ex de, hl;
-	sbc hl, bc;
-	ex de, hl;
+	ld d, (hl);							// DE = old length
+	ex de, hl;							// HL = old length
+	sbc hl, bc;							// HL = old length - 0-based offset
+	ex de, hl;							// DE = new length
 	ld (hl), d;
 	dec hl;
-	ld (hl), e;
+	ld (hl), e;							// commit new length
 	dec hl;
 	ld d, (hl);
 	dec hl;
-	ld e, (hl);
-	ex de, hl;
-	add hl, bc;
-	ex de, hl;
+	ld e, (hl);							// DE = start address
+	ex de, hl;							// HL = start address
+	add hl, bc;							// HL = start address + 0-based offset
+	ex de, hl;							// DE = new start address
 	ld (hl), e;
 	inc hl;
-	ld (hl), d;
+	ld (hl), d;							// commit new start address
 	ret
