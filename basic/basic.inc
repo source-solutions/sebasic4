@@ -24,7 +24,6 @@
 ;	// fbands
 ;	// fcps (6 opcodes)
 ;	// fvals
-;	// fusrs
 ;	// fread
 ;	// fasc
 ;	// fval
@@ -37,7 +36,6 @@
 ;	// fin
 ;	// fusr
 ;	// fstrs
-;	// fchrs
 ;	// fetof
 
 ;	// parameter definitions
@@ -205,9 +203,9 @@ MACRO fvals;
 ENDM
 
 ;;
-; X80 op-code: user string
+; X80 op-code: string by number multiplication
 ;;
-MACRO fusrs;
+MACRO fmuls;
 	defb $19;
 ENDM
 
@@ -718,7 +716,7 @@ ENDM
 	tk_left_str		equ $e5;
 	tk_right_str	equ $e6;
 	tk_mid_str		equ $e7;
-	tk__e8			equ $e8;
+	tk_string_str	equ $e8;
 	tk__e9			equ $e9;
 	tk__ea			equ $ea;
 	tk__eb			equ $eb;

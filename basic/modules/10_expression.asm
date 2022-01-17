@@ -94,6 +94,7 @@ scan_func:
 	defb tk_left_str, s_left - 1 - $;	// LEFT$
 	defb tk_right_str, s_right - 1 - $;	// RIGHT$
 	defb tk_mid_str, s_mid - 1 - $;		// MID$
+	defb tk_string_str, s_string_str - 1 -$;// STRING$
 	defb 0;								// null terminator
 
 ;;
@@ -264,6 +265,12 @@ s_right:
 
 s_mid:
 	jp s_mid_cont;						// immediate jump
+
+s_string_str:
+	call s_2_coord;
+	call nz, s_strng_s
+	rst next_char
+	jp s_string
 
 s_alphnum:
 	call alphanum;						// alphanumeric character?
@@ -1230,27 +1237,6 @@ i_restore:
 	ret;								// end of subroutine
 
 ;;
-; DE, (DE + 1)
-;;
-de_plus_1_to_de:
-	ex de, hl;							// use HL
-	inc hl;								// point to DE + 1
-	ld e, (hl);							// LD E, (DE + 1)
-	inc hl;								// point to DE + 2
-	ld d, (hl);							// LD D, (DE + 2)
-	ret ;								// end of subroutine
-
-;;
-; get HL * DE
-;;
-get_hl_x_de:
-	call syntax_z;						// checking syntax? return if so
-	ret z;								// (unstack_z would corrupt HL)
-	call hl_hl_x_de;					// multiplication
-	jp c, report_oo_mem;				// error if out of memory
-	ret;								// end ofS subroutine
-
-;;
 ; <code>LET</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LET" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
@@ -1471,6 +1457,27 @@ stk_fetch:
 	ld a, (hl);							// first value to A
 	ld (stkend), hl;					// set new stack end
 	ret;								// end of subroutine
+
+;;
+; DE, (DE + 1)
+;;
+de_plus_1_to_de:
+	ex de, hl;							// use HL
+	inc hl;								// point to DE + 1
+	ld e, (hl);							// LD E, (DE + 1)
+	inc hl;								// point to DE + 2
+	ld d, (hl);							// LD D, (DE + 2)
+	ret ;								// end of subroutine
+
+;;
+; get HL * DE
+;;
+get_hl_x_de:
+	call syntax_z;						// checking syntax? return if so
+	ret z;								// (unstack_z would corrupt HL)
+	call hl_hl_x_de;					// multiplication
+	jp c, report_oo_mem;				// error if out of memory
+	ret;								// end ofS subroutine
 
 lstk_fetch:
 	jr nc,frstr;							// first assignment
@@ -2009,3 +2016,32 @@ s_mid3:
 	inc hl;
 	ld (hl), d;							// commit new start address
 	ret
+
+s_strng_s:
+	call find_int1;
+	push af;
+	call find_int2;
+	ld a, b;
+	or c;
+	jr z, s_strng_empty
+	rst bc_spaces;
+	pop af;
+	ld (de), a;
+	push bc;
+	dec bc;
+	ld a, b;
+	or c;
+	jr z, s_strng_single;
+	push de;
+	ld l, e;
+	ld h, d;
+	inc de;
+	ldir;
+	pop de;
+s_strng_single:
+	pop bc;
+	ret;
+
+s_strng_empty:
+	pop af;
+	ret;
