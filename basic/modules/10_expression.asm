@@ -91,9 +91,9 @@ scan_func:
 	defb tk_bin_str, s_bin_str - 1 - $; // BIN$
 	defb tk_oct_str, s_oct_str - 1 - $;	// OCT$
 	defb tk_hex_str, s_hex_str - 1 - $;	// HEX$
-	defb tk_left, s_left - 1 - $;		// LEFT$
-	defb tk_right, s_right - 1 - $;		// RIGHT$
-	defb tk_mid, s_mid - 1 - $;		// MID$
+	defb tk_left_str, s_left - 1 - $;	// LEFT$
+	defb tk_right_str, s_right - 1 - $;	// RIGHT$
+	defb tk_mid_str, s_mid - 1 - $;		// MID$
 	defb 0;								// null terminator
 
 ;;
