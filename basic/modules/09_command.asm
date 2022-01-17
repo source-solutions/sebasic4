@@ -1688,8 +1688,8 @@ renum_line_5:
 	inc hl;								// point to next character
 	call stack_num;						// floating point number to calculator stack
 	call fp_to_bc;						// line number to BC
-	ld h, b;							// BC
-	ld l, c;							// to HL
+	ld l, c;							// BC
+	ld h, b;							// to HL
 	call line_addr;						// get line address
 	jr c, renum_line_6;					// jump if line number too large
 	jr z, renum_line_7;					// jump if line exists
@@ -1718,8 +1718,8 @@ renum_line_8:
 	ld d, 0;							// to DE
 	push de;							// stack it
 	push hl;							// stack address of first non-zero
-	ld h, d;							// LD H, 0
-	ld l, e;							// number of digits in new line number to HL
+	ld l, e;							// LD H, 0
+	ld h, d;							// number of digits in new line number to HL
 	ld bc, (mem_2_2);					// number of digits in old line number to BC
 	or a;								// prepare for subtraction
 	sbc hl, bc;							// number of digits changed?
@@ -1855,15 +1855,15 @@ insert_dgt_1:
 ; long string variable name in assignment
 ;;
 look_vars1:
-	call look_vars;							// find variable
+	call look_vars;						// find variable
 	push hl;							// save location
 	ex af, af';							// save AF
-	rst get_char;							// character after variable name
+	rst get_char;						// character after variable name
 	cp '$';								// is it '$'?
-	jr nz, lv_nstr;							// if not, exit
-	rst next_char;							// skip over '$'
-	res 6, (iy + _flags);						// indicate string
-	call syntax_z;							// checking syntax?
+	jr nz, lv_nstr;						// if not, exit
+	rst next_char;						// skip over '$'
+	res 6, (iy + _flags);				// indicate string
+	call syntax_z;						// checking syntax?
 	scf;								// set carry
 	jr nz, lv2;							// in runtime, not found CF=1, ZF=0
 	and a;								// in syntax check, found CF=0, ZF=0
@@ -1872,5 +1872,5 @@ lv_nstr:
 	ex af,af';							// restore AF
 lv2:
 	pop hl;								// restore location
-	ret
+	ret;								// 
 

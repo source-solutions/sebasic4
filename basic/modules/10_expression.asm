@@ -77,25 +77,25 @@ syntax_z:
 
 ;	// scanning function table
 scan_func:
-	defb '"', s_quote - 1 - $;";		// "
-	defb '(', s_bracket - 1 - $;		// (
-	defb '.', s_decimal - 1 - $;		// ,
-	defb '+', s_u_plus - 1 - $;			// +
-	defb tk_fn, s_fn - 1 - $;			// FN
-	defb tk_rnd, s_rnd - 1 - $;			// RND
-	defb tk_pi, s_pi - 1 - $;			// PI
-	defb tk_inkey_str, s_inkey_str - 1 - $; // INKEY$
-	defb op_bin, s_decimal - 1 - $;		// %
-	defb op_oct, s_decimal - 1 - $;		// @
-	defb op_hex, s_decimal - 1 - $;		// $
-	defb tk_bin_str, s_bin_str - 1 - $; // BIN$
-	defb tk_oct_str, s_oct_str - 1 - $;	// OCT$
-	defb tk_hex_str, s_hex_str - 1 - $;	// HEX$
-	defb tk_left_str, s_left - 1 - $;	// LEFT$
-	defb tk_right_str, s_right - 1 - $;	// RIGHT$
-	defb tk_mid_str, s_mid - 1 - $;		// MID$
-	defb tk_string_str, s_string_str - 1 -$;// STRING$
-	defb 0;								// null terminator
+	defb '"', s_quote - 1 - $;";				// "
+	defb '(', s_bracket - 1 - $;				// (
+	defb '.', s_decimal - 1 - $;				// ,
+	defb '+', s_u_plus - 1 - $;					// +
+	defb tk_fn, s_fn - 1 - $;					// FN
+	defb tk_rnd, s_rnd - 1 - $;					// RND
+	defb tk_pi, s_pi - 1 - $;					// PI
+	defb tk_inkey_str, s_inkey_str - 1 - $;		// INKEY$
+	defb op_bin, s_decimal - 1 - $;				// %
+	defb op_oct, s_decimal - 1 - $;				// @
+	defb op_hex, s_decimal - 1 - $;				// $
+	defb tk_bin_str, s_bin_str - 1 - $; 		// BIN$
+	defb tk_oct_str, s_oct_str - 1 - $;			// OCT$
+	defb tk_hex_str, s_hex_str - 1 - $;			// HEX$
+	defb tk_left_str, s_left - 1 - $;			// LEFT$
+	defb tk_right_str, s_right - 1 - $;			// RIGHT$
+	defb tk_mid_str, s_mid - 1 - $;				// MID$
+	defb tk_string_str, s_string_str - 1 -$;	// STRING$
+	defb 0;										// null terminator
 
 ;;
 ; scanning function
@@ -245,32 +245,32 @@ s_hex_str:
 	jp s_push_po;						// jump
 
 s_left:
-	call s_leftright;				// common code for LEFT$ and RIGHT$
+	call s_leftright;					// common code for LEFT$ and RIGHT$
 	jp s_cont_2;						// immediate jump
 
 s_right:
-	call s_leftright;				// common code for LEFT$ and RIGHT$
-	dec hl;
-	dec hl;							// (HL) = MSB of start address
-	ld b, (hl);
-	dec hl;
-	ld c, (hl);						// BC = start address
-	ex de, hl
-	add hl, bc						// HL = new start address
-	ex de, hl						// DE = new start address
-	ld (hl), e
-	inc hl
-	ld (hl), d						// commit new start address
+	call s_leftright;					// common code for LEFT$ and RIGHT$
+	dec hl;								// 
+	dec hl;								// (HL) = MSB of start address
+	ld b, (hl);							// 
+	dec hl;								// 
+	ld c, (hl);							// BC = start address
+	ex de, hl;							// 
+	add hl, bc;							// HL = new start address
+	ex de, hl;							// DE = new start address
+	ld (hl), e;							// 
+	inc hl;								// 
+	ld (hl), d;							// commit new start address
 	jp s_cont_2;						// immediate jump
 
 s_mid:
 	jp s_mid_cont;						// immediate jump
 
 s_string_str:
-	call s_2_coord;
-	call nz, s_strng_s
-	rst next_char
-	jp s_string
+	call s_2_coord;						// 
+	call nz, s_strng_s;					// 
+	rst next_char;						// next character
+	jp s_string;						// 
 
 s_alphnum:
 	call alphanum;						// alphanumeric character?
@@ -379,20 +379,20 @@ s_cont_3:
 s_lstr:
 	ld a, c;							// test the last character
 	cp '$';								// is it a '$'?
-	jr nz, s_loop;							// jump, if not
-	call syntax_z;							// in runtime,
-	jp nz, report_undef_var;				// it's always an undefined variable
-	ld hl, flags;							// bit 6 of flags is type
-	bit 6, (hl);							// test type
-	jr z, s_loop;							// must be numeric
-	res 6, (hl);							// indicate string
+	jr nz, s_loop;						// jump, if not
+	call syntax_z;						// in runtime,
+	jp nz, report_undef_var;			// it's always an undefined variable
+	ld hl, flags;						// bit 6 of flags is type
+	bit 6, (hl);						// test type
+	jr z, s_loop;						// must be numeric
+	res 6, (hl);						// indicate string
 	ld a, d;							// check if it's after
 	or a;								// a numeric expression
-	jr z, s_loop;							// return, if so
-	ld hl, (stkbot);						// check if it's after
+	jr z, s_loop;						// return, if so
+	ld hl, (stkbot);					// check if it's after
 	sbc hl, de;							// a numeric literal
-	jr c, s_loop;							// return if so
-	rst next_char;							// skip '$'
+	jr c, s_loop;						// return if so
+	rst next_char;						// skip '$'
 
 ;	// uses a combined table of operators and priorities
 s_opertr:
@@ -402,8 +402,8 @@ s_opertr:
 
 indexer_3:
 	inc hl;								// advance to next entry
-	inc hl;
-	inc hl;
+	inc hl;								// 
+	inc hl;								// 
 
 	ld a, (hl);							// first triplet to A
 	and a;								// null termniator?
@@ -619,9 +619,9 @@ sf_arg_vl:
 
 	pop hl;								// pop the start address in DEF FN statement
 	inc hl;								// skip over old value for now
-	inc hl;
-	inc hl;
-	inc hl;
+	inc hl;								// 
+	inc hl;								// 
+	inc hl;								// 
 
 	call fn_skpovr;						// next argument to HL
 	cp ')';								// closing parenthesis?
@@ -741,8 +741,8 @@ fn_skpovr_1:
 	ld a, (hl);							// code to A
 ;	cp ' ' + 1;							// > space?
 ;	jr c, fn_skpovr;					// jump if so
-	cp ' ';
-	jr z, fn_skpovr;
+	cp ' ';								// 
+	jr z, fn_skpovr;					// 
 	ret;								// end of subroutine
 
 ;;
@@ -818,7 +818,7 @@ v_matches:
 v_spaces:
 	ld a, (de);							// each in turn
 	inc de;								// next character
-	cp ' ' + 1;								// space?
+	cp ' ' + 1;							// space?
 	jr c, v_spaces;						// jump if so
 	or %00100000;						// test bit 5
 	cp (hl);							// match?
@@ -862,8 +862,8 @@ v_found_2:
 
 v_pass:
 	cp '$';								// long string name
-	jr nz, v_end							// if not, v_end
-	rst next_char;							// advance
+	jr nz, v_end;						// if not, v_end
+	rst next_char;						// advance
 	pop hl;								// retrieve address
 	inc hl;								// step over '$' + $80
 	cp a;								// clear CF, set ZF
@@ -883,12 +883,12 @@ v_cont:
 	ld a,(de);							// fetch next character
 
 alphanums:
-	call alphanum;							// alphanumeric?
+	call alphanum;						// alphanumeric?
 	ret c;								// return if so
 	cp $0D;								// enter?
 	ret z;								// return if so
 	cp ' ' + 1;							// whitespace?
-	jr c, v_cont							// loop, if so
+	jr c, v_cont;						// loop, if so
 	cp '$';								// $?
 	scf;								// set CF, if so
 	ret z;								// and return
@@ -1250,12 +1250,12 @@ l_each_ch:
 	inc bc;								// add one for each character in name
 
 l_no_sp:
-	inc hl;							// advance pointer
-	ld a, (hl);						// next character
-	cp $10;							// EOL?
+	inc hl;								// advance pointer
+	ld a, (hl);							// next character
+	cp $10;								// EOL?
 	jr c, l_test_ch;					// jump, if so
-	cp ' ' + 1;						// whitespace?
-	jr c, l_no_sp						// loop, if so
+	cp ' ' + 1;							// whitespace?
+	jr c, l_no_sp;						// loop, if so
 
 l_test_ch:
 	call alphanum;						// alphanumeric?
@@ -1275,10 +1275,10 @@ l_spaces:
 	adc hl, bc;							// do the subtraction
 
 l_store:
-	cp l;
-	adc a, h;
-	ld b, l;
-	ld c, a;						// set up fast 16-bit loop
+	cp l;								// 
+	adc a, h;							// 
+	ld b, l;							// 
+	ld c, a;							// set up fast 16-bit loop
 
 	ld hl, (dest);						// pointer to start of name to HL
 	dec de;								// pointer to first new byte to DE
@@ -1294,13 +1294,13 @@ l_char:
 	or %00100000;						// SET 5, A, change case
 	ld (de), a;							// store code
 	djnz l_char;						// loop until done
-	dec c;							// and loop further
+	dec c;								// and loop further
 	jr nz, l_char						// until done (count in 16 bits)
 	or %10000000;						// SET 7, A, mark code
 	ld (de), a;							// replace last code
-	pop hl;							// restore (dest) to hl
+	pop hl;								// restore (dest) to hl
 	cp '$' + $80						// long named string?
-	ret z
+	ret z;								// 
 	ld a, %11000000;					// prepare long name mark
 
 l_single:
@@ -1404,7 +1404,7 @@ l_new_str:
 ;	// L string subroutine
 l_string:
 	push af;							// stack letter
-	call lstk_fetch;						// get start and length
+	call lstk_fetch;					// get start and length
 
 l_strr:
 	pop af;								// unstack letter
@@ -1480,21 +1480,22 @@ get_hl_x_de:
 	ret;								// end ofS subroutine
 
 lstk_fetch:
-	jr nc,frstr;							// first assignment
-	and $E0;							// long variable name
-	jr z, rstrng;							// re-assignment of long-named string
-	jr stk_fetch;							// back to stk_fetch for short names
+	jr nc, frstr;						// first assignment
+	and %11100000;						// long variable name
+	jr z, rstrng;						// re-assignment of long-named string
+	jr stk_fetch;						// back to stk_fetch for short names
 
 frstr:
 	ld hl, -7;							// no numeric content
 	add hl, bc;							// do subtraction
-	jr c, lstrng;							// first assignment of long-named string
-	jr stk_fetch;							// back to stk_fetch for short names
+	jr c, lstrng;						// first assignment of long-named string
+	jr stk_fetch;						// back to stk_fetch for short names
 
 ;;
 ; long-named string re-assignment
 ;;
-rstrng:	pop af;								// discard return address
+rstrng:
+	pop af;								// discard return address
 	pop af;								// discard zero AF
 	pop bc;								// discard return address
 	pop bc;								// length of old version
@@ -1507,17 +1508,17 @@ rstr_l:
 	inc bc;								// increment length
 	inc de;								// increment net variable name length
 	dec hl;								// step back with pointer
-	bit 6, (hl);							// first letter?
-	jr nz, rstr_l;							// loop till beginning
+	bit 6, (hl);						// first letter?
+	jr nz, rstr_l;						// loop till beginning
 	ld a, (hl);							// first character in long name format
-	ld (dest), hl;							// point DEST to variable name
+	ld (dest), hl;						// point DEST to variable name
 	push hl;							// put back pointer to old version
 	push bc;							// put back length of old version
-	ld hl, l_addr;							// return address
+	ld hl, l_addr;						// return address
 	push hl;							// onto the stack
-	xor $E0;							// change to short name format
+	xor %11100000;						// change to short name format
 	push af;							// put back first character
-	ld hl, l_strr							// return address
+	ld hl, l_strr						// return address
 	push hl;							// onto the stack
 	ex de, hl;							// net length - 2 to HL
 ;;
@@ -1527,8 +1528,8 @@ lstrng:
 	inc hl;								// HL = net variable name length - 1
 	inc hl;								// HL = net variable name length
 	push hl;							// save net variable name length
-	call stk_fetch;							// do stk_fetch
-	ld (k_cur), de;							// point cursor to string
+	call stk_fetch;						// do stk_fetch
+	ld (k_cur), de;						// point cursor to string
 	pop hl;								// restore net variable name length
 	pop de;								// fetch return address
 	pop af;								// fetch first letter
@@ -1539,7 +1540,7 @@ lstrng:
 	inc hl;								// HL = net variable name length + 1
 	ld c, l;							// BC =
 	ld b, h;							// net variable name length + 1
-	call make_string
+	call make_string;					//
 	ex de, hl;							// address - 1 to DE
 	inc de;								// DE = variable name address
 	xor $E0;							// indicate long variable name
@@ -1547,9 +1548,9 @@ lstrng:
 	inc de;								// point to next character
 	xor a;								// A = 0
 	pop hl;								// restore net variable name length
-	call l_store;							// store variable name
+	call l_store;						// store variable name
 	pop bc;								// restore string length
-	ld de, (k_cur)							// DE = string content
+	ld de, (k_cur)						// DE = string content
 	xor a;								// A = 0
 	ret;								// return
 
@@ -1780,8 +1781,8 @@ not_bin:
 	jr dec_sto_1;						// immediate jump
 
 report_overflow_1:
-	rst error;
-	defb overflow;
+	rst error;							//
+	defb overflow;						//
 
 decimal:
 	rst next_char;						// get next character
@@ -1911,137 +1912,140 @@ nxt_dgt_2:
 	jr nxt_dgt_2;						// jump back
 
 s_str_num:
-	rst next_char;
-	cp "(";
-	jr nz, report_syntax_err2;
-	rst next_char;
-	call scanning;
-	bit 6, (iy + _flags);
-	jp z, expt_comma_1num;
+	rst next_char;						// 
+	cp "(";								// 
+	jr nz, report_syntax_err2;			//
+	rst next_char;						//
+	call scanning;						//
+	bit 6, (iy + _flags);				//
+	jp z, expt_comma_1num;				//
 
 report_syntax_err2:
-	rst error
-	defb syntax_error
+	rst error;							//
+	defb syntax_error;					//
+
 
 s_closing:
-	cp ')';
-	jr nz, report_syntax_err2;
-	rst next_char;
-	ld hl, flags;
-	res 6, (hl);
-	bit 7, (hl);
-	ret nz;
+	cp ')';								// 
+	jr nz, report_syntax_err2;			// 
+	rst next_char;						// 
+	ld hl, flags;						// 
+	res 6, (hl);						// 
+	bit 7, (hl);						// 
+	ret nz;								// 
 	pop hl;								// discard return address
 	pop hl;								// discard return address
-	jp s_cont_2
+	jp s_cont_2; 						// 
 
 s_length:
-	call find_int2;
+	call find_int2;						// 
 
 s_length2:
-	ld hl, (stkend);
-	dec hl;
-	ld d, (hl);
-	dec hl;
-	ld e, (hl);
-	ex de, hl;
+	ld hl, (stkend);					// 
+	dec hl;								// 
+	ld d, (hl);							// 
+	dec hl;								// 
+	ld e, (hl);							// 
+	ex de, hl;							// 
+
 s_length_again:
-	and a;
-	sbc hl, bc;
-	ex de, hl;
-	ret nc;
-	ex de, hl;
-	add hl, bc;
-	ld c, l;
-	ld b, h;
-	jr s_length_again;
+	and a;								// 
+	sbc hl, bc;							// 
+	ex de, hl;							// 
+	ret nc;								// 
+	ex de, hl;							// 
+	add hl, bc;							// 
+	ld c, l;							// 
+	ld b, h;							// 
+	jr s_length_again;					// 
 
 s_leftright:
-	call s_str_num;
-	call s_closing;
-	call s_length;
-	ld (hl), c;
-	inc hl;
-	ld (hl), b;
-	ret
+	call s_str_num;						// 
+	call s_closing;						// 
+	call s_length;						// 
+	ld (hl), c;							// 
+	inc hl;								// 
+	ld (hl), b;							// 
+	ret;								// 
 
 s_mid_cont:
-	call s_str_num;
-	cp ')';
-	jr z, s_mid2							// two-argument MID$
-	call expt_comma_1num						// read third argument
+	call s_str_num;						// 
+	cp ')';								// 
+	jr z, s_mid2;						// two-argument MID$
+	call expt_comma_1num;				// read third argument
 	push af;							// placeholder
-	call s_closing;
+	call s_closing;						// 
 	pop af;								// discard placeholder
-	call find_int2;							// BC = third argument
-	push bc								// stack BC
-	call s_mid3							// execute 2-argument MID$
-	pop bc								// BC = third argument
-	call s_length2							// MID$(a$,o,l) = LEFT$(MID$(a$,o),l)
-	ld (hl), c;
-	inc hl;
-	ld (hl), b;
-	jp s_cont_2
+	call find_int2;						// BC = third argument
+	push bc;							// stack BC
+	call s_mid3;						// execute 2-argument MID$
+	pop bc;								// BC = third argument
+	call s_length2;						// MID$(a$,o,l) = LEFT$(MID$(a$,o),l)
+	ld (hl), c;							// 
+	inc hl;								// 
+	ld (hl), b;							// 
+	jp s_cont_2;						// 
 
 s_mid2:
 	push af;							// placeholder
-	call s_closing;
+	call s_closing;						// 
 	pop af;								// discard placeholder
-	call s_mid3
-	jp s_cont_2
+	call s_mid3;						// 
+	jp s_cont_2;						// 
 
 s_mid3:
-	call s_length;							// get first argument between 0 and length
-	ld a, b								// 0 is not a valid first argument
-	or c								// for MID$
-	jp z, report_sscrpt_oo_rng
-	dec bc								// make the first argument 0-based
-	ld e, (hl);
-	inc hl;
+	call s_length;						// get first argument between 0 and length
+	ld a, c								// 0 is not a valid first argument
+	or b								// for MID$
+	jp z, report_sscrpt_oo_rng;			// 
+	dec bc;								// make the first argument 0-based
+	ld e, (hl);							// 
+	inc hl;								// 
 	ld d, (hl);							// DE = old length
 	ex de, hl;							// HL = old length
 	sbc hl, bc;							// HL = old length - 0-based offset
 	ex de, hl;							// DE = new length
-	ld (hl), d;
-	dec hl;
+	ld (hl), d;							// 
+	dec hl;								// 
 	ld (hl), e;							// commit new length
-	dec hl;
-	ld d, (hl);
-	dec hl;
+	dec hl;								// 
+	ld d, (hl);							// 
+	dec hl;								// 
 	ld e, (hl);							// DE = start address
 	ex de, hl;							// HL = start address
 	add hl, bc;							// HL = start address + 0-based offset
 	ex de, hl;							// DE = new start address
-	ld (hl), e;
-	inc hl;
+	ld (hl), e;							// 
+	inc hl;								// 
 	ld (hl), d;							// commit new start address
-	ret
+	ret;								// 
 
 s_strng_s:
-	call find_int1;
-	push af;
-	call find_int2;
-	ld a, b;
-	or c;
-	jr z, s_strng_empty
-	rst bc_spaces;
-	pop af;
-	ld (de), a;
-	push bc;
-	dec bc;
-	ld a, b;
-	or c;
-	jr z, s_strng_single;
-	push de;
-	ld l, e;
-	ld h, d;
-	inc de;
-	ldir;
-	pop de;
+	call find_int1;						// 
+	push af;							// 
+	call find_int2;						// 
+	ld a, c;							// 
+	or b;								// 
+	jr z, s_strng_empty;				// 
+	rst bc_spaces;						// 
+	pop af;								// 
+	ld (de), a;							// 
+	push bc;							// 
+	dec bc;								// 
+	ld a, c;							// 
+	or b;								// 
+	jr z, s_strng_single;				// 
+	push de;							// 
+	ld l, e;							// 
+	ld h, d;							// 
+	inc de;								// 
+	ldir;								// 
+	pop de;								// 
+
 s_strng_single:
-	pop bc;
-	ret;
+	pop bc;								// 
+	ret;								// 
 
 s_strng_empty:
-	pop af;
-	ret;
+	pop af;								// 
+	ret;								// 

@@ -384,10 +384,10 @@ fp_usr_no:
 ;;
 fp_mul_str:
 	inc hl;								// (HL) = mantissa MSB
-	bit 7, (hl);							// check sign bit
+	bit 7, (hl);						// check sign bit
 	dec hl;								// restore HL
 	push af;							// ZF clear, if negative
-	call nz, fp_negate2;					// absolute value
+	call nz, fp_negate2;				// absolute value
 	dec hl;								// (HL) = string length MSB
 	ld b, (hl);							// B = string length MSB
 	dec hl;								// (HL) = length LSB
@@ -396,7 +396,7 @@ fp_mul_str:
 	call stack_bc;						// stack string length (calculator)
 	fwait;								// arg2, length
 	fmul;								// arg2 * length
-	fce;
+	fce;								// 
 	call find_int2;						// BC = new string length
 	pop hl;								// HL = old string length
 	sbc hl, bc;							// HL = length difference
@@ -415,96 +415,97 @@ fp_mul_str:
 	push de;							// stack string address
 	rst bc_spaces;						// allocate space for mirrored string
 	pop hl;								// HL = string address
-	push de;
-	push bc;
-	ldir;
-	pop bc;
-	pop hl;
-	push hl;
-	call mirror
-	pop de;
-	ld hl, (stkend);
-	dec hl;
-	dec hl;
-	dec hl;
-	ld (hl), d;
-	dec hl;
-	ld (hl), e;
+	push de;							// 
+	push bc;							// 
+	ldir;								// 
+	pop bc;								// 
+	pop hl;								// 
+	push hl;							// 
+	call mirror;						// 
+	pop de;								// 
+	ld hl, (stkend);					// 
+	dec hl;								// 
+	dec hl;								// 
+	dec hl;								// 
+	ld (hl), d;							// 
+	dec hl;								// 
+	ld (hl), e;							// 
+
 fp_mul_str_e:
-	ld de, (stkend);
-	ret;
+	ld de, (stkend);					// 
+	ret;								// 
 
 d_slong:
 	push hl;							// address pointer
 	push de;							// excess length
 	rst bc_spaces;						// allocate space for longer string
 	pop hl;								// HL = excess length
-	ld (membot + 28), hl;					// save excess length
+	ld (membot + 28), hl;				// save excess length
 	add hl, bc;							// HL = old length
-	ex (sp), hl;							// retrieve address pointer
+	ex (sp), hl;						// retrieve address pointer
 	add hl, bc;							// stack has moved
-	ld b, (hl);
-	ld (hl), d;
-	dec hl
-	ld c, (hl);
-	ld (hl), e;
-	ld h, b;
-	ld l, c;
-	pop bc;
-	push de;
-	ldir;
-	pop hl;
-	ld a, (membot + 28);
-	cpl;
-	ld c, a;
-	ld a, (membot + 29);
-	cpl;
-	ld b, a;
-	inc bc;
-	ldir;
-	pop af;
-	jr z, fp_mul_str_e;
-	call str_fetch;
-	ex de, hl;
-	call mirror;
-	jr fp_mul_str_e;
+	ld b, (hl);							// 
+	ld (hl), d;							// 
+	dec hl;								// 
+	ld c, (hl);							// 
+	ld (hl), e;							// 
+	ld l, c;							// 
+	ld h, b;							// 
+	pop bc;								// 
+	push de;							// 
+	ldir;								// 
+	pop hl;								// 
+	ld a, (membot + 28);				// 
+	cpl;								// 
+	ld c, a;							// 
+	ld a, (membot + 29);				// 
+	cpl;								// 
+	ld b, a;							// 
+	inc bc;								// 
+	ldir;								// 
+	pop af;								// 
+	jr z, fp_mul_str_e;					// 
+	call str_fetch;						// 
+	ex de, hl;							// 
+	call mirror;						// 
+	jr fp_mul_str_e;					// 
 
 ;;
 ; Mirror a memory area
 ; HL = start, BC = length
 ;;
 mirror:
-	ld d, (hl);
-	dec bc;
-	ld a, b;
-	or c;
-	ret z;
-	add hl, bc;
-	ld e, (hl);
-	ld (hl), d;
-	sbc hl,bc;
-	ld (hl), e;
-	inc hl;
-	dec bc;
-	ld a, b;
-	or c;
-	jr nz, mirror;
-	ret;
+	ld d, (hl);							// 
+	dec bc;								// 
+	ld a, c;							// 
+	or b;								// 
+	ret z;								// 
+	add hl, bc;							// 
+	ld e, (hl);							// 
+	ld (hl), d;							// 
+	sbc hl, bc;							// 
+	ld (hl), e;							// 
+	inc hl;								// 
+	dec bc;								// 
+	ld a, c;							// 
+	or b;								// 
+	jr nz, mirror;						// 
+	ret;								// 
 
 ;;
 ; Like stk_fetch, but fetches only BC and DE and leaves STKEND alone.
 ;;
 str_fetch:
-	ld hl, (stkend);
-	dec hl;
-	ld b, (hl);
-	dec hl;
-	ld c, (hl);
-	dec hl;
-	ld d, (hl);
-	dec hl;
-	ld e, (hl);
-	ret;
+	ld hl, (stkend);					// 
+	dec hl;								// 
+	ld b, (hl);							// 
+	dec hl;								// 
+	ld c, (hl);							// 
+	dec hl;								// 
+	ld d, (hl);							// 
+	dec hl;								// 
+	ld e, (hl);							// 
+	ret;								// 
 
 report_bad_fn_call:
 	rst error;							// in this case
@@ -1399,8 +1400,8 @@ topwrn:
 
 topwrp:
 	pop hl;								//
-	ld a, h;							//
-	or l;								//
+	ld a, l;							//
+	or h;								//
 	jr z, stkone;						//
 	ld b, $10;							//
 	dec a;								//
@@ -1509,12 +1510,12 @@ hexs_4:
 	add a, '0';							// offset to ASCII zero
 	ld (de), a;							// store character
 	inc de;								// next position
-	ret;
+	ret;								// 
 
 ;	// new function 1
 fp_new_fn_1:
-	ret;
+	ret;								// 
 
 ;	// new function 2
 fp_new_fn_2:
-	ret;
+	ret;								// 

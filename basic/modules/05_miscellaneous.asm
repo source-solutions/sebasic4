@@ -484,7 +484,7 @@ screen_0:
 	res 1, (iy + _flags2);				// signal 80 columns
 	ld a, %00110110;					// yellow on blue (with no ULAplus), hi-res mode
 	out (scld), a;						// set it
-	jp c_cls;								// exit via CLS 80
+	jp c_cls;							// exit via CLS 80
 
 screen_1:
 	set 1, (iy + _flags2);				// signal 40 columns

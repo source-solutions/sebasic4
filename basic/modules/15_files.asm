@@ -37,8 +37,8 @@
 ;	// File commands page out the BASIC ROM.
 ;	// They must be stored at $4000 or later.
 
-	include "../../boot/os.inc";				// label definitions
-	include "../../boot/uno.inc";				// label definitions
+	include "../../boot/os.inc";		// label definitions
+	include "../../boot/uno.inc";		// label definitions
 
 	org $5000;
 
@@ -841,6 +841,3 @@ c_aload:
 	
 c_asave:
 	jp c_save;							// stub for ASCII BASIC saving
-
-
-
