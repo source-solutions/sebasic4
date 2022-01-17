@@ -951,10 +951,8 @@ fp_n_mod_m:
 	fint;								// n, int (n / m)
 	fgt 1;								// n, int (n / m), m
 	fxch;								// n, m, int (n / m)
-	fst 1;								// n, m, int (n / m)	mem_1 = int (n / m)
 	fmul;								// n, m * int (n / m)
 	fsub;								// n - m * int (n / m)
-	fgt 1;								// n - m * int (n / m), int (n / m)
 	fce;								// exit calculator
 	ret;								// end of subroutine
 

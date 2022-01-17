@@ -130,6 +130,7 @@ tbl_ops_priors:
 	defb tk_neql, $cb, 5;				// <>	%11000000 + fcp(ne)
 	defb tk_or, $c7, 2;					// OR	%11000000 + fbor
 	defb tk_and, $c8, 3;				// AND	%11000000 + fband
+	defb tk_mod, $f2, 8;				// MOD  %11000000 + fmod
 	defb 0;								// null terminator
 
 ;	// used in 12_calculator
