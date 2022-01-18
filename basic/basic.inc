@@ -450,9 +450,9 @@ MACRO frstk;
 ENDM
 
 ;;
-; X80 op-code: reserved
+; X80 op-code: exclusive or
 ;;
-MACRO fnew1;
+MACRO fxor;
 	defb $3e;
 ENDM
 

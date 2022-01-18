@@ -619,6 +619,7 @@ report_overflow_c:
 	push bc;
 	call fp_get_int;
 	pop hl;
+	ld a, c;
 	ret
 
 ;;
@@ -626,7 +627,6 @@ report_overflow_c:
 ;;
 fp_or:
 	call fp_logic;
-	ld a, c;
 	or l;
 	ld d, a;
 	ld a, b;
@@ -642,11 +642,21 @@ fp_logic_end:
 	ret;
 
 ;;
+; XOR operation
+;;
+fp_xor:
+	call fp_logic;
+	xor l
+	ld d, a;
+	ld a, b;
+	xor h;
+	jr fp_logic_end;
+
+;;
 ; number AND number operation
 ;;
 fp_no_and_no:
 	call fp_logic;
-	ld a, c;
 	and l
 	ld d, a;
 	ld a, b;

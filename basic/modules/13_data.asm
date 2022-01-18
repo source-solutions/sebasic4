@@ -130,6 +130,7 @@ tbl_ops_priors:
 	defb tk_neql, $cb, 5;				// <>	%11000000 + fcp(ne)
 	defb tk_or, $c7, 2;					// OR	%11000000 + fbor
 	defb tk_and, $c8, 3;				// AND	%11000000 + fband
+	defb tk_xor, $fe, 2;				// XOR  %11000000 + fxor
 	defb tk_mod, $f2, 8;				// MOD  %11000000 + fmod
 	defb 0;								// null terminator
 
@@ -204,7 +205,7 @@ tbl_addrs:
 	defw fp_calc_2;
 	defw fp_hex_str;
 	defw fp_re_stack;
-	defw fp_new_fn_1;
+	defw fp_xor;
 	defw fp_new_fn_2;
 
 tbl_offs equ $ - tbl_addrs
