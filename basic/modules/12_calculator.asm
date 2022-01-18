@@ -1531,48 +1531,6 @@ last:
 	fce;								// exit calculator
 	ret;								// end of subroutine
 
-;	// FIXME: test token and modify for BIN and OCT
-;;
-; HEX$ function
-;;
-fp_hex_str:
-	call fp_to_bc;						// get value
-	jp c, report_overflow;				// error if
-	jp nz, report_overflow;				// out of range
-	push bc;							// stack it
-	ld bc, 4;							// make four
-	rst bc_spaces;						// spaces
-	pop hl;								// unstack value
-	push de;							// stack pointer
-	ld a, h;							// get value
-	call hexs_2;						// convert to string
-	ld a, l;							// get value
-	call hexs_2;						// convert to string
-	pop de;								// restore pointer
-	call stk_sto_str;					// put on calculator stack
-	jp stk_pntrs;						// exit and restore pointers
-
-hexs_2:
-	ld h, a;							// store value in H
-	rlca;								// move high
-	rlca;								// nibble
-	rlca;								// to low
-	rlca;								// nibble
-	call hexs_3;						// do first part
-	ld a, h;							// restore low nibble
-
-hexs_3:
-	and %00001111;						// clear high nibble
-	cp $0a;								// A to F?
-	jr c, hexs_4;						// jump if not
-	add a, 7;							// offset to ASCII 'A'
-
-hexs_4:
-	add a, '0';							// offset to ASCII zero
-	ld (de), a;							// store character
-	inc de;								// next position
-	ret;								// 
-
 ;	// new function 1
 fp_new_fn_1:
 	ret;								// 

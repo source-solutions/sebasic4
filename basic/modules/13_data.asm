@@ -203,7 +203,7 @@ tbl_addrs:
 	defw fp_get_argt;
 	defw fp_truncate;
 	defw fp_calc_2;
-	defw fp_hex_str;
+	defw fp_new_fn_1;
 	defw fp_re_stack;
 	defw fp_xor;
 	defw fp_new_fn_2;
