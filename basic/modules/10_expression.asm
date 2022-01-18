@@ -171,8 +171,7 @@ rndl:
 	adc a, a;							//
 	rl c;								//
 	jr nc, noadd;						//
-	and a;								// fast CCF
-	adc hl, de;							//
+	add hl, de;							//
 	adc a, 0;							//
 
 noadd:
