@@ -58,6 +58,37 @@ tokenizer_3:
 
 tokenizer_4:
 	ld a, (hl);							// get character
+
+	bit 0, c;							// in quotes?
+	jr nz, in_q;						// jump if so
+
+sbst_print
+	cp '?';								// question mark?
+	jr nz, sbst_and;					// jump if not
+	ld a, tk_print;						// PRINT token to A
+	jr do_sbst;							// immediate jump
+
+sbst_and:
+	cp '&';								// 
+	jr nz, sbst_not;					// jump if not
+	ld a, tk_and;						// 
+	jr do_sbst;							// immediate jump
+
+sbst_not:
+	cp '~';								// 
+	jr nz, sbst_or;						// jump if not
+	ld a, tk_not;						// 
+	jr do_sbst;							// immediate jump
+
+sbst_or:
+	cp '|';								// 
+	jr nz, in_q;						// jump if not
+	ld a, tk_or;						// 
+
+do_sbst:
+	ld (hl), a;							// write character back (for subs)
+
+in_q:
 	cp "'";								// substitute REM token?
 	jr z, tokenizer_14;					// jump if so
 	cp tk_rem;							// REM token?
@@ -125,8 +156,8 @@ tokenizer_11:
 	dec hl;								// final character of token
 	cp '$';								// string?
 	jr z, tokenizer_3;					// jump if so
-	call alpha;							// alpha?
-	jr c, tokenizer_3;					// jump if so
+	call alpha;	'|'						// alpha?
+	jp c, tokenizer_3;					// jump if so
 
 tokenizer_12:
 	ld de, (mem_5_1);					// first character
