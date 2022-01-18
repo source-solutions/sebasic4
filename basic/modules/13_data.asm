@@ -414,7 +414,7 @@ tk_ptr_rem:
 	str "ON", "RENUM", "AUTO", "SCREEN";
 	str "XOR", "EOF", "LOC", "LOF"
 	str "LEFT$", "RIGHT$", "MID$", "STRING$";
-	str "_E9", "_EA", "_EB", "_EC";
+	str "FIX", "_EA", "_EB", "_EC";
 	str "_ED", "_EE", "_EF", "_F0";
 	str "_F1", "_F2", "_F3", "_F4";
 	str "_F5", "_F6", "_F7", "_F8";

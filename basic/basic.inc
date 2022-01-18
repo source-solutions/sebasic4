@@ -717,7 +717,7 @@ ENDM
 	tk_right_str	equ $e6;
 	tk_mid_str		equ $e7;
 	tk_string_str	equ $e8;
-	tk__e9			equ $e9;
+	tk_fix			equ $e9;
 	tk__ea			equ $ea;
 	tk__eb			equ $eb;
 	tk__ec			equ $ec;

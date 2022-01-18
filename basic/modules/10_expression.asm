@@ -94,7 +94,8 @@ scan_func:
 	defb tk_left_str, s_left - 1 - $;			// LEFT$
 	defb tk_right_str, s_right - 1 - $;			// RIGHT$
 	defb tk_mid_str, s_mid - 1 - $;				// MID$
-	defb tk_string_str, s_string_str - 1 -$;	// STRING$
+	defb tk_string_str, s_string_str - 1 - $;	// STRING$
+	defb tk_fix, s_fix - 1 - $;				// FIX
 	defb 0;										// null terminator
 
 ;;
@@ -271,6 +272,10 @@ s_string_str:
 	call nz, s_strng_s;					// 
 	rst next_char;						// next character
 	jp s_string;						// 
+
+s_fix:
+	ld bc, $10fa;						// priority $10, opcode $fa (#3a)
+	jp s_push_po;
 
 s_alphnum:
 	call alphanum;						// alphanumeric character?
