@@ -600,15 +600,16 @@ ENDM
 
 ;	// operators
 
-	op_and			equ '&';
 	op_bin			equ '%';
-	op_comp			equ '~';
 	op_hex			equ '$';
-	op_mod			equ tk_mod;
 	op_oct			equ '@';
-	op_or			equ '|';
-	op_xor			equ tk_xor;
 
+;	// substitutes
+
+	sb_and			equ '&'
+	sb_not			equ '~'
+	sb_or			equ '|'
+	sb_print		equ '?'
 
 ;	// tokens
 
