@@ -545,12 +545,12 @@ fp_greater_0:
 ; NOT function
 ;;
 fp_not:
-	fwait;							// x
-	fneg;							// -x
-	fstk1;							// -x, 1
-	fsub;							// -x - 1
-	fce;							// end calculation
-	ret							// return
+	fwait;								// x
+	fneg;								// -x
+	fstk1;								// -x, 1
+	fsub;								// -x - 1
+	fce;								// end calculation
+	ret									// return
 
 ;	call test_zero;						// zero?
 ;	jr fp_0_div_1;						// immediate jump
@@ -587,81 +587,84 @@ fp_0_div_1:
 
 
 fp_get_int:
-	ld a, (hl);
-	or a;
-	jr z, fp_get_int1;
-	fwait;
-	fstkhalf;
-	fadd;
-	fint;
-	fce;
+	ld a, (hl);							// 
+	or a;								// 
+	jr z, fp_get_int1;					// 
+	fwait;								// 
+	fstkhalf;							// 
+	fadd;								// 
+	fint;								// 
+	fce;								// 
+
 fp_get_int1:
-	fwait;
-	fdel;
-	fce;
-	push de;
-	ex de, hl;
-	xor a;
-	cp (hl);
-	jp nz, report_overflow;
-	inc hl;
-	inc hl;
-	ld c, (hl);
-	inc hl;
-	ld b, (hl);
-	ex de, hl;
-	pop de;
-	ret
+	fwait;								// 
+	fdel;								// 
+	fce;								// 
+	push de;							// 
+	ex de, hl;							// 
+	xor a;								// 
+	cp (hl);							// 
+	jp nz, report_overflow;				// 
+	inc hl;								// 
+	inc hl;								// 
+	ld c, (hl);							// 
+	inc hl;								// 
+	ld b, (hl);							// 
+	ex de, hl;							// 
+	pop de;								// 
+	ret;								// 
 
 fp_logic:
-	call fp_get_int;
+	call fp_get_int;					//
+
 report_overflow_c:
-	push bc;
-	call fp_get_int;
-	pop hl;
-	ld a, c;
-	ret
+	push bc;							// 
+	call fp_get_int;					// 
+	pop hl;								// 
+	ld a, c;							// 
+	ret;								// 
 
 ;;
 ; OR operation
 ;;
 fp_or:
-	call fp_logic;
-	or l;
-	ld d, a;
-	ld a, b;
-	or h;
+	call fp_logic;						// 
+	or l;								// 
+	ld d, a;							// 
+	ld a, b;							// 
+	or h;								// 
+
 fp_logic_end:
-	ld c, a;
-	add a, a;
-	sbc a, a;
-	ld e, a;
-	xor a;
-	call stk_store_nocheck;
-	ex de, hl;
-	ret;
+	ld c, a;							// 
+	add a, a;							// 
+	sbc a, a;							// 
+	ld e, a;							// 
+	xor a;								// 
+	call stk_store_nocheck;				// 
+	ex de, hl;							// 
+	ret;								// 
 
 ;;
 ; XOR operation
 ;;
 fp_xor:
-	call fp_logic;
-	xor l
-	ld d, a;
-	ld a, b;
-	xor h;
-	jr fp_logic_end;
+	call fp_logic;						// 
+	xor l								// 
+	ld d, a;							// 
+	ld a, b;							// 
+	xor h;								// 
+	jr fp_logic_end;					// 
 
 ;;
 ; number AND number operation
 ;;
 fp_no_and_no:
-	call fp_logic;
-	and l
-	ld d, a;
-	ld a, b;
-	and h;
-	jr fp_logic_end;
+	call fp_logic;						// 
+	and l;								// 
+	ld d, a;							// 
+	ld a, b;							// 
+	and h;								// 
+	jr fp_logic_end;					// 
 
 ;;
 ; string AND number operation
@@ -1005,7 +1008,7 @@ fp_end_calc:
 ;;
 fp_n_mod_m:
 	fwait;								// n
-	fst 1;								// n, m					mem_1 = m
+	fst 1;								// n, m				mem_1 = m
 	fdel;								// n
 	fmove;								// n, n
 	fgt 1;								// n, n, m
