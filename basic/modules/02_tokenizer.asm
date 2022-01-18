@@ -213,9 +213,8 @@ detokenizer_5:
 	push af;							// stack token (0 to 127)
 	call po_search;						// locate entry
 	jr c, detokenizer_6;				// insert token in edit line
-	ld a, ' ';							// insert
-	bit 0, (iy + _flags);				// leading space
-	call z, detokenizer_8;				// if required
+	bit 0, (iy + _flags);				// insert leading space
+	call z, detokenizer_9;				// if required
 
 detokenizer_6:
 	ld a, (de);							// get code
@@ -243,6 +242,8 @@ detokenizer_7:
 	ret z;								// return if so
 	cp tk_fn - $80;						// RND, INKEY$ or PI?
 	ret c;								// return if so
+
+detokenizer_9:
 	ld a, ' ';							// otherwise insert trailing space
 
 detokenizer_8:

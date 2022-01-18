@@ -1078,7 +1078,7 @@ list_cursor:
 out_line:
 	ld bc, (e_ppc);						// line number
 	call cp_lines;						// match or line after
-	ld de, 0;							// no line cursor
+	ld de, $2000;							// no line cursor
 	call z, list_cursor;				// call with match
 	rl e;								// carry in E if line before current else zero
 
