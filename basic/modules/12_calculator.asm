@@ -545,8 +545,15 @@ fp_greater_0:
 ; NOT function
 ;;
 fp_not:
-	call test_zero;						// zero?
-	jr fp_0_div_1;						// immediate jump
+	fwait;							// x
+	fneg;							// -x
+	fstk1;							// -x, 1
+	fsub;							// -x - 1
+	fce;							// end calculation
+	ret							// return
+
+;	call test_zero;						// zero?
+;	jr fp_0_div_1;						// immediate jump
 
 ;;
 ; less than zero operation
@@ -561,46 +568,90 @@ sign_to_c:
 	rlca;								// opposite effect from fp_greater_0
 
 ;;
-; zero or one
+; zero or minus one
 ;;
 fp_0_div_1:
 	push hl;							// stack result pointer
-	ld a, 0;							// clear A, leave carry flag alone
-	ld (hl), a;							// zero first byte
+	sbc a, a;							// CF to all bits of A
+	ld (hl), 0;							// zero first byte
 	inc hl;								// point to next byte
-	ld (hl), a;							// zero second byte
+	ld (hl), a;							// set second byte
 	inc hl;								// point to next byte
-	rla;								// carry flag to A
-	ld (hl), a;							// set third byte to one or zero
-	rra;								// restore A to zero
+	ld (hl), a;							// set third byte
 	inc hl;								// point to next byte
-	ld (hl), a;							// zero fourth byte
+	ld (hl), a;							// set fourth byte
 	inc hl;								// point to next byte
-	ld (hl), a;							// zero fifth byte
+	ld (hl), 0;							// zero fifth byte
 	pop hl;								// unstack result pointer
 	ret;								// end of subroutine
+
+
+fp_get_int:
+	ld a, (hl);
+	or a;
+	jr z, fp_get_int1;
+	fwait;
+	fstkhalf;
+	fadd;
+	fint;
+	fce;
+fp_get_int1:
+	fwait;
+	fdel;
+	fce;
+	push de;
+	ex de, hl;
+	xor a;
+	cp (hl);
+	jp nz, report_overflow;
+	inc hl;
+	inc hl;
+	ld c, (hl);
+	inc hl;
+	ld b, (hl);
+	ex de, hl;
+	pop de;
+	ret
+
+fp_logic:
+	call fp_get_int;
+report_overflow_c:
+	push bc;
+	call fp_get_int;
+	pop hl;
+	ret
 
 ;;
 ; OR operation
 ;;
 fp_or:
-	ex de, hl;							// HL points to second number
-	call test_zero;						// zero?
-	ex de, hl;							// restore pointers
-	ret c;								// return if zero
-	scf;								// set carry flag
-	jr fp_0_div_1;						// immediate jump
+	call fp_logic;
+	ld a, c;
+	or l;
+	ld d, a;
+	ld a, b;
+	or h;
+fp_logic_end:
+	ld c, a;
+	add a, a;
+	sbc a, a;
+	ld e, a;
+	xor a;
+	call stk_store_nocheck;
+	ex de, hl;
+	ret;
 
 ;;
 ; number AND number operation
 ;;
 fp_no_and_no:
-	ex de, hl;							// HL points to second number
-	call test_zero;						// zero?
-	ex de, hl;							// restore pointers
-	ret nc;								// return if not zero
-	and a;								// reset carry flag
-	jr fp_0_div_1;						// immediate jump
+	call fp_logic;
+	ld a, c;
+	and l
+	ld d, a;
+	ld a, b;
+	and h;
+	jr fp_logic_end;
 
 ;;
 ; string AND number operation

@@ -1182,6 +1182,7 @@ stk_store:
 	push bc;							// stack BC
 	call test_5_sp;						// room for five bytes?
 	pop bc;								// unstack BC
+stk_store_nocheck:
 	ld hl, (stkend);					// address of first location to HL
 	ld (hl), a;							// write first byte
 	inc hl;								// next location
