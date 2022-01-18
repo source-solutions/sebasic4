@@ -93,6 +93,7 @@ scan_func:
 	defb tk_mid_str, s_mid - 1 - $;				// MID$
 	defb tk_string_str, s_string_str - 1 - $;	// STRING$
 	defb tk_fix, s_fix - 1 - $;				// FIX
+	defb tk_str_str, s_str_j - 1 - $;			// STR$
 	defb 0;										// null terminator
 
 ;;
@@ -250,6 +251,9 @@ s_pi:
 s_pi_end:
 	rst next_char;						// next character
 	jp s_numeric;						// immediate jump
+
+s_str_j:
+	jp s_str;
 
 ;	// fast RND function
 s_rnd:
@@ -2045,3 +2049,102 @@ s_strng_single:
 s_strng_empty:
 	pop af;								// 
 	ret;								// 
+
+s_str:
+	rst next_char;							// next character
+	cp '(';								// multiple arguments?
+	jr z,s_str_multi;						// jump, if so
+	ld bc, $106E;							// STR$ with priority $10
+	push bc;							// onto the stack
+	jp s_loop_1;							// continue with scanning
+
+s_str_multi:
+	rst next_char;							// skip '('
+	call expt_1num;							// first argument is numeric
+	cp ')';								// single argument
+	jr nz,s_str_multi2;						// jump, if not
+	rst next_char;							// skip ')'
+	call syntax_z;							// checking syntax?
+	call nz, fp_str_str;						// if not, do STR$
+s_str_multi_end:
+	res 6, (iy + _flags);						// the result is a string
+	jp s_cont_2;
+
+s_str_multi2:
+	call expt_comma_1num;						// one more number separated by comma
+	cp ')';								// no more arguments
+	jp nz, report_syntax_err;					// are allowed
+	rst next_char;							// skip ')'
+	call syntax_z;							// checking syntax?
+	jr z, s_str_multi_end;						// done, if so
+
+	call find_int1;							// get base
+	cp 2;
+	jp c, report_bad_fn_call;					// base below 2 is illegal
+	cp 37;
+	jp nc, report_bad_fn_call;					// base above 36 is illegal
+	call stack_a;							// save rounded base
+
+	ld bc, 1;
+	rst bc_spaces;
+	ld (k_cur), hl;
+	push hl;							// save start address
+	ld hl, (curchl);
+	push hl;							// save current channel
+	ld a, $ff;
+	call chan_open;
+	fwait;								// n, x
+	fst 3;								// save base
+	fdel;								// n
+	fstkhalf;							// n, 0.5
+	fadd;								// n + 0.5
+	fint;								// integer n
+	fce;
+	inc hl;
+	bit 7, (hl);
+	jr z, s_str_s;
+	ld a, '-';
+	rst print_a;
+	fwait;
+	fneg;
+	fce;
+s_str_s:
+	fwait;								// n
+	fgt 3;								// n, base
+	fmod;								// d
+	fgt 0;								// d, n'
+	fxch;								// n', d
+	fce;
+	call find_int1;							// digit to A
+	cp 10;								// 0..9?
+	jr c, s_str_low							// jump, if so
+	add 'A' - '9' - 1;
+s_str_low:
+	add '0';
+	rst print_a;
+	fwait;
+	fce;
+	call test_zero;
+	jr nc, s_str_s;
+
+	pop hl;								// restore channel
+	call chan_flag;
+	pop de;								// DE = start pointer
+	ld hl, (k_cur);
+	and a;
+	sbc hl, de;
+	ld c, l;
+	ld b, h;							// BC = length
+	push bc;
+	push de;
+	ex de, hl;
+	ld a, (hl);
+	cp '-';
+	jr nz,str_p;
+	inc hl;
+	dec bc;
+str_p:	call mirror;
+	pop de;
+	pop bc;
+	jp s_string;
+

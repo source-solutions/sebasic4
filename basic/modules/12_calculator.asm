@@ -1016,6 +1016,7 @@ fp_n_mod_m:
 	fint;								// n, int (n / m)
 	fgt 1;								// n, int (n / m), m
 	fxch;								// n, m, int (n / m)
+	fst 0;								// store div in mem0
 	fmul;								// n, m * int (n / m)
 	fsub;								// n - m * int (n / m)
 	fce;								// exit calculator
