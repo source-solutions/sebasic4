@@ -382,40 +382,53 @@ kt_dig_sym:
 token_table:
 	defb end_marker;
 
-;	// functions
-	str "RND", "INKEY$", "PI", "FN";
-	str "_A9", "_AA", "_AB", "SPC";
-	str "TAB", "VAL$", "ASC", "VAL";
-	str "LEN", "SIN", "COS", "TAN";
-	str "ASIN", "ACOS", "ATAN", "LOG";
-	str "EXP", "INT", "SQR", "SGN";
-	str "ABS", "PEEK", "INP", "USR";
-	str "STR$", "CHR$", "NOT", "MOD";
-	str "OR", "AND", "<=", ">=";
-	str "<>", "LINE", "THEN", "TO";
-	str "STEP";
+;	// exceptional functions (no arguments, etc.)
+	str "RND", "INKEY$", "PI", "FN";	// $80
+
+	// multi-argument functions
+	str "_A9", "_AA", "_AB";		// $84
+
+;	// PRINT arguments
+	str "SPC", "TAB";			// $87
+
+;	// prefix operators (single-argument functions)
+	str "VAL$", "ASC", "VAL";		// $89
+	str "LEN", "SIN", "COS", "TAN";		// $8C
+	str "ASIN", "ACOS", "ATAN", "LOG";	// $90
+	str "EXP", "INT", "SQR", "SGN";		// $94
+	str "ABS", "PEEK", "INP", "USR";	// $98
+	str "STR$", "CHR$", "NOT";		// $9C
+
+;	// infix operators
+	str "MOD";				// $9F
+	str "OR", "AND", "<=", ">=";		// $A0
+	str "<>";				// $A4
+
+;	// other keywords
+	str "LINE", "THEN", "TO";		// $A5
+	str "STEP";				// $A8
 
 ;	// commands
-	str "DEF FN", "BLOAD", "BSAVE", "CHDIR";
-	str "COPY", "OPEN #", "CLOSE #", "WHILE";
-	str "WEND", "SOUND", "FILES", "KILL";
-	str "LOAD", "MKDIR", "NAME", "RMDIR";
-	str "SAVE", "OUT", "LOCATE", "END";
-	str "STOP", "READ", "DATA", "RESTORE";
-	str "NEW", "ERROR", "CONT", "DIM";
+	str "DEF FN", "BLOAD", "BSAVE", "CHDIR";	// $A9
+	str "COPY", "OPEN #", "CLOSE #", "WHILE";	// $AD
+	str "WEND", "SOUND", "FILES", "KILL";		// $B1
+	str "LOAD", "MKDIR", "NAME", "RMDIR";		// $B5
+	str "SAVE", "OUT", "LOCATE", "END";		// $B9
+	str "STOP", "READ", "DATA", "RESTORE";		// $BD
+	str "NEW", "ERROR", "CONT", "DIM";		// $C1
 
 tk_ptr_rem:
-	str "REM", "FOR", "GOTO", "GOSUB";
-	str "INPUT", "PALETTE", "LIST", "LET";
-	str "WAIT", "NEXT", "POKE", "PRINT"
-	str "DELETE", "RUN", "EDIT", "RANDOMIZE";
-	str "IF", "CLS", "CALL", "CLEAR"
-	str "RETURN", "COLOR", "TRON", "TROFF"
-	str "ON", "RENUM", "AUTO", "SCREEN";
-	str "XOR", "EOF", "LOC", "LOF"
-	str "LEFT$", "RIGHT$", "MID$", "STRING$";
-	str "FIX", "_EA", "_EB", "_EC";
-	str "_ED", "_EE", "_EF", "_F0";
+	str "REM", "FOR", "GOTO", "GOSUB";		// $C5
+	str "INPUT", "PALETTE", "LIST", "LET";		// $C9
+	str "WAIT", "NEXT", "POKE", "PRINT";		// $CD
+	str "DELETE", "RUN", "EDIT", "RANDOMIZE";	// $D1
+	str "IF", "CLS", "CALL", "CLEAR";		// $D5
+	str "RETURN", "COLOR", "TRON", "TROFF"		// $D9
+	str "ON", "RENUM", "AUTO", "SCREEN";		// $DD
+	str "XOR", "EOF", "LOC", "LOF";			// $E1
+	str "LEFT$", "RIGHT$", "MID$", "STRING$";	// $E5
+	str "FIX", "_EA", "_EB", "_EC";			// $E9
+	str "_ED", "_EE", "_EF", "_F0";			// $ED
 	str "_F1", "_F2", "_F3", "_F4";
 	str "_F5", "_F6", "_F7", "_F8";
 	str "_F9", "_FA", "_FB", "_FC";
