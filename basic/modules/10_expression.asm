@@ -198,6 +198,12 @@ s_right:
 	ld (hl), d;							// commit new start address
 	jp s_cont_2;						// immediate jump
 
+s_alphnum:
+	call alphanum;						// alphanumeric character?
+	jp nc, s_negate;					// jump if not
+	cp 'A';								// letter?
+	jp nc, s_letter;					// jump if so
+
 s_decimal:
 	call syntax_z;						// checking syntax?
 	jp nz, s_stk_dec;					// jump if not
@@ -288,12 +294,6 @@ domod:
 	sub $10;							//
 	ld (hl), a;							//
 	jr s_pi_end;						//
-
-s_alphnum:
-	call alphanum;						// alphanumeric character?
-	jr nc, s_negate;					// jump if not
-	cp 'A';								// letter?
-	jr nc, s_letter;					// jump if so
 
 s_stk_dec:
 	rst get_char;						// get current character
