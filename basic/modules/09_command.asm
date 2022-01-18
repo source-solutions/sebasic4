@@ -41,6 +41,8 @@ stmt_l_1:
 	call test_trace;					// handle trace and clear workspace
 	inc (iy + _subppc);					// increase subppc each time around
 	jp m, report_syntax_err;			// error if more than 127 statements
+
+stmt_l_1a:
 	rst get_char;						// get current character
 	ld b, 0;							// clear B
 	cp ctrl_cr;							// carriage return?
@@ -58,9 +60,17 @@ stmt_l_1:
 	dec hl;								// previous character
 	ld (ch_add), hl;					// set it
 	ld a, (hl);							// get first character again
+
+	cp "?";								// is it a question mark?
+	jr nz, try_quote;					// jump if not
+	ld (hl), tk_print;					// change token
+	jr stmt_l_1a;						// immediate jump
+
+try_quote:
 	cp "'";								// is it a single quote?
 	ld a, tk_rem - tk_def_fn;			// make the token REM
 	jr z, stmt_l_2;						// and jump if so
+
 	ld a, tk_let - tk_def_fn;			// else make the token LET
 
 stmt_l_2:
@@ -423,7 +433,7 @@ report_syntax_err:
 	defb syntax_error;					// error
 
 
-	org $1c8c
+;	org $1c8c
 ;;
 ; command class 0A
 ;;
