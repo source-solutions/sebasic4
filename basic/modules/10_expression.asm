@@ -88,9 +88,6 @@ scan_func:
 	defb op_bin, s_decimal - 1 - $;				// %
 	defb op_oct, s_decimal - 1 - $;				// @
 	defb op_hex, s_decimal - 1 - $;				// $
-	defb tk_bin_str, s_bin_str - 1 - $; 		// BIN$
-	defb tk_oct_str, s_oct_str - 1 - $;			// OCT$
-	defb tk_hex_str, s_hex_str - 1 - $;			// HEX$
 	defb tk_left_str, s_left - 1 - $;			// LEFT$
 	defb tk_right_str, s_right - 1 - $;			// RIGHT$
 	defb tk_mid_str, s_mid - 1 - $;				// MID$
@@ -156,6 +153,98 @@ s_bracket:
 s_fn:
 	jp s_fn_sbrn;						// immediate jump
 
+s_inkey_str:
+	ld bc, $105a;						// priority $10, code $5a (read_in)
+	rst next_char;						// get next character
+	cp '#';								// channel specified?
+	jp z, s_push_po;					// jump if so
+	ld hl, flags;						// address flags
+	res 6, (hl);						// reset for string
+	bit 7, (hl);						// checking syntax?
+	jr z, s_ink_str_en;					// jump if so
+	call key_scan;						// key value to DE
+	ld c, 0;							// empty string
+	jr nz, s_ik_str_stk;				// stack it if so
+	call k_test;						// key value?
+	jr nc, s_ik_str_stk;				// stack empty string if not valid
+	dec d;								// LD D, $ff (lower case)
+	call k_decode_1;					// decode key value
+	call bc_1_space;					// make one space
+	ld (de), a;							// store ASCII value
+
+s_ik_str_stk:
+	ld b, 0;							// LD BC, 1
+	call stk_sto_str;					// stack string
+
+s_ink_str_en:
+	jp s_cont_2;						// immediate jump
+
+s_left:
+	call s_leftright;					// common code for LEFT$ and RIGHT$
+	jp s_cont_2;						// immediate jump
+
+s_right:
+	call s_leftright;					// common code for LEFT$ and RIGHT$
+	dec hl;								// 
+	dec hl;								// (HL) = MSB of start address
+	ld b, (hl);							// 
+	dec hl;								// 
+	ld c, (hl);							// BC = start address
+	ex de, hl;							// 
+	add hl, bc;							// HL = new start address
+	ex de, hl;							// DE = new start address
+	ld (hl), e;							// 
+	inc hl;								// 
+	ld (hl), d;							// commit new start address
+	jp s_cont_2;						// immediate jump
+
+s_decimal:
+	call syntax_z;						// checking syntax?
+	jp nz, s_stk_dec;					// jump if not
+	call dec_to_fp;						// convert to floating point
+	rst get_char;						// HL to last digit plus one
+	ld bc, 6;							// six locations
+	call make_room;						// make room
+	inc hl;								// point to first free space
+	ld (hl), number_mark;				// store hidden number marker
+	inc hl;								// next location
+	ex de, hl;							// pointer to DE
+	ld hl, (stkend);					// get old stack end
+	ld c, 5;							// five bytes to more
+	and a;								// prepare for subtraction (clear carry)
+	sbc hl, bc;							// new stkend is one less than old stkend
+	ld (stkend), hl;					// fp number from stack to line
+	ldir;								// copy it
+	ex de, hl;							// pointer to HL
+	dec hl;								// last byte added
+	call temp_ptr1;						// set ch_add
+	jr s_numeric;						// immediate jump
+
+s_mid:
+	jp s_mid_cont;						// immediate jump
+
+s_string_str:
+	call s_2_coord;						// 
+	call nz, s_strng_s;					// 
+	rst next_char;						// next character
+	jp s_string;						// 
+
+s_fix:
+	ld bc, $10fa;						// priority $10, opcode $fa (#3a)
+	jp s_push_po;
+
+s_pi:
+	call syntax_z;						// checking syntax?
+	jr z, s_pi_end;						// jump if so
+	fwait;								// enter calculator
+	fstkhalfpi;							// pi / 2
+	fce;								// exit calculator
+	inc (hl);							// increment exponent
+
+s_pi_end:
+	rst next_char;						// next character
+	jp s_numeric;						// immediate jump
+
 ;	// fast RND function
 s_rnd:
 	call syntax_z;						// checking syntax?
@@ -200,109 +289,11 @@ domod:
 	ld (hl), a;							//
 	jr s_pi_end;						//
 
-s_pi:
-	call syntax_z;						// checking syntax?
-	jr z, s_pi_end;						// jump if so
-	fwait;								// enter calculator
-	fstkhalfpi;							// pi / 2
-	fce;								// exit calculator
-	inc (hl);							// increment exponent
-
-s_pi_end:
-	rst next_char;						// next character
-	jp s_numeric;						// immediate jump
-
-s_inkey_str:
-	ld bc, $105a;						// priority $10, code $5a (read_in)
-	rst next_char;						// get next character
-	cp '#';								// channel specified?
-	jp z, s_push_po;					// jump if so
-	ld hl, flags;						// address flags
-	res 6, (hl);						// reset for string
-	bit 7, (hl);						// checking syntax?
-	jr z, s_ink_str_en;					// jump if so
-	call key_scan;						// key value to DE
-	ld c, 0;							// empty string
-	jr nz, s_ik_str_stk;				// stack it if so
-	call k_test;						// key value?
-	jr nc, s_ik_str_stk;				// stack empty string if not valid
-	dec d;								// LD D, $ff (lower case)
-	call k_decode_1;					// decode key value
-	call bc_1_space;					// make one space
-	ld (de), a;							// store ASCII value
-
-s_ik_str_stk:
-	ld b, 0;							// LD BC, 1
-	call stk_sto_str;					// stack string
-
-s_ink_str_en:
-	jp s_cont_2;						// immediate jump
-
-s_bin_str:
-s_oct_str:
-s_hex_str:
-	ld bc, $107c;						// priority $10, op-code $bc (#3c)
-	jp s_push_po;						// jump
-
-s_left:
-	call s_leftright;					// common code for LEFT$ and RIGHT$
-	jp s_cont_2;						// immediate jump
-
-s_right:
-	call s_leftright;					// common code for LEFT$ and RIGHT$
-	dec hl;								// 
-	dec hl;								// (HL) = MSB of start address
-	ld b, (hl);							// 
-	dec hl;								// 
-	ld c, (hl);							// BC = start address
-	ex de, hl;							// 
-	add hl, bc;							// HL = new start address
-	ex de, hl;							// DE = new start address
-	ld (hl), e;							// 
-	inc hl;								// 
-	ld (hl), d;							// commit new start address
-	jp s_cont_2;						// immediate jump
-
-s_mid:
-	jp s_mid_cont;						// immediate jump
-
-s_string_str:
-	call s_2_coord;						// 
-	call nz, s_strng_s;					// 
-	rst next_char;						// next character
-	jp s_string;						// 
-
-s_fix:
-	ld bc, $10fa;						// priority $10, opcode $fa (#3a)
-	jp s_push_po;
-
 s_alphnum:
 	call alphanum;						// alphanumeric character?
 	jr nc, s_negate;					// jump if not
 	cp 'A';								// letter?
 	jr nc, s_letter;					// jump if so
-
-s_decimal:
-	call syntax_z;						// checking syntax?
-	jr nz, s_stk_dec;					// jump if not
-	call dec_to_fp;						// convert to floating point
-	rst get_char;						// HL to last digit plus one
-	ld bc, 6;							// six locations
-	call make_room;						// make room
-	inc hl;								// point to first free space
-	ld (hl), number_mark;				// store hidden number marker
-	inc hl;								// next location
-	ex de, hl;							// pointer to DE
-	ld hl, (stkend);					// get old stack end
-	ld c, 5;							// five bytes to more
-	and a;								// prepare for subtraction (clear carry)
-	sbc hl, bc;							// new stkend is one less than old stkend
-	ld (stkend), hl;					// fp number from stack to line
-	ldir;								// copy it
-	ex de, hl;							// pointer to HL
-	dec hl;								// last byte added
-	call temp_ptr1;						// set ch_add
-	jr s_numeric;						// immediate jump
 
 s_stk_dec:
 	rst get_char;						// get current character

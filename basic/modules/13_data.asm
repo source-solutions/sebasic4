@@ -384,7 +384,7 @@ token_table:
 
 ;	// functions
 	str "RND", "INKEY$", "PI", "FN";
-	str "BIN$", "OCT$", "HEX$", "SPC";
+	str "_A9", "_AA", "_AB", "SPC";
 	str "TAB", "VAL$", "ASC", "VAL";
 	str "LEN", "SIN", "COS", "TAN";
 	str "ASIN", "ACOS", "ATAN", "LOG";
