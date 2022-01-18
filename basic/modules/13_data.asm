@@ -385,7 +385,7 @@ token_table:
 ;	// exceptional functions (no arguments, etc.)
 	str "RND", "INKEY$", "PI", "FN";	// $80
 
-	// multi-argument functions
+;	// multi-argument functions
 	str "_A9", "_AA", "_AB";		// $84
 
 ;	// PRINT arguments
