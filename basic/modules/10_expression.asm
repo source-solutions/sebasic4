@@ -338,17 +338,13 @@ s_negate:
 	jr z, s_push_po;					// jump if so
 	sub tk_asc;							// ASC to NOT?
 	jp c, report_syntax_err;			// error if not
-	ld bc, $04f0;						// priority $04, op-code $f0
+	ld bc, $06f0;						// priority $06, op-code $f0
 	cp 20;								// NOT?
 	jr z, s_push_po;					// jump if so
 	jp nc, report_syntax_err;			// error if out of range
+	ld b, $10;							// priority $10
 	add a, 220;							// get op-code ($dc to $ef)
 	ld c, a;							// op-code to C
-	ld b, $10;							// priority $10
-	cp $f0;								// NOT?
-	jr nz, s_not_not						// jump, if not
-	ld b, 6;							// priority of NOT is 6
-s_not_not:
 	cp 223;								// ASC, VAL, or LEN?
 	jr nc, s_no_to_str;					// jump if so
 	res 6, c;							// clear bit 6 of C
