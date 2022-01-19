@@ -106,7 +106,7 @@ init_chan:
 	defb 'K';							// channel
 	defw print_out, file_in;			// screen
 	defb 'S';							// channel
-	defw detokenizer, report_bad_io_dev;// workspace
+	defw add_char, report_bad_io_dev;// workspace
 	defb 'W';							// channel
 	defb end_marker;					// no more channels
 

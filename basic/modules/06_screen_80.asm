@@ -485,16 +485,6 @@ po_fetch:
 ; print any character
 ;;
 po_any:
-    bit 7, (iy + _flags);				// runtime?
-    jr nz, po_char;						// jump if so
-    bit 2, (iy + _flags2);				// in quotes?
-    jr nz, po_char;						// jump if so
-    cp tk_rnd;							// token?
-    jr c, po_char;						// jump if not
-	sub tk_rnd;							// get offset
-	call po_tokens;						// print token
-	jp po_fetch;						// indirect return
-
 po_char:
 	push bc;							// stack current position
 
@@ -546,11 +536,6 @@ write_char:
 
 po_char_2:
 	ex de, hl;							// store print address in DE
-	ld hl, flags;						// get flags
-	res 0, (hl);						// possible leading space
-	cp ' ';								// test for space
-	jr nz, po_char_3;					// jump if not
-	set 0, (hl);						// suppress if so
 
 po_char_3:
 	ld l, a;							// character code
@@ -685,6 +670,8 @@ po_stp_asciiz:
 ;	jr po_table;						// immediate jump
 
 ;	// token printing subroutine
+po_token:
+	sub tk_rnd;						// modify token code
 po_tokens:
 	ld de, token_table;					// address token table
 	push af;							// stack code
