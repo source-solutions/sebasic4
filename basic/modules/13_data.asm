@@ -37,7 +37,7 @@ endif
 	defb "Copyright (C)2022 Source Solutions, Inc.", ctrl_cr;
 	defb ctrl_cr;
 	timestamp 'YY-MM-DD h:m';			// RASM directive
-;	defb "Release 2201xx";				// 
+;	defb "Release B-2201";				// 
 	defb ctrl_cr, ctrl_cr, 0;
 
 bytes_free:
