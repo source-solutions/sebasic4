@@ -389,8 +389,13 @@ token_table:
 ;	// exceptional functions (no arguments, etc.)
 	str "RND", "INKEY$", "PI", "FN";	// $80
 
+; // TODO: EOF, LOC, LOF
+
 ;	// multi-argument functions
 	str "_A9", "_AA", "_AB";		// $84
+
+; // TODO: LEFT$, RIGHT$, MID$, STRING$
+
 
 ;	// PRINT arguments
 	str "SPC", "TAB";			// $87
@@ -403,10 +408,16 @@ token_table:
 	str "ABS", "PEEK", "INP", "USR";	// $98
 	str "STR$", "CHR$", "NOT";		// $9C
 
+; // TODO: FIX, DPEEK
+
+
 ;	// infix operators
 	str "MOD";				// $9F
 	str "OR", "AND", "<=", ">=";		// $A0
 	str "<>";				// $A4
+
+; // TODO: XOR
+
 
 ;	// other keywords
 	str "LINE", "THEN", "TO";		// $A5
