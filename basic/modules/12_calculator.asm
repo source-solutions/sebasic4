@@ -368,6 +368,20 @@ fp_peek:
 in_pk_stk:
 	jp stack_a;							// indirect exit
 
+;;
+; DPEEK function
+;;
+fp_dpeek:
+	call find_int2
+	push hl
+	ld l, c
+	ld h, b
+	ld c, (hl)
+	inc hl
+	ld b, (hl)
+	pop hl
+	jp stack_bc;
+
 ;	// FIXME - (should restore IY to err-nr on return)
 ;;
 ; USR (number) function

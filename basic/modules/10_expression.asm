@@ -93,6 +93,7 @@ scan_func:
 	defb tk_mid_str, s_mid - 1 - $;				// MID$
 	defb tk_string_str, s_string_str - 1 - $;	// STRING$
 	defb tk_fix, s_fix - 1 - $;				// FIX
+	defb tk_dpeek, s_dpeek - 1 - $;				// DPEEK
 	defb tk_str_str, s_str_j - 1 - $;			// STR$
 	defb 0;										// null terminator
 
@@ -141,7 +142,7 @@ s_string:
 	res 6, (hl);						// reset bit 6
 	bit 7, (hl);						// line execution?
 	call nz, stk_sto_str;				// call if so
-	jp s_cont_2;						// immediate jump
+	jr s_cont_2r;						// immediate jump
 
 s_bracket:
 	rst next_char;						// get character
@@ -149,6 +150,7 @@ s_bracket:
 	cp ')';								// closing parenthesis?
 	jp nz, report_syntax_err;			// error if missing
 	rst next_char;						// next character
+s_cont_2r:
 	jp s_cont_2;						// immediate jump
 
 s_fn:
@@ -178,11 +180,11 @@ s_ik_str_stk:
 	call stk_sto_str;					// stack string
 
 s_ink_str_en:
-	jp s_cont_2;						// immediate jump
+	jr s_cont_2r;						// immediate jump
 
 s_left:
 	call s_leftright;					// common code for LEFT$ and RIGHT$
-	jp s_cont_2;						// immediate jump
+	jr s_cont_2r;						// immediate jump
 
 s_right:
 	call s_leftright;					// common code for LEFT$ and RIGHT$
@@ -197,7 +199,7 @@ s_right:
 	ld (hl), e;							// 
 	inc hl;								// 
 	ld (hl), d;							// commit new start address
-	jp s_cont_2;						// immediate jump
+	jr s_cont_2r;						// immediate jump
 
 s_alphnum:
 	call alphanum;						// alphanumeric character?
@@ -238,7 +240,12 @@ s_string_str:
 
 s_fix:
 	ld bc, $10fa;						// priority $10, opcode $fa (#3a)
+s_push_po_r:
 	jp s_push_po;
+
+s_dpeek:
+	ld bc, $10fc;
+	jr s_push_po_r;
 
 s_pi:
 	call syntax_z;						// checking syntax?
@@ -250,7 +257,7 @@ s_pi:
 
 s_pi_end:
 	rst next_char;						// next character
-	jp s_numeric;						// immediate jump
+	jr s_numeric;						// immediate jump
 
 s_str_j:
 	jp s_str;

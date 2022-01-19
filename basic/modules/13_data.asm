@@ -204,7 +204,7 @@ tbl_addrs:
 	defw fp_get_argt;
 	defw fp_truncate;
 	defw fp_calc_2;
-	defw 0;			// placeholder
+	defw fp_dpeek;
 	defw fp_re_stack;
 	defw fp_xor;
 	defw fp_div;
@@ -429,7 +429,7 @@ tk_ptr_rem:
 	str "ON", "RENUM", "OLD", "SCREEN";		// $DD
 	str "XOR", "EOF", "LOC", "LOF";			// $E1
 	str "LEFT$", "RIGHT$", "MID$", "STRING$";	// $E5
-	str "FIX", "_EA", "_EB", "_EC";			// $E9
+	str "FIX", "DPEEK", "_EB", "_EC";		// $E9
 	str "_ED", "_EE", "_EF", "_F0";			// $ED
 	str "_F1", "_F2", "_F3", "_F4";
 	str "_F5", "_F6", "_F7", "_F8";

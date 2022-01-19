@@ -436,9 +436,9 @@ MACRO fsgl;
 ENDM
 
 ;;
-; X80 op-code: HEX$
+; X80 op-code: DPEEK
 ;;
-MACRO fhex;
+MACRO fdpeek;
 	defb $3c;
 ENDM
 
@@ -719,7 +719,7 @@ ENDM
 	tk_mid_str		equ $e7;
 	tk_string_str	equ $e8;
 	tk_fix			equ $e9;
-	tk__ea			equ $ea;
+	tk_dpeek		equ $ea;
 	tk__eb			equ $eb;
 	tk__ec			equ $ec;
 	tk__ed			equ $ed;
