@@ -50,6 +50,7 @@
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#NEW" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_new:
+	call f_save_old;					// save current program
 	di;									// interrupts off
 	xor a;								// LD A, 0
 	dec a;								// LD A, 255

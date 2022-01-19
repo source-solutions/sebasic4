@@ -708,7 +708,7 @@ ENDM
 	tk_troff		equ $dc;
 	tk_on			equ $dd;
 	tk_renum		equ $de;
-	tk_auto			equ $df;
+	tk_old			equ $df;
 	tk_screen		equ $e0;
 	tk_xor			equ $e1;
 	tk__e2			equ $e2;

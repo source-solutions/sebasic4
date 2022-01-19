@@ -159,6 +159,9 @@ appname:
 resources:
 	defb "../rsc", 0;					// resource folder
 
+old_bas_path:
+	defb "/system/temp/old.bas", 0;
+
 open_w_create:
 	ld b, fa_write | fa_open_al;		// create or open for writing if file exists
 	jr open_f_common;					// immediate jump
@@ -381,6 +384,11 @@ write_chunk:
 	jp c, report_file_not_found;		// jump if error
 	ret;								// else done
 
+c_old:
+	call unstack_z;						// return if checking syntax
+	ld ix, old_bas_path;				// pointer to path
+	jr c_load_old;						// immediate jump
+
 ;;
 ; <code>LOAD</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
@@ -391,6 +399,8 @@ c_load:
 	call unstack_z;						// return if checking syntax
 	call get_path;						// path to buffer
 	ld ix, $5a00;						// pointer to path
+
+c_load_old:
 	call f_open_read_ex;				// open file for reading
 	call f_get_stats;					// get program length
 
@@ -439,6 +449,11 @@ c_name:
 	or a;								// clear flags
 	ret;								// done
 
+f_save_old:
+	call unstack_z;						// return if checking syntax
+	ld ix, old_bas_path;				// pointer to path
+	jr c_save_old;						// immediate jump
+
 ;;
 ; <code>SAVE</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#SAVE" target="_blank" rel="noopener noreferrer">Language reference</a>
@@ -449,6 +464,8 @@ c_save:
 	call unstack_z;						// return if checking syntax
 	call get_path;						// path to buffer
 	ld ix, $5a00;						// pointer to path
+
+c_save_old:
 	call f_open_write_al;				// open file for writing
 
 ;	// get program length

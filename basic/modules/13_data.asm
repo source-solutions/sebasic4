@@ -425,7 +425,7 @@ tk_ptr_rem:
 	str "DELETE", "RUN", "EDIT", "RANDOMIZE";	// $D1
 	str "IF", "CLS", "CALL", "CLEAR";		// $D5
 	str "RETURN", "COLOR", "TRON", "TROFF"		// $D9
-	str "ON", "RENUM", "AUTO", "SCREEN";		// $DD
+	str "ON", "RENUM", "OLD", "SCREEN";		// $DD
 	str "XOR", "EOF", "LOC", "LOF";			// $E1
 	str "LEFT$", "RIGHT$", "MID$", "STRING$";	// $E5
 	str "FIX", "_EA", "_EB", "_EC";			// $E9
@@ -494,7 +494,7 @@ offst_tbl:
 	defw p_troff;						// a3
 	defw p_on;							// 95
 	defw p_renum;						// aa
-	defw p_auto;						// a9
+	defw p_old;							// 
 	defw p_screen;						// c5
 	defw p__e1;							// 
 	defw p__e2;							// 
@@ -743,9 +743,9 @@ p_renum:
 	defb var_syn;
 	defw c_renum;
 
-p_auto:
+p_old:
 	defb no_f_ops;
-	defw c_auto;
+	defw c_old;
 
 p_screen:
 	defb num_exp_no_f_ops;
