@@ -457,9 +457,9 @@ MACRO fxor;
 ENDM
 
 ;;
-; X80 op-code: reserved
+; X80 op-code: integer quotient
 ;;
-MACRO fnew2;
+MACRO fquot;
 	defb $3f;
 ENDM
 

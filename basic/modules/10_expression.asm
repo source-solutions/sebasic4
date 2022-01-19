@@ -330,7 +330,7 @@ s_letter:
 	jr s_cont_2;						// immediate jump
 
 s_negate:
-	ld bc, $09db;						// priority $09, op-code $d8
+	ld bc, $08db;						// priority $09, op-code $d8
 	cp '-';								// minus?
 	jr z, s_push_po;					// jump if unary minus
 	ld bc, $1018;						// priority $10, op-code $18
@@ -345,6 +345,10 @@ s_negate:
 	add a, 220;							// get op-code ($dc to $ef)
 	ld c, a;							// op-code to C
 	ld b, $10;							// priority $10
+	cp $f0;								// NOT?
+	jr nz, s_not_not						// jump, if not
+	ld b, 6;							// priority of NOT is 6
+s_not_not:
 	cp 223;								// ASC, VAL, or LEN?
 	jr nc, s_no_to_str;					// jump if so
 	res 6, c;							// clear bit 6 of C

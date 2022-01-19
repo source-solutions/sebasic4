@@ -117,21 +117,22 @@ file_chan:
 
 ;	// used in 10_expression
 tbl_ops_priors:
-	defb '+', $cf, 6;					// +	%11000000 + fadd
-	defb '-', $c3, 6;					// -	%11000000 + fsub
-	defb '*', $c4, 8;					// *	%11000000 + fmul
-	defb '/', $c5, 8;					// /	%11000000 + fdiv
-	defb '^', $c6, 10;					// ^	%11000000 + fexp
-	defb '=', $ce, 5;					// =	%11000000 + fcp(_eq)
-	defb '>', $cc, 5;					// >	%11000000 + fcp(_gt)
-	defb '<', $cd, 5;					// <	%11000000 + fcp(_lt)
-	defb tk_l_eql, $c9, 5;				// <=	%11000000 + fcp(_le)
-	defb tk_gr_eq, $ca, 5;				// >=	%11000000 + fcp(_ge)
-	defb tk_neql, $cb, 5;				// <>	%11000000 + fcp(ne)
-	defb tk_or, $c7, 2;					// OR	%11000000 + fbor
-	defb tk_and, $c8, 3;				// AND	%11000000 + fband
-	defb tk_xor, $fe, 2;				// XOR  %11000000 + fxor
-	defb tk_mod, $f2, 8;				// MOD  %11000000 + fmod
+	defb '+', $cf, 8;					// +	%11000000 + fadd
+	defb '-', $c3, 8;					// -	%11000000 + fsub
+	defb '*', $c4, 11;					// *	%11000000 + fmul
+	defb '/', $c5, 11;					// /	%11000000 + fdiv
+	defb '^', $c6, 12;					// ^	%11000000 + fexp
+	defb '=', $ce, 7;					// =	%11000000 + fcp(_eq)
+	defb '>', $cc, 7;					// >	%11000000 + fcp(_gt)
+	defb '<', $cd, 7;					// <	%11000000 + fcp(_lt)
+	defb tk_l_eql, $c9, 7;				// <=	%11000000 + fcp(_le)
+	defb tk_gr_eq, $ca, 7;				// >=	%11000000 + fcp(_ge)
+	defb tk_neql, $cb, 7;				// <>	%11000000 + fcp(ne)
+	defb tk_or, $c7, 4;					// OR	%11000000 + fbor
+	defb tk_and, $c8, 5;				// AND	%11000000 + fband
+	defb tk_xor, $fe, 3;				// XOR  %11000000 + fxor
+	defb tk_mod, $f2, 9;				// MOD  %11000000 + fmod
+	defb '\\', $ff, 10;					// div 	%11000000 + fquot
 	defb 0;								// null terminator
 
 ;	// used in 12_calculator
@@ -203,20 +204,16 @@ tbl_addrs:
 	defw fp_get_argt;
 	defw fp_truncate;
 	defw fp_calc_2;
-	defw fp_new_fn_1;
+	defw 0;			// placeholder
 	defw fp_re_stack;
 	defw fp_xor;
-	defw fp_new_fn_2;
+	defw fp_div;
 
 tbl_offs equ $ - tbl_addrs
 	defw fp_series_xx;
 	defw fp_stk_const_xx;
 	defw fp_st_mem_xx;
 	defw fp_get_mem_xx;
-
-;	// used in 15_files
-dir_msg:
-	defb "<DIR>   ", 0;
 
 ;	// used in 14_screen_40
 ;	// attributes are stored internally with the foreground in the high nibble and the background in the low nibble
@@ -243,6 +240,10 @@ attributes:
 ;	// the remaining part of BASIC exists in RAM and can therefore be modified by the user
 
 	org $4000
+
+;	// used in 15_files
+dir_msg:
+	defb "<DIR>   ", 0;
 
 ;	// used in 06_screen_80
 scrl_mssg:

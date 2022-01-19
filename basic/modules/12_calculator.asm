@@ -552,8 +552,9 @@ fp_not:
 	fce;								// end calculation
 	ret									// return
 
-;	call test_zero;						// zero?
-;	jr fp_0_div_1;						// immediate jump
+fp_l_not:
+	call test_zero;						// zero?
+	jr fp_0_div_1;						// immediate jump
 
 ;;
 ; less than zero operation
@@ -764,13 +765,13 @@ str_test:
 end_tests:
 	pop af;								// unstack carry flag
 	push af;							// restack carry flag
-	call c, fp_not;						// jump if set
+	call c, fp_l_not;						// jump if set
 	pop af;								// unstack carry flag
 	push af;							// restack carry flag
 	call nc, fp_greater_0;				// jump if not set
 	pop af;								// unstack carry flag
 	rrca;								// rotate into carry
-	call nc, fp_not;					// jump if not set
+	call nc, fp_l_not;					// jump if not set
 	ret;								// end of subroutine
 
 ;;
@@ -1535,10 +1536,10 @@ last:
 	fce;								// exit calculator
 	ret;								// end of subroutine
 
-;	// new function 1
-fp_new_fn_1:
-	ret;								// 
 
-;	// new function 2
-fp_new_fn_2:
-	ret;								// 
+fp_div:
+	fwait;
+	fdiv;
+	fint;
+	fce;
+	ret;
