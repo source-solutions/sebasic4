@@ -431,7 +431,7 @@ tk_ptr_rem:
 	str "ON", "RENUM", "OLD", "SCREEN";		// $DD
 	str "XOR", "EOF", "LOC", "LOF";			// $E1
 	str "LEFT$", "RIGHT$", "MID$", "STRING$";	// $E5
-	str "FIX", "DPEEK", "_EB", "_EC";		// $E9
+	str "FIX", "DPEEK", "DPOKE", "_EC";		// $E9
 	str "_ED", "_EE", "_EF", "_F0";			// $ED
 	str "_F1", "_F2", "_F3", "_F4";
 	str "_F5", "_F6", "_F7", "_F8";
@@ -509,7 +509,7 @@ offst_tbl:
 	defw p__e8;							// 
 	defw p__e9;							// 
 	defw p__ea;							// 
-	defw p__eb;							// 
+	defw p_dpoke;							// 
 	defw p__ec;							// 
 	defw p__ed;							// 
 	defw p__ee;							// 
@@ -685,6 +685,10 @@ p_next:
 p_poke:
 	defb two_c_s_num_no_f_ops;
 	defw c_poke;
+
+p_dpoke:
+	defb two_c_s_num_no_f_ops;
+	defw c_dpoke;
 
 p_print:
 	defb var_syn;
