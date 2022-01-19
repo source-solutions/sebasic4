@@ -245,6 +245,8 @@ attributes:
 dir_msg:
 	defb "<DIR>   ", 0;
 
+;	// the next 576 bytes are used for localization
+
 ;	// used in 06_screen_80
 scrl_mssg:
 	defb "Scroll?", 0;
@@ -291,7 +293,7 @@ rpt_mesgs:
 
 ;	// A total of 576 bytes are allocated for translated error messages
 
-	org $4300
+	org scrl_mssg + 576
 
 ;	// used in 07_editor
 ed_f_keys_t:
