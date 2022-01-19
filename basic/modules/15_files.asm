@@ -162,6 +162,12 @@ resources:
 old_bas_path:
 	defb "/system/temp/old.bas", 0;
 
+sys_folder:
+	defb "system", 0
+
+tmp_folder:
+	defb "temp", 0
+
 open_w_create:
 	ld b, fa_write | fa_open_al;		// create or open for writing if file exists
 	jr open_f_common;					// immediate jump
@@ -451,6 +457,32 @@ c_name:
 
 f_save_old:
 	call unstack_z;						// return if checking syntax
+
+	ld ix, rootpath;					// go to root
+	ld a, '*';							// use current drive
+	rst divmmc;							// issue a hookcode
+	defb f_chdir;						// change folder
+
+	ld ix, sys_folder;					// ASCIIZ system
+	ld a, '*';							// use current drive
+	rst divmmc;							// issue a hookcode
+	defb f_mkdir;						// create folder
+
+	ld ix, sys_folder;					// ASCIIZ system
+	ld a, '*';							// use current drive
+	rst divmmc;							// issue a hookcode
+	defb f_chdir;						// change folder
+
+	ld ix, tmp_folder;					// ASCIIZ temp
+	ld a, '*';							// use current drive
+	rst divmmc;							// issue a hookcode
+	defb f_mkdir;						// create folder
+
+	ld ix, rootpath;					// go to root
+	ld a, '*';							// use current drive
+	rst divmmc;							// issue a hookcode
+	defb f_chdir;						// change folder
+
 	ld ix, old_bas_path;				// pointer to path
 	jr c_save_old;						// immediate jump
 
@@ -741,7 +773,7 @@ c_mkdir:
 	ld a, '*';							// use current drive
 	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
-	defb f_mkdir;						// change folder
+	defb f_mkdir;						// create folder
 	jr chk_path_error;					// test for error
 
 ;;
