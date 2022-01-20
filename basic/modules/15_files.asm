@@ -37,13 +37,15 @@
 ;	// File commands page out the BASIC ROM.
 ;	// They must be stored at $4000 or later.
 
-	include "../../boot/os.inc";				// label definitions
-	include "../../boot/uno.inc";				// label definitions
+	include "../../boot/os.inc";		// label definitions
+	include "../../boot/uno.inc";		// label definitions
 
 	org $5000;
 
 ;;
-; RUN application
+; <code>RUN</code> command with <i>string</i> parameter
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RUN" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
 ;;
 run_app:
 	call unstack_z;						// return if checking syntax
@@ -157,6 +159,15 @@ appname:
 resources:
 	defb "../rsc", 0;					// resource folder
 
+old_bas_path:
+	defb "/system/temporar.y/old.bas", 0;
+
+sys_folder:
+	defb "system", 0
+
+tmp_folder:
+	defb "temporar.y", 0
+
 open_w_create:
 	ld b, fa_write | fa_open_al;		// create or open for writing if file exists
 	jr open_f_common;					// immediate jump
@@ -254,7 +265,9 @@ get_dest:
 ;	jp run;								// run
 
 ;;
-; BLOAD command
+; <code>BLOAD</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#BLOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
 ;;
 c_bload:
 	call unstack_z;						// return if checking syntax
@@ -275,7 +288,9 @@ bload_2:
 	jp f_read_in;						// load binary
 
 ;;
-; BSAVE command
+; <code>BSAVE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#BSAVE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
 ;;
 c_bsave:
 	call unstack_z;						// return if checking syntax
@@ -294,7 +309,9 @@ c_bsave:
 	jp f_write_out;						// save binary
 
 ;;
-; COPY command
+; <code>COPY</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#COPY" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
 ;;
 c_copy:
 	call unstack_z;						// return if checking syntax
@@ -373,13 +390,26 @@ write_chunk:
 	jp c, report_file_not_found;		// jump if error
 	ret;								// else done
 
+c_old:
+ifdef no_fs
+	ret;
+endif
+	call unstack_z;						// return if checking syntax
+	ld ix, old_bas_path;				// pointer to path
+	jr c_load_old;						// immediate jump
+
 ;;
-; LOAD command
+; <code>LOAD</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @deprecared To be replaced with non-tokenized version
+; @throws File not found; Path not found.
 ;;
 c_load:
 	call unstack_z;						// return if checking syntax
 	call get_path;						// path to buffer
 	ld ix, $5a00;						// pointer to path
+
+c_load_old:
 	call f_open_read_ex;				// open file for reading
 	call f_get_stats;					// get program length
 
@@ -410,7 +440,9 @@ c_load:
 	ret;								// done	
 
 ;;
-; NAME command
+; <code>NAME</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#NAME" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
 ;;
 c_name:
 	call unstack_z;						// return if checking syntax
@@ -426,13 +458,52 @@ c_name:
 	or a;								// clear flags
 	ret;								// done
 
+f_save_old:
+ifdef no_fs
+	ret;
+endif
+	call unstack_z;						// return if checking syntax
+
+	ld ix, rootpath;					// go to root
+	ld a, '*';							// use current drive
+	rst divmmc;							// issue a hookcode
+	defb f_chdir;						// change folder
+
+	ld ix, sys_folder;					// ASCIIZ system
+	ld a, '*';							// use current drive
+	rst divmmc;							// issue a hookcode
+	defb f_mkdir;						// create folder
+
+	ld ix, sys_folder;					// ASCIIZ system
+	ld a, '*';							// use current drive
+	rst divmmc;							// issue a hookcode
+	defb f_chdir;						// change folder
+
+	ld ix, tmp_folder;					// ASCIIZ temp
+	ld a, '*';							// use current drive
+	rst divmmc;							// issue a hookcode
+	defb f_mkdir;						// create folder
+
+	ld ix, rootpath;					// go to root
+	ld a, '*';							// use current drive
+	rst divmmc;							// issue a hookcode
+	defb f_chdir;						// change folder
+
+	ld ix, old_bas_path;				// pointer to path
+	jr c_save_old;						// immediate jump
+
 ;;
-; SAVE command
+; <code>SAVE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#SAVE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @deprecated To be replaced with non-tokenized version.
+; @throws File not found; Path not found.
 ;;
 c_save:
 	call unstack_z;						// return if checking syntax
 	call get_path;						// path to buffer
 	ld ix, $5a00;						// pointer to path
+
+c_save_old:
 	call f_open_write_al;				// open file for writing
 
 ;	// get program length
@@ -445,11 +516,11 @@ c_save:
 	ld b, h;							// BC
 	jp f_write_out;						// save program
 
-
-
 ;	// print a folder listing to the main screen
 ;;
-; FILES command
+; <code>FILES</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#FILES" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
 ;;
 c_files:
 	rst get_char;						// get character
@@ -657,7 +728,9 @@ no_:
 
 ;	// delete a file
 ;;
-; KILL command
+; <code>KILL</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#KILL" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
 ;;
 c_kill:
 	call unstack_z;						// return if checking syntax
@@ -682,7 +755,9 @@ endif
 	ret;								// done
 
 ;;
-; CHDIR command
+; <code>CHDIR</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CHDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws Path not found.
 ;;
 c_chdir:
 	call unstack_z;						// return if checking syntax
@@ -694,7 +769,9 @@ c_chdir:
 	jr chk_path_error;					// test for error
 
 ;;
-; MKDIR command
+; <code>MKDIR</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#MKDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws Path not found.
 ;;
 c_mkdir:
 	call unstack_z;						// return if checking syntax
@@ -702,11 +779,13 @@ c_mkdir:
 	ld a, '*';							// use current drive
 	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
-	defb f_mkdir;						// change folder
+	defb f_mkdir;						// create folder
 	jr chk_path_error;					// test for error
 
 ;;
-; RMDIR command
+; <code>RMDIR</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RMDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws Path not found.
 ;;
 c_rmdir:
 	call unstack_z;						// return if checking syntax
@@ -811,3 +890,9 @@ seek_f:
 	rst divmmc;							// issue a hookcode
 	defb f_seek;						// seek to position in BCDE
 	ret;								// done
+	
+c_aload:
+	jp c_load;							// stub for ASCII BASIC loading
+	
+c_asave:
+	jp c_save;							// stub for ASCII BASIC saving

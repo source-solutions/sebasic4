@@ -485,16 +485,6 @@ po_fetch:
 ; print any character
 ;;
 po_any:
-    bit 7, (iy + _flags);				// runtime?
-    jr nz, po_char;						// jump if so
-    bit 2, (iy + _flags2);				// in quotes?
-    jr nz, po_char;						// jump if so
-    cp tk_rnd;							// token?
-    jr c, po_char;						// jump if not
-	sub tk_rnd;							// get offset
-	call po_tokens;						// print token
-	jp po_fetch;						// indirect return
-
 po_char:
 	push bc;							// stack current position
 
@@ -546,11 +536,6 @@ write_char:
 
 po_char_2:
 	ex de, hl;							// store print address in DE
-	ld hl, flags;						// get flags
-	res 0, (hl);						// possible leading space
-	cp ' ';								// test for space
-	jr nz, po_char_3;					// jump if not
-	set 0, (hl);						// suppress if so
 
 po_char_3:
 	ld l, a;							// character code
@@ -685,6 +670,8 @@ po_stp_asciiz:
 ;	jr po_table;						// immediate jump
 
 ;	// token printing subroutine
+po_token:
+	sub tk_rnd;						// modify token code
 po_tokens:
 	ld de, token_table;					// address token table
 	push af;							// stack code
@@ -744,7 +731,7 @@ po_step:
 	jr nz, po_step;						// loop until entry found 
 	ex de, hl;							// DE points to initial character
 	pop af;								// unstack entry number
-	cp ' ';								// one of the first 32 entries?
+	cp 31;								// one of the first 31 entries?
 	ret c;								// return with carry set if so
 	ld a, (de);							// get initial character
 	sub 'A';							// test against letter, leading space if so
@@ -787,10 +774,14 @@ po_scr_2:
 	call chan_open;						// channel K
 	ld de, scrl_mssg;					// message address
 	call po_asciiz_0;					// print it
-	ld hl, flags;						// address sysvar
+wait_msg_loop:
+	ld hl, vdu_flag;					// address sysvar
+	set 5, (hl);						// lower screen requires clearing
+	res 3, (hl);						// no echo
 	exx;								// alternate register set
-	call wait_key;						// FIXME - get a single key code
+	call input_ad;						// get a single key code
 	exx;								// main resgister set
+	jr nc, wait_msg_loop				// loop, if no key has been pressed
 	cp ' ';								// space?
 	jr z, report_break;					// treat as BREAK and jump if so
 	call chan_open_fe;					// open channel S
@@ -843,7 +834,8 @@ po_scr_4b:
 
 	org $0d67;
 ;;
-; CLS command
+; <code>CLS</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CLS" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_cls:
 	set 0, (iy + _flags);				// suppress leading space
@@ -878,7 +870,7 @@ cl_chan_a:
 	ld de, key_input;					// input address
 	ccf;								// complement carry flag
 	jr c, cl_chan_a;					// loop until both addresses set
-	ld bc, $1751;						// row 23, column 81
+	ld bc, $1851;						// row 24, column 81
 	jr cl_set;							// immediate jump
 
 ;;

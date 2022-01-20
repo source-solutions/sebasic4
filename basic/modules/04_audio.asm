@@ -77,7 +77,8 @@ be_end:
 
 ;	// SOUND <pitch integer>, <duration in seconds>
 ;;
-; SOUND command
+; <code>SOUND</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#SOUND" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_sound:
 	fwait;								// enter calc with pitch and duration on stack

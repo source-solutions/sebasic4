@@ -24,7 +24,6 @@
 ;	// fbands
 ;	// fcps (6 opcodes)
 ;	// fvals
-;	// fusrs
 ;	// fread
 ;	// fasc
 ;	// fval
@@ -37,7 +36,6 @@
 ;	// fin
 ;	// fusr
 ;	// fstrs
-;	// fchrs
 ;	// fetof
 
 ;	// parameter definitions
@@ -162,7 +160,7 @@ ENDM
 
 ;;
 ; X80 op-code: compare
-; @param eq, ge, gt, gz, lt, lz, ne
+; @param eq, <code>ge</code>, <code>gt</code>, <code>gz</code>, <code>lt</code>, <code>lz</code>, <code>ne</code>
 ;;
 MACRO fcp n;
 	defb 9 + {n}
@@ -184,7 +182,7 @@ ENDM
 
 ;;
 ; X80 op-code: compare string
-; @param eq, ge, gt, gz, lt, lz, ne
+; @param eq, <code>ge</code>, <code>gt</code>, <code>gz</code>, <code>lt</code>, <code>lz</code>, <code>ne</code>
 ;;
 MACRO fcps n;
 	defb $11 + {n};
@@ -205,9 +203,9 @@ MACRO fvals;
 ENDM
 
 ;;
-; X80 op-code: user string
+; X80 op-code: string by number multiplication
 ;;
-MACRO fusrs;
+MACRO fmuls;
 	defb $19;
 ENDM
 
@@ -438,9 +436,9 @@ MACRO fsgl;
 ENDM
 
 ;;
-; X80 op-code: HEX$
+; X80 op-code: DPEEK
 ;;
-MACRO fhex;
+MACRO fdpeek;
 	defb $3c;
 ENDM
 
@@ -452,16 +450,16 @@ MACRO frstk;
 ENDM
 
 ;;
-; X80 op-code: reserved
+; X80 op-code: exclusive or
 ;;
-MACRO fnew1;
+MACRO fxor;
 	defb $3e;
 ENDM
 
 ;;
-; X80 op-code: reserved
+; X80 op-code: integer quotient
 ;;
-MACRO fnew2;
+MACRO fquot;
 	defb $3f;
 ENDM
 
@@ -602,15 +600,16 @@ ENDM
 
 ;	// operators
 
-	op_and			equ '&';
 	op_bin			equ '%';
-	op_comp			equ '~';
 	op_hex			equ '$';
-	op_mod			equ tk_mod;
 	op_oct			equ '@';
-	op_or			equ '|';
-	op_xor			equ tk_xor;
 
+;	// substitutes
+
+	sb_and			equ '&'
+	sb_not			equ '~'
+	sb_or			equ '|'
+	sb_print		equ '?'
 
 ;	// tokens
 
@@ -709,18 +708,18 @@ ENDM
 	tk_troff		equ $dc;
 	tk_on			equ $dd;
 	tk_renum		equ $de;
-	tk_auto			equ $df;
+	tk_old			equ $df;
 	tk_screen		equ $e0;
 	tk_xor			equ $e1;
 	tk__e2			equ $e2;
 	tk__e3			equ $e3;
 	tk__e4			equ $e4;
-	tk__e5			equ $e5;
-	tk__e6			equ $e6;
-	tk__e7			equ $e7;
-	tk__e8			equ $e8;
-	tk__e9			equ $e9;
-	tk__ea			equ $ea;
+	tk_left_str		equ $e5;
+	tk_right_str	equ $e6;
+	tk_mid_str		equ $e7;
+	tk_string_str	equ $e8;
+	tk_fix			equ $e9;
+	tk_dpeek		equ $ea;
 	tk__eb			equ $eb;
 	tk__ec			equ $ec;
 	tk__ed			equ $ed;

@@ -302,6 +302,7 @@ fp_abs:
 fp_negate:
 	call test_zero;						// zero?
 	ret c;								// return if so
+fp_negate2:
 	ld b, 0;							// signal negate
 
 neg_test:
@@ -367,6 +368,20 @@ fp_peek:
 in_pk_stk:
 	jp stack_a;							// indirect exit
 
+;;
+; DPEEK function
+;;
+fp_dpeek:
+	call find_int2
+	push hl
+	ld l, c
+	ld h, b
+	ld c, (hl)
+	inc hl
+	ld b, (hl)
+	pop hl
+	jp stack_bc;
+
 ;	// FIXME - (should restore IY to err-nr on return)
 ;;
 ; USR (number) function
@@ -379,25 +394,132 @@ fp_usr_no:
 	ret;								// end of subroutine
 
 ;;
-; USR (string) function
+; multiplication of string by a number
 ;;
-fp_usr_str:
-	call stk_fetch;						// get parameters
-	dec bc;								// reduce length by one
-	ld a, c;							// test for
-	or b;								// empty string
-	jr nz, report_bad_fn_call;			// error if so
-	ld a, (de);							// else get character in A
-	ld l, a;							// A to
-	ld h, 0;							// HL
-	add hl, hl;							// multiply
-	add hl, hl;							// by
-	add hl, hl;							// eight
-	ld bc, font;						// font to BC
-	add hl, bc;							// offset to hl
-	ld c, l;							// HL to
-	ld b, h;							// BC
-	jp stack_bc;						// immediate jump
+fp_mul_str:
+	inc hl;								// (HL) = mantissa MSB
+	bit 7, (hl);						// check sign bit
+	dec hl;								// restore HL
+	push af;							// ZF clear, if negative
+	call nz, fp_negate2;				// absolute value
+	dec hl;								// (HL) = string length MSB
+	ld b, (hl);							// B = string length MSB
+	dec hl;								// (HL) = length LSB
+	ld c, (hl);							// BC = string length
+	push bc;							// stack string length (machine)
+	call stack_bc;						// stack string length (calculator)
+	fwait;								// arg2, length
+	fmul;								// arg2 * length
+	fce;								// 
+	call find_int2;						// BC = new string length
+	pop hl;								// HL = old string length
+	sbc hl, bc;							// HL = length difference
+	ex de, hl;							// HL = calculator stack pointer
+	dec hl;								// (HL) = string length MSB
+	ld (hl), b;							// update string length MSB
+	dec hl;								// (HL) = string length LSB
+	ld (hl), c;							// update string length
+	dec hl;								// (HL) = string address MSB
+	jr c, d_slong;						// jump, if new length > old length
+	ld d, (hl);							// D = string address MSB
+	dec hl;								// (HL) = string address LSB
+	ld e, (hl);							// DE = string address
+	pop af;								// restore sign in ZF
+	jr z,fp_mul_str_e;					// return, if no flipping is necessary
+	push de;							// stack string address
+	rst bc_spaces;						// allocate space for mirrored string
+	pop hl;								// HL = string address
+	push de;							// 
+	push bc;							// 
+	ldir;								// 
+	pop bc;								// 
+	pop hl;								// 
+	push hl;							// 
+	call mirror;						// 
+	pop de;								// 
+	ld hl, (stkend);					// 
+	dec hl;								// 
+	dec hl;								// 
+	dec hl;								// 
+	ld (hl), d;							// 
+	dec hl;								// 
+	ld (hl), e;							// 
+
+fp_mul_str_e:
+	ld de, (stkend);					// 
+	ret;								// 
+
+d_slong:
+	push hl;							// address pointer
+	push de;							// excess length
+	rst bc_spaces;						// allocate space for longer string
+	pop hl;								// HL = excess length
+	ld (membot + 28), hl;				// save excess length
+	add hl, bc;							// HL = old length
+	ex (sp), hl;						// retrieve address pointer
+	add hl, bc;							// stack has moved
+	ld b, (hl);							// 
+	ld (hl), d;							// 
+	dec hl;								// 
+	ld c, (hl);							// 
+	ld (hl), e;							// 
+	ld l, c;							// 
+	ld h, b;							// 
+	pop bc;								// 
+	push de;							// 
+	ldir;								// 
+	pop hl;								// 
+	ld a, (membot + 28);				// 
+	cpl;								// 
+	ld c, a;							// 
+	ld a, (membot + 29);				// 
+	cpl;								// 
+	ld b, a;							// 
+	inc bc;								// 
+	ldir;								// 
+	pop af;								// 
+	jr z, fp_mul_str_e;					// 
+	call str_fetch;						// 
+	ex de, hl;							// 
+	call mirror;						// 
+	jr fp_mul_str_e;					// 
+
+;;
+; Mirror a memory area
+; HL = start, BC = length
+;;
+mirror:
+	ld d, (hl);							// 
+	dec bc;								// 
+	ld a, c;							// 
+	or b;								// 
+	ret z;								// 
+	add hl, bc;							// 
+	ld e, (hl);							// 
+	ld (hl), d;							// 
+	sbc hl, bc;							// 
+	ld (hl), e;							// 
+	inc hl;								// 
+	dec bc;								// 
+	ld a, c;							// 
+	or b;								// 
+	jr nz, mirror;						// 
+	ret;								// 
+
+;;
+; Like stk_fetch, but fetches only BC and DE and leaves STKEND alone.
+;;
+str_fetch:
+	ld hl, (stkend);					// 
+	dec hl;								// 
+	ld b, (hl);							// 
+	dec hl;								// 
+	ld c, (hl);							// 
+	dec hl;								// 
+	ld d, (hl);							// 
+	dec hl;								// 
+	ld e, (hl);							// 
+	ret;								// 
 
 report_bad_fn_call:
 	rst error;							// in this case
@@ -437,6 +559,14 @@ fp_greater_0:
 ; NOT function
 ;;
 fp_not:
+	fwait;								// x
+	fneg;								// -x
+	fstk1;								// -x, 1
+	fsub;								// -x - 1
+	fce;								// end calculation
+	ret									// return
+
+fp_l_not:
 	call test_zero;						// zero?
 	jr fp_0_div_1;						// immediate jump
 
@@ -453,46 +583,103 @@ sign_to_c:
 	rlca;								// opposite effect from fp_greater_0
 
 ;;
-; zero or one
+; zero or minus one
 ;;
 fp_0_div_1:
 	push hl;							// stack result pointer
-	ld a, 0;							// clear A, leave carry flag alone
-	ld (hl), a;							// zero first byte
+	sbc a, a;							// CF to all bits of A
+	ld (hl), 0;							// zero first byte
 	inc hl;								// point to next byte
-	ld (hl), a;							// zero second byte
+	ld (hl), a;							// set second byte
 	inc hl;								// point to next byte
-	rla;								// carry flag to A
-	ld (hl), a;							// set third byte to one or zero
-	rra;								// restore A to zero
+	ld (hl), a;							// set third byte
 	inc hl;								// point to next byte
-	ld (hl), a;							// zero fourth byte
+	ld (hl), a;							// set fourth byte
 	inc hl;								// point to next byte
-	ld (hl), a;							// zero fifth byte
+	ld (hl), 0;							// zero fifth byte
 	pop hl;								// unstack result pointer
 	ret;								// end of subroutine
+
+
+fp_get_int:
+	ld a, (hl);							// 
+	or a;								// 
+	jr z, fp_get_int1;					// 
+	fwait;								// 
+	fstkhalf;							// 
+	fadd;								// 
+	fint;								// 
+	fce;								// 
+
+fp_get_int1:
+	fwait;								// 
+	fdel;								// 
+	fce;								// 
+	push de;							// 
+	ex de, hl;							// 
+	xor a;								// 
+	cp (hl);							// 
+	jp nz, report_overflow;				// 
+	inc hl;								// 
+	inc hl;								// 
+	ld c, (hl);							// 
+	inc hl;								// 
+	ld b, (hl);							// 
+	ex de, hl;							// 
+	pop de;								// 
+	ret;								// 
+
+fp_logic:
+	call fp_get_int;					//
+
+report_overflow_c:
+	push bc;							// 
+	call fp_get_int;					// 
+	pop hl;								// 
+	ld a, c;							// 
+	ret;								// 
 
 ;;
 ; OR operation
 ;;
 fp_or:
-	ex de, hl;							// HL points to second number
-	call test_zero;						// zero?
-	ex de, hl;							// restore pointers
-	ret c;								// return if zero
-	scf;								// set carry flag
-	jr fp_0_div_1;						// immediate jump
+	call fp_logic;						// 
+	or l;								// 
+	ld d, a;							// 
+	ld a, b;							// 
+	or h;								// 
+
+fp_logic_end:
+	ld c, a;							// 
+	add a, a;							// 
+	sbc a, a;							// 
+	ld e, a;							// 
+	xor a;								// 
+	call stk_store_nocheck;				// 
+	ex de, hl;							// 
+	ret;								// 
+
+;;
+; XOR operation
+;;
+fp_xor:
+	call fp_logic;						// 
+	xor l								// 
+	ld d, a;							// 
+	ld a, b;							// 
+	xor h;								// 
+	jr fp_logic_end;					// 
 
 ;;
 ; number AND number operation
 ;;
 fp_no_and_no:
-	ex de, hl;							// HL points to second number
-	call test_zero;						// zero?
-	ex de, hl;							// restore pointers
-	ret nc;								// return if not zero
-	and a;								// reset carry flag
-	jr fp_0_div_1;						// immediate jump
+	call fp_logic;						// 
+	and l;								// 
+	ld d, a;							// 
+	ld a, b;							// 
+	and h;								// 
+	jr fp_logic_end;					// 
 
 ;;
 ; string AND number operation
@@ -592,13 +779,13 @@ str_test:
 end_tests:
 	pop af;								// unstack carry flag
 	push af;							// restack carry flag
-	call c, fp_not;						// jump if set
+	call c, fp_l_not;						// jump if set
 	pop af;								// unstack carry flag
 	push af;							// restack carry flag
 	call nc, fp_greater_0;				// jump if not set
 	pop af;								// unstack carry flag
 	rrca;								// rotate into carry
-	call nc, fp_not;					// jump if not set
+	call nc, fp_l_not;					// jump if not set
 	ret;								// end of subroutine
 
 ;;
@@ -836,7 +1023,7 @@ fp_end_calc:
 ;;
 fp_n_mod_m:
 	fwait;								// n
-	fst 1;								// n, m					mem_1 = m
+	fst 1;								// n, m				mem_1 = m
 	fdel;								// n
 	fmove;								// n, n
 	fgt 1;								// n, n, m
@@ -844,10 +1031,9 @@ fp_n_mod_m:
 	fint;								// n, int (n / m)
 	fgt 1;								// n, int (n / m), m
 	fxch;								// n, m, int (n / m)
-	fst 1;								// n, m, int (n / m)	mem_1 = int (n / m)
+	fst 0;								// store div in mem0
 	fmul;								// n, m * int (n / m)
 	fsub;								// n - m * int (n / m)
-	fgt 1;								// n - m * int (n / m), int (n / m)
 	fce;								// exit calculator
 	ret;								// end of subroutine
 
@@ -1294,8 +1480,8 @@ topwrn:
 
 topwrp:
 	pop hl;								//
-	ld a, h;							//
-	or l;								//
+	ld a, l;							//
+	or h;								//
 	jr z, stkone;						//
 	ld b, $10;							//
 	dec a;								//
@@ -1364,52 +1550,10 @@ last:
 	fce;								// exit calculator
 	ret;								// end of subroutine
 
-;	// FIXME: test token and modify for BIN and OCT
-;;
-; HEX$ function
-;;
-fp_hex_str:
-	call fp_to_bc;						// get value
-	jp c, report_overflow;				// error if
-	jp nz, report_overflow;				// out of range
-	push bc;							// stack it
-	ld bc, 4;							// make four
-	rst bc_spaces;						// spaces
-	pop hl;								// unstack value
-	push de;							// stack pointer
-	ld a, h;							// get value
-	call hexs_2;						// convert to string
-	ld a, l;							// get value
-	call hexs_2;						// convert to string
-	pop de;								// restore pointer
-	call stk_sto_str;					// put on calculator stack
-	jp stk_pntrs;						// exit and restore pointers
 
-hexs_2:
-	ld h, a;							// store value in H
-	rlca;								// move high
-	rlca;								// nibble
-	rlca;								// to low
-	rlca;								// nibble
-	call hexs_3;						// do first part
-	ld a, h;							// restore low nibble
-
-hexs_3:
-	and %00001111;						// clear high nibble
-	cp $0a;								// A to F?
-	jr c, hexs_4;						// jump if not
-	add a, 7;							// offset to ASCII 'A'
-
-hexs_4:
-	add a, '0';							// offset to ASCII zero
-	ld (de), a;							// store character
-	inc de;								// next position
-	ret;
-
-;	// new function 1
-fp_new_fn_1:
-	ret;
-
-;	// new function 2
-fp_new_fn_2:
+fp_div:
+	fwait;
+	fdiv;
+	fint;
+	fce;
 	ret;

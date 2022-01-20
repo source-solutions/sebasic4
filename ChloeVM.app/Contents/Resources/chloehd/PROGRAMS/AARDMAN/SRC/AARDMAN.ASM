@@ -238,8 +238,8 @@ DoDeltaFrame:
 	ld bc, (Buffer + 2);				// BC to hold the length in bytes of this buffer
 
 NextCell:
-	ld a, b;							// BC=0 ?
-	or c;
+	ld a, c;							// BC=0 ?
+	or b;
 	jp z, SwitchScreens;				// then go flipping
 	ld e, (hl);
 	inc hl;								// DE = screen address for this character

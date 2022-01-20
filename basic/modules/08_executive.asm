@@ -46,9 +46,11 @@
 ;;
 
 ;;
-; NEW command
+; <code>NEW</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#NEW" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_new:
+	call f_save_old;					// save current program
 	di;									// interrupts off
 	xor a;								// LD A, 0
 	dec a;								// LD A, 255
@@ -496,7 +498,8 @@ open_end:
 	ret;								// end of subroutine
 
 ;;
-; OPEN command
+; <code>OPEN</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#OPEN" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_open:
 open:
@@ -831,7 +834,8 @@ indexer:
 	ret;								// end of subroutine
 
 ;;
-; CLOSE command
+; <code>CLOSE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CLOSE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_close:
 close:
@@ -961,7 +965,8 @@ auto_l_4:
 	ret;								// end of subroutine
 
 ;;
-; LIST command
+; <code>LIST</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LIST" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_list:
 	ld a, 2;							// use stream #2
@@ -1074,7 +1079,7 @@ list_cursor:
 out_line:
 	ld bc, (e_ppc);						// line number
 	call cp_lines;						// match or line after
-	ld de, 0;							// no line cursor
+	ld de, $2000;							// no line cursor
 	call z, list_cursor;				// call with match
 	rl e;								// carry in E if line before current else zero
 
@@ -1208,8 +1213,25 @@ out_char:
 	pop af;								// unstack character
 
 out_ch_1:
+	cp $80;							// token?
+	jr c, out_ch_2;						// jump, if not
+	bit 2, (iy + _flags2);					// in quotes?
+	jp nz, out_ch_2;					// jump, if so
+	push de;
+	call po_token;
+	pop de;
+	ret;
+out_ch_2:
+	ld hl, flags;
+	res 0, (hl);
+	cp ' ';
+	jr nz, out_ch_3;
+	set 0, (hl);
+out_ch_3:
 	rst print_a;						// print character
 	ret;								// end of subroutine
+
+
 
 	org $196e;
 ;;

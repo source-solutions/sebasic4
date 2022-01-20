@@ -41,6 +41,8 @@ stmt_l_1:
 	call test_trace;					// handle trace and clear workspace
 	inc (iy + _subppc);					// increase subppc each time around
 	jp m, report_syntax_err;			// error if more than 127 statements
+
+stmt_l_1a:
 	rst get_char;						// get current character
 	ld b, 0;							// clear B
 	cp ctrl_cr;							// carriage return?
@@ -154,7 +156,8 @@ line_new:
 
 ;	// FIXME - END should close all files and streams
 ;;
-; END command
+; <code>END</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#END" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_end:
 	ld bc, -2;							// line zero
@@ -163,7 +166,8 @@ c_end:
 	jp error_3;							// generate error message
 
 ;;
-; REM command
+; <code>REM</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#REM" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_rem:
 	pop af;								// discard statement return address
@@ -308,7 +312,7 @@ class_05:
 ; command class 01
 ;;
 class_01:
-	call look_vars;						// variable exists?
+	call look_vars1;					// variable exists?
 
 ;;
 ; variable in assignment
@@ -396,6 +400,7 @@ class_08:
 ;;
 expt_2num:
 	call expt_1num;						// get expression
+expt_comma_1num:
 	cp ',';								// comma?
 	jr nz, report_syntax_err;			// error if not
 
@@ -420,7 +425,7 @@ report_syntax_err:
 	defb syntax_error;					// error
 
 
-	org $1c8c
+;	org $1c8c
 ;;
 ; command class 0A
 ;;
@@ -456,7 +461,8 @@ use_zero:
 	ret;								// end of subroutine
 
 ;;
-; IF command
+; <code>IF</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#IF" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_if:
 	pop bc;								// discard stmt-ret return address
@@ -473,7 +479,8 @@ if_1:
 	jp stmt_l_1;						// next statement
 
 ;;
-; FOR command
+; <code>FOR</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#FOR" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_for:
 	cp tk_step;							// step token?
@@ -602,7 +609,8 @@ look_p_2:
 	jr look_p_1;						// immediate jump
 
 ;;
-; NEXT command
+; <code>NEXT</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#NEXT" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_next:
 	bit 1, (iy + _flagx);				// variable found
@@ -666,7 +674,8 @@ read_3:
 	rst next_char;						// next character
 
 ;;
-; READ command
+; <code>READ</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#READ" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_read:
 	call class_01;						// get entry for existing variable
@@ -701,7 +710,8 @@ read_2:
 	ret;								// end of routine
 
 ;;
-; DATA command
+; <code>DATA</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#DATA" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_data:
 	call syntax_z;						// checking syntax?
@@ -727,7 +737,8 @@ pass_by:
 	jp each_stmt;						// immediate jump
 
 ;;
-; RESTORE command
+; <code>RESTORE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RESTORE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_restore:
 	call find_line;						// valid line number to HL and BC
@@ -741,7 +752,8 @@ rest_run:
 	ret;								// end of routine
 
 ;;
-; RANDOMIZE command
+; <code>RANDOMIZE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RANDOMIZE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_randomize:
 	call find_int2;						// get operand
@@ -755,7 +767,8 @@ rand_1:
 	ret;								// end of routine
 
 ;;
-; CONT command
+; <code>CONT</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CONT" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_cont:
 	ld hl, (oldppc);					// line number to HL
@@ -778,7 +791,8 @@ report_undef_ln_no:
 	defb undefined_line_number;			// error
 
 ;;
-; GOTO command
+; <code>GOTO</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#GOTO" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_goto:
 	call find_line;						// valid line number to HL and BC
@@ -790,7 +804,8 @@ goto_2:
 	ret;								// end of routine
 
 ;;
-; OUT command
+; <code>OUT</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#OUT" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_out:
 	call two_param;						// get operands
@@ -798,12 +813,29 @@ c_out:
 	ret;								// end of routine
 
 ;;
-; POKE command
+; <code>POKE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#POKE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_poke:
 	call two_param;						// get operands
 	ld (bc), a;							// store A in address BC
 	ret;								// end of routine
+
+;;
+; <code>DPOKE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#DPOKE" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_dpoke:
+	call find_int2;
+	push bc;
+	call find_int2;
+	ld l, c
+	ld h, b
+	pop bc
+	ld (hl), c
+	inc hl
+	ld (hl), b
+	ret
 
 ;;
 ; two parameters
@@ -839,7 +871,8 @@ report_overflow:
 	defb overflow;						// error
 
 ;;
-; RUN command
+; <code>RUN</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RUN" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_run:
 	rst get_char;						// get character
@@ -868,7 +901,8 @@ run_zero:
 	jr l_run;							// run
 
 ;;
-; CLEAR command
+; <code>CLEAR</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CLEAR" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_clear:
 	call find_int2;						// get operand
@@ -915,7 +949,8 @@ clear_2:
 	jp (hl);							// immediate jump
 
 ;;
-; GOSUB command
+; <code>GOSUB</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#GOSUB" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_gosub:
 	pop de;								// stmt_ret address to DE
@@ -957,7 +992,8 @@ report_oo_mem:
 ;	ret;
 
 ;;
-; RETURN command
+; <code>RETURN</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RETURN" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_return:
 	pop bc;								// stmt-ret address to BC
@@ -980,7 +1016,8 @@ report_ret_wo_gosub:
 	defb return_without_gosub;			// error
 
 ;;
-; WAIT command
+; <code>WAIT</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#WAIT" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_wait:
 	call flush_kb;						// signal no key
@@ -1023,7 +1060,8 @@ break_key:
 ;	// DEF FN command
 ;	// FIXME: extend DEF functionality
 ;;
-; DEF command
+; <code>DEF</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#DEF" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_def:
 	call syntax_z;						// checking syntax?
@@ -1098,7 +1136,8 @@ unstack_z:
 	jp (hl);							// else immediate jump
 
 ;;
-; PRINT command
+; <code>PRINT</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#PRINT" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_print:
 	ld a, 2;							// channel S
@@ -1213,7 +1252,8 @@ pr_posn_1:
 	jr pr_posn_3;						// immediate jump
 
 pr_posn_2:
-	cp "\\";							// backslash (\)
+;	cp "\\";							// backslash (\)
+	cp "'";								// apostrophe (newline)
 	ret nz;								// return if not
 	call print_cr;						// print carriage return
 
@@ -1248,7 +1288,8 @@ str_alter_1:
 	ret;								// end of subroutine
 
 ;;
-; INPUT command
+; <code>INPUT</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#INPUT" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_input:
 	call syntax_z;						// checking syntax?
@@ -1437,7 +1478,8 @@ in_stop:
 	call unstack_z;						// return if checking syntax
 
 ;;
-; STOP command
+; <code>STOP</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#STOP" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_stop:
 	jp report_break;					// clear keyboard buffer and report break
@@ -1481,7 +1523,8 @@ stk_to_a:
 	ret;								// end of subroutine
 
 ;;
-; RENUM command
+; <code>RENUM</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RENUM" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_renum:
 	ld hl, (stkend);					// value on stack end to HL
@@ -1664,8 +1707,8 @@ renum_line_5:
 	inc hl;								// point to next character
 	call stack_num;						// floating point number to calculator stack
 	call fp_to_bc;						// line number to BC
-	ld h, b;							// BC
-	ld l, c;							// to HL
+	ld l, c;							// BC
+	ld h, b;							// to HL
 	call line_addr;						// get line address
 	jr c, renum_line_6;					// jump if line number too large
 	jr z, renum_line_7;					// jump if line exists
@@ -1694,8 +1737,8 @@ renum_line_8:
 	ld d, 0;							// to DE
 	push de;							// stack it
 	push hl;							// stack address of first non-zero
-	ld h, d;							// LD H, 0
-	ld l, e;							// number of digits in new line number to HL
+	ld l, e;							// LD H, 0
+	ld h, d;							// number of digits in new line number to HL
 	ld bc, (mem_2_2);					// number of digits in old line number to BC
 	or a;								// prepare for subtraction
 	sbc hl, bc;							// number of digits changed?
@@ -1826,3 +1869,27 @@ insert_dgt_1:
 	ld (de), a;							// store in buffer
 	inc de;								// next location
 	ret;								// end of subroutine
+
+;;
+; long string variable name in assignment
+;;
+look_vars1:
+	call look_vars;						// find variable
+	push hl;							// save location
+	ex af, af';							// save AF
+	rst get_char;						// character after variable name
+	cp '$';								// is it '$'?
+	jr nz, lv_nstr;						// if not, exit
+	rst next_char;						// skip over '$'
+	res 6, (iy + _flags);				// indicate string
+	call syntax_z;						// checking syntax?
+	scf;								// set carry
+	jr nz, lv2;							// in runtime, not found CF=1, ZF=0
+	and a;								// in syntax check, found CF=0, ZF=0
+	defb $3E;							// LD A, skip next byte
+lv_nstr:
+	ex af,af';							// restore AF
+lv2:
+	pop hl;								// restore location
+	ret;								// 
+

@@ -10,3 +10,12 @@ pasmo.exe
 /reference/*
 *.ZX1
 ba????.bmp
+symbols.txt
+
+# exclude generated docs
+/asmdoc/*asm.html
+/asmdoc/*classes*.html
+/asmdoc/*inc.html
+/asmdoc/index*.html
+/asmdoc/constant*.html
+/asmdoc/deprecated*.html

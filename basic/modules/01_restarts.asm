@@ -20,7 +20,15 @@
 ;;
 
 ;;
-; start
+; Short description of module.
+; @author Name of contributing author.
+; @deprecated Version deprecated in and replacement module.
+; @param HL - Register contents.
+; @return Result in register, such as <code>HL</code>.
+; @see <a href="www.example.com">External reference</a>.
+; @since Version in which module was introduced.
+; @throws Error number and description handled by RST 8 routine.
+; @version Version in which the module was last udpated. 
 ;;
 rst_00:
 	di;									// interrupts off

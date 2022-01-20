@@ -20,8 +20,8 @@ cat ../bin/basic.rom >> ../ChloeVM.app/Contents/Resources/se.rom
 cd ../rasm
 
 if [[ "$arch" == "aarch64" ]];
-then ../rasm-deb-arm64 firmware.asm -ob ../bin/FIRMWA~1.BIN
-else ../rasm-deb-i386 firmware.asm -ob ../bin/FIRMWA~1.BIN
+then ./rasm-deb-arm64 firmware.asm -ob ../bin/FIRMWA~1.BIN
+else ./rasm-deb-i386 firmware.asm -ob ../bin/FIRMWA~1.BIN
 fi
 
 cd ..

@@ -34,10 +34,10 @@ endif
 
 	defb ctrl_cr;
 	defb "SE BASIC IV 4.2 Cordelia", ctrl_cr;
-	defb "Copyright (C)2020 Source Solutions, Inc.", ctrl_cr;
+	defb "Copyright (C)2022 Source Solutions, Inc.", ctrl_cr;
 	defb ctrl_cr;
 ;	timestamp 'YY-MM-DD h:m';			// RASM directive
-	defb "Release 210628";				// 
+	defb "Release 220122";				// 
 	defb ctrl_cr, ctrl_cr, 0;
 
 bytes_free:
@@ -106,7 +106,7 @@ init_chan:
 	defb 'K';							// channel
 	defw print_out, file_in;			// screen
 	defb 'S';							// channel
-	defw detokenizer, report_bad_io_dev;// workspace
+	defw add_char, report_bad_io_dev;// workspace
 	defb 'W';							// channel
 	defb end_marker;					// no more channels
 
@@ -117,19 +117,22 @@ file_chan:
 
 ;	// used in 10_expression
 tbl_ops_priors:
-	defb '+', $cf, 6;					// +	%11000000 + fadd
-	defb '-', $c3, 6;					// -	%11000000 + fsub
-	defb '*', $c4, 8;					// *	%11000000 + fmul
-	defb '/', $c5, 8;					// /	%11000000 + fdiv
-	defb '^', $c6, 10;					// ^	%11000000 + fexp
-	defb '=', $ce, 5;					// =	%11000000 + fcp(_eq)
-	defb '>', $cc, 5;					// >	%11000000 + fcp(_gt)
-	defb '<', $cd, 5;					// <	%11000000 + fcp(_lt)
-	defb tk_l_eql, $c9, 5;				// <=	%11000000 + fcp(_le)
-	defb tk_gr_eq, $ca, 5;				// >=	%11000000 + fcp(_ge)
-	defb tk_neql, $cb, 5;				// <>	%11000000 + fcp(ne)
-	defb tk_or, $c7, 2;					// OR	%11000000 + fbor
-	defb tk_and, $c8, 3;				// AND	%11000000 + fband
+	defb '+', $cf, 8;					// +	%11000000 + fadd
+	defb '-', $c3, 8;					// -	%11000000 + fsub
+	defb '*', $c4, 11;					// *	%11000000 + fmul
+	defb '/', $c5, 11;					// /	%11000000 + fdiv
+	defb '^', $c6, 12;					// ^	%11000000 + fexp
+	defb '=', $ce, 7;					// =	%11000000 + fcp(_eq)
+	defb '>', $cc, 7;					// >	%11000000 + fcp(_gt)
+	defb '<', $cd, 7;					// <	%11000000 + fcp(_lt)
+	defb tk_l_eql, $c9, 7;				// <=	%11000000 + fcp(_le)
+	defb tk_gr_eq, $ca, 7;				// >=	%11000000 + fcp(_ge)
+	defb tk_neql, $cb, 7;				// <>	%11000000 + fcp(ne)
+	defb tk_or, $c7, 4;					// OR	%11000000 + fbor
+	defb tk_and, $c8, 5;				// AND	%11000000 + fband
+	defb tk_xor, $fe, 3;				// XOR  %11000000 + fxor
+	defb tk_mod, $f2, 9;				// MOD  %11000000 + fmod
+	defb '\\', $ff, 10;					// div 	%11000000 + fquot
 	defb 0;								// null terminator
 
 ;	// used in 12_calculator
@@ -166,7 +169,7 @@ tbl_addrs:
 	defw fp_comparison;
 	defw fp_strs_add;
 	defw fp_val_str;
-	defw fp_usr_str;
+	defw fp_mul_str;
 	defw fp_read_in;
 	defw fp_negate;
 	defw fp_asc;
@@ -201,20 +204,16 @@ tbl_addrs:
 	defw fp_get_argt;
 	defw fp_truncate;
 	defw fp_calc_2;
-	defw fp_hex_str;
+	defw fp_dpeek;
 	defw fp_re_stack;
-	defw fp_new_fn_1;
-	defw fp_new_fn_2;
+	defw fp_xor;
+	defw fp_div;
 
 tbl_offs equ $ - tbl_addrs
 	defw fp_series_xx;
 	defw fp_stk_const_xx;
 	defw fp_st_mem_xx;
 	defw fp_get_mem_xx;
-
-;	// used in 15_files
-dir_msg:
-	defb "<DIR>   ", 0;
 
 ;	// used in 14_screen_40
 ;	// attributes are stored internally with the foreground in the high nibble and the background in the low nibble
@@ -288,7 +287,13 @@ rpt_mesgs:
 
 ;	// A total of 576 bytes are allocated for translated error messages
 
-	org $4300
+	org scrl_mssg + 576
+
+;	// used in 15_files
+dir_msg:
+	defb "<DIR>   ", 0;
+
+;	// the next 576 bytes are used for localization
 
 ;	// used in 07_editor
 ed_f_keys_t:
@@ -381,47 +386,71 @@ kt_dig_sym:
 token_table:
 	defb end_marker;
 
-;	// functions
-	str "RND", "INKEY$", "PI", "FN";
-	str "BIN$", "OCT$", "HEX$", "SPC";
-	str "TAB", "VAL$", "ASC", "VAL";
-	str "LEN", "SIN", "COS", "TAN";
-	str "ASIN", "ACOS", "ATAN", "LOG";
-	str "EXP", "INT", "SQR", "SGN";
-	str "ABS", "PEEK", "INP", "USR";
-	str "STR$", "CHR$", "NOT", "MOD";
-	str "OR", "AND", "<=", ">=";
-	str "<>", "LINE", "THEN", "TO";
-	str "STEP";
+;	// exceptional functions (no arguments, etc.)
+	str "RND", "INKEY$", "PI", "FN";	// $80
+
+; // TODO: EOF, LOC, LOF
+
+;	// multi-argument functions
+	str "_A9", "_AA", "_AB";		// $84
+
+; // TODO: LEFT$, RIGHT$, MID$, STRING$
+
+
+;	// PRINT arguments
+	str "SPC", "TAB";			// $87
+
+;	// prefix operators (single-argument functions)
+	str "VAL$", "ASC", "VAL";		// $89
+	str "LEN", "SIN", "COS", "TAN";		// $8C
+	str "ASIN", "ACOS", "ATAN", "LOG";	// $90
+	str "EXP", "INT", "SQR", "SGN";		// $94
+	str "ABS", "PEEK", "INP", "USR";	// $98
+	str "STR$", "CHR$", "NOT";		// $9C
+
+; // TODO: FIX, DPEEK
+
+
+;	// infix operators
+	str "MOD";				// $9F
+	str "OR", "AND", "<=", ">=";		// $A0
+	str "<>";				// $A4
+
+; // TODO: XOR
+
+
+;	// other keywords
+	str "LINE", "THEN", "TO";		// $A5
+	str "STEP";				// $A8
 
 ;	// commands
-	str "DEF FN", "BLOAD", "BSAVE", "CHDIR";
-	str "COPY", "OPEN #", "CLOSE #", "WHILE";
-	str "WEND", "SOUND", "FILES", "KILL";
-	str "LOAD", "MKDIR", "NAME", "RMDIR";
-	str "SAVE", "OUT", "LOCATE", "END";
-	str "STOP", "READ", "DATA", "RESTORE";
-	str "NEW", "ERROR", "CONT", "DIM";
+	str "DEF FN", "BLOAD", "BSAVE", "CHDIR";	// $A9
+	str "COPY", "OPEN #", "CLOSE #", "WHILE";	// $AD
+	str "WEND", "SOUND", "FILES", "KILL";		// $B1
+	str "LOAD", "MKDIR", "NAME", "RMDIR";		// $B5
+	str "SAVE", "OUT", "LOCATE", "END";		// $B9
+	str "STOP", "READ", "DATA", "RESTORE";		// $BD
+	str "NEW", "ERROR", "CONT", "DIM";		// $C1
 
 tk_ptr_rem:
-	str "REM", "FOR", "GOTO", "GOSUB";
-	str "INPUT", "PALETTE", "LIST", "LET";
-	str "WAIT", "NEXT", "POKE", "PRINT"
-	str "DELETE", "RUN", "EDIT", "RANDOMIZE";
-	str "IF", "CLS", "CALL", "CLEAR"
-	str "RETURN", "COLOR", "TRON", "TROFF"
-	str "ON", "RENUM", "AUTO", "SCREEN";
-	str "XOR", "EOF", "LOC", "LOF"
-	str "_E5", "_E6", "_E7", "_E8";
-	str "_E9", "_EA", "_EB", "_EC";
-	str "_ED", "_EE", "_EF", "_F0";
+	str "REM", "FOR", "GOTO", "GOSUB";		// $C5
+	str "INPUT", "PALETTE", "LIST", "LET";		// $C9
+	str "WAIT", "NEXT", "POKE", "PRINT";		// $CD
+	str "DELETE", "RUN", "EDIT", "RANDOMIZE";	// $D1
+	str "IF", "CLS", "CALL", "CLEAR";		// $D5
+	str "RETURN", "COLOR", "TRON", "TROFF"		// $D9
+	str "ON", "RENUM", "OLD", "SCREEN";		// $DD
+	str "XOR", "EOF", "LOC", "LOF";			// $E1
+	str "LEFT$", "RIGHT$", "MID$", "STRING$";	// $E5
+	str "FIX", "DPEEK", "DPOKE", "_EC";		// $E9
+	str "_ED", "_EE", "_EF", "_F0";			// $ED
 	str "_F1", "_F2", "_F3", "_F4";
 	str "_F5", "_F6", "_F7", "_F8";
 	str "_F9", "_FA", "_FB", "_FC";
-	str "_FD", "_FE";
+	str "_FD", "ALOAD";
 	
 tk_ptr_last:
-	str "_FF";
+	str "ASAVE";
 
 ;	// used in 09_command
 offst_tbl:
@@ -479,7 +508,7 @@ offst_tbl:
 	defw p_troff;						// a3
 	defw p_on;							// 95
 	defw p_renum;						// aa
-	defw p_auto;						// a9
+	defw p_old;							// 
 	defw p_screen;						// c5
 	defw p__e1;							// 
 	defw p__e2;							// 
@@ -491,7 +520,7 @@ offst_tbl:
 	defw p__e8;							// 
 	defw p__e9;							// 
 	defw p__ea;							// 
-	defw p__eb;							// 
+	defw p_dpoke;							// 
 	defw p__ec;							// 
 	defw p__ed;							// 
 	defw p__ee;							// 
@@ -668,6 +697,10 @@ p_poke:
 	defb two_c_s_num_no_f_ops;
 	defw c_poke;
 
+p_dpoke:
+	defb two_c_s_num_no_f_ops;
+	defw c_dpoke;
+
 p_print:
 	defb var_syn;
 	defw c_print;
@@ -728,9 +761,9 @@ p_renum:
 	defb var_syn;
 	defw c_renum;
 
-p_auto:
+p_old:
 	defb no_f_ops;
-	defw c_auto;
+	defw c_old;
 
 p_screen:
 	defb num_exp_no_f_ops;
@@ -853,9 +886,9 @@ p__fd:
 	defw c_rem;
 
 p__fe:
-	defb no_f_ops;
-	defw c_rem;
+	defb str_exp_no_f_ops;
+	defw c_aload;
 
 p__ff:
-	defb no_f_ops;
-	defw c_rem;
+	defb str_exp_no_f_ops;
+	defw c_asave;
