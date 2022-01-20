@@ -391,6 +391,9 @@ write_chunk:
 	ret;								// else done
 
 c_old:
+ifdef no_fs
+	ret;
+endif
 	call unstack_z;						// return if checking syntax
 	ld ix, old_bas_path;				// pointer to path
 	jr c_load_old;						// immediate jump
@@ -456,6 +459,9 @@ c_name:
 	ret;								// done
 
 f_save_old:
+ifdef no_fs
+	ret;
+endif
 	call unstack_z;						// return if checking syntax
 
 	ld ix, rootpath;					// go to root
