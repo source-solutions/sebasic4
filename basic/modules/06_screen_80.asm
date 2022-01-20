@@ -774,10 +774,14 @@ po_scr_2:
 	call chan_open;						// channel K
 	ld de, scrl_mssg;					// message address
 	call po_asciiz_0;					// print it
-	ld hl, flags;						// address sysvar
+wait_msg_loop:
+	ld hl, vdu_flag;					// address sysvar
+	set 5, (hl);						// lower screen requires clearing
+	res 3, (hl);						// no echo
 	exx;								// alternate register set
-	call wait_key;						// FIXME - get a single key code
+	call input_ad;						// get a single key code
 	exx;								// main resgister set
+	jr nc, wait_msg_loop				// loop, if no key has been pressed
 	cp ' ';								// space?
 	jr z, report_break;					// treat as BREAK and jump if so
 	call chan_open_fe;					// open channel S
