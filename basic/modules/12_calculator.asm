@@ -34,7 +34,13 @@
 ;	// ----------+--------+--------------------------------
 ;	// xxxxxxxx  | s      | mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
 
-;	// calculator subroutine
+;;
+;
+;;
+
+;;
+; calculator
+;;
 calculate:
 	call stk_pntrs;						// HL to last value on calculator stack
 
@@ -63,9 +69,7 @@ scan_ent:
 	rrca;								// right
 	rrca;								// into
 	rrca;								// bit 1 and 2
-
-	add a, 128;							// offsets 64 to 68
-
+	add a, tbl_offs;					// offsets 64 to 68
 	ld l, a;							// L holds doubled offset
 	ld a, d;							// get parameter
 	and %00011111;						// from bits 0 to 4
@@ -95,18 +99,24 @@ ent_table:
 	exx;								// main register set
 	ld bc, (stkend_h);					// breg to B
 
-;	// delete subroutine
+;;
+; delete
+;;
 fp_delete:
 	ret;								// end of subroutineindirect jump to subroutine
 
-;	// single operation subroutine
+;;
+; single operation
+;;
 fp_calc_2:
 	pop af;								// drop re-entry address
 	ld a, (breg);						// offset to A
 	exx;								// alternate register set
 	jr scan_ent;						// immediate jump
 
-;	// test five spaces subroutine
+;;
+; test five spaces
+;;
 test_5_sp:
 	push de;							// stack DE
 	push hl;							// stack HL
@@ -116,25 +126,30 @@ test_5_sp:
 	pop de;								// unstack DE
 	ret;								// end of subroutine
 
-;	// stack number subroutine
+;;
+; stack number
+;;
 stack_num:
 	ld de, (stkend);					// get destination address
 	call move_fp;						// move number
 	ld (stkend), de;					// reset stack end
 	ret;								// end of subroutine
 
-
-;	// move a floating point number subroutine
-fp_duplicate:
+;;
+; move a floating point number
+;;
 move_fp:
+fp_duplicate:
 	call test_5_sp;						// test for space
 	ldir;								// copy five bytes
 	ret;								// end of subroutine
 
-;	// stack literals subroutine
+;;
+; stack literals
+;;
 fp_stk_data:
-	ld l, e;							// to HL
-	ld h, d;							// DE
+	ld l, e;							// DE to
+	ld h, d;							// HL
 
 stk_const:
 	call test_5_sp;						// test for space
@@ -176,7 +191,9 @@ stk_zeros:
 	inc de;								// next position in calculator stack
 	jr stk_zeros;						// loop until done
 
-;	// memory location subroutine
+;;
+; memory location
+;;
 loc_mem:
 	ld c, a;							// parameter to C
 	rlca;								// multiply
@@ -187,7 +204,9 @@ loc_mem:
 	add hl, bc;							// get base address
 	ret;								// end of subroutine
 
-;	// get from memory area subroutine
+;;
+; get from memory area
+;;
 fp_get_mem_xx:
 	ld hl, (mem);						// get pointer to memory area
 
@@ -198,12 +217,16 @@ fp_get_mem_xx_2:
 	pop hl;								// unstack result pointer
 	ret;								// end of subroutine
 
-;	// stack a constant subroutine
+;;
+; stack a constant
+;;
 fp_stk_const_xx:
 	ld hl, constants;					// address of table of constants
 	jr fp_get_mem_xx_2;					// indirect exit to stack constant
 
-;	// store in memoyr area subroutine
+;;
+; store in memoyr area
+;;
 fp_st_mem_xx:
 	push hl;							// stack result pointer
 	ex de, hl;							// source to DE
@@ -216,7 +239,9 @@ fp_st_mem_xx:
 	pop hl;								// unstack result pointer
 	ret;								// end of subroutine
 
-;	// exchange subroutine
+;;
+; exchange
+;;
 fp_exchange:
 	ld b, 5;							// five bytes
 
@@ -231,46 +256,53 @@ swap_byte:
 	djnz swap_byte;						// exchange five bytes
 	ret;								// end of subroutine
 
-;	// series generator subroutine
+;;
+; series generator
+;;
 fp_series_xx:
 	ld b, a;							// parameter to B
 	call gen_ent_1;						// enter calc and set counter
-	fmove();							// z, z
-	fadd();								// 2 * z
-	fst(0);								// 2 * z			mem-0 holds 2 * z
-	fdel();								// -
-	fstk0();							// 0
-	fst(2);								// 0				mem-2 holds 0
+	fmove;								// z, z
+	fadd;								// 2 * z
+	fst 0;								// 2 * z			mem-0 holds 2 * z
+	fdel;								// -
+	fstk0;								// 0
+	fst 2;								// 0				mem-2 holds 0
 
 g_loop:
-	fmove();							// b(r), b(r)
-	fgt(0);								// b(r), b(r), 2 * z
-	fmul();								// b(r), 2 * b(r) * z
-	fgt(2);								// b(r), 2 * b(r) * z, b(r - 1)
-	fst(1);								//					mem-1 holds b(r - 1) 
-	fsub();								// b(r), 2 * b(r) * z - b(r - 1)
-	fce();								// exit calculator
+	fmove;								// b(r), b(r)
+	fgt 0;								// b(r), b(r), 2 * z
+	fmul;								// b(r), 2 * b(r) * z
+	fgt 2;								// b(r), 2 * b(r) * z, b(r - 1)
+	fst 1;								//					mem-1 holds b(r - 1) 
+	fsub;								// b(r), 2 * b(r) * z - b(r - 1)
+	fce;								// exit calculator
 	call fp_stk_data;					// b(r), 2 * b(r) * z - b(r - 1), a(r + 1)
 	call gen_ent_2;						// re-enter calc without disturbing breg
-	fadd();								// b(r), 2 * b(r) * z - b(r - 1) + a(r + 1)
-	fxch();								// 2 * b(r) * z - b(r - 1) + a(r + 1), b(r)
-	fst(2);								//  				mem-2 holds b(r)
-	fdel();								// 2 * b(r) * z - b(r - 1) + a(r + 1) =
-	fdjnz(g_loop);						// b(r + 1)
-	fgt(1);								// b(n), b(n - 2)
-	fsub();								// b(n) - b(n - 2)
-	fce();								// exit calculator
+	fadd;								// b(r), 2 * b(r) * z - b(r - 1) + a(r + 1)
+	fxch;								// 2 * b(r) * z - b(r - 1) + a(r + 1), b(r)
+	fst 2;								//  				mem-2 holds b(r)
+	fdel;								// 2 * b(r) * z - b(r - 1) + a(r + 1) =
+	fdjnz g_loop;						// b(r + 1)
+	fgt 1;								// b(n), b(n - 2)
+	fsub;								// b(n) - b(n - 2)
+	fce;								// exit calculator
 	ret;								// end of subroutine
 
-;	// absolute magnitude function
+;;
+; absolute magnitude
+;;
 fp_abs:
 	ld b, $ff;							// B to 255
 	jr neg_test;						// immediate jump
 
-;	// unary minus operation
+;;
+; unary minus
+;;
 fp_negate:
 	call test_zero;						// zero?
 	ret c;								// return if so
+fp_negate2:
 	ld b, 0;							// signal negate
 
 neg_test:
@@ -298,7 +330,9 @@ int_case:
 	cpl;								// $00 = abs, ? = negate
 	jr fp_sgn_2;						// indirect exit
 
-;	// signmum function
+;;
+; signmum
+;;
 fp_sgn:
 	call test_zero;						// zero?
 	ret c;								// return if so
@@ -315,14 +349,18 @@ fp_sgn_2:
 	pop de;								// unstack stkend
 	ret;								// end of subroutine
 
-;	// INP function
+;;
+; INP function
+;;
 fp_inp:
 	call find_int2;						// last value to BC
 	in a, (c);							// get signal
 	jr in_pk_stk;						// stack result
- 
-;	// PEEK function
+
 ;	// FIXME - test for segment
+;;
+; PEEK function
+;;
 fp_peek:
 	call find_int2;						// get address in BC
 	ld a, (bc);							// get byte
@@ -330,7 +368,24 @@ fp_peek:
 in_pk_stk:
 	jp stack_a;							// indirect exit
 
-;	// USR function
+;;
+; DPEEK function
+;;
+fp_dpeek:
+	call find_int2
+	push hl
+	ld l, c
+	ld h, b
+	ld c, (hl)
+	inc hl
+	ld b, (hl)
+	pop hl
+	jp stack_bc;
+
+;	// FIXME - (should restore IY to err-nr on return)
+;;
+; USR (number) function
+;;
 fp_usr_no:
 	call find_int2;						// get address in BC
 	ld hl, stack_bc;					// stack
@@ -338,30 +393,141 @@ fp_usr_no:
 	push bc;							// stack address
 	ret;								// end of subroutine
 
-;	// USR string function
-fp_usr_str:
-	call stk_fetch;						// get parameters
-	dec bc;								// reduce length by one
-	ld a, c;							// test for
-	or b;								// empty string
-	jr nz, report_bad_fn_call;			// error if so
-	ld a, (de);							// else get character in A
-	ld l, a;							// A to
-	ld h, 0;							// HL
-	add hl, hl;							// multiply
-	add hl, hl;							// by
-	add hl, hl;							// eight
-	ld bc, font;						// font to BC
-	add hl, bc;							// offset to hl
-	ld c, l;							// HL to
-	ld b, h;							// BC
-	jp stack_bc;						// immediate jump
+;;
+; multiplication of string by a number
+;;
+fp_mul_str:
+	inc hl;								// (HL) = mantissa MSB
+	bit 7, (hl);						// check sign bit
+	dec hl;								// restore HL
+	push af;							// ZF clear, if negative
+	call nz, fp_negate2;				// absolute value
+	dec hl;								// (HL) = string length MSB
+	ld b, (hl);							// B = string length MSB
+	dec hl;								// (HL) = length LSB
+	ld c, (hl);							// BC = string length
+	push bc;							// stack string length (machine)
+	call stack_bc;						// stack string length (calculator)
+	fwait;								// arg2, length
+	fmul;								// arg2 * length
+	fce;								// 
+	call find_int2;						// BC = new string length
+	pop hl;								// HL = old string length
+	sbc hl, bc;							// HL = length difference
+	ex de, hl;							// HL = calculator stack pointer
+	dec hl;								// (HL) = string length MSB
+	ld (hl), b;							// update string length MSB
+	dec hl;								// (HL) = string length LSB
+	ld (hl), c;							// update string length
+	dec hl;								// (HL) = string address MSB
+	jr c, d_slong;						// jump, if new length > old length
+	ld d, (hl);							// D = string address MSB
+	dec hl;								// (HL) = string address LSB
+	ld e, (hl);							// DE = string address
+	pop af;								// restore sign in ZF
+	jr z,fp_mul_str_e;					// return, if no flipping is necessary
+	push de;							// stack string address
+	rst bc_spaces;						// allocate space for mirrored string
+	pop hl;								// HL = string address
+	push de;							// 
+	push bc;							// 
+	ldir;								// 
+	pop bc;								// 
+	pop hl;								// 
+	push hl;							// 
+	call mirror;						// 
+	pop de;								// 
+	ld hl, (stkend);					// 
+	dec hl;								// 
+	dec hl;								// 
+	dec hl;								// 
+	ld (hl), d;							// 
+	dec hl;								// 
+	ld (hl), e;							// 
+
+fp_mul_str_e:
+	ld de, (stkend);					// 
+	ret;								// 
+
+d_slong:
+	push hl;							// address pointer
+	push de;							// excess length
+	rst bc_spaces;						// allocate space for longer string
+	pop hl;								// HL = excess length
+	ld (membot + 28), hl;				// save excess length
+	add hl, bc;							// HL = old length
+	ex (sp), hl;						// retrieve address pointer
+	add hl, bc;							// stack has moved
+	ld b, (hl);							// 
+	ld (hl), d;							// 
+	dec hl;								// 
+	ld c, (hl);							// 
+	ld (hl), e;							// 
+	ld l, c;							// 
+	ld h, b;							// 
+	pop bc;								// 
+	push de;							// 
+	ldir;								// 
+	pop hl;								// 
+	ld a, (membot + 28);				// 
+	cpl;								// 
+	ld c, a;							// 
+	ld a, (membot + 29);				// 
+	cpl;								// 
+	ld b, a;							// 
+	inc bc;								// 
+	ldir;								// 
+	pop af;								// 
+	jr z, fp_mul_str_e;					// 
+	call str_fetch;						// 
+	ex de, hl;							// 
+	call mirror;						// 
+	jr fp_mul_str_e;					// 
+
+;;
+; Mirror a memory area
+; HL = start, BC = length
+;;
+mirror:
+	ld d, (hl);							// 
+	dec bc;								// 
+	ld a, c;							// 
+	or b;								// 
+	ret z;								// 
+	add hl, bc;							// 
+	ld e, (hl);							// 
+	ld (hl), d;							// 
+	sbc hl, bc;							// 
+	ld (hl), e;							// 
+	inc hl;								// 
+	dec bc;								// 
+	ld a, c;							// 
+	or b;								// 
+	jr nz, mirror;						// 
+	ret;								// 
+
+;;
+; Like stk_fetch, but fetches only BC and DE and leaves STKEND alone.
+;;
+str_fetch:
+	ld hl, (stkend);					// 
+	dec hl;								// 
+	ld b, (hl);							// 
+	dec hl;								// 
+	ld c, (hl);							// 
+	dec hl;								// 
+	ld d, (hl);							// 
+	dec hl;								// 
+	ld e, (hl);							// 
+	ret;								// 
 
 report_bad_fn_call:
 	rst error;							// in this case
 	defb illegal_function_call;			// an empty string
 
-;	// test zero subroutine
+;;
+; test zero
+;;
 test_zero:
 	push bc;							// stack BC
 	push hl;							// stack HL
@@ -380,19 +546,33 @@ test_zero:
 	scf;								// set carry for zero
 	ret;								// end of subroutine
 
-;	// greater than zero operation
+;;
+; greater than zero operation
+;;
 fp_greater_0:
 	call test_zero;						// zero?
 	ret c;								// return if so
 	ld a, $ff;							// sign byte
 	jr sign_to_c;						// immediate jump
 
-;	// NOT function
+;;
+; NOT function
+;;
 fp_not:
+	fwait;								// x
+	fneg;								// -x
+	fstk1;								// -x, 1
+	fsub;								// -x - 1
+	fce;								// end calculation
+	ret									// return
+
+fp_l_not:
 	call test_zero;						// zero?
 	jr fp_0_div_1;						// immediate jump
 
-;	// less than zero operation
+;;
+; less than zero operation
+;;
 fp_less_0:
 	xor a;								// LD A, 0
 
@@ -402,43 +582,108 @@ sign_to_c:
 	dec hl;								// restore result pointer
 	rlca;								// opposite effect from fp_greater_0
 
-;	// zero or one subroutine
+;;
+; zero or minus one
+;;
 fp_0_div_1:
 	push hl;							// stack result pointer
-	ld a, 0;							// clear A, leave carry flag alone
-	ld (hl), a;							// zero first byte
+	sbc a, a;							// CF to all bits of A
+	ld (hl), 0;							// zero first byte
 	inc hl;								// point to next byte
-	ld (hl), a;							// zero second byte
+	ld (hl), a;							// set second byte
 	inc hl;								// point to next byte
-	rla;								// carry flag to A
-	ld (hl), a;							// set third byte to one or zero
-	rra;								// restore A to zero
+	ld (hl), a;							// set third byte
 	inc hl;								// point to next byte
-	ld (hl), a;							// zero fourth byte
+	ld (hl), a;							// set fourth byte
 	inc hl;								// point to next byte
-	ld (hl), a;							// zero fifth byte
+	ld (hl), 0;							// zero fifth byte
 	pop hl;								// unstack result pointer
 	ret;								// end of subroutine
 
-;	// OR operation
+
+fp_get_int:
+	ld a, (hl);							// 
+	or a;								// 
+	jr z, fp_get_int1;					// 
+	fwait;								// 
+	fstkhalf;							// 
+	fadd;								// 
+	fint;								// 
+	fce;								// 
+
+fp_get_int1:
+	fwait;								// 
+	fdel;								// 
+	fce;								// 
+	push de;							// 
+	ex de, hl;							// 
+	xor a;								// 
+	cp (hl);							// 
+	jp nz, report_overflow;				// 
+	inc hl;								// 
+	inc hl;								// 
+	ld c, (hl);							// 
+	inc hl;								// 
+	ld b, (hl);							// 
+	ex de, hl;							// 
+	pop de;								// 
+	ret;								// 
+
+fp_logic:
+	call fp_get_int;					//
+
+report_overflow_c:
+	push bc;							// 
+	call fp_get_int;					// 
+	pop hl;								// 
+	ld a, c;							// 
+	ret;								// 
+
+;;
+; OR operation
+;;
 fp_or:
-	ex de, hl;							// HL points to second number
-	call test_zero;						// zero?
-	ex de, hl;							// restore pointers
-	ret c;								// return if zero
-	scf;								// set carry flag
-	jr fp_0_div_1;						// immediate jump
+	call fp_logic;						// 
+	or l;								// 
+	ld d, a;							// 
+	ld a, b;							// 
+	or h;								// 
 
-;	// number and number operation
+fp_logic_end:
+	ld c, a;							// 
+	add a, a;							// 
+	sbc a, a;							// 
+	ld e, a;							// 
+	xor a;								// 
+	call stk_store_nocheck;				// 
+	ex de, hl;							// 
+	ret;								// 
+
+;;
+; XOR operation
+;;
+fp_xor:
+	call fp_logic;						// 
+	xor l								// 
+	ld d, a;							// 
+	ld a, b;							// 
+	xor h;								// 
+	jr fp_logic_end;					// 
+
+;;
+; number AND number operation
+;;
 fp_no_and_no:
-	ex de, hl;							// HL points to second number
-	call test_zero;						// zero?
-	ex de, hl;							// restore pointers
-	ret nc;								// return if not zero
-	and a;								// reset carry flag
-	jr fp_0_div_1;						// immediate jump
+	call fp_logic;						// 
+	and l;								// 
+	ld d, a;							// 
+	ld a, b;							// 
+	and h;								// 
+	jr fp_logic_end;					// 
 
-;	// string and number operation
+;;
+; string AND number operation
+;;
 fp_str_and_no:
 	ex de, hl;							// HL = number, DE = $
 	call test_zero;						// zero?
@@ -453,7 +698,9 @@ fp_str_and_no:
 	inc de;								// pointer
 	ret;								// end of subroutine
 
-;	// comparison operation
+;;
+; comparison operation
+;;
 fp_comparison:
 	ld a, b;							// offset to A
 	bit 2, a;							// >= 4?
@@ -525,23 +772,25 @@ frst_less:
 
 str_test:
 	push af;							// stack carry flag
-	fwait();							// x
-	fstk0();							// x, 0
-	fce();								// exit calculatorexit calculator
+	fwait;								// x
+	fstk0;								// x, 0
+	fce;								// exit calculator
 
 end_tests:
 	pop af;								// unstack carry flag
 	push af;							// restack carry flag
-	call c, fp_not;						// jump if set
+	call c, fp_l_not;						// jump if set
 	pop af;								// unstack carry flag
 	push af;							// restack carry flag
 	call nc, fp_greater_0;				// jump if not set
 	pop af;								// unstack carry flag
 	rrca;								// rotate into carry
-	call nc, fp_not;					// jump if not set
+	call nc, fp_l_not;					// jump if not set
 	ret;								// end of subroutine
 
-;	// string concatenation operation
+;;
+; string concatenation operation
+;;
 fp_strs_add:
 	call stk_fetch;						// get parameters of
 	push de;							// second string
@@ -571,7 +820,9 @@ other_str:
 	jr z, stk_pntrs;					// jump if so
 	ldir;								// else copy to workspace
 
-;	// stack pointers subroutine
+;;
+; stack pointers
+;;
 stk_pntrs:
 	ld hl, (stkend);					// stack end to HL
 
@@ -585,7 +836,9 @@ stk_pntrs_2:
 	dec hl;								// operand
 	ret;								// end of subroutine
 
-;	// CHR$ function
+;;
+; CHR$ function
+;;
 fp_chr_str:
 	call fp_to_a;						// last value to A
 	jp c, report_overflow;				// error if greater than 255
@@ -594,8 +847,14 @@ fp_chr_str:
 	ld (de), a;							// value to workspace
 	jr fp_str_str_1;					// exit
 
-;	// VAL and VAL$ functions
+;;
+; VAL function
+;;
 fp_val:
+
+;;
+; VAL$ function
+;;
 fp_val_str:
 	rst get_char;						// get current value of ch-add
 	push hl;							// stack it
@@ -613,10 +872,10 @@ fp_val_str:
 	ldir;								// copy the string to the workspace
 	ex de, hl;							// swap pointers
 	dec hl;								// last byte of string
-	ld (hl), ctrl_enter;				// replace with carriage return
+	ld (hl), ctrl_cr;					// replace with carriage return
 	res 7, (iy + _flags);				// reset syntax flag
 	call scanning;						// check syntax
-	cp ctrl_enter;						// end of expression?
+	cp ctrl_cr;							// end of expression?
 	jr nz, v_rport_c;					// error if not
 	pop hl;								// unstack start address
 	pop af;								// unstack flag
@@ -632,7 +891,9 @@ v_rport_c:
 	ld (ch_add), hl;					// and restore ch_add
 	jr stk_pntrs;						// exit and reset pointers
 
-;	// STR$ function
+;;
+; STR$ function
+;;
 fp_str_str:
 	call bc_1_space;					// make one space
 	ld (k_cur), hl;						// set cursor address
@@ -656,7 +917,9 @@ fp_str_str_1:
 	ex de, hl;							// reset pointers
 	ret;								// end of subroutine
 
-;	// read in subroutine
+;;
+; read in
+;;
 fp_read_in:
 	ld hl, (curchl);					// get current channel
 	push hl;							// stack it
@@ -679,7 +942,9 @@ r_i_store:
 	call chan_flag;						// restore flags
 	jp stk_pntrs;						// exit and set pointers
 
-;	// ASC function
+;;
+; ASC function
+;;
 fp_asc:
 	call stk_fetch;						// get string parameters
 	ld a, c;							// test for
@@ -690,12 +955,16 @@ fp_asc:
 stk_asc:
 	jp stack_a;							// exit and return value
 
-;	// LEN function
+;;
+; LEN function
+;;
 fp_len:
 	call stk_fetch;						// get string parameters
 	jp stack_bc;						// exit and return length
 
-;	// decrease counter subroutine
+;;
+; decrease counter
+;;
 fp_dec_jr_nz:
 	exx;								// alternate register set
 	push hl;							// stack literal pointer
@@ -707,7 +976,9 @@ fp_dec_jr_nz:
 	exx;								// main register set
 	ret;								// end of subroutine
 
-;	// jump subroutine
+;;
+; jump
+;;
 fp_jump:
 	exx;								// alternate register set
 
@@ -721,7 +992,9 @@ jump_2:
 	exx;								// main register set
 	ret;								// end of subroutine
 
-;	// jump on true subroutine
+;;
+; jump on true
+;;
 fp_jump_true:
 	inc de;								// point to
 	inc de;								// third byte
@@ -735,7 +1008,9 @@ fp_jump_true:
 	exx;								// main register set
 	ret;								// end of subroutine
 
-;	// end calculator subroutine
+;;
+; end calculator
+;;
 fp_end_calc:
 	pop af;								// drop return address
 	exx;								// alternate register set
@@ -743,65 +1018,70 @@ fp_end_calc:
 	exx;								// main register set
 	ret;								// exit using HL'
 
-;	// modulus subroutine
+;;
+; modulus
+;;
 fp_n_mod_m:
-	fwait();							// n
-	fst(1);								// n, m					mem_1 = m
-	fdel();								// n
-	fmove();							// n, n
-	fgt(1);								// n, n, m
-	fdiv();								// n, n / m
-	fint();								// n, int (n / m)
-	fgt(1);								// n, int (n / m), m
-	fxch();								// n, m, int (n / m)
-	fst(1);								// n, m, int (n / m)	mem_1 = int (n / m)
-	fmul();								// n, m * int (n / m)
-	fsub();								// n - m * int (n / m)
-	fgt(1);								// n - m * int (n / m), int (n / m)
-	fce();								// exit calculator
+	fwait;								// n
+	fst 1;								// n, m				mem_1 = m
+	fdel;								// n
+	fmove;								// n, n
+	fgt 1;								// n, n, m
+	fdiv;								// n, n / m
+	fint;								// n, int (n / m)
+	fgt 1;								// n, int (n / m), m
+	fxch;								// n, m, int (n / m)
+	fst 0;								// store div in mem0
+	fmul;								// n, m * int (n / m)
+	fsub;								// n - m * int (n / m)
+	fce;								// exit calculator
 	ret;								// end of subroutine
 
-;	// INT function
+;;
+; INT function
+;;
 fp_int:
-	fwait();							// x
-	fmove();							// x, x
-	fcp(_lz);							// x, (1 / 0)
-	fjpt(x_neg);						// x
-	ftrn();								// i (x)
-	fce();								// exit calculator
+	fwait;								// x
+	fmove;								// x, x
+	fcp lz;								// x, (1 / 0)
+	fjpt x_neg;							// x
+	ftrn;								// i (x)
+	fce;								// exit calculator
 	ret;								// end of subroutine
 
 x_neg:
-	fmove();							// x, x
-	ftrn();								// x, i (x)
-	fst(0);								// x, i (x)			mem_0 = i (x
-	fsub();								// x - i (x)
-	fgt(0);								// x - i (x), i (x)
-	fxch();								// i (x), (1 / 0)
-	fnot();								// i (x)
-	fjpt(exit);							// i (x)
-	fstk1();							// i (x), 1
-	fsub();								// i (x) - 1
+	fmove;								// x, x
+	ftrn;								// x, i (x)
+	fst 0;								// x, i (x)			mem_0 = i (x
+	fsub;								// x - i (x)
+	fgt 0;								// x - i (x), i (x)
+	fxch;								// i (x), (1 / 0)
+	fnot;								// i (x)
+	fjpt exit;							// i (x)
+	fstk1;								// i (x), 1
+	fsub;								// i (x) - 1
 
 exit:
-	fce();								// exit calculator
+	fce;								// exit calculator
 	ret;								// end of subroutine
 
-;	// exponential function
+;;
+; exponential function
+;;
 fp_exp:
-	fwait();							// x
-	fstk();								// x, 1 / log 2
+	fwait;								// x
+	fstk;								// x, 1 / log 2
 	defb $f1;							// exponent
 	defb $38, $aa, $3b, $29;			// mantissa
-	fmul();								// x / log 2 = y
-	fmove();							// y, y
-	fint();								// y, int y = n
-	fst(3);								// y, n				mem-3 = n
-	fsub();								// y - n = w
-	fmove();							// w, w
-	fadd();								// 2 * w
-	fstk1();							// 2 * w, 1
-	fsub();								// 2 * w - 1 = z
+	fmul;								// x / log 2 = y
+	fmove;								// y, y
+	fint;								// y, int y = n
+	fst 3;								// y, n				mem-3 = n
+	fsub;								// y - n = w
+	fmove;								// w, w
+	fadd;								// 2 * w
+	fstk1;								// 2 * w, 1
+	fsub;								// 2 * w - 1 = z
 	defb $88;							// series generator
 	defb $13;							// exponent
 	defb $36;							// mantissa
@@ -819,8 +1099,8 @@ fp_exp:
 	defb $7e, $bb, $94, $58;			// mantissa
 	defb $f1;							// exponent
 	defb $3a, $7e, $f8, $cf;			// mantissa
-	fgt(3);								// 2 * w, n
-	fce();								// exit calculator
+	fgt 3;								// 2 * w, n
+	fce;								// exit calculator
 	call fp_to_a;						// abs(n) mod 256 to A
 	jr nz, n_negtv;						// jump if n negative
 	jr c, report_overflow_3;			// error if abs(n) > 255
@@ -842,77 +1122,79 @@ result_ok:
 	ret;								// exit
 
 rslt_zero:
-	fwait();							// make
-	fdel();								// last value
-	fstk0();							// zero
-	fce();								// exit calculator
+	fwait;								// make
+	fdel;								// last value
+	fstk0;								// zero
+	fce;								// exit calculator
 	ret;								// end of subroutine
 
-;	// natural logarithm function
+;;
+; natural logarithm function
+;;
 fp_log:
-	fwait();							// x
-	frstk();							// full floating point form
-	fmove();							// x, x
-	fcp(_gz);							// x, (1 / 0)
-	fjpt(valid);						// x (jump if valid)
-	fce();								// else exit calculator
+	fwait;								// x
+	frstk;								// full floating point form
+	fmove;								// x, x
+	fcp gz;								// x, (1 / 0)
+	fjpt valid;							// x (jump if valid)
+	fce;								// else exit calculator
 	rst error;							// then
 	defb illegal_function_call;			// error
 
 valid:
-	fce();								// exit calculator
+	fce;								// exit calculator
 	ld a, (hl);							// exponent to A
 	ld (hl), $80;						// x to x'
 	call stack_a;						// x', e
-	fwait();							// x', e
-	fstk();								// x', e, 128
+	fwait;								// x', e
+	fstk;								// x', e, 128
 	defb $38;							// exponent
 	defb $00;							// mantissa
-	fsub();								// x', e'
-	fxch();								// e', x'
-	fmove();							// e, x', x'
-	fstk();								// e', x', x', 0.8
+	fsub;								// x', e'
+	fxch;								// e', x'
+	fmove;								// e, x', x'
+	fstk;								// e', x', x', 0.8
 	defb $f0;							// exponent
 	defb $4c, $cc, $cc, $cd;			// mantissa
-	fsub();								// e', x', x' - 0.8
-	fcp(_gz);							// e', x', (1 / 0)
-	fjpt(gre_8);						// e', x'
-	fxch();								// x', e'
-	fstk1();							// x, e', 1
-	fsub();								// x, e' - 1
-	fxch();								// e' - 1, x
-	fce();								// exit calculator
+	fsub;								// e', x', x' - 0.8
+	fcp gz;								// e', x', (1 / 0)
+	fjpt gre_8;							// e', x'
+	fxch;								// x', e'
+	fstk1;								// x, e', 1
+	fsub;								// x, e' - 1
+	fxch;								// e' - 1, x
+	fce;								// exit calculator
 	inc (hl);							// 2 * x'
-	fwait();							// e' - 1, 2 * x'
+	fwait;								// e' - 1, 2 * x'
 
 gre_8:
-	fxch();								// 2 * x', e' - 1
-	fstk();								// x', e', log 2
+	fxch;								// 2 * x', e' - 1
+	fstk;								// x', e', log 2
 	defb $f0;							// exponent
 	defb $31, $72, $17, $f8;			// mantissa
-	fmul();								// x', e' * log 2 = y1
+	fmul;								// x', e' * log 2 = y1
 ;										// 2 * x', (e' -1 ) * log 2 = y2
-	fxch();								// y1, x'		x' large
+	fxch;								// y1, x'		x' large
 ;										// y2, 2 * x'	x' small
-	fstkhalf();							// y1, x', 0.5
+	fstkhalf;							// y1, x', 0.5
 ;										// y2, 2 * x', 0.5
-	fsub();								// y1, x' - 0.5
+	fsub;								// y1, x' - 0.5
 ;										// y2, 2 * x' - 0.5 
-	fstkhalf();							// y1, x' - 0.5, 0.5 
+	fstkhalf;							// y1, x' - 0.5, 0.5 
 ;										// y2, 2 * x' - 0.5, 0.5
-	fsub();								// y1, x' - 1
+	fsub;								// y1, x' - 1
 ;										// y2, 2 * x' - 1
-	fmove();							// y, x' - 1, x' - 1
+	fmove;								// y, x' - 1, x' - 1
 ;										// y2, 2 * x' - 1, 2 * x' - 1
-	fstk();								// y1, x' - 1, x' - 1, 2.5
+	fstk;								// y1, x' - 1, x' - 1, 2.5
 ;										// y2, 2 * x' - 1, 2 * x' - 1, 2.5
 	defb $32;							// exponent
 	defb $20;							// mantissa
-	fmul();								// y1, x' - 1, 2.5 * x' - 2.5
+	fmul;								// y1, x' - 1, 2.5 * x' - 2.5
 ;										// y2, 2 * x' - 1, 5 * x' - 2.5
-	fstkhalf();							// y1, x' - 1, 2.5 * x' - 2.5, 0.5
+	fstkhalf;							// y1, x' - 1, 2.5 * x' - 2.5, 0.5
 ;										// y2, 2 * x' - 1, 5 * x' - 2.5, 0.5
-	fsub();								// y1, x' - 1, 2.5 * x' - 3 = z
+	fsub;								// y1, x' - 1, 2.5 * x' - 3 = z
 ;										// y2, 2 * x' - 1, 5 * x' - 3 = z
 	defb $8c;							// series generator
 	defb $11;							// exponent
@@ -939,78 +1221,84 @@ gre_8:
 	defb $a7, $9c, $7e, $5e;			// mantissa
 	defb $f0;							// exponent
 	defb $6e, $23, $80, $93;			// mantissa
-	fmul();								// y1 = log (2** e'), log x'
+	fmul;								// y1 = log (2** e'), log x'
 ;										// y2 = log (2** (e' - 1)), log (2 * x')
-	fadd();								// log (2** e') * x')			= log x
+	fadd;								// log (2** e') * x')			= log x
 ;										// log (2** (e' - 1) * 2 * x')	= log x
-	fce();								// exit calculator
+	fce;								// exit calculator
 	ret;								// log x
 
-;	// reduce argument subroutine
+;;
+; reduce argument
+;;
 fp_get_argt:
-	fwait();							// x
-	fstk();								// x, 1 / (2 * pi)
+	fwait;								// x
+	fstk;								// x, 1 / (2 * pi)
 	defb $ee;							// exponent
 	defb $22, $f9, $83, $6e;			// mantissa
-	fmul();								// x / (2 * pi)
-	fmove();							// x / (2 * pi), x / (2 * pi) 
-	fstkhalf();							// x / (2 * pi), x / (2 * pi), 0.5
-	fadd();								// x / (2 * pi), x / (2 * pi) + 0.5
-	fint();								// x / (2 * pi), int (x / (2 * pi) + 0.5)
-	fsub();								// x / (2 * pi) - int (x / (2 * pi) + 0.5) = y 
-	fmove();							// y, y
-	fadd();								// 2 * y
-	fmove();							// 2 * y, 2 * y
-	fadd();								//  4 * y
-	fmove();							// 4 * y, 4 * y
-	fabs();								// 4 * y, abs (4 * y)
-	fstk1();							// 4 * y, abs (4 * y), 1
-	fsub();								// 4 * y, abs(4 * y) - 1 = z
-	fmove();							// 4 * y, z, z
-	fcp(_gz);							// 4 * y, z, (1 / 0)
-	fst(0);								// mem_0 = test result
-	fjpt(zplus);						// 4 * y, z
-	fdel();								// 4 * y
-	fce();								// 4 * y = v (case 1)
+	fmul;								// x / (2 * pi)
+	fmove;								// x / (2 * pi), x / (2 * pi) 
+	fstkhalf;							// x / (2 * pi), x / (2 * pi), 0.5
+	fadd;								// x / (2 * pi), x / (2 * pi) + 0.5
+	fint;								// x / (2 * pi), int (x / (2 * pi) + 0.5)
+	fsub;								// x / (2 * pi) - int (x / (2 * pi) + 0.5) = y 
+	fmove;								// y, y
+	fadd;								// 2 * y
+	fmove;								// 2 * y, 2 * y
+	fadd;								//  4 * y
+	fmove;								// 4 * y, 4 * y
+	fabs;								// 4 * y, abs (4 * y)
+	fstk1;								// 4 * y, abs (4 * y), 1
+	fsub;								// 4 * y, abs(4 * y) - 1 = z
+	fmove;								// 4 * y, z, z
+	fcp gz;								// 4 * y, z, (1 / 0)
+	fst 0;								// mem_0 = test result
+	fjpt zplus;							// 4 * y, z
+	fdel;								// 4 * y
+	fce;								// 4 * y = v (case 1)
 	ret;								// end of subroutine
 
 zplus:
-	fstk1();							// 4 * y, z, 1
-	fsub();								// 4 * y, z - 1
-	fxch();								// z - 1, 4 * y
-	fcp(_lz);							// z - 1, (1 / 0)
-	fjpt(yneg);							// z - 1
-	fneg();								// 1 - z
+	fstk1;								// 4 * y, z, 1
+	fsub;								// 4 * y, z - 1
+	fxch;								// z - 1, 4 * y
+	fcp lz;								// z - 1, (1 / 0)
+	fjpt yneg;							// z - 1
+	fneg;								// 1 - z
 
 yneg:
-	fce();								// exit calculator
+	fce;								// exit calculator
 	ret;								// end of subroutine
 
-;	// cosine function
+;;
+; cosine function
+;;
 fp_cos:
-	fwait();							// x
-	fget();								// v
-	fabs();								// abs v
-	fstk1();							// abs v, 1
-	fsub();								// abs v - 1
-	fgt(0);								// abs v - 1, (1/0)
-	fjpt(c_ent);						// abs v - 1 = w
-	fneg();								// 1 - abs v
-	fjp(c_ent);							// 1 - abs v = w
+	fwait;								// x
+	fget;								// v
+	fabs;								// abs v
+	fstk1;								// abs v, 1
+	fsub;								// abs v - 1
+	fgt 0;								// abs v - 1, (1/0)
+	fjpt c_ent;							// abs v - 1 = w
+	fneg;								// 1 - abs v
+	fjp c_ent;							// 1 - abs v = w
 
-;	// sine function
+;;
+; sine function
+;;
 fp_sin:
-	fwait();							// x
-	fget();								// w
+	fwait;								// x
+	fget;								// w
 
 c_ent:
-	fmove();							// w, w
-	fmove();							// w, w, w
-	fmul();								// w, w, w * w
-	fmove();							// w, 2 * w * w, 1
-	fadd();								// w, 2 * w * w
-	fstk1();							// w, 2 * w * w, 1
-	fsub();								// w, 2 * w * w - 1 = z
+	fmove;								// w, w
+	fmove;								// w, w, w
+	fmul;								// w, w, w * w
+	fmove;								// w, 2 * w * w, 1
+	fadd;								// w, 2 * w * w
+	fstk1;								// w, 2 * w * w, 1
+	fsub;								// w, 2 * w * w - 1 = z
 	defb $86;							// series-06
 	defb $14;							// exponent
 	defb $e6;							// mantissa
@@ -1024,53 +1312,57 @@ c_ent:
 	defb $92, $0d, $cd, $ed;			// mantissa
 	defb $f1;							// exponent
 	defb $23, $5d, $1b, $ea;			// mantissa
-	fmul();								// in (pi * w / 2) = sin x (or = cos x)
-	fce();								// sin x (or cos x)
+	fmul;								// in (pi * w / 2) = sin x (or = cos x)
+	fce;								// sin x (or cos x)
 	ret;								// end of subroutine
 
-;	// tangent function
+;;
+; tangent function
+;;
 fp_tan:
-	fwait();							// x
-	fmove();							// x, x
-	fsin();								// x, sin x
-	fxch();								// sin x, cos x
-	fcos();								// sin x / cos x = tan x
-	fdiv();								// test for overflow
-	fce();								// exit calculator
+	fwait;								// x
+	fmove;								// x, x
+	fsin;								// x, sin x
+	fxch;								// sin x, cos x
+	fcos;								// sin x / cos x = tan x
+	fdiv;								// test for overflow
+	fce;								// exit calculator
 	ret;								// end of subroutine
 
-;	// arctangent function
+;;
+; arctangent function
+;;
 fp_atan:
 	call fp_re_stack;					// get floating point form of x
 	ld a, (hl);							// get exponent
 	cp $81;								// y = x?
 	jr c, small;						// jump if so
-	fwait();							// x
-	fstk1();							// x, 1
-	fneg();								// x, -1
-	fxch();								// -1, x
-	fdiv();								// -1 / x
-	fmove();							// -1 / x, -1 / x
-	fcp(_lz);							// -1 / x, (1 / 0)
-	fstkhalfpi();						// -1 / x, pi / 2, (1 / 0) 
-	fxch();								// -1 / x, pi / 2
-	fjpt(cases);						// jump if y = -1 / x, w = pi / 2
-	fneg();								// -1 / 2, =pi / 2
-	fjp(cases);							// jump if y = -1 / x, w = -pi / 2
+	fwait;								// x
+	fstk1;								// x, 1
+	fneg;								// x, -1
+	fxch;								// -1, x
+	fdiv;								// -1 / x
+	fmove;								// -1 / x, -1 / x
+	fcp lz;								// -1 / x, (1 / 0)
+	fstkhalfpi;							// -1 / x, pi / 2, (1 / 0) 
+	fxch;								// -1 / x, pi / 2
+	fjpt cases;							// jump if y = -1 / x, w = pi / 2
+	fneg;								// -1 / 2, =pi / 2
+	fjp cases;							// jump if y = -1 / x, w = -pi / 2
 
 small:
-	fwait();							// y
-	fstk0();							// y, 0
+	fwait;								// y
+	fstk0;								// y, 0
 
 cases:
-	fxch();								// w, y
-	fmove();							// w, y, y
-	fmove();							// w, y, y, y
-	fmul();								// w, y, y * y
-	fmove();							// w, y, y * y, y * y
-	fadd();								// w, y, 2 * y * y
-	fstk1();							// w, y, 2 * y * y, 1
-	fsub();								// w, y, 2 * y * y - 1 = z
+	fxch;								// w, y
+	fmove;								// w, y, y
+	fmove;								// w, y, y, y
+	fmul;								// w, y, y * y
+	fmove;								// w, y, y * y, y * y
+	fadd;								// w, y, 2 * y * y
+	fstk1;								// w, y, 2 * y * y, 1
+	fsub;								// w, y, 2 * y * y - 1 = z
 	defb $8c;							// series-0c
 	defb $10;							// exponent
 	defb $b2;							// mantissa
@@ -1096,47 +1388,53 @@ cases:
 	defb $d8, $de, $63, $be;			// mantissa
 	defb $f0;							// exponent
 	defb $61, $a1, $b3, $0c;			// mantissa
-	fmul();								// w, atn x			case 1
+	fmul;								// w, atn x			case 1
 ;										// w, atn (-1/x) 	case 2 and 3
-	fadd();								// atn x
-	fce();								// exit calculator
+	fadd;								// atn x
+	fce;								// exit calculator
 	ret;								// end of subroutine
 
-;	// arcsine function
+;;
+; arcsine function
+;;
 fp_asin:
-	fwait();							// x
-	fmove();							// x, x
-	fmove();							// x, x, x
-	fmul();								// x, x * x
-	fstk1();							// x, x * x, 1
-	fsub();								// x, x * x - 1
-	fneg();								// x, 1 - x * x
-	fsqrt();							// x, sqr(1 - x * x)
-	fstk1();							// x, sqr(1 - x * x), 1
-	fadd();								// x, 1 + sqr(1 - x * x)
-	fdiv();								// x / (1 + sqr(1 - x * x)) = tan
-	fatan();							// y / 2
-	fmove();							// y / 2, y / 2
-	fadd();								// y = asn x
-	fce();								// exit calculator
+	fwait;								// x
+	fmove;								// x, x
+	fmove;								// x, x, x
+	fmul;								// x, x * x
+	fstk1;								// x, x * x, 1
+	fsub;								// x, x * x - 1
+	fneg;								// x, 1 - x * x
+	fsqrt;								// x, sqr(1 - x * x)
+	fstk1;								// x, sqr(1 - x * x), 1
+	fadd;								// x, 1 + sqr(1 - x * x)
+	fdiv;								// x / (1 + sqr(1 - x * x)) = tan
+	fatan;								// y / 2
+	fmove;								// y / 2, y / 2
+	fadd;								// y = asn x
+	fce;								// exit calculator
 	ret;								// end of subroutine
 
-;	// arccosine function
+;;
+; arccosine function
+;;
 fp_acos:
-	fwait();							// x
-	fasin();							// asn x
-	fstkhalfpi();						// asn x, pi / 2
-	fsub();								// asn x - pi / 2
-	fneg();								// pi / 2 - asn x = acs x
-	fce();								// exit calculator
+	fwait;								// x
+	fasin;								// asn x
+	fstkhalfpi;							// asn x, pi / 2
+	fsub;								// asn x - pi / 2
+	fneg;								// pi / 2 - asn x = acs x
+	fce;								// exit calculator
 	ret;								// end of subroutine
 
-;	// square root function
+;;
+; square root function
+;;
 fp_sqr:
-	fwait();							// x
-	frstk();							// full floating point form
-	fst(0);								// store in mem-0
-	fce();								// exit calculator
+	fwait;								// x
+	frstk;								// full floating point form
+	fst 0;								// store in mem-0
+	fce;								// exit calculator
 	ld a, (hl);							// value to A
 	and a;								// test against zero
 	ret z;								// return if so
@@ -1151,18 +1449,20 @@ fp_sqr:
 	ld b, 5;							// set counter
 
 fp_sqr_1:
-	fwait();							// x
-	fmove();							// x, x
-	fgt(0);								// x, x, n
-	fxch();								// x, n, x
-	fdiv();								// x, n / x
-	fadd();								// x + n / x
-	fce();								// exit calculator
+	fwait;								// x
+	fmove;								// x, x
+	fgt 0;								// x, x, n
+	fxch;								// x, n, x
+	fdiv;								// x, n / x
+	fadd;								// x + n / x
+	fce;								// exit calculator
 	dec (hl);							// halve value
 	djnz fp_sqr_1;						// loop until found
 	ret;								// end of subroutine
 
-;	// exponentiation operation
+;;
+; exponentiation operation
+;;
 fp_to_power:
 	ld a, (de);							//
 	or a;								//
@@ -1170,18 +1470,18 @@ fp_to_power:
 	call fp_to_bc_delete;				//
 	push bc;							//
 	jr z, topwrp;						//
-	fwait();							// x
+	fwait;								// x
 
 topwrn:
-	fstk1();							// x, 1
-	fxch();								// 1, x
-	fdiv();								// 1/x
-	fce();								// exit calculator
+	fstk1;								// x, 1
+	fxch;								// 1, x
+	fdiv;								// 1/x
+	fce;								// exit calculator
 
 topwrp:
 	pop hl;								//
-	ld a, h;							//
-	or l;								//
+	ld a, l;							//
+	or h;								//
 	jr z, stkone;						//
 	ld b, $10;							//
 	dec a;								//
@@ -1195,105 +1495,65 @@ topwsh:
 	add hl, hl;							//
 	jr nc, topwsh;						//
 	push hl;							//
-	fwait();							// x
-	fst(0);								// store in mem-0
+	fwait;								// x
+	fst 0;								// store in mem-0
 
 topwrl:
-	fmove();							// x, x
-	fmul();								// x, x * x
-	fce();								// exit calculator
+	fmove;								// x, x
+	fmul;								// x, x * x
+	fce;								// exit calculator
 	pop hl;								//
 	add hl, hl;							//
 	push hl;							//
 	ld a, (breg);						//
 	ld b, a;							//
 	jr nc, topwre;						//
-	fwait();							// x
-	fgt(0);								// x, x
-	fmul();								// x, x * x
-	fjp(topwro);						//
+	fwait;								// x
+	fgt 0;								// x, x
+	fmul;								// x, x * x
+	fjp topwro;							//
 
 topwre:
-	fwait();							// x
+	fwait;								// x
 
 topwro:
-	fdjnz(topwrl);						//
-	fce();								// exit calculator
+	fdjnz topwrl;						//
+	fce;								// exit calculator
 	pop hl;								//
 	ret;								//
 
 topwr1:
-	fwait();							// x
-	fxch();								// y, x
-	fmove();							// y, x, x
-	fnot();								// y, x, (1 / 0)
-	fjpt(xis0);							// y, x
-	flogn();							// y, log x
-	fmul();								// y * log x
-	fce();								// exit calculator
+	fwait;								// x
+	fxch;								// y, x
+	fmove;								// y, x, x
+	fnot;								// y, x, (1 / 0)
+	fjpt xis0;							// y, x
+	flogn;								// y, log x
+	fmul;								// y * log x
+	fce;								// exit calculator
 	jp fp_exp;							// form exp(y * log x)
 
 xis0:
-	fxch();								// 0, y
-	fcp(_gz);							// 0, (1 / 0)
-	fjpt(last);							// 0
-	fjp(topwrn);						// 1/x (reciprocal already available)
+	fxch;								// 0, y
+	fcp gz;								// 0, (1 / 0)
+	fjpt last;							// 0
+	fjp topwrn;							// 1/x (reciprocal already available)
 
 stkone:
-	fwait();							// x
+	fwait;								// x
 
 one:
-	fdel();								// -
-	fstk1();							// 1
+	fdel;								// -
+	fstk1;								// 1
 
 last:
-	fce();								// exit calculator
+	fce;								// exit calculator
 	ret;								// end of subroutine
 
-;	// HEX$ function
-;	// FIXME: test token and modify for BIN and OCT
-fp_hex_str:
-	call fp_to_bc;						// get value
-	jp c, report_overflow;				// error if
-	jp nz, report_overflow;				// out of range
-	push bc;							// stack it
-	ld bc, 4;							// make four
-	rst bc_spaces;						// spaces
-	pop hl;								// unstack value
-	push de;							// stack pointer
-	ld a, h;							// get value
-	call hexs_2;						// convert to string
-	ld a, l;							// get value
-	call hexs_2;						// convert to string
-	pop de;								// restore pointer
-	call stk_sto_str;					// put on calculator stack
-	jp stk_pntrs;						// exit and restore pointers
 
-hexs_2:
-	ld h, a;							// store value in H
-	rlca;								// move high
-	rlca;								// nibble
-	rlca;								// to low
-	rlca;								// nibble
-	call hexs_3;						// do first part
-	ld a, h;							// restore low nibble
-
-hexs_3:
-	and %00001111;						// clear high nibble
-	cp $0a;								// A to F?
-	jr c, hexs_4;						// jump if not
-	add a, 7;							// offset to ASCII 'A'
-
-hexs_4:
-	add a, '0';							// offset to ASCII zero
-	ld (de), a;							// store character
-	inc de;								// next position
-	ret;
-
-;	// new function 1
-fp_new_fn_1:
-	ret;
-
-;	// new function 2
-fp_new_fn_2:
+fp_div:
+	fwait;
+	fdiv;
+	fint;
+	fce;
 	ret;

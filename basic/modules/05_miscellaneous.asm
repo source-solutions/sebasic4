@@ -34,7 +34,8 @@
 ;	// but provide a useful check that these points have not moved
 	jp print_a_2;						// RST $10 - print character in A ($04c6 must never be called)
 	jp jp_get_char;						// RST $18 - get character 
-	jp $20;								// RST $20 - next character
+	jp $0020;							// RST $20 - next character
+	jp reentry;							// IF1 reentry point
 	jp cls_lower;						// clear lower screen
 	jp add_char;						// add character
 	jp remove_fp;						// remove floating point from line
@@ -49,21 +50,19 @@
 	jp syntax_z;						// checking syntax test 
 	jp stk_fetch;						// stack fetch
 
-	jp $ffff;							// read a character from keyboard
-	jp print_a_2;						// write a character to screen
-	jp cls;								// clear screen
-	jp $ffff;							// set colors
-	jp $ffff;							// load a file
-	jp $ffff;							// save a file
-	jp $ffff;							// read elapsed time
-	jp $ffff;							// make a sound
-	jp $ffff;							// read text position
-	jp $ffff;							// read character definition
-	jp $ffff;							// write character definition
-	jp $ffff;							// read character at a point on screen
-	jp $ffff;							// change screen geometry
-	jp $ffff;							// change palette settings
-
+	jp $ffff;							//
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							//
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
+	jp $ffff;							// 
 	jp $ffff;							//
 	jp $ffff;							// 
 	jp $ffff;							// 
@@ -89,9 +88,16 @@
 	jp $c900;							// ($0562 must never be called)
 
 ;	// permits extension of vector table if required
-	org $0590
+;	org $0590
 
-;;	// CALL command
+;;
+;
+;;
+
+;;
+; <code>CALL</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CODE" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
 c_call:
 	call find_int2;						// get address
 	ld l, c;							// address
@@ -102,9 +108,12 @@ c_call:
 	exx;								// main register set
 	ret;								// return to BASIC
 
-;	// COLOR command
 ;	// entered with PEN and PAPER on calculator stack
-color:
+;;
+; <code>COLOR</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#COLOR" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_color:
 	call fp_to_a;						// background color to A
 	cp 16;								// higher than 15?
 	jr nc, bad_color;					// jump if out of range
@@ -170,8 +179,11 @@ col_lookup:
 
 ; 	// FIXME - delete should accept:    x   x,y   ,y   x,   
 
-;	// DELETE command
-delete:
+;;
+; <code>DELETE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#DELETE" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_delete:
 	call get_line;						// get a valid line number
 	call next_one;						// find address
 	push de;							// stack it
@@ -189,8 +201,16 @@ get_line:
 	call line_addr;						// get line address
 	ret;								// end of subroutine
 
-;	// EDIT command
-edit:
+;;
+; <code>EDIT</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#EDIT" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_edit:
+	ld hl, (prog);						// prog contains pointer to program
+	ld a, (hl);							// get value at address in HL
+	cp $80;								// no program?
+	ret z;								// return if so
+
 	call get_line;						// get a valid line number
 	ld a, c;							// test
 	or b;								// for zero
@@ -231,17 +251,24 @@ edit_1:
 	pop af;								// drop address
 	jp main_2;							// immediate jump
 
-;	// ERROR command
+;;
+; <code>ERROR</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#ERROR" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
 c_error:
 	call find_int1;						// get 8-bit integer
 	ld l, a;							// error to A
 	jp error_3;							// generate error message
 
 ;	// LOCATE command <row>,<column> (counts from 1)
-locate:
-	fwait();							// enter calculator
-	fxch();								// swap values
-	fce();								// exit calculator
+;;
+; <code>LOCATE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LOCATE" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_locate:
+	fwait;								// enter calculator
+	fxch;								// swap values
+	fce;								// exit calculator
 
 	ld a, 2;							// select upper screen
 	call chan_open;						// open channel
@@ -255,7 +282,7 @@ locate:
 	cp 41;								// in range?
 	jr z, loc_err;						// error if not
 	ld a, b;							// get row
-	cp 23;								// upper screen?
+	cp 24;								// upper screen?
 	jr z, loc_err;						// jump if not
 	ld a, 42;							// left most
 	jr loc_40;							// immedaite jump
@@ -265,7 +292,7 @@ loc_80:
 	cp 81;								// in range?
 	jr z, loc_err;						// error if not
 	ld a, b;							// get row
-	cp 23;								// upper screen?
+	cp 24;								// upper screen?
 	jr z, loc_err;						// jump if not
 
 	ld a, 82;							// left most
@@ -285,8 +312,11 @@ loc_err:
 	rst error;
 	defb out_of_screen;
 
-; 	// PALETTE command
-palette:
+;;
+; <code>PALETTE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#PALETTE" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_palette:
 	call two_param;						// get parameters
 	rlca;								// BGR value
 	rlca;								// to GRB
@@ -354,17 +384,28 @@ set_pal:
 	out (c), e;							// write it
 	ret;								//
 
-;	// TRON command (trace on)
-tron:
+;	// trace on
+;;
+; <code>TRON</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#TRON" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_tron:
 	set 7, (iy + _flags2);				// switch trace on
 	ret;								// end of routine
 
-;	// TROFF command (trace off)
-troff:
+;	// trace off
+;;
+; <code>TROFF</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#TROFF" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_troff:
 	res 7, (iy + _flags2);				// switch trace off
 	ret;								// end of routine
 
-;	// ON command
+;;
+; <code>ON</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#ON" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
 c_on:
 	rst get_char;						// first character
 	cp tk_error;						// ERROR token?
@@ -412,7 +453,7 @@ onerr_stop:
 onerr_test:
 	cp ok;								// no error?
 	ret z;								// return if so
-	cp break;							// BREAK?
+	cp msg_break;						// BREAK?
 	ret z;								// return if so
 	ld hl, (onerr);						// get flag or line number
 	ld a, h;							// flag to H
@@ -430,8 +471,11 @@ onerr_test_1:
 	push hl;							// new return address
 	jp stmt_r_1;						// immediate jump
 
-;	// SCREEN command
-screen:
+;;
+; <code>SCREEN</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#SCREEN" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_screen:
 	call test_0_or_1;					// get variable
 	and a;								// test for zero
 ;	jr nz, screen_1;					// jump for 40 column
@@ -440,7 +484,7 @@ screen_0:
 	res 1, (iy + _flags2);				// signal 80 columns
 	ld a, %00110110;					// yellow on blue (with no ULAplus), hi-res mode
 	out (scld), a;						// set it
-	jp cls;								// exit via CLS 80
+	jp c_cls;							// exit via CLS 80
 
 screen_1:
 	set 1, (iy + _flags2);				// signal 40 columns
@@ -457,14 +501,34 @@ test_0_or_1:
 	rst error;							// and call
 	defb illegal_function_call;			// error handler
 
-;	// AUTO command
-auto:
+;	// pause after printing a message (prevents messages being cleared after NEW or BREAK)
+msg_pause:
+	ld bc, 0;							// set delaty to 65536 
+
+msg_loop:
+	dec bc;								// reduce count
+	ld a, c;							// test against zero
+	or b;								// prevents keypress immediately erasing BREAK message
+	ret z;								// return when done
+	jr msg_loop;						// loop until done
+
+;;
+; <code>AUTO</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#AUTO" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_auto:
 	ret
 
-;	// WHILE command
+;;
+; <code>WHILE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#WHILE" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
 c_while:
 	ret
 
-;	// WEND command
+;;
+; <code>WEND</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#WEND" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
 c_wend:
 	ret

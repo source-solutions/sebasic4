@@ -14,10 +14,14 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
+	org $0f66;
+;;
 ;	// --- EDITOR ROUTINES -----------------------------------------------------
+;;
 
-;	// line editor
-	org $0f60;
+;;
+; line editor
+;;
 editor:
 	ld hl, (err_sp);					// get current error pointer
 	push hl;							// and stack it
@@ -31,14 +35,16 @@ ed_loop:
 	call wait_key;						// get a key
 	ld hl, ed_loop;						// stack
 	push hl;							// return address
-	cp ctrl_delete;						// delete?
+	cp key_delete;						// delete?
 	jr z, ed_delete;					// jump with delete
-	cp 23;								// printable character?
+	cp ' ';								// printable character?
 	jr c, ed_keys;						// jump with control keys
 
-;	// add character subroutine
-;	// UnoDOS 3 entry point
 	org $0f81
+;;
+; add character
+; @see: UnoDOS 3 entry points
+;;
 add_char:
 	ld hl, (k_cur);						// cursor position to HL
 	ld bc, 1;							// one space required
@@ -54,9 +60,30 @@ ed_delete:
 	ld hl, (k_cur);						// get current cursor
 	call ed_right;						// move it right
 	ret z;								// return if no character
-	jr ed_backspace;					// delete it
+	jp ed_backspace;					// delete it
+
+ed_f_keys;
+	sub $11;							// reduce range (0 to 14)
+	ld e, a;							// code
+	ld d, 0;							// to DE
+	ld hl, ed_f_keys_t;					// offset to table
+	add hl, de;							// get entry
+	ld e, (hl);							// store in E
+	add hl, de;							// address of first character in string
+
+loop_f_keys:
+	ld a, (hl);							// get character
+	and a;								// test for zero
+	ret z;								// return if end of string reached
+	inc hl;								// next character
+	push hl;							// stack next character address
+	call k_end;							// insert character into keyboard buffer
+	pop hl;								// unstack next character address
+	jr loop_f_keys;						// loop until done
 
 ed_keys:
+	cp key_f1;							// function key?
+	jr nc, ed_f_keys;					// jump if so
 	ld e, a;							// code
 	ld d, 0;							// to DE
 	ld hl, ed_keys_t;					// offset to table
@@ -65,9 +92,11 @@ ed_keys:
 	add hl, de;							// address of handling routine
 	push hl;							// stack it
 	ld hl, (k_cur);						// sysvar to HL
-	ret;								// indirect hump
+	ret;								// indirect Jump
 
-;	// editing keys table
+;;
+; editing keys table
+;;
 ed_keys_t:
 	defb ed_ins - $;					// $00
 	defb ed_clr - $;					// $01
@@ -87,12 +116,18 @@ ed_keys_t:
 	defb ed_graph - $;					// $0f
 	defb ed_help - $;					// $10
 
-;	// tab editing subroutine
+;;
+; tab editing
+;;
 ed_tab:
-	ld a, 6;							// tab stop
+	ld a, ctrl_ht;						// tab stop
+
+ed_add_char:
 	jp add_char;						// immedaite jump
 
-;	// cursor left editing subroutine
+;;
+; cursor left editing
+;;
 ed_left:
 	call ed_edge;						// move cursor
 
@@ -100,15 +135,19 @@ ed_cur:
 	ld (k_cur), hl;						// set sysvar
 	ret;								// end of subroutine
 
-;	// cursor right editing subroutine
+;;
+; cursor right editing
+;;
 ed_right:
 	ld a, (hl);							// get current character
-	cp ctrl_enter;						// test for carriage return
+	cp ctrl_cr;							// test for carriage return
 	ret z;								// return if so
 	inc hl;								// advance cursor position
 	jr ed_cur;							// immediate jump
 
-;	// cursor down editing subroutine
+;;
+; cursor down editing
+;;
 ed_down:
 	call get_cols;						// column width to B
 
@@ -117,7 +156,9 @@ ed_down_1:
 	djnz ed_down_1;						// by column width
 	ret;								// end of subroutine
 
-;	// cursor up editing subroutine
+;;
+; cursor up editing
+;;
 ed_up:
 	ld hl, (e_line);					// sysvar to HL
 	ld de, (k_cur);						// sysvar to DE
@@ -134,7 +175,9 @@ ed_up_1:
 	djnz ed_up_1;						// loop until done
 	ret;								// end of subroutine
 
-;	// backspace editing subroutine
+;;
+; backspace editing
+;;
 ed_backspace:
 	call ed_edge;						// cursor left
 	ld bc, 1;							// one character
@@ -144,7 +187,9 @@ ed_backspace:
 ed_ignore:
 	call wait_key;						// ignore one key
 
-;	// enter editing subroutine
+;;
+; enter editing
+;;
 ed_enter:
 	pop hl;								// discard ed_loop
 	pop hl;								// and ed_error return addresses
@@ -157,7 +202,9 @@ ed_done:
 	ld sp, hl;							// swap pointers
 	ret;								// indirect jump
 
-;	// symbol editing subroutine
+;;
+; symbol editing
+;;
 ed_symbol:
 	bit 7, (iy + _flagx);				// input line?
 	jr z, ed_enter;						// jump if not
@@ -165,7 +212,9 @@ ed_symbol:
 ed_graph:
 	jp add_char;						// immediate jump
 
-;	// home editing subroutine
+;;
+; home editing
+;;
 ed_home:
 	ld hl, (e_ppc);						// line number to HL
 	bit 5, (iy + _flagx);				// test mode
@@ -174,13 +223,17 @@ ed_home:
 	ld (k_cur), hl;						// store it in k_kur
 	ret;								// end of subroutine
 
-;	// end editing subroutine
+;;
+; end editing
+;;
 ed_end:
 	call ed_right;						// move cursor right
 	ret z;								// return if end reached?
 	jr ed_end;							// move again
 
-;	// page up editing subroutine
+;;
+; page up editing
+;;
 ed_pg_up:
 	bit 5, (iy + _flagx);				// input mode?
 	ret nz;								// return if so
@@ -192,7 +245,9 @@ ed_pg_up:
 	call ln_store;						// store line number
 	jr ed_list;							// immediate jump
 
-;	// page down editing subroutine
+;;
+; page down editing
+;;
 ed_pg_dn:
 	bit 5, (iy + _flagx);				// input mode?
 	ret nz;								// return if so
@@ -204,19 +259,27 @@ ed_list:
 	xor a;								// LD A, 0
 	jp chan_open;						// open channel K
 
-;	// insert editing subroutine
+;;
+; insert editing
+;;
 ed_ins:
 	ret;								// FIXME - stub for INSERT key
 
-;	// help editing subrotuine
+;;
+; help editing
+;;
 ed_help:
 	ret;								// FIXME - stub for INSERT key
 
-;	// clr editing subroutine
+;;
+; clr editing
+;;
 ed_clr:
 	ld hl, (e_ppc);						// line number to HL
 
-;	// clear SP subroutine
+;;
+; clear SP
+;;
 clear_sp:
 	push hl;							// stack pointer to space
 	call set_hl;						// DE to first character, HL to last
@@ -227,7 +290,9 @@ clear_sp:
 	pop hl;								// unstack pointer
 	ret;								// end of subroutine
 
-;	// edge editing subroutine
+;;
+; edge editing
+;;
 ed_edge:
 	scf;								// set carry flag
 	call set_de;						// DE points to e_line or worksp
@@ -252,14 +317,17 @@ ed_edge_1:
 	jr c, ed_edge_1;					// use updated pointer on next loop
 	ret;								// end of subroutine
 
-;	// error editing subroutine
+;;
+; error editing
+;;
 ed_error:
 	bit 4, (iy + _flags2);				// channel K?
 	jp z, ed_done;						// jump if not
-	call bell;							// sound rasp
 	jp ed_again;						// immediate jump
 
-;	// keyboard input subroutine
+;;
+; keyboard input
+;;
 key_input:
 	bit 3, (iy + _vdu_flag);			// screen mode changed?
 	call nz, ed_copy;					// copy line if so
@@ -293,7 +361,7 @@ key_input_1:
 	jr key_flag;						// immediate jump
 
 key_mode:
-	cp ctrl_symbol;						// lower limit?
+	cp key_koru;						// lower limit?
 	ret c;								// return if so
 	sub 13;								// reduce range
 	ld hl, mode;						// address system variable
@@ -304,14 +372,16 @@ key_mode:
 
 key_flag:
 	set 3, (iy + _vdu_flag);			// signal possible mode change
-	cp a;								// clear carry and reset zero flag
+	cp a;								// clear carry and set zero flag
 	ret;								// and return
 
 key_done2:
 	scf;								// set carry flag
 	ret;								// end of subroutine
 
-;	// lower screen copying subroutine
+;;
+; lower screen copying
+;;
 ed_copy:
 	res 3, (iy + _vdu_flag);			// signal mode not changed
 	res 5, (iy + _vdu_flag);			// signal lower screen clearing not required
@@ -370,7 +440,9 @@ ed_c_end:
 	ld (iy + _x_ptr_h), 0;				// clear x_ptr
 	ret;								// end of subroutine
 
-;	// set HL subroutine
+;;
+; set HL
+;;
 set_hl:
 	ld hl, (worksp);					// HL to last location
 	dec hl;								// of editing area
@@ -393,16 +465,18 @@ get_cols:
 	ld b, 40;							// 40 columns
 	ret;								// done
 
-;	// remove floating point subroutine
-;	// UnoDOS 3 entry point
 	org $11a7
+;;
+; remove floating point
+; @see: UnoDOS 3 entry points
+;;
 remove_fp:
 	ld a, (hl);							// get character
-	cp ctrl_number;						// hidden number marker
+	cp number_mark;						// hidden number marker
 	ld bc, 6;							// six locations 
 	call z, reclaim_2;					// recliam if so
 	ld a, (hl);							// get character
 	inc hl;								// next
-	cp ctrl_enter;						// carriage return?
+	cp ctrl_cr;							// carriage return?
 	jr nz, remove_fp;					// jump if not
 	ret;								// end of subroutine

@@ -14,19 +14,19 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
-; 	// This source is compatible with Zeus
-;	// (http://www.desdes.com/products/oldfiles)
+; 	// This source is compatible with RASM
+;	// (http://www.cpcwiki.eu/forum/programming/rasm-z80-assembler-in-beta/)
 
 	include "basic.inc";				// label definitions and X80 instruction set
-	zoCheckORG = false;					// report if the ORG statements are moving the PC
-	zoWarnFlow = false;					// ignore data
-	zoSpectrumFloats = true;			// df stores a float/simple int in 5-byte form
+
+	slam equ 1;							// uncomment to build SLAM+128/divMMC version
+;	no_fs equ 1;						// uncomment both to build without filesystem support
 
 ;	// export program in separate ROM and RAM segments
 
-	output_bin "../bin/basic.rom", 0, $4000;
-	output_bin "../boot/basic.bin", $4000, $1bba;
-	output_bin "../bin/23.bin", 0, $5bba
+	save "../bin/basic.rom", 0, 16384
+	save "../boot/basic.bin", 16384, 7168
+	save "../bin/23.bin", 0, 23552
 
 ;	// modules
 
@@ -45,3 +45,10 @@
 	include "modules/13_data.asm"
 	include "modules/14_screen_40.asm"
 	include "modules/15_files.asm"
+
+;	// last byte
+org $5bb9;
+	defb $A0;							// end marker
+
+;	// this will be overwritten with system variables
+	defb "The supreme art of war is to subdue the enemy without fighting-Sun Tzu";

@@ -14,37 +14,49 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
-	uno_reg equ $fc3b
-	uno_dat equ $fd3b
+	uno_reg equ $fc3b;		// 
+	uno_dat equ $fd3b;		// 
  
-	master_conf equ 0
-	master_mapper equ 1
-	flash_spi equ 2
-	flash_cs equ 3
-	scan_code equ 4
-	key_stat equ 5
-	joy_conf equ 6
-	key_map equ 7
-	nmi_event equ 8
-	mouse_data equ 9
-	mouse_status equ 10
-	scandbl_ctrl equ 11
-	raster_line equ 12
-	raster_ctrl equ 13
-	dev_control equ 14
-	core_addr equ $fc
-	core_boot equ $fd
-	cold_boot equ $fe
-	core_id equ $ff
+	uno_conf equ 0;			// 
+	uno_mapper equ 1;		// 
+	flash_spi equ 2;		// 
+	flash_cs equ 3;			// 
+	scan_code equ 4;		// 
+	key_stat equ 5;			// 
+	joy_conf equ 6;			// 
+	key_map equ 7;			// 
+	nmi_event equ 8;		// deprecated
+	mouse_data equ 9;		// 
+	mouse_status equ 10;	// 
+	scandbl_ctrl equ 11;	// 
+	raster_line equ 12;		// 
+	raster_ctrl equ 13;		// 
+	dev_control equ 14;		// 
+	dev_ctrl2 equ 15;		// 
 
-	SPI_PORT equ $eb
-	OUT_PORT equ $e7
-	MMC_0 equ $fe ; D0 LOW = SLOT0 active
-	CMD0 equ $40
-	CMD1 equ $41
-	CMD8 equ $48
-	SET_BLOCKLEN equ $50
-	READ_SINGLE equ $51
-	CMD41 equ $69
-	CMD55 equ $77
-	CMD58 equ $7a
+	dma_ctrl equ $a0;		// start/stop DMA
+	dma_src equ $a1;		// set DMA source
+	dma_dst equ $a2;		// set DMA destination
+	dma_pre equ $a3;		// set DMA prescaler
+	dma_len equ $a4;		// set DMA length
+	dma_prob equ $a5;		// probe DMA
+	dma_stat equ $a6;		// DMA status
+
+	ad724 equ $fb;			// AD724 video encoder 
+
+	core_addr equ $fc;		// 
+	core_boot equ $fd;		// 
+	cold_boot equ $fe;		// deprecated
+	core_id equ $ff;		//
+
+	SPI_PORT equ $eb;		// 
+	OUT_PORT equ $e7;		// 
+	MMC_0 equ $fe;			// D0 LOW = SLOT0 active
+	CMD0 equ $40;			// 
+	CMD1 equ $41;			// 
+	CMD8 equ $48;			// 
+	SET_BLOCKLEN equ $50;	// 
+	READ_SINGLE equ $51;	// 
+	CMD41 equ $69;			// 
+	CMD55 equ $77;			// 
+	CMD58 equ $7a;			// 

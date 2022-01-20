@@ -298,20 +298,31 @@ inverse_6a:
 	org $09f4;
 	ret;								// immediate return
 
-;	// print out routines
+;;
+;
+;;
+
+;;
+; print out
+;;
 print_out:
 ;	bit 1, (iy + _flags2);				// test for 40 column mode
 ;	jp nz, s40_print_out;				// jump if so
 	call po_fetch;						// current print position
-	cp 14;								// characters from 16d are printable
+	cp ' ';								// space or higher?
 	jp nc, po_able;						// jump if so
-	cp 6;								// character in the range 0-5?
+	cp 7;								// character in the range 0 - 6?
+	jp c, po_able;						// jump if so
+	cp 14;								// character in the range 7 to 13?
+	jr c, po_ctrl;						// jump if so
+	cp 28;								// characters in the range 14 to 27?
 	jr c, po_able;						// jump if so
-	cp 14;								// non-printable character?
-	jr nc, po_quest;					// jump if so
+	sub 14;								// reduce range
+
+po_ctrl:
 	ld e, a;							// move character
 	ld d, 0;							// to DE
-	ld hl, ctlchrtab - 6;				// base of control table
+	ld hl, ctlchrtab - 7;				// base of control table
 	add hl, de;							// index into table
 	ld e, (hl);							// get offset
 	add hl, de;							// add offset
@@ -319,88 +330,30 @@ print_out:
 	jp po_fetch;						// indirect return
 
 ctlchrtab:
-	defb po_comma - $;					// 06, comma
-	defb po_quest - $;					// 07, BEL
-	defb po_back_1 - $;					// 08, BS
-	defb po_right - $;					// 09, right
-	defb po_down - $;					// 10, LF
-	defb po_up - $;				 		// 11, up
-	defb po_quest - $;					// 12, delete FIXME: implement CLR from ZX85 project
-	defb po_enter - $;					// 13, CR
+	defb po_bel - $;					// 07, BEL
+	defb po_able - $;					// 08, BS
+	defb po_tab - $;					// 09, HT
+	defb po_cr - $;				 		// 10, LF
+	defb po_vt - $;						// 11, VT
+	defb po_clr - $;					// 12, FF
+	defb po_cr - $;						// 13, CR
+	defb po_right - $;					// 28, FS
+	defb po_left - $;					// 29, GS
+	defb po_up - $;						// 30, RS
+	defb po_down - $;					// 31, US
 
-;	// cursor left subroutine
-po_back_1:
-	inc c;								// move column left
-	ld a, 82;							// left side
-	cp c;								// against left side?
-	jr nz, po_back_3;					// jump if so
-	dec c;								// down one line
-	ld a, 25;							// top line
-	cp b;								// is it?
-	jr nz, po_back_3;					// jump if so
-	ld c, 2;							// set column value
-	inc b;								// up one line
+;	// sound bell subroutine
+po_bel:
+	jp bell;
 
-po_back_3:
-	jr jp_cl_set;						// indirect return
-
-;	// cursor right subroutine
-po_right:
-	ld hl, p_flag;						// point to sysvar
-	ld d, (hl);							// sysvar to D
-	ld (hl), 1;							// set printing to OVER
-	call po_sv_sp;						// print a space with alt regs
-	ld (hl), d;							// restore sysvar
-	ret;								// end of subroutine
-
-;	// cursor down subroutine
-po_down:
-	ld a, c;							// 
-	push af;							// 
-	call po_enter;						// 
-	pop af;								// 
-	cp c;								// 
-	ret z;								// 
-	ld c, a;							// 
-
-cl_scrl:
-	call po_scr;						// test for scroll
-
-cl_set2:
-	jr jp_cl_set;						// indirect return
-
-;	// cursor up subroutine
-po_up:
-	inc b;								// move one line up
-	ld a, 25;							// screen has 24 lines
-	cp b;								// top of screen reached?
-	jr nz, jp_cl_set;					// set position, if not
-	dec b;								// do nothing
-	ret;								// end of subroutine
-
-;	// carriage return subroutine
-po_enter:
-	ld c, 81;							// left column
-	call po_scr;						// scroll if required
-	dec b;								// down a line
-
-jp_cl_set:
-	jp cl_set;							// indirect return
-
-;	// print a question mark subroutine
-po_quest:
-	ld a, '?';							// change character
-	jr po_able;							// print it
-
-;	// print comma subroutine
-po_comma:
+;;
+; print tab
+;;
+po_tab:
 	ld a, c;							// current column
 	dec a;								// move right
 	dec a;								// twice
 	and %00010000;						// test
-;	jr po_fill;							// indirect return
-
-po_fill:
 	call po_fetch;						// current position
 	add a, c;							// add column
 	dec a;								// number of spaces
@@ -415,14 +368,94 @@ po_space:
 	jr nz, po_space;					// until
 	ret;								// done
 
-;po_tab:
-;	call po_fetch;
+;;
+; print home
+;;
+po_vt:
+	jp cl_home;							// indirect return
 
-;	// printable character codes
+;	// print clr subroutine
+po_clr:
+	jp c_cls;
+
+;;
+; print carriage return
+;
+po_cr:
+	ld c, 81;							// left column
+	call po_scr;						// scroll if required
+	dec b;								// down a line
+
+jp_cl_set:
+	jp cl_set;							// indirect return
+
+;;
+; print cursor right
+;;
+po_right:
+	ld hl, p_flag;						// point to sysvar
+	ld d, (hl);							// sysvar to D
+	ld (hl), 1;							// set printing to OVER
+	call po_sv_sp;						// print a space with alt regs
+	ld (hl), d;							// restore sysvar
+	ret;								// end of subroutine
+
+;;
+; print cursor left
+;;
+po_left:
+	inc c;								// move column left
+	ld a, 82;							// left side
+	cp c;								// against left side?
+	jr nz, po_left_1;					// jump if so
+	dec c;								// down one line
+	ld a, 25;							// top line
+	cp b;								// is it?
+	jr nz, po_left_1;					// jump if so
+	ld c, 2;							// set column value
+	inc b;								// up one line
+
+po_left_1:
+	jr jp_cl_set;						// indirect return
+
+;;
+; print cursor up
+;;
+po_up:
+	inc b;								// move one line up
+	ld a, 25;							// screen has 24 lines
+	cp b;								// top of screen reached?
+	jr nz, jp_cl_set;					// set position, if not
+	dec b;								// do nothing
+	ret;								// end of subroutine
+
+;;
+; print cursor down
+;;
+po_down:
+	ld a, c;							// column to A
+	push af;							// stack it
+	call po_cr;							// down one row
+	pop af;								// unstack A
+	cp c;								// compare against current column
+	ret z;								// return if nothing to do
+	ld c, a;							// restore old column 
+
+cl_scrl:
+	call po_scr;						// test for scroll
+
+cl_set2:
+	jr jp_cl_set;						// indirect return
+
+;;
+; printable character codes
+;;
 po_able:
 	call po_any;						// print character and continue
 
-;	// position store subroutine
+;;
+; position store
+;;
 po_store:
 	bit 0, (iy + _vdu_flag);			// test for lower screen
 	jr nz, po_st_e;						// jump if so
@@ -436,7 +469,9 @@ po_st_e:
 	ld (echo_e), bc;					// screen
 	ret;								// end of subroutine
 
-;	// position fetch suvroutine
+;;
+; position fetch
+;;
 po_fetch:
 	ld hl, (df_cc);						// get main
 	ld bc, (s_posn);					// screen values
@@ -446,18 +481,10 @@ po_fetch:
 	ld hl, (df_ccl);					// screen values
 	ret;								// and return
 
-;	// print any character subroutine
+;;
+; print any character
+;;
 po_any:
-    bit 7, (iy + _flags);				// runtime?
-    jr nz, po_char;						// jump if so
-    bit 2, (iy + _flags2);				// in quotes?
-    jr nz, po_char;						// jump if so
-    cp tk_rnd;							// token?
-    jr c, po_char;						// jump if not
-	sub tk_rnd;							// get offset
-	call po_tokens;						// print token
-	jp po_fetch;						// indirect return
-
 po_char:
 	push bc;							// stack current position
 
@@ -509,11 +536,6 @@ write_char:
 
 po_char_2:
 	ex de, hl;							// store print address in DE
-	ld hl, flags;						// get flags
-	res 0, (hl);						// possible leading space
-	cp ' ';								// test for space
-	jr nz, po_char_3;					// jump if not
-	set 0, (hl);						// suppress if so
 
 po_char_3:
 	ld l, a;							// character code
@@ -525,7 +547,9 @@ po_char_3:
 	ex de, hl;							// base address to DE
 	pop bc;								// unstack current position
 
-;	// print all characters subroutine
+;;
+; print all characters
+;;
 pr_all:
 	ld a, c;							// get column number
 	dec a;								// move it right one position
@@ -600,12 +624,18 @@ pr_all_f:
 	ret;								// return via po_store
 
 ;	// message printing subroutine
+;;
+; print first message
+;;
 po_asciiz_0:
 	xor a;								// select first message
 	set 2, (iy + _flags2);				// signal do not print tokens (for example, scroll during LIST)
 	set 5, (iy + _vdu_flag);			// signal lower screen to be cleared
 
 ;	// message number in A, start of table in DE
+;;
+; message printing
+;;
 po_asciiz:
 	and a;								// message zero?
 	call nz, po_srch_asciiz;			// if not, locate message
@@ -640,6 +670,8 @@ po_stp_asciiz:
 ;	jr po_table;						// immediate jump
 
 ;	// token printing subroutine
+po_token:
+	sub tk_rnd;						// modify token code
 po_tokens:
 	ld de, token_table;					// address token table
 	push af;							// stack code
@@ -672,7 +704,9 @@ po_tr_sp:
 po_sv_sp:
 	ld a, ' ';							// print trailing space
 
-;	// print save subroutine
+;;
+; print save
+;;
 po_save:
 	push de;							// stack DE
 	exx;								// preserve HL and BC
@@ -681,7 +715,9 @@ po_save:
 	pop de;								// unstack DE
 	ret;								// end of subroutine
 
-;	// table search subroutine
+;;
+; table search
+;;
 po_search:
 	ex de, hl;							// base address to HL
 	push af;							// stack entry number
@@ -695,13 +731,15 @@ po_step:
 	jr nz, po_step;						// loop until entry found 
 	ex de, hl;							// DE points to initial character
 	pop af;								// unstack entry number
-	cp ' ';								// one of the first 32 entries?
+	cp 31;								// one of the first 31 entries?
 	ret c;								// return with carry set if so
 	ld a, (de);							// get initial character
 	sub 'A';							// test against letter, leading space if so
 	ret;								// end of subroutine
 
-;	// test for scroll subroutine
+;;
+; test for scroll
+;;
 po_scr:
 	ld de, cl_set;						// put sysvar
 	push de;							// on the stack
@@ -736,10 +774,14 @@ po_scr_2:
 	call chan_open;						// channel K
 	ld de, scrl_mssg;					// message address
 	call po_asciiz_0;					// print it
-	ld hl, flags;						// address sysvar
+wait_msg_loop:
+	ld hl, vdu_flag;					// address sysvar
+	set 5, (hl);						// lower screen requires clearing
+	res 3, (hl);						// no echo
 	exx;								// alternate register set
-	call wait_key;						// FIXME - get a single key code
+	call input_ad;						// get a single key code
 	exx;								// main resgister set
+	jr nc, wait_msg_loop				// loop, if no key has been pressed
 	cp ' ';								// space?
 	jr z, report_break;					// treat as BREAK and jump if so
 	call chan_open_fe;					// open channel S
@@ -754,7 +796,7 @@ po_scr_3:
 report_break:
 	call flush_kb;						// clear keyboard buffer
 	rst error;
-	defb break;
+	defb msg_break;
 
 po_scr_4:
 	cp 2;								// lower part fits?
@@ -772,7 +814,7 @@ po_scr_4a:
 	ld b, a;							// df_sz to b
 	inc a;								// increment df_sz
 	ld (hl), a;							// store it
-	ld l, low s_posn_h;					// address sysvar
+	ld l, s_posn_h;						// address sysvar
 	cp (hl);							// lower scrolling only required?
 	jr c, po_scr_4b;					// jump if so
 	inc (hl);							// increment s-posn-h
@@ -790,9 +832,12 @@ po_scr_4b:
 	pop bc;								// unstack line and column numbers
 	ret;								// end of subroutine
 
-;	// CLS command
 	org $0d67;
-cls:
+;;
+; <code>CLS</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CLS" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_cls:
 	set 0, (iy + _flags);				// suppress leading space
 
 ;	// old CLS entry point
@@ -808,7 +853,7 @@ cls_lower:
 	res 5, (hl);						// signal no lower screen clear after key
 	call cl_line;						// clear lower part of screen
 	dec b;								// reduce counter
-	ld (iy + _df_sz), 2;				// two lines
+	ld (iy + _df_sz), 1;				// two lines
 
 cl_chan:
 	ld a, 253;							// channel K
@@ -825,10 +870,12 @@ cl_chan_a:
 	ld de, key_input;					// input address
 	ccf;								// complement carry flag
 	jr c, cl_chan_a;					// loop until both addresses set
-	ld bc, $1751;						// row 23, column 81
+	ld bc, $1851;						// row 24, column 81
 	jr cl_set;							// immediate jump
 
-;	// clear whole display area subroutine
+;;
+; clear whole display area
+;;
 cl_all:
 	res 0, (iy + _flags2);				// signal screen is clear
 	call cl_chan;						// house keeping tasks
@@ -840,10 +887,14 @@ cl_all:
 	ld (hl), e;							// set
 	inc hl;								// output
 	ld (hl), d;							// address
+
+cl_home:
 	ld (iy + _scr_ct), 1;				// reset scroll count
 	ld bc, $1851;						// row 24, column 81
 
-;	// clear set subroutine
+;;
+; clear set
+;;
 cl_set:
 	ld a, b;							// row to A
 	bit 0, (iy + _vdu_flag);			// main display?
@@ -858,7 +909,9 @@ cl_set_1:
 	pop bc;								// unstack row and column
 	jp po_store;						// immediate jump
 
-;	// scrolling subroutine
+;;
+; scrolling
+;;
 cl_sc_all:
 	ld b, 23;							// entry point after scroll message
 
@@ -936,7 +989,9 @@ cl_scr_3:
 	ei;									// interrupts on
 	ld bc, (oldsp);						// restore BC
 
-;	// clear lines subroutine
+;;
+; clear lines
+;;
 cl_line:
 	push bc;
 	ld (oldsp), bc;						// temporarily store BC
@@ -1037,7 +1092,9 @@ cls_2nd:
 	ldir;								// wipe bytes
 	ret;								// end of subroutine
 
-;	// clear address subroutine
+;;
+; clear address
+;;
 cl_addr:
 	ld a, 24;							// reverse line
 	sub b;								// number

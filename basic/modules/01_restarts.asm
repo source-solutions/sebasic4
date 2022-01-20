@@ -14,25 +14,45 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
-;	// --- RESTART ROUTINES ----------------------------------------------------
-
-;	// cold restart
 	org $0000;
+;;
+;	// --- RESTART ROUTINES ----------------------------------------------------
+;;
+
+;;
+; Short description of module.
+; @author Name of contributing author.
+; @deprecated Version deprecated in and replacement module.
+; @param HL - Register contents.
+; @return Result in register, such as <code>HL</code>.
+; @see <a href="www.example.com">External reference</a>.
+; @since Version in which module was introduced.
+; @throws Error number and description handled by RST 8 routine.
+; @version Version in which the module was last udpated. 
+;;
+rst_00:
 	di;									// interrupts off
 	xor a;								// LD A, 0
 	ld bc, paging;						// HOME bank paging
 	out (c), a;							// ROM 0, RAM 0, VIDEO 0, paging enabled
 	nop;								// enter ROM 0 beofer hitting RST 8 trap
 
-;	// error restart
 	org $0008;
+;;
+; error
+;;
+rst_08:
 	ld hl, (ch_add);					// address of current character
 	ld (x_ptr), hl;						// to error pointer
 	jr error_2;							// then jump
 
-;	// print_a restart
-;	// UnoDOS 3 entry point
+
 	org $0010;
+;;
+; print a character
+; @see: UnoDOS 3 entry points
+;;
+rst_10:
 	jp print_a_2;						// immediate jump
 
 ;	// this is the point where ROM 0 hands control back to ROM 1
@@ -42,9 +62,13 @@ from_rom0:
 	xor a;								// LD A, 0
 	jp start_new;						// deal with a cold start
 
-;	// get_char restart
-;	// UnoDOS 3 entry point
+
 	org $0018;
+;;
+; collect character
+; @see: UnoDOS 3 entry points
+;;
+rst_18:
 jp_get_char:
 	ld hl, (ch_add);					// put address of current character
 	ld a, (hl);							// in A
@@ -54,9 +78,12 @@ test_char:
 	call skip_over;						// check for printable character
 	ret nc;								// return if so
 
-;	// next_char restart
-;	// UnoDOS 3 entry point
 	org $0020;
+;;
+; collect next character
+; @see: UnoDOS 3 entry points
+;;
+rst_20:
 	call ch_add_plus_1;					// increment current character address
 	jr test_char;						// then jump
 
@@ -64,8 +91,11 @@ test_char:
 ver_num:
 	defb "420";							// version number (example: 4.2.0)
 
-;	// calc restart
 	org $0028;
+;;
+; calculator
+;;
+rst_28:
 	jp calculate;						// immediate jump
 
 	org $002b;
@@ -73,18 +103,28 @@ ident:
 	defb "SE";							// SE Basic identifier (here for historical reasons, it doens't stand for anything)
 
 	org $002d;
+;;
+; make one space
+;;
 bc_1_space:
 	ld bc, 1;							// create one free location in workspace
 
-;	// bc_spaces restart
 	org $0030;
+;;
+; make spaces
+; @param BC - number of spaces
+;;
+rst_30:
 	push bc;							// store number of spaces to create
 	ld hl, (worksp);					// get address of workspace
 	push hl; 							// and store it
 	jp reserve;							// then jump
 
-;	// mask_int;	
 	org $0038;
+;;
+; maskable interrupt
+;;
+rst_38:
 	push af;							// stack AF (intercepted by divMMC hardware)
 	push hl;							// stack HL (return from divMMC ROM)
 	ld hl, frame;						// get current frame
@@ -102,6 +142,9 @@ bc_1_space:
 
 ;	// error routine
 	org $0053;
+;;
+; error-2
+;;
 error_2:
 	pop hl;								// return location holds error number
 	ld l, (hl);							// store in L
@@ -110,7 +153,7 @@ error_2:
 error_3:
 	ld (iy + _err_nr), l;				// then copy to err_nr
 	ld sp, (err_sp);					// put value of err_sp in SP
-	jp set_stk;							// then jump
+	jr error_4;							// then jump
 
 ;	// increment counter subroutine
 	org $005f;
@@ -121,8 +164,10 @@ rollover:
 	pop af;								// drop return address
 	jp user_im1;						// immedaite jump
 
-;	// non-maskable interrupt
 	org $0066;
+;;
+; non-maskable interrupt
+;;
 nmi:
 	push hl;							// stack HL 
 	push af;							// stack AF
@@ -139,7 +184,9 @@ no_nmi:
 	pop hl;								// unstack HL
 	retn;								// end of nmi
 
-;	// increment character address subroutine
+;;
+; increment ch-add
+;;
 ch_add_plus_1:
 	ld hl, (ch_add);					// get current character address
 
@@ -148,17 +195,27 @@ temp_ptr1:
 
 temp_ptr2:
 	ld (ch_add), hl;					// store it
+
+reentry:
 	ld a, (hl);							// copy character at current address to A
 	ret;								// end of ch_add_plus_1
 
-;	// skip over characters subroutine
+;	// error routine continued
+error_4:
+	ld hl, (x_ptr);						// get error pointer
+	ld (k_cur), hl;						// move cursor to error
+	jp set_stk;							// then jump
+
+;;
+; skip over
+;;
 skip_over:
 	cp ' ';								// test for space or higher
 	scf;								// set carry flag
 	ret z;								// and return if so
 	cp 16;								// test for characters 16-31
 	ret nc;								// and return if so with carry cleared
-	cp ctrl_enter;						// test for enter
+	cp ctrl_cr;							// test for carraige return
 	ret z;								// and return if so
 	cp 6;								// test for characters 0-5 (tokens)
 	ccf;								// complement carry flag
@@ -181,9 +238,35 @@ key_int:
 	push de;							// stack DE
 	push bc;							// stack BC
 	call keyboard;						// read keypress
+	call joystick;						// read joystick
+	call mouse;							// read mouse
 	pop bc;								// unstack BC
 	pop de;								// unstack DC
 	pop hl;								// unstack HL
 	pop af;								// unstack AF
 	ei;									// switch on interrupts
 	ret;								// end of maskamask_int
+
+joystick:
+	in a, (stick);						// read joystick
+	ld (jstate), a;						// store in system variable
+	ret;								// end of subroutine
+
+mouse:
+	ld hl, mstate;						// mouse state
+	ld bc, mouse_b;						// mouse button
+	in a, (c);							// read it
+	ld (hl), a;							// store it
+	inc l;								// mstate + 1
+	inc b;								// mouse x position
+	in a, (c);							// read it
+	ld (hl), a;							// store it
+	inc l;								// mstate + 2
+	ld b, $ff;							// mouse y position
+	in a, (c);							// read it
+	ld (hl), a;							// store it
+	ret;								// end of subroutine
+
+	org $00ff
+im2:
+	defw $0038;							// if IM2 is enabled with I set to 0 it will behave as IM1 (prevents a crash if enabled accidentally)

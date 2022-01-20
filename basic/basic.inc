@@ -24,7 +24,6 @@
 ;	// fbands
 ;	// fcps (6 opcodes)
 ;	// fvals
-;	// fusrs
 ;	// fread
 ;	// fasc
 ;	// fval
@@ -37,261 +36,488 @@
 ;	// fin
 ;	// fusr
 ;	// fstrs
-;	// fchrs
 ;	// fetof
-
 
 ;	// parameter definitions
 
-	_le equ 0;							// less than or equal
-	_ge equ 1;							// greater or equal
-	_ne equ 2;							// not equal
-	_gt equ 3;							// greater than
-	_lt equ 4;							// less than
-	_eq equ 5;							// equal
-	_lz equ $2d;						// less than zero
-	_gz equ $2e;						// greater than zero
+;;
+; asmdoc eats the first description
+;;
+	foo equ $f00;
+
+;;
+; X80 parameter: less than or equal
+;;
+	le equ 0;
+
+;;
+; X80 parameter: greater or equal
+;;
+	ge equ 1;
+
+;;
+; X80 parameter: not equal
+;;
+	ne equ 2;
+
+;;
+; X80 parameter: greater than
+;;
+	gt equ 3;
+
+;;
+; X80 parameter: less than
+;;
+	lt equ 4;
+
+;;
+; X80 parameter: equal
+;;
+	eq equ 5;
+
+;;
+; X80 parameter: less than zero
+;;
+	lz equ $2d;
+
+;;
+; X80 parameter: greater than zero
+;;
+	gz equ $2e;
 
 
 ;	// instruction macros
 
-fwait macro();							// stop the Z80
-	rst $28
-	mend
+;;
+; X80 op-code: CPU wait
+;;
+MACRO fwait;
+	rst $28;
+ENDM
 
-fjpt macro(dest);						// jump if true
-	defb 0, dest - $ - 1
-	mend
+;;
+; X80 op-code: jump if true
+;;
+MACRO fjpt n;
+	defb 0, {n} - $ - 1;
+ENDM
 
-fxch macro();							// exchange
-	defb 1
-	mend
+;;
+; X80 op-code: exchange
+;;
+MACRO fxch;
+	defb 1;
+ENDM
 
-fdel macro();							// delete
-	defb 2
-	mend
+;;
+; X80 op-code: delete
+;;
+MACRO fdel;
+	defb 2;
+ENDM
 
-fsub macro();							// subtract
-	defb 3
-	mend
+;;
+; X80 op-code: subtract
+;;
+MACRO fsub;
+	defb 3;
+ENDM
 
-fmul macro();							// multiply
-	defb 4
-	mend
+;;
+; X80 op-code: multiply
+;;
+MACRO fmul;
+	defb 4;
+ENDM
 
-fdiv macro();							// divide
-	defb 5
-	mend
+;;
+; X80 op-code: divide
+;;
+MACRO fdiv;
+	defb 5;
+ENDM
 
-ftop macro();							// to power
-	defb 6
-	mend
+;;
+; X80 op-code: to power
+;;
+MACRO ftop;
+	defb 6;
+ENDM
 
-fbor macro();							// binary or
-	defb 7
-	mend
+;;
+; X80 op-code: binary OR
+;;
+MACRO fbor;
+	defb 7;
+ENDM
 
-fband macro();							// binary and
-	defb 8
-	mend
+;;
+; X80 op-code: binary AND
+;;
+MACRO fband;
+	defb 8;
+ENDM
 
-fcp macro(n);							// compare (_le to _gz)
-	defb 9 + n
-	mend
+;;
+; X80 op-code: compare
+; @param eq, <code>ge</code>, <code>gt</code>, <code>gz</code>, <code>lt</code>, <code>lz</code>, <code>ne</code>
+;;
+MACRO fcp n;
+	defb 9 + {n}
+ENDM
 
-fadd macro();							// add
-	defb $0f
-	mend
+;;
+; X80 op-code: add
+;;
+MACRO fadd;
+	defb $0f;
+ENDM
 
-fbands macro();							// binary and string
-	defb $10
-	mend
+;;
+; X80 op-code: binary and string
+;;
+MACRO fbands;
+	defb $10;
+ENDM
 
-fcps macro(n);							// compare string (_le to _eq)
-	defb $11 + n
-	mend
+;;
+; X80 op-code: compare string
+; @param eq, <code>ge</code>, <code>gt</code>, <code>gz</code>, <code>lt</code>, <code>lz</code>, <code>ne</code>
+;;
+MACRO fcps n;
+	defb $11 + {n};
+ENDM
 
-fcat macro();							// concatenate string
-	defb $17
-	mend
+;;
+; X80 op-code: concatenate string
+;;
+MACRO fcat;
+	defb $17;
+ENDM
 
-fvals macro();							// value string
-	defb $18
-	mend
+;;
+; X80 op-code: value string
+;;
+MACRO fvals;
+	defb $18;
+ENDM
 
-fusrs macro();							// user string
-	defb $19
-	mend
+;;
+; X80 op-code: string by number multiplication
+;;
+MACRO fmuls;
+	defb $19;
+ENDM
 
-fread macro();							// read in
-	defb $1a
-	mend
+;;
+; X80 op-code: read in
+;;
+MACRO fread;
+	defb $1a;
+ENDM
 
-fneg macro();							// negate
-	defb $1b
-	mend
+;;
+; X80 op-code: negate
+;;
+MACRO fneg;
+	defb $1b;
+ENDM
 
-fasc macro();							// character to ASCII
-	defb $1c
-	mend
+;;
+; X80 op-code: character to ASCII
+;;
+MACRO fasc;
+	defb $1c;
+ENDM
 
-fval macro();							// value
-	defb $1d
-	mend
+;;
+; X80 op-code: value
+;;
+MACRO fval;
+	defb $1d;
+ENDM
 
-flen macro();							// length of string
-	defb $1e
-	mend
+;;
+; X80 op-code: length of string
+;;
+MACRO flen;
+	defb $1e;
+ENDM
 
-fsin macro();							// sine
-	defb $1f
-	mend
+;;
+; X80 op-code: sine
+;;
+MACRO fsin;
+	defb $1f;
+ENDM
 
-fcos macro();							// cosine
-	defb $20
-	mend
+;;
+; X80 op-code: cosine
+;;
+MACRO fcos;
+	defb $20;
+ENDM
 
-ftan macro();							// tangent
-	defb $21
-	mend
+;;
+; X80 op-code: tangent
+;;
+MACRO ftan;
+	defb $21;
+ENDM
 
-fasin macro();							// arcsine
-	defb $22
-	mend
+;;
+; X80 op-code: arcsine
+;;
+MACRO fasin;
+	defb $22;
+ENDM
 
-facos macro();							// arc-cosine
-	defb $23
-	mend
+;;
+; X80 op-code: arc-cosine
+;;
+MACRO facos;
+	defb $23;
+ENDM
 
-fatan macro();							// arctangent
-	defb $24
-	mend
+;;
+; X80 op-code: arctangent
+;;
+MACRO fatan;
+	defb $24;
+ENDM
 
-flogn macro();							// natural logarithm
-	defb $25
-	mend
+;;
+; X80 op-code: natural logarithm
+;;
+MACRO flogn;
+	defb $25;
+ENDM
 
-fexp macro();							// exponential
-	defb $26
-	mend
+;;
+; X80 op-code: exponential
+;;
+MACRO fexp;
+	defb $26;
+ENDM
 
-fint macro();							// integer (rounded down)
-	defb $27
-	mend
+;;
+; X80 op-code: integer (rounded down)
+;;
+MACRO fint;
+	defb $27;
+ENDM
 
-fsqrt macro();							// square root
-	defb $28
-	mend
+;;
+; X80 op-code: square root
+;;
+MACRO fsqrt;
+	defb $28;
+ENDM
 
-fsgn macro();							// signum
-	defb $29
-	mend
+;;
+; X80 op-code: signum
+;;
+MACRO fsgn;
+	defb $29;
+ENDM
 
-fabs macro();							// absolute value
-	defb $2a
-	mend
+;;
+; X80 op-code: absolute value
+;;
+MACRO fabs;
+	defb $2a;
+ENDM
 
-fpeek macro();							// PEEK
-	defb $2b
-	mend
+;;
+; X80 op-code: PEEK
+;;
+MACRO fpeek;
+	defb $2b;
+ENDM
 
-fin macro();							// IN
-	defb $2c
-	mend
+;;
+; X80 op-code: IN
+;;
+MACRO fin;
+	defb $2c;
+ENDM
 
-fusr macro();							// user address
-	defb $2d
-	mend
+;;
+; X80 op-code: user address
+;;
+MACRO fusr;
+	defb $2d;
+ENDM
 
-fstrs macro();							// string
-	defb $2e
-	mend
+;;
+; X80 op-code: string
+;;
+MACRO fstrs;
+	defb $2e;
+ENDM
 
-fchrs macro();							// character
-	defb $2f
-	mend
+;;
+; X80 op-code: character
+;;
+MACRO fchrs;
+	defb $2f;
+ENDM
 
-fnot macro();							// not
-	defb $30
-	mend
+;;
+; X80 op-code: NOT
+;;
+MACRO fnot;
+	defb $30;
+ENDM
 
-fmove macro();							// move
-	defb $31
-	mend
+;;
+; X80 op-code: move
+;;
+MACRO fmove;
+	defb $31;
+ENDM
 
-fmod macro();							// modulus
-	defb $32
-	mend
+;;
+; X80 op-code: modulus
+;;
+MACRO fmod;
+	defb $32;
+ENDM
 
-fjp macro(dest);						// jump
-	defb $33, dest - $ - 1
-	mend
+;;
+; X80 op-code: jump
+; @param address to jump to
+;;
+MACRO fjp n;
+	defb $33, {n} - $ - 1;
+ENDM
 
-fstk macro();							// stack data
-	defb $34
-	mend
+;;
+; X80 op-code: stack data
+;;
+MACRO fstk;
+	defb $34;
+ENDM
 
-fdjnz macro(dest)						// djnz
-	defb $35, dest - $ - 1
-	mend
+;;
+; X80 op-code: decrement and jump if not zero
+; @param address to jump to
+;;
+MACRO fdjnz n;							// djnz
+	defb $35, {n} - $ - 1;
+ENDM
 
-fce macro();							// chip enable
-	defb $38
-	mend
+;;
+; X80 op-code: CPU enable
+;;
+MACRO fce;
+	defb $38;
+ENDM
 
-fget macro();							// get
-	defb $39
-	mend
+;;
+; X80 op-code: get
+;;
+MACRO fget;
+	defb $39;
+ENDM
 
-ftrn macro();							// truncate
-	defb $3a
-	mend
+;;
+; X80 op-code: truncate
+;;
+MACRO ftrn;
+	defb $3a;
+ENDM
 
-fsgl macro();							// single operation
-	defb $3b
-	mend
+;;
+; X80 op-code: single operation
+;;
+MACRO fsgl;
+	defb $3b;
+ENDM
 
-fetof macro();							// e to floating-point
-	defb $3c
-	mend
+;;
+; X80 op-code: DPEEK
+;;
+MACRO fdpeek;
+	defb $3c;
+ENDM
 
-frstk macro();							// restack
-	defb $3d
-	mend
+;;
+; X80 op-code: restack
+;;
+MACRO frstk;
+	defb $3d;
+ENDM
 
-fstk0 macro();							// stack 0
-	defb $a0
-	mend
+;;
+; X80 op-code: exclusive or
+;;
+MACRO fxor;
+	defb $3e;
+ENDM
 
-fstk1 macro();							// stack 1
+;;
+; X80 op-code: integer quotient
+;;
+MACRO fquot;
+	defb $3f;
+ENDM
+
+;;
+; X80 op-code: stack 0
+;;
+MACRO fstk0;
+	defb $a0;
+ENDM
+
+;;
+; X80 op-code: stack 1
+;;
+MACRO fstk1;
 	defb $a1
-	mend
+ENDM
 
-fstkhalf macro();						// stack half
+;;
+; X80 op-code: stack half
+;;
+MACRO fstkhalf;
 	defb $a2
-	mend
+ENDM
 
-fstkhalfpi macro();						// stack pi/2
+;;
+; X80 op-code: stack pi / 2
+;;
+MACRO fstkhalfpi;
 	defb $a3
-	mend
+ENDM
 
-fstk10 macro();							// stack 10
+;;
+; X80 op-code: stack 10
+;;
+MACRO fstk10;
 	defb $a4
-	mend
+ENDM
 
-fst macro(n);							// store (mem 0-5)
-	defb $c0 + n
-	mend
+;;
+; X80 op-code: store (mem 0 to 5)
+;;
+MACRO fst n;
+	defb $c0 + {n};
+ENDM
 
-fgt macro(n);							// get (mem 0-5)
-	defb $e0 + n
-	mend
+;;
+; X80 op-code: get (mem 0 to 5)
+;;
+MACRO fgt n;
+	defb $e0 + {n};
+ENDM
 
 
 ;	// miscellaneous
 
 	end_marker		equ $80;
 	k_buff			equ $5b00;
+
 
 ;	// colors
 
@@ -305,46 +531,66 @@ fgt macro(n);							// get (mem 0-5)
 	white			equ 7;
 
 
-;	// control characters
+;	// control keys
 
-	ctrl_ins		equ $00;
-	ctrl_clr		equ $01;
-	ctrl_home		equ $02;
-	ctrl_end		equ $03;
-	ctrl_pg_up		equ $04;
-	ctrl_pg_dn		equ $05;
-	ctrl_caps		equ $06;
-	ctrl_comma		equ $06;
-	ctrl_tab		equ $07;
-	ctrl_left		equ $08;
-	ctrl_right		equ $09;
-	ctrl_down		equ $0a;
-	ctrl_up			equ $0b;
-	ctrl_backspace	equ $0c;
-	ctrl_enter		equ $0d;
-	ctrl_symbol		equ $0e;
-	ctrl_number		equ $0e;
-	ctrl_graphics	equ $0f;
-	ctrl_help		equ $10;
-	ctrl_delete		equ $7f;
+	key_ins			equ $00;
+	key_clr			equ $01;
+	key_home		equ $02;
+	key_end			equ $03;
+	key_pg_up		equ $04;
+	key_pg_dn		equ $05;
+	key_caps		equ $06;
+	key_tab			equ $07;
+	key_left		equ $08;
+	key_right		equ $09;
+	key_down		equ $0a;
+	key_up			equ $0b;
+	key_backspace	equ $0c;
+	key_return		equ $0d;
+	key_koru		equ $0e;
+	key_control		equ $0f;
+	key_help		equ $10;
+	key_delete		equ $7f;
+
 
 ;	// function keys
 
-	k_f1			equ $11
-	k_f2			equ $12
-	k_f3			equ $13
-	k_f4			equ $14
-	k_f5			equ $15
-	k_f6			equ $16
-	k_f7			equ $17
-	k_f8			equ $18
-	k_f9			equ $19
-	k_f10			equ $1a
-	k_f11			equ $1b
-	k_f12			equ $1c
-	k_f13			equ $1d
-	k_f14			equ $1e
-	k_f15			equ $1f
+	key_f1			equ $11
+	key_f2			equ $12
+	key_f3			equ $13
+	key_f4			equ $14
+	key_f5			equ $15
+	key_f6			equ $16
+	key_f7			equ $17
+	key_f8			equ $18
+	key_f9			equ $19
+	key_f10			equ $1a
+	key_f11			equ $1b
+	key_f12			equ $1c
+	key_f13			equ $1d
+	key_f14			equ $1e
+	key_f15			equ $1f
+
+
+;	// control characters
+
+	ctrl_bel		equ $07;
+	ctrl_bs			equ $08;
+	ctrl_ht			equ $09;
+	ctrl_lf			equ $0a;
+	ctrl_vt			equ $0b;
+	ctrl_ff			equ $0c;
+	ctrl_cr			equ $0d;
+	ctrl_fs			equ $1c;
+	ctrl_gs			equ $1d;
+	ctrl_rs			equ $1e;
+	ctrl_us			equ $1f;
+
+
+;	// hidden number marker
+
+	number_mark		equ $0e;
+
 
 ;	// printable characters
 
@@ -353,17 +599,20 @@ fgt macro(n);							// get (mem 0-5)
 
 
 ;	// operators
-	op_and			equ '&';
-	op_bin			equ '%';
-	op_comp			equ '~';
-	op_hex			equ '$';
-	op_mod			equ tk_mod;
-	op_oct			equ '@';
-	op_or			equ '|';
-	op_xor			equ tk_xor;
 
+	op_bin			equ '%';
+	op_hex			equ '$';
+	op_oct			equ '@';
+
+;	// substitutes
+
+	sb_and			equ '&'
+	sb_not			equ '~'
+	sb_or			equ '|'
+	sb_print		equ '?'
 
 ;	// tokens
+
 	tk_rnd			equ $80;
 	tk_inkey_str	equ $81;
 	tk_pi			equ $82;
@@ -415,7 +664,7 @@ fgt macro(n);							// get (mem 0-5)
 	tk_while		equ $b0;
 	tk_wend			equ $b1;
 	tk_sound		equ $b2;
-	tk_files		equ $b3;
+	tkey_files		equ $b3;
 	tk_kill			equ $b4;
 	tk_load			equ $b5;
 	tk_mkdir		equ $b6;
@@ -459,18 +708,18 @@ fgt macro(n);							// get (mem 0-5)
 	tk_troff		equ $dc;
 	tk_on			equ $dd;
 	tk_renum		equ $de;
-	tk_auto			equ $df;
+	tk_old			equ $df;
 	tk_screen		equ $e0;
 	tk_xor			equ $e1;
 	tk__e2			equ $e2;
 	tk__e3			equ $e3;
 	tk__e4			equ $e4;
-	tk__e5			equ $e5;
-	tk__e6			equ $e6;
-	tk__e7			equ $e7;
-	tk__e8			equ $e8;
-	tk__e9			equ $e9;
-	tk__ea			equ $ea;
+	tk_left_str		equ $e5;
+	tk_right_str	equ $e6;
+	tk_mid_str		equ $e7;
+	tk_string_str	equ $e8;
+	tk_fix			equ $e9;
+	tk_dpeek		equ $ea;
 	tk__eb			equ $eb;
 	tk__ec			equ $ec;
 	tk__ed			equ $ed;
@@ -495,16 +744,19 @@ fgt macro(n);							// get (mem 0-5)
 
 ;	// i/o ports
 
-	mmu				equ	$f4
-	ula				equ	$fe
-	scld			equ	$ff
-	ay_reg			equ	$c0f5
-	ay_tmxdat		equ	$00f6
-	paging			equ	$7ffd
-	ay_128dat		equ	$bffd
+	stick			equ   $1f
+	mmu				equ	  $f4
+	ay_tmxdat		equ	  $f6
+	ula				equ	  $fe
+	scld			equ	  $ff
 	ulaplus_reg		equ	$bf3b
 	ulaplus_dat		equ	$ff3b
-
+	mouse_b			equ $fadf
+	mouse_x			equ $fbdf
+	mouse_y			equ $ffdf
+	ay_reg			equ	$c0f5
+	paging			equ	$7ffd
+	ay_128dat		equ	$bffd
 
 ;	// restarts
 
@@ -538,7 +790,7 @@ fgt macro(n);							// get (mem 0-5)
 ;	// errors
 
 	ok						equ $ff;
-	break					equ $00;
+	msg_break				equ $00;
 	next_without_for		equ $01;
 	syntax_error			equ $02;
 	return_without_gosub	equ $03;
@@ -587,6 +839,8 @@ fgt macro(n);							// get (mem 0-5)
 	f_addr		equ f_size + 4;		// (iy - $72)
 	handle_1	equ f_addr + 2;		// (iy - $70)
 
+	mstate		equ jstate - 4;		// (iy - $40)	mouse state
+	jstate		equ k_head - 1;		// (iy - $3d)	joystick state
 	k_head		equ k_tail - 1;		// (iy - $3c)	pointer to head of keyboard buffer
 	k_tail		equ kstate - 1;		// (iy - $3b)	pointer to tail of keyboard buffer
 	kstate		equ $5c00;			// (iy - $3a)	key state 0 to 3

@@ -14,9 +14,13 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
+;;
 ;	// --- PSG AND LOUDSPEAKER ROUTINES ----------------------------------------
+;;
 
-;	// 1-bit speaker subroutine
+;;
+; 1-bit speaker
+;;
 beeper:
 	di;									// interrupts off
 	ld a, l;							// store L
@@ -71,22 +75,25 @@ be_end:
 	ei;									// restore interrupts
 	ret;								// end of beeper subroutine
 
-;	// SOUND command
 ;	// SOUND <pitch integer>, <duration in seconds>
-sound:
-	fwait();							// enter calc with pitch and duration on stack
-	fxch();								// d, p
-	fmove();							// d, p, p
-	fint();								// d, p, i (i = INT p)
-	fst(0);								// i to mem_0
-	fsub();								// d, p (p = fractional part of p)
-	fstk();								// stack k
+;;
+; <code>SOUND</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#SOUND" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_sound:
+	fwait;								// enter calc with pitch and duration on stack
+	fxch;								// d, p
+	fmove;								// d, p, p
+	fint;								// d, p, i (i = INT p)
+	fst 0;								// i to mem_0
+	fsub;								// d, p (p = fractional part of p)
+	fstk;								// stack k
 	defb $ec;							// exponent (112)
 	defb $6c, $98, $1f, $f5;			// mantissa (0.0577622606)
-	fmul();								// d, pk
-	fstk1();							// d, pk, 1
-	fadd();								// d, pk + 1
-	fce();								// exit calc
+	fmul;								// d, pk
+	fstk1;								// d, pk, 1
+	fadd;								// d, pk + 1
+	fce;								// exit calc
 	ld hl, membot;						// mem_0 1st
 	ld a, (hl);							// get exponent
 	and a;								// error if not in 
@@ -120,35 +127,35 @@ be_octave:
 	add a, 12;							// pass back last subtraction
 	call loc_mem;						// consider table and pass value
 	call stack_num;						// at (A) to calculator stack
-	fwait();							// d, pk + 1, C
-	fmul();								// d, C(pk + 1)
-	fce();								// exit calc
+	fwait;								// d, pk + 1, C
+	fmul;								// d, C(pk + 1)
+	fce;								// exit calc
 	pop af;								// unstack octave
 	add a, (hl);						// multiply last value by 2^A
 	ld (hl), a;							// d, f
-	fwait();							// store frequency
-	fst(0);								// in mem_0
-	fdel();								// delete
-	fmove();							// d, d
-	fce();								// exit calc
+	fwait;								// store frequency
+	fst 0;								// in mem_0
+	fdel;								// delete
+	fmove;								// d, d
+	fce;								// exit calc
 	call find_int1;						// value 'INT d' must be
 	cp 11;								// 0 to 11
 	jr nc, report_overflow_0;			// jump if not
-	fwait();							// d
-	fgt(0);								// d, f
-	fmul();								// f * d
-	fgt(0);								// f * d, f
-	fstk();								// stack 3.5 x 10^6 / 8
+	fwait;								// d
+	fgt 0;								// d, f
+	fmul;								// f * d
+	fgt 0;								// f * d, f
+	fstk;								// stack 3.5 x 10^6 / 8
 	defb $80;							// four bytes
 	defb $43;							// mantissa
 	defb $55, $9f, $80;					// exponent
-	fxch();								// f * d, 437500, f
-	fdiv();								// f * d, 437500 / f
-	fstk();								// stack it
+	fxch;								// f * d, 437500, f
+	fdiv;								// f * d, 437500 / f
+	fstk;								// stack it
 	defb $35;							// exponent
 	defb $6c;							// mantissa
-	fsub();								// subtract
-	fce();								// exit calc
+	fsub;								// subtract
+	fce;								// exit calc
 	call find_int2;						// timing loop compressed into BC
 	push bc;							// stack loop
 	call find_int2;						// f*d value compressed into BC
@@ -165,15 +172,18 @@ report_overflow_0:
 	rst error;
 	defb overflow;
 
-;	// play bell subroutine
+;;
+; play bell
+;;
 bell:
+;	ld (iy + _err_nr), 255;				// clear error
 	ld de, (rasp);						// pitch
 	ld hl, 2148;						// duration
-	call beeper;						// sound rasp
-	ld (iy + _err_nr), 255;				// clear error
-	ret;								// end of subroutine
+	jp beeper;							// sound rasp and exit
 
-;	// mute PSG subroutine
+;;
+; mute PSG
+;;
 mute_psg:
 	ld hl, $fe07;						// H = AY-0, L = Volume register (7)
 	ld de, $bfff;						// D = data port, E = register port / mute

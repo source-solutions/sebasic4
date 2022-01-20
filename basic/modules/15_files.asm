@@ -14,7 +14,9 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
+;;
 ;	// --- FILE HANDLING ROUTINES ----------------------------------------------
+;;
 
 ; 	// MS-DOS records file dates and times as packed 16-bit values.
 ;	// An MS-DOS date has the following format:
@@ -35,10 +37,16 @@
 ;	// File commands page out the BASIC ROM.
 ;	// They must be stored at $4000 or later.
 
-	include "../boot/os.inc";				// label definitions
+	include "../../boot/os.inc";		// label definitions
+	include "../../boot/uno.inc";		// label definitions
 
 	org $5000;
 
+;;
+; <code>RUN</code> command with <i>string</i> parameter
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RUN" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
+;;
 run_app:
 	call unstack_z;						// return if checking syntax
 	call get_dest;						// app name to second buffer
@@ -151,6 +159,15 @@ appname:
 resources:
 	defb "../rsc", 0;					// resource folder
 
+old_bas_path:
+	defb "/system/temporar.y/old.bas", 0;
+
+sys_folder:
+	defb "system", 0
+
+tmp_folder:
+	defb "temporar.y", 0
+
 open_w_create:
 	ld b, fa_write | fa_open_al;		// create or open for writing if file exists
 	jr open_f_common;					// immediate jump
@@ -222,8 +239,7 @@ get_path:
 	jp z, report_bad_fn_call;			// error if so
 	ex de, hl;							// start to HL
 	ld de, $5a00;						// destination - FIXME use workspace
-;	ldir;								// copy it
-	call ldir_space;
+	call ldir_space;					// copy it (converting spaces to underscores)
 	ex de, hl;							// end to HL
 	ld (hl), 0;							// set end marker
 	ret;								// done
@@ -235,27 +251,11 @@ get_dest:
 	jp z, report_bad_fn_call;			// error if so
 	ex de, hl;							// start to HL
 	ld de, $5900;						// destination - FIXME use workspace
-;	ldir;								// copy it
-	call ldir_space;
+	call ldir_space;					// copy it (converting spaces to underscores)
 	ex de, hl;							// end to HL
 	ld (hl), 0;							// set end marker
 	ret;								// done
 
-ldir_space:
-	ld a, (hl);							// get character
-	ldi;								// copy bytes
-	cp ' ';								// is it space?
-	jr nz, no_space;					// jump if not
-	ld a, '_';							// underscore
-	dec de;								// back one place
-	ld (de), a;							// replace space
-	inc de;								// forward one place
-
-no_space:
-	ld a, c;							// test count
-	or b;								// for zero
-	jr nz, ldir_space;					// loop until done
-	ret;
 
 ;	// file commands
 
@@ -264,7 +264,12 @@ no_space:
 ;	call use_zero;						// use line zero
 ;	jp run;								// run
 
-bload:
+;;
+; <code>BLOAD</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#BLOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
+;;
+c_bload:
 	call unstack_z;						// return if checking syntax
 	call find_int2;						// get address
 	ld (f_addr), bc;					// store it
@@ -282,7 +287,12 @@ bload_2:
 
 	jp f_read_in;						// load binary
 
-bsave:
+;;
+; <code>BSAVE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#BSAVE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
+;;
+c_bsave:
 	call unstack_z;						// return if checking syntax
 	call find_int2;						// get length
 	ld (f_size), bc;					// store it
@@ -298,7 +308,12 @@ bsave:
 
 	jp f_write_out;						// save binary
 
-copy:
+;;
+; <code>COPY</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#COPY" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
+;;
+c_copy:
 	call unstack_z;						// return if checking syntax
 	call get_dest;						// path to buffer (dest)
 	call get_path;						// path to buffer (source)
@@ -375,65 +390,26 @@ write_chunk:
 	jp c, report_file_not_found;		// jump if error
 	ret;								// else done
 
-; dload:
-; 	call unstack_z;						// return if checking syntax
-; 	call get_path;						// path to buffer
-; 	ld ix, $5a00;						// pointer to path
-
-; 	call f_open_read_ex;				// open file for reading
-; 	call f_get_stats;					// get program length
-
-; ;	// remove garbage
-; 	ld de, (vars);						// VARS to DE
-; 	call var_end_hl;					// varaibles end marker location to HL
-; 	call reclaim_1;						// reclaim varibales area
-
-; ;	// make space
-; 	ld bc, (f_size);					// length of data to BC
-; 	push hl;							// save PROG
-; 	push bc;							// save length
-; 	call make_room;						// make space for data
-	
-; ;	// load data
-; 	ld a, (handle);						// restore handle
-; 	pop bc;								// restore length
-; 	pop ix;								// restore PROG
-
-; 	jp f_read_in;						// load data
-
-; dsave:
-; 	call unstack_z;						// return if checking syntax
-; 	call get_path;						// path to buffer
-; 	ld ix, $5a00;						// pointer to path
-; 	call f_open_write_al;				// open file for writing
-
-; ;	// get data length
-;  	ld hl, (e_line);					// end of variables to HL
-;  	ld de, (vars);						// start of variables to DE
-;  	sbc hl, de;							// get program length
-; 	ld ixh, d;							// start of variables to
-; 	ld ixl, e;							// IX
-; 	ld c, l;							// length of variables to
-; 	ld b, h;							// BC
-
-; 	jp f_write_out;						// save data
-
-kill:
+c_old:
+ifdef no_fs
+	ret;
+endif
 	call unstack_z;						// return if checking syntax
-	call get_path;						// path to buffer
-	ld a, '*';							// use current drive
-	ld ix, $5a00;						// pointer to path
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_unlink;						// release file
-	jp c, report_file_not_found;		// jump if error
-	or a;								// clear flags
-	ret;								// done
+	ld ix, old_bas_path;				// pointer to path
+	jr c_load_old;						// immediate jump
 
-load:
+;;
+; <code>LOAD</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @deprecared To be replaced with non-tokenized version
+; @throws File not found; Path not found.
+;;
+c_load:
 	call unstack_z;						// return if checking syntax
 	call get_path;						// path to buffer
 	ld ix, $5a00;						// pointer to path
+
+c_load_old:
 	call f_open_read_ex;				// open file for reading
 	call f_get_stats;					// get program length
 
@@ -463,7 +439,12 @@ load:
 	or a;								// clear flags
 	ret;								// done	
 
-name:
+;;
+; <code>NAME</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#NAME" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
+;;
+c_name:
 	call unstack_z;						// return if checking syntax
 	call get_dest;						// path to buffer (dest)
 	call get_path;						// path to buffer (source)
@@ -477,10 +458,52 @@ name:
 	or a;								// clear flags
 	ret;								// done
 
-save:
+f_save_old:
+ifdef no_fs
+	ret;
+endif
+	call unstack_z;						// return if checking syntax
+
+	ld ix, rootpath;					// go to root
+	ld a, '*';							// use current drive
+	rst divmmc;							// issue a hookcode
+	defb f_chdir;						// change folder
+
+	ld ix, sys_folder;					// ASCIIZ system
+	ld a, '*';							// use current drive
+	rst divmmc;							// issue a hookcode
+	defb f_mkdir;						// create folder
+
+	ld ix, sys_folder;					// ASCIIZ system
+	ld a, '*';							// use current drive
+	rst divmmc;							// issue a hookcode
+	defb f_chdir;						// change folder
+
+	ld ix, tmp_folder;					// ASCIIZ temp
+	ld a, '*';							// use current drive
+	rst divmmc;							// issue a hookcode
+	defb f_mkdir;						// create folder
+
+	ld ix, rootpath;					// go to root
+	ld a, '*';							// use current drive
+	rst divmmc;							// issue a hookcode
+	defb f_chdir;						// change folder
+
+	ld ix, old_bas_path;				// pointer to path
+	jr c_save_old;						// immediate jump
+
+;;
+; <code>SAVE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#SAVE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @deprecated To be replaced with non-tokenized version.
+; @throws File not found; Path not found.
+;;
+c_save:
 	call unstack_z;						// return if checking syntax
 	call get_path;						// path to buffer
 	ld ix, $5a00;						// pointer to path
+
+c_save_old:
 	call f_open_write_al;				// open file for writing
 
 ;	// get program length
@@ -493,58 +516,15 @@ save:
 	ld b, h;							// BC
 	jp f_write_out;						// save program
 
-;	// folder commands
-
-init_path:
-	ld a, '*';							// use current drive
-	ld ix, rootpath;					// default path
-	rst divmmc;							// issue a hookcode
-	defb f_chdir;						// change folder
-	or a;								// clear flags
-	ret;								// done
-
-chdir:
-	call unstack_z;						// return if checking syntax
-	call get_path;						// path to buffer
-	ld a, '*';							// use current drive
-	ld ix, $5a00;						// pointer to path
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_chdir;						// change folder
-	jr chk_path_error;					// test for error
-
-mkdir:
-	call unstack_z;						// return if checking syntax
-	call get_path;						// path to buffer
-	ld a, '*';							// use current drive
-	ld ix, $5a00;						// pointer to path
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_mkdir;						// change folder
-	jr chk_path_error;					// test for error
-
-rmdir:
-	call unstack_z;						// return if checking syntax
-	call get_path;						// path to buffer
-	ld a, '*';							// use current drive
-	ld ix, $5a00;						// pointer to path
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_rmdir;						// change folder
-
-chk_path_error:
-	jr c, report_path_not_found;		// jump if error
-	or a;								// clear flags
-	ret;								// done
-
-report_path_not_found:
-	rst error;
-	defb path_not_found;
-
 ;	// print a folder listing to the main screen
-files:
+;;
+; <code>FILES</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#FILES" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
+;;
+c_files:
 	rst get_char;						// get character
-	cp ctrl_enter;						// test for carriage return
+	cp ctrl_cr;							// carriage return?
 	jr z, use_cwd;						// jump if so
 	cp ':';								// test for next statement
 	jr z, use_cwd;						// jump if so
@@ -560,7 +540,7 @@ use_cwd:
 	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_getcwd;						// get current working folder
-	jr c, report_path_not_found;		// jump if error
+	jp c, report_path_not_found;		// jump if error
 
 open_folder:
 ;	rst divmmc;							// issue a hookcode
@@ -598,7 +578,7 @@ pr_asciiz_any:
 	jr pr_asciiz_uc;					// loop until done
 
 pr_asciiz_uc_end:
-	ld a, ctrl_enter;					// newline
+	ld a, ctrl_cr;						// carriage return
 	rst print_a;						// print it
 
 read_folders:
@@ -728,7 +708,7 @@ pr_spaces:
 	jr read_files_2;					// do next entry
 
 last_entry:
-	ld a, ctrl_enter;					// carriage return
+	ld a, ctrl_cr;						// carriage return
 	rst print_a;						// print it
 	ld a, (handle);						// get folder handle
 	rst divmmc;							// issue a hookcode
@@ -744,6 +724,175 @@ no_:
 	rst print_a;						// print it
 	ret;								// return
 
-;	// last byte
-org $5bb9;
-	defb $A0;							// end marker
+;	// updates disk commands
+
+;	// delete a file
+;;
+; <code>KILL</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#KILL" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
+;;
+c_kill:
+	call unstack_z;						// return if checking syntax
+	call path_to_ix;					// path to buffer
+	ld a, '*';							// use current drive
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_unlink;						// release file
+	jp c, report_file_not_found;		// jump if error
+	or a;								// clear flags
+	ret;								// done
+
+;	// folder commands
+init_path:
+ifndef no_fs
+	ld a, '*';							// use current drive
+	ld ix, rootpath;					// default path
+	rst divmmc;							// issue a hookcode
+	defb f_chdir;						// change folder
+	or a;								// clear flags
+endif
+	ret;								// done
+
+;;
+; <code>CHDIR</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CHDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws Path not found.
+;;
+c_chdir:
+	call unstack_z;						// return if checking syntax
+	call path_to_ix;					// path to buffer
+	ld a, '*';							// use current drive
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_chdir;						// change folder
+	jr chk_path_error;					// test for error
+
+;;
+; <code>MKDIR</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#MKDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws Path not found.
+;;
+c_mkdir:
+	call unstack_z;						// return if checking syntax
+	call path_to_ix;					// path to buffer
+	ld a, '*';							// use current drive
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_mkdir;						// create folder
+	jr chk_path_error;					// test for error
+
+;;
+; <code>RMDIR</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RMDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws Path not found.
+;;
+c_rmdir:
+	call unstack_z;						// return if checking syntax
+	call path_to_ix;					// path to buffer
+	ld a, '*';							// use current drive
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_rmdir;						// change folder
+
+chk_path_error:
+	jr c, report_path_not_found;		// jump if error
+	or a;								// clear flags
+	ret;								// done
+
+report_path_not_found:
+	rst error;
+	defb path_not_found;
+
+;	// copy path to workspace
+path_to_ix:
+	ld hl, (ch_add);					// get current value of ch-add
+	push hl;							// stack it
+	call stk_fetch;						// get parameters
+	push de;							// stack start address
+	inc bc;								// increase length by one
+	rst bc_spaces;						// make space
+	pop hl;								// unstack start address
+	ld (ch_add), de;					// pointer to ch_add
+	push de;							// stack it
+	call ldir_space;					// copy the string to the workspace (converting spaces to underscores)
+	ex de, hl;							// swap pointers
+	dec hl;								// last byte of string
+	ld (hl), 0;							// replace with zero
+	pop ix;								// pointer to ch_add
+	pop hl;								// get last value
+	ld (ch_add), hl;					// and restore ch_add
+	ret;								// done
+
+ldir_space:
+	ld a, (hl);							// get character
+	ldi;								// copy bytes
+	cp ' ';								// is it space?
+	jr nz, no_space;					// jump if not
+	ld a, '_';							// underscore
+	dec de;								// back one place
+	ld (de), a;							// replace space
+	inc de;								// forward one place
+
+no_space:
+	ld a, c;							// test count
+	or b;								// for zero
+	jr nz, ldir_space;					// loop until done
+	ret;
+
+;	// file channels
+get_handle:
+	ld ix, (curchl);					// get current channel
+	ld a, (ix + 7);						// get file handle
+	ld bc, 1;							// one byte to transfer
+	ret;								// done
+
+file_in:
+	call get_handle;					// get the file descriptor in A
+	ld ix, membot;						// store character in membot
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_read;						// read a byte
+	dec c;								// decrement C (bytes read: should now be zero)
+	ld a, (membot);						// character to A
+	scf;								// set carry flag
+	ret z;								// return if zero flag set
+	or c;								// OR 0
+	ret;								// done
+
+file_out:
+	ld (membot), a;						// store character to write in membot
+	call get_handle;					// get the file descriptor in A
+	ld ix, membot;						// get character from membot
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_write;						// write a byte
+	jp c, report_bad_io_dev;			// jump if error
+	or a;								// clear flags
+	ret;								// done
+
+open_file:
+   	ld a, '*';							// use current drive
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_open;						// open file
+	jp c, report_bad_io_dev;			// jump if error
+	or a;								// clear flags
+	ret;								// done
+
+f_length:
+	ld ix, f_stats;						// buffer for file stats
+	rst divmmc;							// issue a hookcode
+	defb f_fstat;						// get file stats
+	ret;								// done
+
+seek_f:
+	rst divmmc;							// issue a hookcode
+	defb f_seek;						// seek to position in BCDE
+	ret;								// done
+	
+c_aload:
+	jp c_load;							// stub for ASCII BASIC loading
+	
+c_asave:
+	jp c_save;							// stub for ASCII BASIC saving

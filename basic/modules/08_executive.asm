@@ -39,9 +39,18 @@
 
 ;	// FIXME - further optimization is possible
 
-;	// NEW command
-	org $11b7;
-new:
+;	org $11b7;
+
+;;
+;
+;;
+
+;;
+; <code>NEW</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#NEW" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_new:
+	call f_save_old;					// save current program
 	di;									// interrupts off
 	xor a;								// LD A, 0
 	dec a;								// LD A, 255
@@ -52,9 +61,11 @@ new:
 	ld hl, (nmiadd);					// variables
 	exx;								// main register set
 
-;	// initialization routine
-	org $11cb;
-start_new:;
+;	org $11cb;
+;;
+; initialization
+;;
+start_new:
 	ex af, af';							// store A
 
 	ld a, %00110110;					// yellow on blue (with no ULAplus), hi-res mode
@@ -64,8 +75,9 @@ start_new:;
 	ld a, %00011000;					// ROM 1, FBUFF 1, HOME 0
 	out (c), a;							// set it
 
-	ld a, 63;							// set I
-	ld i, a;							// to 63
+	xor a;								// set I
+	ld i, a;							// to $00(ff)
+
 	ld iyh, d;							// ramtop
 	ld iyl, e;							// to IY
 	ex de, hl;							// swap pointers
@@ -94,8 +106,12 @@ start_new:;
 ram_set:
 	ld (ramtop), hl;					// HL to ramtop
 
-;	// default NMI routine
+;;
+; default NMI routine
+;;
 initial:
+	call flush_kb;						// flush the keyboard buffer
+
 	ld hl, (ramtop);					// ramtop to HL
 	ld (hl), $3e;						// set it to the GOSUB end marker
 	dec hl;
@@ -109,7 +125,7 @@ initial:
 	ld a, (chans);						// coming from
 	and a;								// start or new?
 	ld (iy - _onerr_h), 255;			// signal on error stop
-	ld a, break + 1;					// prepare error
+	ld a, msg_break + 1;				// prepare error
 	jp nz, main_g;						// jump if NMI Break
 	ld bc, 21;							// byte count
 	ld de, init_chan;					// destination
@@ -129,7 +145,7 @@ initial:
 	ld a, %01110001;					// light gray foreground, dark blue background
 	ld (bordcr), a;						// set border color
 	ld (attr_p), a;						// set permanent attribute
-	ld hl, $0119;						// set initial values (repdel = 25, repper = 1)
+	ld hl, $031e;						// set initial values (repdel = 30, repper = 3)
 	ld (repdel), hl;					// for repdel and repper
 	ld hl, initial;						// address of routine to jump to on NMI
 	ld (nmiadd), hl;					// set sysvar
@@ -139,7 +155,7 @@ initial:
 	ld de, strms;						// destination
 	ld hl, init_strm;					// source
 	ldir;								// copy initial streams table
-	ld (iy + _df_sz), 2;				// set lower display size
+	ld (iy + _df_sz), 1;				// set lower display size
 	call init_path;						// initialize path
 
 	ld de, $ffbf;						// d=data, e=reg
@@ -164,7 +180,7 @@ initial:
 	ld b, d;							// data select
 	out (c),a;							// set it
 
-	call cls;							// clear screen
+	call c_cls;							// clear screen
 	call set_min;						// set up workspace
 	ld a, 2;							// channel S
 	call chan_open;						// open it
@@ -188,13 +204,17 @@ initial:
 
 	call po_asciiz_0;					// print it
 
+	call msg_pause;						// pause in case of NEW
+
 	set 3, (iy + _flags2);				// enable CAPS LOCK
 
 	jp main_1;							// immediate jump
 
-;	// main execution loop
+;;
+; main execution loop
+;;
 main_exec:
-	ld (iy + _df_sz), 2;				// set lower screen
+	ld (iy + _df_sz), 1;				// set lower screen
 	call auto_list;						// auto list
 
 main_1:
@@ -207,6 +227,7 @@ main_2:
 	call line_scan;						// check syntax
 	bit 7, (iy + _err_nr);				// correct?
 	jr nz, main_3;						// jump if so
+	call bell;							// error sound
 	bit 4, (iy + _flags2);				// channel K?
 	jr z, main_4;						// jump if not
 	ld hl, (e_line);					// address error
@@ -220,7 +241,7 @@ main_3:
 	or b;								// line?
 	jp nz, main_add;					// jump if so
 	rst get_char;						// else get character
-	cp ctrl_enter;						// carriage return?
+	cp ctrl_cr;							// carriage return?
 	jr z, main_exec;					// jump if so
 	bit 0, (iy + _flags2);				// clear whole display?
 	call nz, cl_all;					// call if so
@@ -291,7 +312,9 @@ report_ln_bf_overflow:
 	ld a, line_buffer_overflow + 1;		// change message
 	jp main_g;							// jump back
 
-;	// main add subroutine
+;;
+; main add
+;;
 main_add:
 	ld (e_ppc), bc;						// make new line current line
 	ld hl, (ch_add);					// sysvar to HL
@@ -352,7 +375,9 @@ report_bad_io_dev:
 	rst error;
 	defb bad_io_device;
 
-;	// wait key subroutine
+;;
+; wait key
+;;
 wait_key:
 	bit 5, (iy + _vdu_flag);			// does lower screen require clearing?
 	jr nz, wait_key1;					// jump if not
@@ -365,7 +390,9 @@ wait_key1:
 	rst error;							// else
 	defb input_past_end;				// error
 
-;	// input address subroutine
+;;
+; input address
+;;
 input_ad:
 	exx;								// alternate register set
 	push hl;							// stack HL'
@@ -374,7 +401,9 @@ input_ad:
 	inc hl;								// address
 	jr call_sub;						// immediate jump
 
-;	// main printing subroutine
+;;
+; main printing
+;;
 out_code:
 	ld e, '0';							// convert number
 	add a, e;							// value to ASCII
@@ -399,76 +428,101 @@ call_sub:
 
 ;	// open stream lookup table
 op_str_lu:
+	defb 'I', open_i - 1 - $;			// input file
+	defb 'O', open_o - 1 - $;			// output file
+	defb 'A', open_a - 1 - $;			// append file
+	defb 'R', open_r - 1 - $;			// random file
 	defb 'K', open_k - 1 - $;			// keyboard
 	defb 'S', open_s - 1 - $;			// screen
 	defb 0;								// null terminator
 
-;	// opne K subroutine
-open_k:
-	ld e, 1;							// data bytes 1, 0
+;	// open F subroutine
+open_f:
+	rst next_char;						// skip comma
+	call expt_exp;						// string expression follows
+	jp path_to_ix;						// exit and get path
+
+;	// open I subroutine
+open_i:
+	call open_f;						// get parameters, copy to workspace and set IX to point to it
+	ld b, fa_read | fa_open_ex;			// open for reading if file exists
+	call open_file;						// open the file
+
+	ld de, 6;							// data bytes 6, 0
 	jr open_end;						// immediate jump
 
-;	// opne S subroutine
-open_s:
-	ld e, 6;							// data bytes 6, 0
+;	// open O subroutine
+open_o:
+	call open_f;						// get parameters, copy to workspace and set IX to point to it
+	ld b, fa_write | fa_open_al;		// create or open for writing if file exists
+	call open_file;						// open the file
+
+	ld de, 6;							// data bytes 6, 0
 	jr open_end;						// immediate jump
+
+;	// open A subroutine
+open_a:
+	call open_f;						// get parameters, copy to workspace and set IX to point to it
+	ld b, fa_write | fa_open_ex;		// open for writing if file exists
+	call open_file;						// open the file
+	call f_length;						// get information about file to f_stats
+	ld bc, (f_size);					// low word to BC
+	ld de, (f_size + 2);				// high word to DE
+	ld ixl, 0;							// seek from start of file
+	call seek_f;						// seek to end of file
+
+	ld de, 6;							// data bytes 6, 0
+	jr open_end;						// immediate jump
+
+;	// open R subroutine
+open_r:
+	call open_f;						// get parameters, copy to workspace and set IX to point to it
+	ld b, fa_read | fa_write | fa_open_al;	// create or open for reading / writing if file exists
+	call open_file;						// open the file
+
+	ld de, 6;							// data bytes 6, 0
+	jr open_end;						// immediate jump
+
+;	// open K subroutine
+open_k:
+	ld de, 1;							// data bytes 1, 0
+	jr open_end;						// immediate jump
+
+;	// open S subroutine
+open_s:
+	ld de, 6;							// data bytes 6, 0
+;	jr open_end;						// immediate jump
 
 open_end:
-	dec bc;								// reduce length
-	ld a, c;							// single
-	or b;								// character?
-	jp nz, report_undef_chan;			// error if not
-	ld d, a;							// clear D
 	pop hl;								// unstack HL
 	ret;								// end of subroutine
 
-;	// close stream lookup table
-cl_str_lu:
-	defb 'K', close_str - 1 - $;		// keyboard
-	defb 'S', close_str - 1 - $;		// screen
-	defb 0;								// null termniator
-
-close_str:
-	pop hl;								// unstack channel information pointer
-	ret;								// end of routine
-
-;	// channel code lookup table
-chn_cd_lu:
-	defb 'K', chan_k - 1 - $;			// keyboard
-	defb 'S', chan_s - 1 - $;			// screen
-	defb 0;								// null terminator
-
-;	// channel K flag subroutine
-chan_k:
-	set 4, (iy + _flags2);				// signal using channel K
-	set 0, (iy + _vdu_flag);			// signal lower screen
-	xor a;								// clear A
-	ret;								// end of subroutine
-
-;	// channel S flag subroutine
-chan_s:
-	res 0, (iy + _vdu_flag);			// signal main screen
-	xor a;								// clear A
-	ret;								// end of subroutine
-
-; 	// OPEN # command
+;;
+; <code>OPEN</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#OPEN" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_open:
 open:
 	rst get_char;						// get character
 	cp ',';								// test for comma
-	jr nz, open_nf;						// jump if no filename provided
+	jr nz, open_syn;					// end of syntax checking if not
+	call syntax_z;						// checking syntax?
+	jr nz, open_0;						// jump if not	
 	rst next_char;						// next character
 	call expt_exp;						// expect string expression
 
-open_nf:
+open_syn:
 	call check_end;						// end of syntax checking
 
-	fwait();							// enter calculator
-	fxch();								// swap stream number and channel code
-	fce();								// exit calculator
+open_0:
+	fwait;								// enter calculator
+	fxch;								// swap stream number and channel code
+	fce;								// exit calculator
 	call str_data;						// get stream data, zero flag set if stream closed
 	ld a, c;							// stream
 	or b;								// closed?
 	jr z, open_1;						// jump if so
+
 	ex de, hl;							// swap pointers
 	ld hl, (chans);						// base address of channel
 	add hl, bc;							// channel address to HL
@@ -502,26 +556,69 @@ report_undef_chan:
 	defb undefined_channel;				// error
 
 open_3:
-	push bc;							// stack length
+	dec bc;								// reduce length
+	ld a, c;							// single
+	or b;								// character?
+	jr nz, report_undef_chan;			// error if not
+
 	ld a, (de);							// get first character
 	and %11011111;						// make upper case
 	ld c, a;							// store in C
 	ld hl, op_str_lu;					// address look up table
 	call indexer;						// get offset
+
+;	// FIXME: add test for sysvar for user defined channels
 	jr nc, report_undef_chan;			// error if not found
 	ld c, (hl);							// offset
 	ld b, 0;							// to BC
 	add hl, bc;							// real address to HL
-	pop bc;								// unstack length
 	jp (hl);							// immediate jump
+
+;	// close stream lookup table
+cl_str_lu:
+	defb 'K', close_str - 1 - $;		// keyboard
+	defb 'S', close_str - 1 - $;		// screen
+	defb 'F', close_file - 1 - $;		// file
+	defb 0;								// null termniator
+
+close_file:
+
+close_str:
+	pop hl;								// unstack channel information pointer
+	ret;								// end of routine
+
+;	// channel code lookup table
+chn_cd_lu:
+	defb 'K', chan_k - 1 - $;			// keyboard
+	defb 'S', chan_s - 1 - $;			// screen
+	defb 0;								// null terminator
+
+;;
+; channel K flag
+;;
+chan_k:
+	set 4, (iy + _flags2);				// signal using channel K
+	set 0, (iy + _vdu_flag);			// signal lower screen
+	xor a;								// clear A
+	ret;								// end of subroutine
+
+;;
+; channel S flag
+;;
+chan_s:
+	res 0, (iy + _vdu_flag);			// signal main screen
+	xor a;								// clear A
+	ret;								// end of subroutine
 
 	org $15ff
 chan_open_fe:
 	ld a, 254;							// open channel $fe
 
-;	// channel open subroutine
-;	// UnoDOS 3 entry point
 	org $1601;
+;;
+; channel open
+; @see: UnoDOS 3 entry points
+;;
 chan_open:
 	add a, a;							// A * 2
 	add a, 22;							// 16 + A * 2
@@ -543,7 +640,9 @@ chan_op_1:
 	ld hl, (chans);						// chans to HL
 	add hl, de;							// channel base address to HL
 
-;	// channel flag subroutine
+;;
+; channel flag
+;;
 chan_flag:
 	res 4, (iy + _flags2);				// signal using channel K
 	ld (curchl), hl;					// base address for channel to curchl
@@ -560,7 +659,9 @@ chan_flag:
 	add hl, de;							// address of routine
 	jp (hl);							// immediate jump
 
-;	// make string subroutine
+;;
+; make string
+;;
 make_string:
 	call var_end_hl;					// point to locatino before variables end marker
 	push bc;							// stack BC
@@ -568,7 +669,9 @@ make_string:
 	pop bc;								// unstack BC
 	ret;								// end of subroutine
 
-;	// make room subroutine
+;;
+; make room
+;;
 make_room:
 	push hl;							// stack pointer
 	call test_room;						// check available memory
@@ -579,7 +682,9 @@ make_room:
 	lddr;								// make room
 	ret;								// end of subroutine
 
-;	// pointers subroutine
+;;
+; pointers
+;;
 pointers:
 	push af;							// stack AF
 	push hl;							// and HL
@@ -622,7 +727,9 @@ ptr_done:
 	ex de, hl;							// swap pointers
 	ret;								// end of subroutine
 
-;	// collect a line number subroutine
+;;
+; collect a line number
+;;
 line_zero:
 	defw 0;								// zero
 
@@ -639,7 +746,9 @@ line_no:
 	ld e, (hl);							// to HL
 	ret;								// end of subroutine
 
-;	// reserve subroutine
+;;
+; reserve
+;;
 reserve:
 	ld hl, (stkbot);					// stkbot to HL
 	dec hl;								// last location of workspace to HL
@@ -653,13 +762,15 @@ reserve:
 	inc hl;								// HL points to first displaced byte
 	ret;								// end of subroutine
 
-;	// set minimum subroutine
-;	// UnoDOS 3 entry point
 	org $16b0;
+;;
+; set minimum
+; @see: UnoDOS 3 entry points
+;;
 set_min:
 	ld hl, (e_line);					// sysvar to HL
 	ld (k_cur), hl;						// store it in k_cur
-	ld (hl), ctrl_enter;				// store a carriage return
+	ld (hl), ctrl_cr;					// store a carriage return
 	inc hl;								// next
 	ld (hl), end_marker;				// store the end marker
 	inc hl;								// next
@@ -702,7 +813,9 @@ test_trace:
 	ld (iy + _vdu_flag), d;				// restore VDU flag
 	jr set_work;						// immediate jump
 
-;	// indexer subroutine
+;;
+; indexer
+;;
 indexer_0:
 	ld c, a;							// A to
 	ld b, 0;							// BC
@@ -720,7 +833,11 @@ indexer:
 	scf;								// set carry flag
 	ret;								// end of subroutine
 
-;	// CLOSE command
+;;
+; <code>CLOSE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CLOSE" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_close:
 close:
 	call str_data;						// get stream data
 
@@ -792,7 +909,9 @@ str_data1:
 	dec hl;								// point to first data byte
 	ret;								// end of subroutine
 
-;	// auto list routine
+;;
+; auto list
+;;
 auto_list:
 	ld (iy + _vdu_flag), 16;			// signal automatic listing
 	ld (list_sp), sp;					// store stack pointer
@@ -845,16 +964,11 @@ auto_l_4:
 	res 4, (iy + _vdu_flag);			// signal automatic listing finished
 	ret;								// end of subroutine
 
-;	// LIST command
-list:
-	ld hl, (flags);						// get flags
-	push hl;							// stack flags
-	call list_1;						// do list
-	pop hl;								// unstack flags
-	ld (flags), hl;						// restore flags
-	ret;								// end of subroutine
-
-list_1:
+;;
+; <code>LIST</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LIST" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_list:
 	ld a, 2;							// use stream #2
 	ld (iy + _vdu_flag), 0;				// signal normal listing
 	call syntax_z;						// checking syntax?
@@ -871,7 +985,7 @@ list_2:
 	rst get_char;						// get character
 	cp ':';								// colon?
 	jr z, list_9;						// jump if so
-	cp ctrl_enter;						// enter?
+	cp ctrl_cr;							// carraige return?
 	jr z, list_9;						// jump if so
 	cp ',';								// comma?
 	jr z, list_3;						// jump if so
@@ -915,6 +1029,7 @@ list_8:
 	res 7, (iy + _flags);				// force edit mode
 	call out_line;						// print a BASIC line
 	rst print_a;						// print carriage return
+	set 7, (iy + _flags);				// force runtime mode
 	ld bc, (t_addr);					// emporary pointer to parameter table to BC
 	call cp_lines;						// match or line after
 	jr c, list_8;						// jump
@@ -951,8 +1066,24 @@ list_all_2:
 	pop hl;								// unstack address of next line
 	jr list_all_2;						// immediate jump
 
-;	// print a whole BASIC line subroutine
+;;
+; print a whole BASIC line
+;;
+list_cursor:
+	bit 4, (iy + _vdu_flag);			// automatic listing?
+	ret z;								// return if not
+	ld d, '>';							// set cursor
+	scf;								// set carry flag
+	ret;								// done
+
 out_line:
+	ld bc, (e_ppc);						// line number
+	call cp_lines;						// match or line after
+	ld de, $2000;							// no line cursor
+	call z, list_cursor;				// call with match
+	rl e;								// carry in E if line before current else zero
+
+out_line1:
 	ld (iy + _breg), e;					// store line marker
 	ld a, (hl);							// most significant byte of line number to A
 	cp $40;								// in range? (0 to 16383)
@@ -963,7 +1094,12 @@ out_line:
 	inc hl;								// point to
 	inc hl;								// first
 	inc hl;								// command
-	jr out_line3;						// immediate jump
+
+	res 0, (iy + _flags);				// require leading spaces
+	ld a, d;							// cursor to A
+	and a;								// test for zero
+	jr z, out_line3;					// jump if no cursor to print
+	rst print_a;						// print current line cursor
 
 out_line2:
 	set 0, (iy + _flags);				// suppress leading space
@@ -974,34 +1110,26 @@ out_line3:
 	res 2, (iy + _flags2);				// signal not in quotes
 
 out_line4:
-	ld hl, (x_ptr);						// error position to HL
-	and a;								// clear carry flag
-	sbc hl, de;							// error address reached?
-	jr nz, out_line5;					// jump if not
-	ld hl, (x_ptr);						// error position to HL
-	ld (k_cur), hl;						// move curosr to error position
-
-;	// FIXME - add test to see if error cursor will be used instead
-
-out_line5:
 	call out_curs;						// cursor reached?
 	ex de, hl;							// swap pointers
 	ld a, (hl);							// character to A
 	call number;						// test for hidden number marker
 	inc hl;								// next
-	cp ctrl_enter;						// carriage return?
-	jr z, out_line6;					// jump if so
+	cp ctrl_cr;							// carriage return?
+	jr z, out_line5;					// jump if so
 	ex de, hl;							// swap pointers
 	call out_char;						// print character
 	jr out_line4;						// loop until done
 
-out_line6:
+out_line5:
 	pop de;								// unstack DE
 	ret;								// end of subroutine
 
-;	// number subroutine
+;;
+; number
+;;
 number:
-	cp ctrl_number;						// hidden number marker?
+	cp number_mark;						// hidden number marker?
 	ret nz;								// return if not
 	inc hl;								// advance pointer six times
 	inc hl;
@@ -1012,7 +1140,9 @@ number:
 	ld a, (hl);							// code to A
 	ret;								// end of subroutine
 
-;	// print cursor subroutine
+;;
+; print the cursor
+;;
 out_curs:
 	ld hl, (k_cur);						// address cursor
 	and a;								// correct
@@ -1030,7 +1160,9 @@ out_curs:
 	exx;								// main register set
 	ret;								// end of subroutine
 
-;	// line fetch subroutine
+;;
+; line fetch
+;;
 ln_fetch:
 	ld e, (hl);							// line
 	inc hl;								// number
@@ -1050,7 +1182,9 @@ ln_store:
 	ld (hl), e;							// system variable
 	ret;								// end of subroutine
 
-;	// printing characters in a BASIC line subroutine
+;;
+; printing characters in a BASIC line
+;;
 out_sp_2:
 	ld a, e;							// space or 255
 	and a;								// test it
@@ -1079,12 +1213,31 @@ out_char:
 	pop af;								// unstack character
 
 out_ch_1:
+	cp $80;							// token?
+	jr c, out_ch_2;						// jump, if not
+	bit 2, (iy + _flags2);					// in quotes?
+	jp nz, out_ch_2;					// jump, if so
+	push de;
+	call po_token;
+	pop de;
+	ret;
+out_ch_2:
+	ld hl, flags;
+	res 0, (hl);
+	cp ' ';
+	jr nz, out_ch_3;
+	set 0, (hl);
+out_ch_3:
 	rst print_a;						// print character
 	ret;								// end of subroutine
 
-;	// line address subroutine
-;	// UnoDOS 3 entry point
+
+
 	org $196e;
+;;
+; line address
+; @see: UnoDOS 3 entry points
+;;
 line_addr:
 	push hl;							// stack line number
 	ld hl, (prog);						// prog to HL
@@ -1112,9 +1265,11 @@ cp_lines:
 	cp c;								// compare with C
 	ret;								// end of subroutine
 
-;	// find each statement subroutine
-;	// UnoDOS 3 entry point
 	org $198b;
+;;
+; find each statement
+; @see: UnoDOS 3 entry points
+;;
 each_stmt:
 	ld (ch_add), hl;					// set sysvar
 	ld c, 0;							// signal quotes off
@@ -1150,13 +1305,15 @@ each_s_5:
 	jr z, each_s_1;						// jump at statement end
 
 each_s_6:
-	cp ctrl_enter;						// carriage return?
+	cp ctrl_cr;							// carriage return?
 	jr nz, each_s_2;					// jump if not
 	dec d;								// decrease statement counter
 	scf;								// set carry flag
 	ret;								// end of subroutine
 
-;	// next one subroutine
+;;
+; next one
+;;
 next_one:
 	push hl;							// stack address
 	ld a, (hl);							// first byte to A
@@ -1194,7 +1351,9 @@ next_o_5:
 	add hl, bc;							// point to first byte of next item
 	pop de;								// unstack address of previous item
 
-;	// difference subroutine
+;;
+; difference
+;;
 differ:
 	and a;								// prepare for subtraction
 	sbc hl, de;							// get length
@@ -1204,7 +1363,9 @@ differ:
 	ex de, hl;							// swap pointers
 	ret;								// end of subroutine
 
-;	// reclaiming subroutine
+;;
+; reclaiming
+;;
 reclaim_1:
 	call differ;						// get required values in HL and BC
 
@@ -1226,9 +1387,11 @@ reclaim_2:
 	pop hl;								// unstack first location
 	ret;								// end of subroutine
 
-;	// E line number subroutine
-;	// UnoDOS 3 entry point
 	org $19fb;
+;;
+; E line number
+; @see: UnoDOS 3 entry points
+;;
 e_line_no:
 	call var_end_hl;					// varaibles end marker location to HL
 	ld (ch_add), hl;					// one character
@@ -1245,7 +1408,9 @@ e_l_1:
 	jp c, report_syntax_err;			// error if overflow
 	jp set_stk;							// else immediate jump
 
-;	// report and line number printing subroutine
+;;
+; report and line number printing
+;;
 out_num_1:
 	push de;							// stack DE
 	push hl;							// and HL

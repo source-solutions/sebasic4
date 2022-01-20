@@ -19,8 +19,14 @@
 ;	// FIXME - futher optimization is possible (see: indexer_0)
 ;	//         BIN$ and OCT$ are not yet implemented
 
-;	// scanning subroutine
-	org $24f0;
+	org $24fc;
+;;
+;
+;;
+
+;;
+; scanning
+;;
 scanning:
 	rst get_char;						// get current character
 
@@ -42,7 +48,7 @@ s_loop_1:
 s_quote_s:
 	call ch_add_plus_1;					// next character
 	inc bc;								// increase count
-	cp ctrl_enter;						// carriage return?
+	cp ctrl_cr;							// carriage return?
 	jp z, report_syntax_err;			// error if so?
 	cp '"';";							// quote?
 	jr nz, s_quote_s;					// jump if not
@@ -60,32 +66,40 @@ s_2_coord:
 s_rport_c:
 	jp nz, report_syntax_err;			// error if not
 
-;	// syntax Z subroutine
-;	// UnoDOS 3 entry point
 	org $2530;
+;;
+; syntax z
+; @see: UnoDOS 3 entry points
+;;
 syntax_z:
 	bit 7, (iy + _flags);				// checking syntax?
 	ret;								// end of subroutine
 
 ;	// scanning function table
 scan_func:
-	defb '"', s_quote - 1 - $;";		// "
-	defb '(', s_bracket - 1 - $;		// (
-	defb '.', s_decimal - 1 - $;		// ,
-	defb '+', s_u_plus - 1 - $;			// +
-	defb tk_fn, s_fn - 1 - $;			// FN
-	defb tk_rnd, s_rnd - 1 - $;			// RND
-	defb tk_pi, s_pi - 1 - $;			// PI
-	defb tk_inkey_str, s_inkey_str - 1 - $; // INKEY$
-	defb op_bin, s_decimal - 1 - $;		// %
-	defb op_oct, s_decimal - 1 - $;		// @
-	defb op_hex, s_decimal - 1 - $;		// $
-	defb tk_bin_str, s_bin_str - 1 - $; // BIN$
-	defb tk_oct_str, s_oct_str - 1 - $;	// OCT$
-	defb tk_hex_str, s_hex_str - 1 - $;	// HEX$
-	defb 0;								// null terminator
+	defb '"', s_quote - 1 - $;";				// "
+	defb '(', s_bracket - 1 - $;				// (
+	defb '.', s_decimal - 1 - $;				// ,
+	defb '+', s_u_plus - 1 - $;					// +
+	defb tk_fn, s_fn - 1 - $;					// FN
+	defb tk_rnd, s_rnd - 1 - $;					// RND
+	defb tk_pi, s_pi - 1 - $;					// PI
+	defb tk_inkey_str, s_inkey_str - 1 - $;		// INKEY$
+	defb op_bin, s_decimal - 1 - $;				// %
+	defb op_oct, s_decimal - 1 - $;				// @
+	defb op_hex, s_decimal - 1 - $;				// $
+	defb tk_left_str, s_left - 1 - $;			// LEFT$
+	defb tk_right_str, s_right - 1 - $;			// RIGHT$
+	defb tk_mid_str, s_mid - 1 - $;				// MID$
+	defb tk_string_str, s_string_str - 1 - $;	// STRING$
+	defb tk_fix, s_fix - 1 - $;				// FIX
+	defb tk_dpeek, s_dpeek - 1 - $;				// DPEEK
+	defb tk_str_str, s_str_j - 1 - $;			// STR$
+	defb 0;										// null terminator
 
-;	// scanning function routines
+;;
+; scanning function
+;;
 s_u_plus:
 	rst next_char;						// next character
 	jp s_loop_1;						// jump back
@@ -128,7 +142,7 @@ s_string:
 	res 6, (hl);						// reset bit 6
 	bit 7, (hl);						// line execution?
 	call nz, stk_sto_str;				// call if so
-	jp s_cont_2;						// immediate jump
+	jr s_cont_2r;						// immediate jump
 
 s_bracket:
 	rst next_char;						// get character
@@ -136,70 +150,11 @@ s_bracket:
 	cp ')';								// closing parenthesis?
 	jp nz, report_syntax_err;			// error if missing
 	rst next_char;						// next character
+s_cont_2r:
 	jp s_cont_2;						// immediate jump
 
 s_fn:
 	jp s_fn_sbrn;						// immediate jump
-
-;	// fast RND function
-s_rnd:
-	call syntax_z;						// checking syntax?
-	jr z, s_pi_end;						// jump if not
-	ld hl, (seed);						// get current value of seed
-	ld e, l;							// store it
-	ld d, h;							// in DE
-	xor a;								//
-	ld bc, $062c;						//
-
-rndl:
-	adc hl, hl;							//
-	adc a, a;							//
-	rl c;								//
-	jr nc, noadd;						//
-	ccf;								//
-	adc hl, de;							//
-	adc a, 0;							//
-
-noadd:
-	djnz rndl;							//
-	ld c, 75;							//
-	adc hl, bc;							//
-	adc a, b;							//
-	call s_seed;						//
-	ld a, (hl);							//
-	or a;								//
-	jr z, s_pi_end;						//
-	sub a, $10;							//
-	ld (hl), a;							//
-	jr s_pi_end;						//
-
-s_seed:
-	jr z, nomod;						//
-	ld c, a;							//
-	sbc hl, bc;							//
-	jr c, domod;						//
-
-nomod:
-	dec hl;								//
-
-domod:
-	ld (seed), hl;						//
-	ld c, l;							//
-	ld b, h;							//
-	call stack_bc;						//
-	jp fp_re_stack;						//
-
-s_pi:
-	call syntax_z;						// checking syntax?
-	jr z, s_pi_end;						// jump if so
-	fwait();							// enter calculator
-	fstkhalfpi();						// pi / 2
-	fce();								// exit calculator
-	inc (hl);							// increment exponent
-
-s_pi_end:
-	rst next_char;						// next character
-	jp s_numeric;						// immediate jump
 
 s_inkey_str:
 	ld bc, $105a;						// priority $10, code $5a (read_in)
@@ -225,29 +180,42 @@ s_ik_str_stk:
 	call stk_sto_str;					// stack string
 
 s_ink_str_en:
-	jp s_cont_2;						// immediate jump
+	jr s_cont_2r;						// immediate jump
 
-s_bin_str:
-s_oct_str:
-s_hex_str:
-	ld bc, $107c;						// priority $10, op-code $bc (#3c)
-	jp s_push_po;						// jump
+s_left:
+	call s_leftright;					// common code for LEFT$ and RIGHT$
+	jr s_cont_2r;						// immediate jump
+
+s_right:
+	call s_leftright;					// common code for LEFT$ and RIGHT$
+	dec hl;								// 
+	dec hl;								// (HL) = MSB of start address
+	ld b, (hl);							// 
+	dec hl;								// 
+	ld c, (hl);							// BC = start address
+	ex de, hl;							// 
+	add hl, bc;							// HL = new start address
+	ex de, hl;							// DE = new start address
+	ld (hl), e;							// 
+	inc hl;								// 
+	ld (hl), d;							// commit new start address
+	jr s_cont_2r;						// immediate jump
 
 s_alphnum:
 	call alphanum;						// alphanumeric character?
-	jr nc, s_negate;					// jump if not
+	jp nc, s_negate;					// jump if not
 	cp 'A';								// letter?
-	jr nc, s_letter;					// jump if so
+	jp nc, s_letter;					// jump if so
 
 s_decimal:
 	call syntax_z;						// checking syntax?
-	jr nz, s_stk_dec;					// jump if not
+	jp nz, s_stk_dec;					// jump if not
 	call dec_to_fp;						// convert to floating point
 	rst get_char;						// HL to last digit plus one
 	ld bc, 6;							// six locations
 	call make_room;						// make room
 	inc hl;								// point to first free space
-	ld (hl), ctrl_number;				// store hidden number marker
+	ld (hl), number_mark;				// store hidden number marker
 	inc hl;								// next location
 	ex de, hl;							// pointer to DE
 	ld hl, (stkend);					// get old stack end
@@ -261,13 +229,90 @@ s_decimal:
 	call temp_ptr1;						// set ch_add
 	jr s_numeric;						// immediate jump
 
+s_mid:
+	jp s_mid_cont;						// immediate jump
+
+s_string_str:
+	call s_2_coord;						// 
+	call nz, s_strng_s;					// 
+	rst next_char;						// next character
+	jp s_string;						// 
+
+s_fix:
+	ld bc, $10fa;						// priority $10, opcode $fa (#3a)
+s_push_po_r:
+	jp s_push_po;
+
+s_dpeek:
+	ld bc, $10fc;
+	jr s_push_po_r;
+
+s_pi:
+	call syntax_z;						// checking syntax?
+	jr z, s_pi_end;						// jump if so
+	fwait;								// enter calculator
+	fstkhalfpi;							// pi / 2
+	fce;								// exit calculator
+	inc (hl);							// increment exponent
+
+s_pi_end:
+	rst next_char;						// next character
+	jr s_numeric;						// immediate jump
+
+s_str_j:
+	jp s_str;
+
+;	// fast RND function
+s_rnd:
+	call syntax_z;						// checking syntax?
+	jr z, s_pi_end;						// jump if not
+	ld hl, (seed);						// get current value of seed
+	ld e, l;							// store it
+	ld d, h;							// in DE
+	xor a;								//
+	ld bc, $062c;						// B = loop counter, C = %00101100 (read bit by bit in reverse)
+
+rndl:
+	adc hl, hl;							//
+	adc a, a;							//
+	rl c;								//
+	jr nc, noadd;						//
+	add hl, de;							//
+	adc a, 0;							//
+
+noadd:
+	djnz rndl;							//
+	ld c, 75;							//
+	adc hl, bc;							//
+	adc a, b;							//
+	jr z, nomod;						//
+	ld c, a;							//
+	sbc hl, bc;							//
+	jr c, domod;						//
+
+nomod:
+	dec hl;								//
+
+domod:
+	ld (seed), hl;						//
+	ld c, l;							//
+	ld b, h;							//
+	call stack_bc;						//
+	call fp_re_stack;					//
+	ld a, (hl);							//
+	or a;								//
+	jr z, s_pi_end;						//
+	sub $10;							//
+	ld (hl), a;							//
+	jr s_pi_end;						//
+
 s_stk_dec:
 	rst get_char;						// get current character
 
 s_sd_skip:
 	inc hl;								// next character
 	ld a, (hl);							// get it
-	cp ctrl_number;						// test for hidden number marker
+	cp number_mark;						// test for hidden number marker
 	jr nz, s_sd_skip;					// loop until found
 	inc hl;								// first byte of number
 	call stack_num;						// move floating point number
@@ -277,7 +322,9 @@ s_numeric:
 	set 6, (iy + _flags);				// set number marker flag
 	jr s_cont_2;						// immediate jump
 
-;	// scanning variable routine
+;;
+; scanning variable
+;;
 s_letter:
 	call look_vars;						// check for matching entry
 	jp c, report_undef_var;				// error if not
@@ -290,7 +337,7 @@ s_letter:
 	jr s_cont_2;						// immediate jump
 
 s_negate:
-	ld bc, $09db;						// priority $09, op-code $d8
+	ld bc, $08db;						// priority $09, op-code $d8
 	cp '-';								// minus?
 	jr z, s_push_po;					// jump if unary minus
 	ld bc, $1018;						// priority $10, op-code $18
@@ -298,13 +345,13 @@ s_negate:
 	jr z, s_push_po;					// jump if so
 	sub tk_asc;							// ASC to NOT?
 	jp c, report_syntax_err;			// error if not
-	ld bc, $04f0;						// priority $04, op-code $f0
+	ld bc, $06f0;						// priority $06, op-code $f0
 	cp 20;								// NOT?
 	jr z, s_push_po;					// jump if so
 	jp nc, report_syntax_err;			// error if out of range
+	ld b, $10;							// priority $10
 	add a, 220;							// get op-code ($dc to $ef)
 	ld c, a;							// op-code to C
-	ld b, $10;							// priority $10
 	cp 223;								// ASC, VAL, or LEN?
 	jr nc, s_no_to_str;					// jump if so
 	res 6, c;							// clear bit 6 of C
@@ -331,6 +378,28 @@ s_cont_3:
 	rst next_char;						// next character
 	jr s_cont_3;						// immediate jump
 
+
+;;
+; '$' at the end of long variable names
+;;
+s_lstr:
+	ld a, c;							// test the last character
+	cp '$';								// is it a '$'?
+	jr nz, s_loop;						// jump, if not
+	call syntax_z;						// in runtime,
+	jp nz, report_undef_var;			// it's always an undefined variable
+	ld hl, flags;						// bit 6 of flags is type
+	bit 6, (hl);						// test type
+	jr z, s_loop;						// must be numeric
+	res 6, (hl);						// indicate string
+	ld a, d;							// check if it's after
+	or a;								// a numeric expression
+	jr z, s_loop;						// return, if so
+	ld hl, (stkbot);					// check if it's after
+	sbc hl, de;							// a numeric literal
+	jr c, s_loop;						// return if so
+	rst next_char;						// skip '$'
+
 ;	// uses a combined table of operators and priorities
 s_opertr:
 	ld hl, tbl_ops_priors - 3;			// table address - 3
@@ -339,12 +408,12 @@ s_opertr:
 
 indexer_3:
 	inc hl;								// advance to next entry
-	inc hl;
-	inc hl;
+	inc hl;								// 
+	inc hl;								// 
 
 	ld a, (hl);							// first triplet to A
 	and a;								// null termniator?
-	jr z, s_loop;						// jump if so
+	jr z, s_lstr;						// jump if so
 
 	cp c;								// matching code?
 	jr nz, indexer_3;					// jump with incorrect code
@@ -355,6 +424,9 @@ indexer_3:
 	inc hl;								// address priority
 	ld b, (hl);							// get priority
 
+;;
+; scanning main loop
+;;
 s_loop:
 	pop de;								// get last op-code and priority
 	ld a, d;							// priority to A
@@ -363,13 +435,6 @@ s_loop:
 	and a;								// both zero?
 	jp z, jp_get_char;					// jump to get current character if so
 	push bc;							// stack present values
-	ld hl, flags;						// address sysvar
-	ld a, e;							// last op-code to A
-	cp 237;								// USR?
-	jr nz, s_stk_lst;					// jump if not
-	bit 6, (hl);						// USR number?
-	jr nz, s_stk_lst;					// jump if so
-	ld e, 153;							// modify last op-code
 
 s_stk_lst:
 	push de;							// stack last values
@@ -378,9 +443,9 @@ s_stk_lst:
 	ld a, e;							// last op-code to A
 	and %00111111;						// clear bits 6 and 7
 	ld b, a;							// store in B
-	fwait();							// perform
-	fsgl();								// calculator
-	fce();								// operation
+	fwait;								// perform
+	fsgl;								// calculator
+	fce;								// operation
 	jr s_runtest;						// immediate jump
 
 s_syntest:
@@ -411,6 +476,12 @@ s_tighter:
 	and %00111111;						// clear bits 6 and 7
 	add a, 8;							// increase code by eight
 	ld c, a;							// code to C
+	cp 12;								// * ?
+	jr nz, s_not_mul;					// jump if not
+	ld c, $59;							// multiply string by number
+	jr s_next;							// immediate jump
+
+s_not_mul:
 	cp 16;								// AND?
 	jr nz, s_not_and;					// jump if not
 	set 6, c;							// assume numeric
@@ -427,7 +498,9 @@ s_next:
 	rst next_char;						// next character
 	jp s_loop_1;						// loop until done
 
-;	// scanning functino subroutine
+;;
+; scanning function (FN)
+;;
 s_fn_sbrn:
 	call syntax_z;						// checking syntax?
 	jr nz, sf_run;						// jump if not
@@ -531,7 +604,7 @@ sf_values:
 sf_arg_lp:
 	inc hl;								// point to next code
 	ld a, (hl);							// put it in A
-	cp ctrl_number;						// hidden number marker
+	cp number_mark;						// hidden number marker
 	ld d, 64;							// set bit 6 of D
 	jr z, sf_arg_vl;					// jump if numerical argument
 	dec hl;								// point to string character
@@ -552,9 +625,9 @@ sf_arg_vl:
 
 	pop hl;								// pop the start address in DEF FN statement
 	inc hl;								// skip over old value for now
-	inc hl;
-	inc hl;
-	inc hl;
+	inc hl;								// 
+	inc hl;								// 
+	inc hl;								// 
 
 	call fn_skpovr;						// next argument to HL
 	cp ')';								// closing parenthesis?
@@ -576,7 +649,7 @@ cntargs:
 
 cntarg:
 	ld a, (de);							// 
-	cp ctrl_number;						// 
+	cp number_mark;						// 
 	inc de;								// 
 	jr nz, cnoarg;						// 
 	sbc hl, bc;							// 
@@ -598,7 +671,7 @@ rstargs:
 
 resarg:
 	ld a, (de);							// 
-	cp ctrl_number;						// 
+	cp number_mark;						// 
 	inc de;								// 
 	jr nz, rnoarg;						// 
 	push bc;							// 
@@ -625,7 +698,7 @@ savargs:
 
 savarg:
 	inc hl;								// 
-	cp ctrl_number;						// 
+	cp number_mark;						// 
 	call z, fp_exchange;				// 
 	ld a, (hl);							// 
 	cp ')';								// 
@@ -663,7 +736,9 @@ sf_value:
 	rst next_char;						// next character
 	jp s_cont_2;						// jump back
 
-;	// function skip over subroutine
+;;
+; function skip over
+;;
 fn_skpovr:
 	inc hl;								// next code
 
@@ -672,11 +747,13 @@ fn_skpovr_1:
 	ld a, (hl);							// code to A
 ;	cp ' ' + 1;							// > space?
 ;	jr c, fn_skpovr;					// jump if so
-	cp ' ';
-	jr z, fn_skpovr;
+	cp ' ';								// 
+	jr z, fn_skpovr;					// 
 	ret;								// end of subroutine
 
-;	// look variables subroutine
+;;
+; look variables
+;;
 look_vars:
 	set 6, (iy + _flags);				// assume numeric
 	rst get_char;						// first character to A
@@ -747,8 +824,8 @@ v_matches:
 v_spaces:
 	ld a, (de);							// each in turn
 	inc de;								// next character
-	cp ' ';								// space?
-	jr z, v_spaces;						// jump if so
+	cp ' ' + 1;							// space?
+	jr c, v_spaces;						// jump if so
 	or %00100000;						// test bit 5
 	cp (hl);							// match?
 	jr z, v_matches;					// jump if not
@@ -756,7 +833,7 @@ v_spaces:
 	cp (hl);							// match?
 	jr nz, v_get_ptr;					// jump if not
 	ld a, (de);							// character to A
-	call alphanum;						// letter?
+	call alphanums;						// letter, number or $ ?
 	jr nc, v_found_1;					// jump if end found
 
 v_get_ptr:
@@ -789,13 +866,44 @@ v_found_2:
 	push hl;							// stack last letter pointer
 	rst get_char;						// get current character
 
+v_pass:
+	cp '$';								// long string name
+	jr nz, v_end;						// if not, v_end
+	rst next_char;						// advance
+	pop hl;								// retrieve address
+	inc hl;								// step over '$' + $80
+	cp a;								// clear CF, set ZF
+	jp sv_str;							// indicate string and return
+
 v_end:
 	pop hl;								// point to single letter or last character
 	rl b;								// rotate register
 	bit 6, b;							// test bit 6
 	ret;								// end of subroutine
 
-;	// stack function argument subroutine
+;;
+; Check last character of a long variable name
+;;
+v_cont:
+	inc de;								// advance pointer
+	ld a,(de);							// fetch next character
+
+alphanums:
+	call alphanum;						// alphanumeric?
+	ret c;								// return if so
+	cp $0D;								// enter?
+	ret z;								// return if so
+	cp ' ' + 1;							// whitespace?
+	jr c, v_cont;						// loop, if so
+	cp '$';								// $?
+	scf;								// set CF, if so
+	ret z;								// and return
+	and a;								// otherwise clear CF
+	ret;								// and return
+
+;;
+; stack function argument
+;;
 stk_f_arg:
 	ld hl, (defadd);					// point to first character
 	ld a, (hl);							// store it in A
@@ -808,7 +916,7 @@ sfa_loop:
 	inc hl;								// next code
 	ld b, a;							// variable to B
 	ld a, (hl);							// code to A
-	cp ctrl_number;						// hidden number marker?
+	cp number_mark;						// hidden number marker?
 	jr z, sfa_cp_vr;					// jump if so
 	dec hl;								// point to character
 	call fn_skpovr;						// skip spaces
@@ -993,10 +1101,14 @@ sv_dim:
 sv_slice_query:
 	cp '(';								// opening parenthesis?
 	jr z, sv_slice;						// jump back with slice
+
+sv_str:
 	res 6, (iy + _flags);				// signal string
 	ret;								// end of subroutine
 
-;	// slicing subroutine
+;;
+; slicing
+;;
 slicing:
 	call syntax_z;						// checking syntax?
 	call nz, stk_fetch;					// get parameters if not
@@ -1068,7 +1180,9 @@ sl_over:
 sl_store:
 	call unstack_z;						// return if checking syntax
 
-;	// stack store subroutine
+;;
+; stack store
+;;
 stk_st_0:
 	xor a;								// signal array string or sliced string
 
@@ -1079,6 +1193,7 @@ stk_store:
 	push bc;							// stack BC
 	call test_5_sp;						// room for five bytes?
 	pop bc;								// unstack BC
+stk_store_nocheck:
 	ld hl, (stkend);					// address of first location to HL
 	ld (hl), a;							// write first byte
 	inc hl;								// next location
@@ -1093,7 +1208,9 @@ stk_store:
 	ld (stkend), hl;					// set stack end
 	ret;								// end of subroutine
 
-;	// integer expression subroutine
+;;
+; integer expression
+;;
 int_exp1:
 	xor a;								// clear the error register
 
@@ -1126,25 +1243,11 @@ i_restore:
 	pop de;								// unstack DE
 	ret;								// end of subroutine
 
-;	// DE, (DE +1) subroutine
-de_plus_1_to_de:
-	ex de, hl;							// use HL
-	inc hl;								// point to DE + 1
-	ld e, (hl);							// LD E, (DE + 1)
-	inc hl;								// point to DE + 2
-	ld d, (hl);							// LD D, (DE + 2)
-	ret ;								// end of subroutine
-
-;	// get HL * DE subroutine
-get_hl_x_de:
-	call syntax_z;						// checking syntax? return if so
-	ret z;								// (unstack_z would corrupt HL)
-	call hl_hl_x_de;					// multiplication
-	jp c, report_oo_mem;				// error if out of memory
-	ret;								// end ofS subroutine
-
-;	// LET command
-let:
+;;
+; <code>LET</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LET" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_let:
 	ld hl, (dest);						// current address of dest
 	bit 1, (iy + _flagx);				// existing variable?
 	jr z, l_exists;						// jump if so
@@ -1154,17 +1257,12 @@ l_each_ch:
 	inc bc;								// add one for each character in name
 
 l_no_sp:
-	inc hl;								// next position in variable name
-	ld a, (hl);							// get character
-	cp ' ';								// space?
-	jr z, l_no_sp;						// jump to skip if so
-	jr nc, l_test_ch;					// jump with code 33 to 255
-	cp 16;								// code 0 to 15?
-	jr c, l_spaces;						// jump if so
-	cp 22;								// code 22 to 31?
-	jr nc, l_spaces;					// jump if so
-	inc hl;								// skip control code
-	jr l_no_sp;							// jump back
+	inc hl;								// advance pointer
+	ld a, (hl);							// next character
+	cp $10;								// EOL?
+	jr c, l_test_ch;					// jump, if so
+	cp ' ' + 1;							// whitespace?
+	jr c, l_no_sp;						// loop, if so
 
 l_test_ch:
 	call alphanum;						// alphanumeric?
@@ -1173,17 +1271,26 @@ l_test_ch:
 	jp z, l_new_str;					// jump with simple string
 
 l_spaces:
-	ld a, c;							// length to A
 	call make_string;					// make BC length string
 	ex de, hl;							// first new byte to HL
 	inc de;								// second new byte
 	inc de;								// to DE
  	push de;							// stack pointer
+
+	ld hl, -6;							// number of extra letters
+	xor a;								// clear A and CF
+	adc hl, bc;							// do the subtraction
+
+l_store:
+	cp l;								// 
+	adc a, h;							// 
+	ld b, l;							// 
+	ld c, a;							// set up fast 16-bit loop
+
 	ld hl, (dest);						// pointer to start of name to HL
 	dec de;								// pointer to first new byte to DE
-	sub 6;								// number of extra letters
-	ld b, a;							// store it in A
 	jr z, l_single;						// jump with short name
+	push hl;							// HL points to start of variable name
 
 l_char:
 	inc hl;								// point to each extra code
@@ -1194,12 +1301,16 @@ l_char:
 	or %00100000;						// SET 5, A, change case
 	ld (de), a;							// store code
 	djnz l_char;						// loop until done
+	dec c;								// and loop further
+	jr nz, l_char						// until done (count in 16 bits)
 	or %10000000;						// SET 7, A, mark code
 	ld (de), a;							// replace last code
+	pop hl;								// restore (dest) to hl
+	cp '$' + $80						// long named string?
+	ret z;								// 
 	ld a, %11000000;					// prepare long name mark
 
 l_single:
-	ld hl, (dest);						// get pointer to the letter
 	xor (hl);							// A is 0 for short or 192 for long
 	or %00100000;						// SET 5, A, change case
 	pop hl;								// discard pointer
@@ -1207,9 +1318,9 @@ l_single:
 
 l_numeric:
 	push hl;							// stack destination pointer
-	fwait();							// enter calculator
-	fdel();								// reduce stack end by five
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fdel;								// reduce stack end by five
+	fce;								// exit calculator
 	pop hl;								// unstack destination pointer
 	ld bc, 5;							// five bytes
 	and a;								// prepare for subtraction
@@ -1283,6 +1394,8 @@ l_add_str:
 	push hl;							// stack pointer to existing
 	push bc;							// stack length of existing
 	call l_string;						// add new string to variables area
+
+l_addr:
 	pop bc;								// unstack length
 	pop hl;								// unstack pointer
 	inc bc;								// one byte for letter
@@ -1298,20 +1411,22 @@ l_new_str:
 ;	// L string subroutine
 l_string:
 	push af;							// stack letter
-	call stk_fetch;						// get start and length
+	call lstk_fetch;					// get start and length
+
+l_strr:
+	pop af;								// unstack letter
 	ex de, hl;							// start to HL
 	add hl, bc;							// end of string plus one to HL
+	push bc;							// save the length
 	dec hl;								// end of string
 	ld (dest), hl;						// store pointer
-	push bc;							// stack length
 	inc bc;								// one byte for letter
 	inc bc;								// two for
 	inc bc;								// length
 	call make_string;					// make BC length string
+	dec bc;
+	dec bc;
 	ld hl, (dest);						// restore pointer
-	pop bc;								// length
-	push bc;							// to BC
-	inc bc;								// increment length
 	lddr;								// copy string plus one byte
 	ex de, hl;							// point to high length byte
 	pop bc;								// unstack length
@@ -1319,7 +1434,6 @@ l_string:
 	inc hl;								// next address
 	ld (hl), b;							// write high length byte
 	dec hl;								// restore address
-	pop af;								// unstack letter
 
 ;	// L first subroutine
 l_first:
@@ -1331,9 +1445,11 @@ var_end_hl:
 	dec hl;								// to HL
 	ret;								// end of subroutine
 
-;	// stack fetch subroutine
-;	// UnoDOS 3 entry point
 	org $2bf1
+;;
+; stack fetch
+; @see: UnoDOS 3 entry points
+;;
 stk_fetch:
 	ld hl, (stkend);					// get stack end
 	dec hl;								// step back
@@ -1349,8 +1465,107 @@ stk_fetch:
 	ld (stkend), hl;					// set new stack end
 	ret;								// end of subroutine
 
-;	// DIM command
-dim:
+;;
+; DE, (DE + 1)
+;;
+de_plus_1_to_de:
+	ex de, hl;							// use HL
+	inc hl;								// point to DE + 1
+	ld e, (hl);							// LD E, (DE + 1)
+	inc hl;								// point to DE + 2
+	ld d, (hl);							// LD D, (DE + 2)
+	ret ;								// end of subroutine
+
+;;
+; get HL * DE
+;;
+get_hl_x_de:
+	call syntax_z;						// checking syntax? return if so
+	ret z;								// (unstack_z would corrupt HL)
+	call hl_hl_x_de;					// multiplication
+	jp c, report_oo_mem;				// error if out of memory
+	ret;								// end ofS subroutine
+
+lstk_fetch:
+	jr nc, frstr;						// first assignment
+	and %11100000;						// long variable name
+	jr z, rstrng;						// re-assignment of long-named string
+	jr stk_fetch;						// back to stk_fetch for short names
+
+frstr:
+	ld hl, -7;							// no numeric content
+	add hl, bc;							// do subtraction
+	jr c, lstrng;						// first assignment of long-named string
+	jr stk_fetch;						// back to stk_fetch for short names
+
+;;
+; long-named string re-assignment
+;;
+rstrng:
+	pop af;								// discard return address
+	pop af;								// discard zero AF
+	pop bc;								// discard return address
+	pop bc;								// length of old version
+	pop hl;								// pointer to old version
+	ld de, -2;							// net variable name length - 2
+	dec hl;								// skip zero byte
+	inc bc;								// account for it
+
+rstr_l:
+	inc bc;								// increment length
+	inc de;								// increment net variable name length
+	dec hl;								// step back with pointer
+	bit 6, (hl);						// first letter?
+	jr nz, rstr_l;						// loop till beginning
+	ld a, (hl);							// first character in long name format
+	ld (dest), hl;						// point DEST to variable name
+	push hl;							// put back pointer to old version
+	push bc;							// put back length of old version
+	ld hl, l_addr;						// return address
+	push hl;							// onto the stack
+	xor %11100000;						// change to short name format
+	push af;							// put back first character
+	ld hl, l_strr						// return address
+	push hl;							// onto the stack
+	ex de, hl;							// net length - 2 to HL
+;;
+; long-named string variable assignment
+;;
+lstrng:
+	inc hl;								// HL = net variable name length - 1
+	inc hl;								// HL = net variable name length
+	push hl;							// save net variable name length
+	call stk_fetch;						// do stk_fetch
+	ld (k_cur), de;						// point cursor to string
+	pop hl;								// restore net variable name length
+	pop de;								// fetch return address
+	pop af;								// fetch first letter
+	inc de;								// skip POP AF
+	push de;							// store return address
+	push bc;							// save string length
+	push hl;							// save net variable name length
+	inc hl;								// HL = net variable name length + 1
+	ld c, l;							// BC =
+	ld b, h;							// net variable name length + 1
+	call make_string;					//
+	ex de, hl;							// address - 1 to DE
+	inc de;								// DE = variable name address
+	xor $E0;							// indicate long variable name
+	ld (de), a;							// with the first character
+	inc de;								// point to next character
+	xor a;								// A = 0
+	pop hl;								// restore net variable name length
+	call l_store;						// store variable name
+	pop bc;								// restore string length
+	ld de, (k_cur)						// DE = string content
+	xor a;								// A = 0
+	ret;								// return
+
+;;
+; <code>DIM</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#DIM" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_dim:
 	call look_vars;						// search variables
 
 d_rport_c:
@@ -1451,13 +1666,17 @@ dim_sizes:
 	jr nz, dim_sizes;					// loop until done
 	ret;								// end of subroutine
 
-;	// alphanumeric subroutine
+;;
+; alphanumeric
+;;
 alphanum:
 	call numeric;						// digit?
 	ccf;								// complement carry flag
 	ret c;								// return with digit
 
-;	// alphabetic subroutine
+;;
+; alphabetic
+;;
 alpha:
 	cp 'A';								// A?
 	ccf;								// complement carry flag
@@ -1470,7 +1689,9 @@ alpha:
 	cp 'z' + 1;							// > z?
 	ret;								// end of subroutine
 
-;	// decimal to floating point subroutine
+;;
+; decimal to floating point
+;;
 dec_to_fp:
 	ld de, 0;							// clear DE
 	cp op_bin;							// %
@@ -1481,7 +1702,9 @@ dec_to_fp:
 	jr z, hex_digit;					// jump if so
 	jr not_bin;							// immedaite jump
 
-;	// binary digit
+;;
+; binary digit
+;;
 bin_digit:
 	rst next_char;						// get next character
 	sub '1';							// subtract ASCII '1'
@@ -1499,7 +1722,9 @@ bin_end:
 	ld b, d;							// to BC
 	jp stack_bc;						// immediate jump
 
-;	// octal digit
+;;
+; octal digit
+;;
 oct_digit:
 	rst next_char;						// get next character
 	sub '0';							// convert ASCII to real value
@@ -1520,7 +1745,9 @@ oct_end:
 	ex de, hl;							// swap pointers
 	jp oct_digit;						// immediate jump
 
-;	// hexadecimal digit
+;;
+; hexadecimal digit
+;;
 hex_digit:
 	rst next_char;						// get next character
 	call alphanum;						// alphanumeric?
@@ -1561,8 +1788,8 @@ not_bin:
 	jr dec_sto_1;						// immediate jump
 
 report_overflow_1:
-	rst error;
-	defb overflow;
+	rst error;							//
+	defb overflow;						//
 
 decimal:
 	rst next_char;						// get next character
@@ -1570,29 +1797,29 @@ decimal:
 
 dec_rpt_c:
 	jp c, report_syntax_err;			// error if not
-	fwait();							// enter calculator
-	fstk0();							// stack zero
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fstk0;								// stack zero
+	fce;								// exit calculator
 
 dec_sto_1:
-	fwait();							// enter calculator
-	fstk1();							// stack one in full floating point form
-	fst(0);								// store in mem_0
-	fdel();								// remove from calculator stack
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fstk1;								// stack one in full floating point form
+	fst 0;								// store in mem_0
+	fdel;								// remove from calculator stack
+	fce;								// exit calculator
 
 nxt_dgt_1:
 	rst get_char;						// get current character
 	call stk_digit;						// stack digit
 	jr c, e_format;						// jump if not digit
-	fwait();							// enter calculator
-	fgt(0);								// get from mem_0
-	fstk10();							// x, 10
-	fmul();								// x * 10
-	fst(0);								// store in mem_0
-	fdiv();								// divide by saved number
-	fadd();								// add to last value
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fgt 0;								// get from mem_0
+	fstk10;								// x, 10
+	fmul;								// x * 10
+	fst 0;								// store in mem_0
+	fdiv;								// divide by saved number
+	fadd;								// add to last value
+	fce;								// exit calculator
 	rst next_char;						// get next character
 	jr nxt_dgt_1;						// loop until done
 
@@ -1631,7 +1858,9 @@ st_e_part:
 e_fp_jump:
 	jp fp_e_to_fp;						// immediate jump
 
-;	// numeric subroutine
+;;
+; numeric
+;;
 numeric:
 	cp '0';								// zero character?
 	ret c;								// return if lower value
@@ -1639,18 +1868,24 @@ numeric:
 	ccf;								// set carry if higher value
 	ret;								// 
 
-;	// stack digit subroutine
+;;
+; stack digit
+;;
 stk_digit:
 	call numeric;						// digit?
 	ret c;								// return if not
 	sub '0';							// convert code to real number
 
-;	// stack A subroutine
+;;
+; stack A
+;;
 stack_a:
 	ld c, a;							// value to
 	ld b, 0;							// BC
 
-;	// stack BC subroutine
+;;
+; stack BC
+;;
 stack_bc:
 	xor a;								// LD A, 0
 	ld e, a;							// LD E, 0
@@ -1661,22 +1896,262 @@ stack_bc:
 	and a;								// clear carry flag
 	jp stk_pntrs;						// immediate jump
 
-;	// integer to floating point subroutine
+;;
+; integer to floating point
+;;
 int_to_fp:
 	push af;							// stack first digit
-	fwait();							// enter calculator
-	fstk0();							// stack zero
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fstk0;								// stack zero
+	fce;								// exit calculator
 	pop af;								// unstack first digit
 
 nxt_dgt_2:
 	call stk_digit;						// stack floating point form
 	ret c;								// return if not a digit
-	fwait();							// enter calculator
-	fxch();								// swap with previous last value
-	fstk10();							// stack 10
-	fmul();								// multiply previous last value by 10
-	fadd();								// add to digit
-	fce();								// exit calculator
+	fwait;								// enter calculator
+	fxch;								// swap with previous last value
+	fstk10;								// stack 10
+	fmul;								// multiply previous last value by 10
+	fadd;								// add to digit
+	fce;								// exit calculator
 	call ch_add_plus_1;					// next code to A
 	jr nxt_dgt_2;						// jump back
+
+s_str_num:
+	rst next_char;						// 
+	cp "(";								// 
+	jr nz, report_syntax_err2;			//
+	rst next_char;						//
+	call scanning;						//
+	bit 6, (iy + _flags);				//
+	jp z, expt_comma_1num;				//
+
+report_syntax_err2:
+	rst error;							//
+	defb syntax_error;					//
+
+
+s_closing:
+	cp ')';								// 
+	jr nz, report_syntax_err2;			// 
+	rst next_char;						// 
+	ld hl, flags;						// 
+	res 6, (hl);						// 
+	bit 7, (hl);						// 
+	ret nz;								// 
+	pop hl;								// discard return address
+	pop hl;								// discard return address
+	jp s_cont_2; 						// 
+
+s_length:
+	call find_int2;						// 
+
+s_length2:
+	ld hl, (stkend);					// 
+	dec hl;								// 
+	ld d, (hl);							// 
+	dec hl;								// 
+	ld e, (hl);							// 
+	ex de, hl;							// 
+
+s_length_again:
+	and a;								// 
+	sbc hl, bc;							// 
+	ex de, hl;							// 
+	ret nc;								// 
+	ex de, hl;							// 
+	add hl, bc;							// 
+	ld c, l;							// 
+	ld b, h;							// 
+	jr s_length_again;					// 
+
+s_leftright:
+	call s_str_num;						// 
+	call s_closing;						// 
+	call s_length;						// 
+	ld (hl), c;							// 
+	inc hl;								// 
+	ld (hl), b;							// 
+	ret;								// 
+
+s_mid_cont:
+	call s_str_num;						// 
+	cp ')';								// 
+	jr z, s_mid2;						// two-argument MID$
+	call expt_comma_1num;				// read third argument
+	push af;							// placeholder
+	call s_closing;						// 
+	pop af;								// discard placeholder
+	call find_int2;						// BC = third argument
+	push bc;							// stack BC
+	call s_mid3;						// execute 2-argument MID$
+	pop bc;								// BC = third argument
+	call s_length2;						// MID$(a$,o,l) = LEFT$(MID$(a$,o),l)
+	ld (hl), c;							// 
+	inc hl;								// 
+	ld (hl), b;							// 
+	jp s_cont_2;						// 
+
+s_mid2:
+	push af;							// placeholder
+	call s_closing;						// 
+	pop af;								// discard placeholder
+	call s_mid3;						// 
+	jp s_cont_2;						// 
+
+s_mid3:
+	call s_length;						// get first argument between 0 and length
+	ld a, c								// 0 is not a valid first argument
+	or b								// for MID$
+	jp z, report_sscrpt_oo_rng;			// 
+	dec bc;								// make the first argument 0-based
+	ld e, (hl);							// 
+	inc hl;								// 
+	ld d, (hl);							// DE = old length
+	ex de, hl;							// HL = old length
+	sbc hl, bc;							// HL = old length - 0-based offset
+	ex de, hl;							// DE = new length
+	ld (hl), d;							// 
+	dec hl;								// 
+	ld (hl), e;							// commit new length
+	dec hl;								// 
+	ld d, (hl);							// 
+	dec hl;								// 
+	ld e, (hl);							// DE = start address
+	ex de, hl;							// HL = start address
+	add hl, bc;							// HL = start address + 0-based offset
+	ex de, hl;							// DE = new start address
+	ld (hl), e;							// 
+	inc hl;								// 
+	ld (hl), d;							// commit new start address
+	ret;								// 
+
+s_strng_s:
+	call find_int1;						// 
+	push af;							// 
+	call find_int2;						// 
+	ld a, c;							// 
+	or b;								// 
+	jr z, s_strng_empty;				// 
+	rst bc_spaces;						// 
+	pop af;								// 
+	ld (de), a;							// 
+	push bc;							// 
+	dec bc;								// 
+	ld a, c;							// 
+	or b;								// 
+	jr z, s_strng_single;				// 
+	push de;							// 
+	ld l, e;							// 
+	ld h, d;							// 
+	inc de;								// 
+	ldir;								// 
+	pop de;								// 
+
+s_strng_single:
+	pop bc;								// 
+	ret;								// 
+
+s_strng_empty:
+	pop af;								// 
+	ret;								// 
+
+s_str:
+	rst next_char;							// next character
+	cp '(';								// multiple arguments?
+	jr z,s_str_multi;						// jump, if so
+	ld bc, $106E;							// STR$ with priority $10
+	push bc;							// onto the stack
+	jp s_loop_1;							// continue with scanning
+
+s_str_multi:
+	rst next_char;							// skip '('
+	call expt_1num;							// first argument is numeric
+	cp ')';								// single argument
+	jr nz,s_str_multi2;						// jump, if not
+	rst next_char;							// skip ')'
+	call syntax_z;							// checking syntax?
+	call nz, fp_str_str;						// if not, do STR$
+s_str_multi_end:
+	res 6, (iy + _flags);						// the result is a string
+	jp s_cont_2;
+
+s_str_multi2:
+	call expt_comma_1num;						// one more number separated by comma
+	cp ')';								// no more arguments
+	jp nz, report_syntax_err;					// are allowed
+	rst next_char;							// skip ')'
+	call syntax_z;							// checking syntax?
+	jr z, s_str_multi_end;						// done, if so
+
+	call find_int1;							// get base
+	cp 2;
+	jp c, report_bad_fn_call;					// base below 2 is illegal
+	cp 37;
+	jp nc, report_bad_fn_call;					// base above 36 is illegal
+	call stack_a;							// save rounded base
+
+	ld bc, 1;
+	rst bc_spaces;
+	ld (k_cur), hl;
+	push hl;							// save start address
+	ld hl, (curchl);
+	push hl;							// save current channel
+	ld a, $ff;
+	call chan_open;
+	fwait;								// n, x
+	fst 3;								// save base
+	fdel;								// n
+	fstkhalf;							// n, 0.5
+	fadd;								// n + 0.5
+	fint;								// integer n
+	fce;
+	inc hl;
+	bit 7, (hl);
+	jr z, s_str_s;
+	ld a, '-';
+	rst print_a;
+	fwait;
+	fneg;
+	fce;
+s_str_s:
+	fwait;								// n
+	fgt 3;								// n, base
+	fmod;								// d
+	fgt 0;								// d, n'
+	fxch;								// n', d
+	fce;
+	call find_int1;							// digit to A
+	cp 10;								// 0..9?
+	jr c, s_str_low							// jump, if so
+	add 'A' - '9' - 1;
+s_str_low:
+	add '0';
+	rst print_a;
+	fwait;
+	fce;
+	call test_zero;
+	jr nc, s_str_s;
+
+	pop hl;								// restore channel
+	call chan_flag;
+	pop de;								// DE = start pointer
+	ld hl, (k_cur);
+	and a;
+	sbc hl, de;
+	ld c, l;
+	ld b, h;							// BC = length
+	push bc;
+	push de;
+	ex de, hl;
+	ld a, (hl);
+	cp '-';
+	jr nz,str_p;
+	inc hl;
+	dec bc;
+str_p:	call mirror;
+	pop de;
+	pop bc;
+	jp s_string;
+
