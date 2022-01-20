@@ -160,13 +160,13 @@ resources:
 	defb "../rsc", 0;					// resource folder
 
 old_bas_path:
-	defb "/system/temp/old.bas", 0;
+	defb "/system/temporar.y/old.bas", 0;
 
 sys_folder:
 	defb "system", 0
 
 tmp_folder:
-	defb "temp", 0
+	defb "temporar.y", 0
 
 open_w_create:
 	ld b, fa_write | fa_open_al;		// create or open for writing if file exists
