@@ -866,7 +866,7 @@ cl_chan_a:
 	ld de, key_input;					// input address
 	ccf;								// complement carry flag
 	jr c, cl_chan_a;					// loop until both addresses set
-	ld bc, $1751;						// row 23, column 81
+	ld bc, $1851;						// row 24, column 81
 	jr cl_set;							// immediate jump
 
 ;;
