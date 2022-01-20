@@ -215,6 +215,11 @@ tbl_offs equ $ - tbl_addrs
 	defw fp_st_mem_xx;
 	defw fp_get_mem_xx;
 
+;	4 spare bytes
+
+	defw 0
+	defw 0
+
 ;	// used in 14_screen_40
 ;	// attributes are stored internally with the foreground in the high nibble and the background in the low nibble
 ;	// this table converts an attribute to its 64-color equivalent in the default palette.
@@ -242,10 +247,6 @@ attributes:
 ;	// the remaining part of BASIC exists in RAM and can therefore be modified by the user
 
 	org $4000
-
-;	// used in 15_files
-dir_msg:
-	defb "<DIR>   ", 0;
 
 ;	// the next 576 bytes are used for localization
 
@@ -297,6 +298,7 @@ rpt_mesgs:
 
 	org scrl_mssg + 576
 
+	defb 0;								// one spare byte to align tables
 
 ;	// used in 07_editor
 ed_f_keys_t:
@@ -316,50 +318,67 @@ ed_f_keys_t:
 	defb s_f14 - $;						// $1e
 	defb s_f15 - $;						// $1f
 
+;	// macro definitions
+;	// each definition is 16 bytes. The last byte is always zero.
 s_f1:
 	defb "LIST", 0
+	defs 11, 0
 
 s_f2:
 	defb "RUN", ctrl_cr, 0;
+	defs 11, 0
 
 s_f3:
-	defb "LOAD",'"', 0;";
+	defb "LOAD ",'"', 0;";
+	defs 9, 0
 
 s_f4:
-	defb "SAVE",'"', 0;";
+	defb "SAVE ",'"', 0;";
+	defs 9, 0
 
 s_f5:
 	defb "CONT", ctrl_cr, 0;
+	defs 10, 0
 
 s_f6:
 	defb "COLOR 7,1", ctrl_cr, 0;
+	defs 5, 0
 
 s_f7:
 	defb "TRON", ctrl_cr, 0;
+	defs 10, 0
 
 s_f8:
 	defb "TROFF", ctrl_cr, 0;
+	defs 9, 0
 
 s_f9:
-	defb "EDIT", 0;
+	defb "EDIT ", 0;
+	defs 10, 0
 
 s_f10:
-	defb "SCREEN", 0;
+	defb "SCREEN ", 0;
+	defs 8, 0
 
 s_f11:
-	defb "BLOAD",'"', 0;";
+	defb "BLOAD ",'"', 0;";
+	defs 8, 0
 
 s_f12:
-	defb "BSAVE",'"', 0;";
+	defb "BSAVE ",'"', 0;";
+	defs 8, 0
 
 s_f13:
-	defb "AUTO", 0;
+	defb "GOSUB ", 0;
+	defs 9, 0
 
 s_f14:
-	defb "GOTO", 0;
+	defb "GOTO ", 0;
+	defs 10, 0
 
 s_f15:
-	defb "KEY", 0;
+	defb "KEY ", 0;
+	defs 11, 0
 
 ;	// used in 03_keyboard
 kt_main:
@@ -454,6 +473,35 @@ tk_ptr_rem:
 	
 tk_ptr_last:
 	str "ASAVE";
+
+;	// used in 15_files
+dir_msg:
+	defb "<DIR>   ", 0;
+
+;	// the following data cannot be moved to the ROM area
+basepath:
+	defb "/programs";					// "/programs/" (continues into progpath)
+
+prgpath:
+	defb "/prg";						// "/prg/", 0 (continues into rootpath)
+	
+rootpath:
+	defb '/', 0;						// root	
+
+appname:
+	defb ".prg", 0;						// application extension
+
+resources:
+	defb "../rsc", 0;					// resource folder
+
+old_bas_path:
+	defb "/system/temporar.y/old.bas", 0;
+
+sys_folder:
+	defb "system", 0
+
+tmp_folder:
+	defb "temporar.y", 0
 
 ;	// used in 09_command
 offst_tbl:
