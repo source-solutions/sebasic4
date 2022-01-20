@@ -143,31 +143,6 @@ app_not_found:
 	ld sp, (oldsp);						// restore stack pointer
 	jp report_file_not_found;			// and error
 
-;	// the following data cannot be moved to the ROM area
-basepath:
-	defb "/programs";					// "/programs/" (continues into progpath)
-
-prgpath:
-	defb "/prg";						// "/prg/", 0 (continues into rootpath)
-	
-rootpath:
-	defb '/', 0;						// root	
-
-appname:
-	defb ".prg", 0;						// application extension
-
-resources:
-	defb "../rsc", 0;					// resource folder
-
-old_bas_path:
-	defb "/system/temporar.y/old.bas", 0;
-
-sys_folder:
-	defb "system", 0
-
-tmp_folder:
-	defb "temporar.y", 0
-
 open_w_create:
 	ld b, fa_write | fa_open_al;		// create or open for writing if file exists
 	jr open_f_common;					// immediate jump
@@ -463,6 +438,11 @@ ifdef no_fs
 	ret;
 endif
 	call unstack_z;						// return if checking syntax
+
+	ld ix, old_bas_path;				// path to old.bas
+	ld a, '*';							// use current drive
+	rst divmmc;							// issue a hookcode
+	defb f_unlink;						// delete file if it exists
 
 	ld ix, rootpath;					// go to root
 	ld a, '*';							// use current drive
