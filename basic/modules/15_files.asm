@@ -823,7 +823,7 @@ no_space:
 ;	// file channels
 get_handle:
 	ld ix, (curchl);					// get current channel
-	ld a, (ix + 7);						// get file handle
+	ld a, (ix + 5);						// get file handle
 	ld bc, 1;							// one byte to transfer
 	ret;								// done
 
@@ -848,17 +848,44 @@ file_out:
 	rst divmmc;							// issue a hookcode
 	defb f_write;						// write a byte
 	jp c, report_bad_io_dev;			// jump if error
-	or a;								// clear flags
+;	or a;								// clear flags
 	ret;								// done
 
+file_sr:
+	defw	file_out;
+	defw	file_in;
+	defb	'F';
+
 open_file:
+	push bc;							// stack mode
+	ld hl, (prog);							// HL = start of BASIC program
+	dec hl;								// HL = end of channel descriptor area
+	ld bc, 6					// file channel descriptor length
+	call make_room;						// reserve channel descriptor
+	pop bc;								// BC = mode
+	push de;							// stack end of channel descriptor
    	ld a, '*';							// use current drive
-	and a;								// signal no error (clear carry flag)
+;	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_open;						// open file
-	jp c, report_bad_io_dev;			// jump if error
-	or a;								// clear flags
+	jr c, open_file_err;			// jump if error
+	pop de;								// unstack end of channel descriptor
+	ld (de), a;							// file descriptor
+	dec de
+	ld hl, file_sr + 4;						// HL = service routines' end
+	ld bc, 5;							// copy 5 bytes
+	lddr;								// do the copying
 	ret;								// done
+
+open_file_err:
+	pop de;								// unstack end of channel descriptor
+	inc de;								// DE = one past end of channel desc.
+	ld hl, -6;							// reclaim 6 bytes
+	add hl, de;							// HL = beginning of channel desc.
+	ex de, hl;							// HL = one past end, DE = beginning
+	call reclaim_1;							// free up the unsuccessful channel descriptor
+	rst error;
+	defb bad_io_device;						// report error
 
 f_length:
 	ld ix, f_stats;						// buffer for file stats

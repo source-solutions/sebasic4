@@ -582,6 +582,14 @@ cl_str_lu:
 	defb 0;								// null termniator
 
 close_file:
+	ld a, (ix+5);				// file handle
+	rst divmmc;
+	defb f_close;
+	jp c, report_bad_io_dev;		// jump on error
+	push ix;
+	pop hl;					// channel descriptor base
+	ld bc, 6;				// channel descriptor length
+	jp reclaim_2;				// reclaim closed channel
 
 close_str:
 	pop hl;								// unstack channel information pointer
