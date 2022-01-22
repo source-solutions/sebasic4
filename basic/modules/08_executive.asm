@@ -315,12 +315,10 @@ report_ln_bf_overflow:
 ;;
 ; main add
 ;;
-main_add:
+add_line:
 	ld (e_ppc), bc;						// make new line current line
 	ld hl, (ch_add);					// sysvar to HL
 	ex de, hl;							// store it in DE
-	ld hl, report_ln_bf_overflow;		// set report
-	push hl;							// as return address
 	ld hl, (worksp);					// worksp to HL
 	scf;								// set carry flag
 	sbc hl, de;							// length from end of line number to end
@@ -368,6 +366,12 @@ main_add1:
 	ld (hl), d;							// least significant byte of line number
 
 main_add2:
+	ret
+
+main_add:
+	ld hl, report_ln_bf_overflow;		// set report
+	push hl;							// as return address
+	call add_line
 	pop af;								// discard report return address
 	jp main_exec;						// immediate jump
 
@@ -1039,6 +1043,7 @@ list_8:
 
 list_9:
 	call check_end;						// check end of statement
+list_10:
 	ld bc, 16383;						// last possible line
 	ld (t_addr), bc;					// BC to temporary pointer to parameter table
 	ld bc, 0;							// cleasr BC

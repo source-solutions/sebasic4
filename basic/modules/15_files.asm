@@ -891,6 +891,7 @@ open_file_err:
 	add hl, de;							// HL = beginning of channel desc.
 	ex de, hl;							// HL = one past end, DE = beginning
 	call reclaim_1;							// free up the unsuccessful channel descriptor
+report_bad_io_dev2:
 	rst error;
 	defb bad_io_device;						// report error
 
@@ -905,8 +906,83 @@ seek_f:
 	defb f_seek;						// seek to position in BCDE
 	ret;								// done
 	
+
 c_aload:
-	jp c_load;							// stub for ASCII BASIC loading
-	
+	call unstack_z;
+	call path_to_ix;
+	ld b, fa_read;
+	ld a, "*";
+	rst divmmc;
+	defb f_open;
+	jr c, report_bad_io_dev2;
+	ld (membot + 1), a;
+
+	ld de, (prog);
+	ld hl, (vars);
+	call reclaim_1;						// reclaim BASIC program
+
+nextln:
+	call set_min;
+	ld a, $ff;
+	call chan_open;
+
+copyln:
+	call f_getc;
+	jr c, report_bad_io_dev2;
+	jr nz, aload_end;
+	cp $0a;
+	jr z, readyln;
+	cp $0d;
+	jr z, readyln;
+	rst print_a;
+	jr copyln;
+
+readyln:
+	ld hl, (membot);
+	push hl
+	call tokenizer_0;
+	call line_scan;
+	ld hl, (e_line);
+	ld (ch_add), hl;
+	call e_line_no;
+	ld a, c;
+	or b;
+	call nz, add_line;
+	pop hl
+	ld (membot), hl
+	jr nextln;
+
+aload_end:
+	ld a, (membot + 1)
+	rst divmmc;
+	defb f_close;
+	jr c, report_bad_io_dev2;
+	rst error;
+	defb $ff;						// ok
+
+f_getc:
+	ld a, (membot + 1);
+	ld ix, membot;
+	ld bc, 1;
+	rst divmmc;
+	defb f_read;
+	jr c, report_bad_io_dev2;
+	dec bc;
+	ld a, c;
+	or b;
+	ret nz;
+	ld a, (membot)
+	ret
+
 c_asave:
-	jp c_save;							// stub for ASCII BASIC saving
+	call unstack_z;						// return if checking syntax
+	call path_to_ix;
+	ld b, fa_write | fa_open_al;
+	call open_file;
+	ld hl, (chans);
+	add hl, de;
+	dec hl;
+	ld (curchl), hl;
+	call list_10;
+	ld ix,(curchl);
+	call close_file;					// it is, in fact, a jump, as the return address will be popped
