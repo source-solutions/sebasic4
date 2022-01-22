@@ -861,6 +861,7 @@ open_file:
 	ld hl, (prog);							// HL = start of BASIC program
 	dec hl;								// HL = end of channel descriptor area
 	ld bc, 6					// file channel descriptor length
+	add ix, bc;							// the filename will get moved by 6 bytes
 	call make_room;						// reserve channel descriptor
 	pop bc;								// BC = mode
 	push de;							// stack end of channel descriptor
@@ -875,6 +876,12 @@ open_file:
 	ld hl, file_sr + 4;						// HL = service routines' end
 	ld bc, 5;							// copy 5 bytes
 	lddr;								// do the copying
+	ld hl,(chans);							// HL = channel descriptor area
+	ex de, hl;							// DE = chan. desc. area. HL = channel desc. beginning - 1
+	sbc hl, de;							// HL = offset - 2
+	inc hl;								// HL = offset - 1
+	inc hl;								// HL = offset
+	ex de, hl;							// DE = offset
 	ret;								// done
 
 open_file_err:

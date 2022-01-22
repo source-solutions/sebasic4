@@ -447,8 +447,6 @@ open_i:
 	call open_f;						// get parameters, copy to workspace and set IX to point to it
 	ld b, fa_read | fa_open_ex;			// open for reading if file exists
 	call open_file;						// open the file
-
-	ld de, 6;							// data bytes 6, 0
 	jr open_end;						// immediate jump
 
 ;	// open O subroutine
@@ -456,8 +454,6 @@ open_o:
 	call open_f;						// get parameters, copy to workspace and set IX to point to it
 	ld b, fa_write | fa_open_al;		// create or open for writing if file exists
 	call open_file;						// open the file
-
-	ld de, 6;							// data bytes 6, 0
 	jr open_end;						// immediate jump
 
 ;	// open A subroutine
@@ -470,8 +466,6 @@ open_a:
 	ld de, (f_size + 2);				// high word to DE
 	ld ixl, 0;							// seek from start of file
 	call seek_f;						// seek to end of file
-
-	ld de, 6;							// data bytes 6, 0
 	jr open_end;						// immediate jump
 
 ;	// open R subroutine
@@ -479,8 +473,6 @@ open_r:
 	call open_f;						// get parameters, copy to workspace and set IX to point to it
 	ld b, fa_read | fa_write | fa_open_al;	// create or open for reading / writing if file exists
 	call open_file;						// open the file
-
-	ld de, 6;							// data bytes 6, 0
 	jr open_end;						// immediate jump
 
 ;	// open K subroutine
@@ -583,11 +575,11 @@ cl_str_lu:
 
 close_file:
 	ld a, (ix+5);				// file handle
+	push ix;
 	rst divmmc;
 	defb f_close;
-	jp c, report_bad_io_dev;		// jump on error
-	push ix;
 	pop hl;					// channel descriptor base
+	jp c, report_bad_io_dev;		// jump on error
 	ld bc, 6;				// channel descriptor length
 	jp reclaim_2;				// reclaim closed channel
 
