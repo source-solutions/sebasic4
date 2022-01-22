@@ -1221,9 +1221,10 @@ out_ch_1:
 	call po_token;
 	pop de;
 	ret;
+
 out_ch_2:
-	ld hl, flags;
 	push hl;
+	ld hl, flags;
 	res 0, (hl);
 	cp ' ';
 	jr nz, out_ch_3;
