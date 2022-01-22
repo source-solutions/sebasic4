@@ -1221,13 +1221,17 @@ out_ch_1:
 	call po_token;
 	pop de;
 	ret;
+
 out_ch_2:
+	push hl;
 	ld hl, flags;
 	res 0, (hl);
 	cp ' ';
 	jr nz, out_ch_3;
 	set 0, (hl);
+
 out_ch_3:
+	pop hl;
 	rst print_a;						// print character
 	ret;								// end of subroutine
 
