@@ -575,13 +575,14 @@ cl_str_lu:
 
 close_file:
 	ld a, (ix+5);				// file handle
-	push ix;
+	push ix;				// stack channel descriptor base
 	rst divmmc;
 	defb f_close;
-	pop hl;					// channel descriptor base
 	jp c, report_bad_io_dev;		// jump on error
-	ld bc, 6;				// channel descriptor length
-	jp reclaim_2;				// reclaim closed channel
+	pop hl;					// HL = channel descriptor base
+	ld bc, 6;				// BC = channel descriptor length
+	call adjust_strms;
+	call reclaim_2;				// reclaim closed channel
 
 close_str:
 	pop hl;								// unstack channel information pointer
@@ -853,11 +854,11 @@ close:
 close_valid:
 	call close_2;						// perform channel specific actions
 	ld bc, 0;							// signal stream not in use
-	ld de, $a4e2;						// handle streams 0 to 2
+	ld de, -strms - 10;						// handle streams 0 to 2
 	ex de, hl;							// swap pointers
 	add hl, de;							// set carry with streams 3 to 15
 	jr c, close_1;						// jump if carry set
-	ld bc, init_strm + 12;				// address table
+	ld bc, init_strm + 10;				// address table
 	add hl, bc;							// find entry
 	ld c, (hl);							// address
 	inc hl;								// to
@@ -1448,3 +1449,45 @@ out_num_4:
 	pop hl;								// unstack HL
 	pop de;								// and DE
 	ret;								// end of subroutine
+
+adjust_strms:
+	push bc;
+	push hl;
+	ld de, (chans);
+	and a;
+	sbc hl, de;
+	ex de, hl;
+	ld hl, strms + 6;
+strms_loop:
+	ld a, (hl);
+	inc l;
+	ex af, af';
+	ld a, (hl);
+	cp d;
+	jr c, strm_skip;
+	jr nz, strm_adj;
+	ex af, af'
+	cp e;
+	jr c, strm_skip;
+strm_adj:
+	push de;
+	ld d, (hl);
+	dec l
+	ld e, (hl);
+	ex de, hl;
+	and a;
+	sbc hl, bc
+	ex de, hl;
+	ld (hl), e
+	inc l
+	ld (hl), d
+	pop de;
+strm_skip:
+	inc l;
+	ld a, l;
+	cp strms + 38 - $100 * (strms / $100);
+	jr nz, strms_loop;
+
+	pop hl;
+	pop bc;
+	ret
