@@ -941,7 +941,16 @@ readyln:
 	ld hl, (membot);
 	push hl
 	call tokenizer_0;
+	ld hl, (err_sp);
+	push hl;
+	ld hl, scan_err;
+	push hl;
+	ld (err_sp), sp;
 	call line_scan;
+	pop hl;
+scan_err:
+	pop hl;
+	ld (err_sp), hl;
 	ld hl, (e_line);
 	ld (ch_add), hl;
 	call e_line_no;
@@ -956,6 +965,7 @@ aload_end:
 	ld a, (membot + 1)
 	rst divmmc;
 	defb f_close;
+report_bad_io_dev3:
 	jr c, report_bad_io_dev2;
 	rst error;
 	defb $ff;						// ok
@@ -966,7 +976,7 @@ f_getc:
 	ld bc, 1;
 	rst divmmc;
 	defb f_read;
-	jr c, report_bad_io_dev2;
+	jr c, report_bad_io_dev3;
 	dec bc;
 	ld a, c;
 	or b;
