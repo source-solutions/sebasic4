@@ -578,15 +578,14 @@ cl_str_lu:
 	defb 0;								// null termniator
 
 close_file:
-	ld a, (ix+5);				// file handle
-	push ix;				// stack channel descriptor base
-	rst divmmc;
-	defb f_close;
-	jp c, report_bad_io_dev;		// jump on error
-	pop hl;					// HL = channel descriptor base
-	ld bc, 6;				// BC = channel descriptor length
-	call adjust_strms;
-	call reclaim_2;				// reclaim closed channel
+	ld a, (ix+5);						// file handle
+	push ix;							// stack channel descriptor base
+	call do_f_close;					// cannot do rst divmmc below $4000
+	jp c, report_bad_io_dev;			// jump on error
+	pop hl;								// HL = channel descriptor base
+	ld bc, 6;							// BC = channel descriptor length
+	call adjust_strms;					// 
+	call reclaim_2;						// reclaim closed channel
 
 close_str:
 	pop hl;								// unstack channel information pointer

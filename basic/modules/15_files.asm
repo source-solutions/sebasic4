@@ -663,6 +663,8 @@ last_entry:
 	ld a, ctrl_cr;						// carriage return
 	rst print_a;						// print it
 	ld a, (handle);						// get folder handle
+
+do_f_close:
 	rst divmmc;							// issue a hookcode
 	defb f_close;						// close it
 	ret;								// end of subroutine
