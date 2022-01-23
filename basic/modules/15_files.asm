@@ -371,20 +371,6 @@ ifdef no_fs
 endif
 	call unstack_z;						// return if checking syntax
 	ld ix, old_bas_path;				// pointer to path
-	jr c_load_old;						// immediate jump
-
-;;
-; <code>LOAD</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
-; @deprecared To be replaced with non-tokenized version
-; @throws File not found; Path not found.
-;;
-c_load:
-	call unstack_z;						// return if checking syntax
-	call get_path;						// path to buffer
-	ld ix, $5a00;						// pointer to path
-
-c_load_old:
 	call f_open_read_ex;				// open file for reading
 	call f_get_stats;					// get program length
 
@@ -470,20 +456,6 @@ endif
 	defb f_chdir;						// change folder
 
 	ld ix, old_bas_path;				// pointer to path
-	jr c_save_old;						// immediate jump
-
-;;
-; <code>SAVE</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#SAVE" target="_blank" rel="noopener noreferrer">Language reference</a>
-; @deprecated To be replaced with non-tokenized version.
-; @throws File not found; Path not found.
-;;
-c_save:
-	call unstack_z;						// return if checking syntax
-	call get_path;						// path to buffer
-	ld ix, $5a00;						// pointer to path
-
-c_save_old:
 	call f_open_write_al;				// open file for writing
 
 ;	// get program length
@@ -906,8 +878,13 @@ seek_f:
 	defb f_seek;						// seek to position in BCDE
 	ret;								// done
 	
-
-c_aload:
+;;
+; <code>LOAD</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @deprecared To be replaced with non-tokenized version
+; @throws File not found; Path not found.
+;;
+c_load:
 	call unstack_z;
 	call path_to_ix;
 	ld b, fa_read;
@@ -984,7 +961,13 @@ f_getc:
 	ld a, (membot)
 	ret
 
-c_asave:
+;;
+; <code>SAVE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#SAVE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @deprecated To be replaced with non-tokenized version.
+; @throws File not found; Path not found.
+;;
+c_save:
 	call unstack_z;						// return if checking syntax
 	call path_to_ix;
 	ld b, fa_write | fa_open_al;

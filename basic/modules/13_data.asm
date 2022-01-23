@@ -36,8 +36,8 @@ endif
 	defb "SE BASIC IV 4.2 Cordelia", ctrl_cr;
 	defb "Copyright (C)2022 Source Solutions, Inc.", ctrl_cr;
 	defb ctrl_cr;
-;	timestamp 'YY-MM-DD h:m';			// RASM directive
-	defb "Release 220122";				// 
+	timestamp 'YY-MM-DD h:m';			// RASM directive
+;	defb "Release YYMMDD";				// 
 	defb ctrl_cr, ctrl_cr, 0;
 
 bytes_free:
@@ -469,10 +469,10 @@ tk_ptr_rem:
 	str "_F1", "_F2", "_F3", "_F4";
 	str "_F5", "_F6", "_F7", "_F8";
 	str "_F9", "_FA", "_FB", "_FC";
-	str "_FD", "ALOAD";
+	str "_FD", "_FE";
 	
 tk_ptr_last:
-	str "ASAVE";
+	str "_FF";
 
 ;	// used in 15_files
 dir_msg:
@@ -937,9 +937,9 @@ p__fd:
 	defw c_rem;
 
 p__fe:
-	defb str_exp_no_f_ops;
-	defw c_aload;
+	defb no_f_ops;
+	defw c_rem;
 
 p__ff:
-	defb str_exp_no_f_ops;
-	defw c_asave;
+	defb no_f_ops;
+	defw c_rem;
