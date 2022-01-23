@@ -807,11 +807,12 @@ file_in:
 	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_read;						// read a byte
+	jr c, report_bad_io_dev2;			// jump if error
 	dec c;								// decrement C (bytes read: should now be zero)
 	ld a, (membot);						// character to A
 	scf;								// set carry flag
 	ret z;								// return if zero flag set
-	or c;								// OR 0
+	and a;								// clear carry flag
 	ret;								// done
 
 file_out:
@@ -821,7 +822,7 @@ file_out:
 	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_write;						// write a byte
-	jp c, report_bad_io_dev;			// jump if error
+	jr c, report_bad_io_dev2;			// jump if error
 ;	or a;								// clear flags
 	ret;								// done
 
@@ -907,7 +908,6 @@ nextln:
 
 copyln:
 	call f_getc;
-	jr c, report_bad_io_dev2;
 	jr nz, aload_end;
 	cp $0a;
 	jr z, readyln;
@@ -955,6 +955,7 @@ f_getc:
 	ld bc, 1;
 	rst divmmc;
 	defb f_read;
+f_getc_err:
 	jr c, report_bad_io_dev3;
 	dec bc;
 	ld a, c;
