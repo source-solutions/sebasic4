@@ -62,6 +62,18 @@ tokenizer_4:
 	bit 0, c;							// in quotes?
 	jr nz, in_q;						// jump if so
 
+sbst_l_paren
+	cp '[';								// left square bracket?
+	jr nz, sbst_r_paren;				// jump if not
+	ld a, '(';							// left parenthesis to A
+	jr do_sbst;							// immediate jump
+
+sbst_r_paren:
+	cp ']';								// right square bracket?
+	jr nz, sbst_print;					// jump if not
+	ld a, ')';							// left parenthesis to A
+	jr do_sbst;							// immediate jump
+
 sbst_print
 	cp '?';								// question mark?
 	jr nz, sbst_and;					// jump if not
@@ -155,7 +167,7 @@ tokenizer_11:
 	jr z, tokenizer_12;					// jump if so
 	dec hl;								// final character of token
 	cp '$';								// string?
-	jr z, tokenizer_3;					// jump if so
+	jp z, tokenizer_3;					// jump if so
 	call alpha;	'|'						// alpha?
 	jp c, tokenizer_3;					// jump if so
 
