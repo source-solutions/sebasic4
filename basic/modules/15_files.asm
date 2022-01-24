@@ -881,21 +881,20 @@ seek_f:
 	defb f_seek;						// seek to position in BCDE
 	ret;								// done
 	
+
+c_merge:
+	call unstack_z;
+	call open_load_merge;
+	jr nextln;
+
 ;;
 ; <code>LOAD</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
-; @deprecared To be replaced with non-tokenized version
 ; @throws File not found; Path not found.
 ;;
 c_load:
 	call unstack_z;
-	call path_to_ix;
-	ld b, fa_read;
-	ld a, "*";
-	rst divmmc;
-	defb f_open;
-	jr c, report_bad_io_dev2;
-	ld (membot + 1), a;
+	call open_load_merge;
 
 	ld de, (prog);
 	ld hl, (vars);
@@ -915,6 +914,16 @@ copyln:
 	jr z, readyln;
 	rst print_a;
 	jr copyln;
+
+open_load_merge:
+	call path_to_ix;
+	ld b, fa_read;
+	ld a, "*";
+	rst divmmc;
+	defb f_open;
+	jr c, report_bad_io_dev2;
+	ld (membot + 1), a;
+	ret
 
 readyln:
 	ld hl, (membot);

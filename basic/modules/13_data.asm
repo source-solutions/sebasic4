@@ -464,7 +464,7 @@ tk_ptr_rem:
 	str "ON", "RENUM", "OLD", "SCREEN";		// $DD
 	str "XOR", "EOF", "LOC", "LOF";			// $E1
 	str "LEFT$", "RIGHT$", "MID$", "STRING$";	// $E5
-	str "FIX", "DPEEK", "DPOKE", "_EC";		// $E9
+	str "FIX", "DPEEK", "DPOKE", "MERGE";		// $E9
 	str "_ED", "_EE", "_EF", "_F0";			// $ED
 	str "_F1", "_F2", "_F3", "_F4";
 	str "_F5", "_F6", "_F7", "_F8";
@@ -572,7 +572,7 @@ offst_tbl:
 	defw p__e9;							// 
 	defw p__ea;							// 
 	defw p_dpoke;							// 
-	defw p__ec;							// 
+	defw p_merge;							// 
 	defw p__ed;							// 
 	defw p__ee;							// 
 	defw p__ef;							// 
@@ -644,6 +644,10 @@ p_kill:
 p_load:
 	defb str_exp_no_f_ops;
 	defw c_load;
+
+p_merge:
+	defb str_exp_no_f_ops;
+	defw c_merge;
 
 p_mkdir:
 	defb str_exp_no_f_ops;
