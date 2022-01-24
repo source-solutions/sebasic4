@@ -395,7 +395,7 @@ kt_dig_sym:
 token_table:
 	defb end_marker;
 
-tk_ptr_1st:
+	tk_ptr_1st		equ $80
 ;	// exceptional functions (no arguments, etc.)
 	str "RND", "INKEY$", "PI", "FN";	// $80
 	tk_rnd			equ $80;
