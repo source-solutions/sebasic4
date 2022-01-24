@@ -921,6 +921,7 @@ open_load_merge:
 	ld a, "*";
 	rst divmmc;
 	defb f_open;
+report_bad_io_dev3:
 	jr c, report_bad_io_dev2;
 	ld (membot + 1), a;
 	ret
@@ -953,8 +954,7 @@ aload_end:
 	ld a, (membot + 1)
 	rst divmmc;
 	defb f_close;
-report_bad_io_dev3:
-	jr c, report_bad_io_dev2;
+	jr c, report_bad_io_dev3;
 	rst error;
 	defb $ff;						// ok
 
