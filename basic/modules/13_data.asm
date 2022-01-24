@@ -46,19 +46,6 @@ bytes_free:
 
 ;	// used in 04_audio
 semi_tone:
-;	defb $89, $02, $d0, $12, $86;		// C  - 261.625565300599 Hz
-;	defb $89, $0a, $97, $60, $74;		// C# - 277.182630976872 Hz
-;	defb $89, $12, $d5, $17, $1d;		// D  - 293.664767917408 Hz
-;	defb $89, $1b, $90, $41, $01;		// D# - 311.126983722081 Hz
-;	defb $89, $24, $d0, $53, $c9;		// E  - 329.627556912870 Hz
-;	defb $89, $2e, $9d, $36, $b0;		// F  - 349.228231433004 Hz
-;	defb $89, $38, $ff, $49, $3e;		// F# - 369.994422711634 Hz
-;	defb $89, $43, $ff, $6a, $72;		// G  - 391.995435981749 Hz
-;	defb $89, $4f, $a7, $00, $55;		// G# - 415.304697579945 Hz
-;	defb $89, $5c, $00, $00, $00;		// A  - 440.000000000000 Hz
-;	defb $89, $69, $14, $f6, $23;		// A# - 466.163761518090 Hz
-;	defb $89, $76, $f1, $10, $04;		// B  - 493.883301256124 Hz
-
 	deff 261.625565300599;				// C
 	deff 277.182630976872;				// C#
 	deff 293.664767917408;				// D
@@ -106,7 +93,7 @@ init_chan:
 	defb 'K';							// channel
 	defw print_out, file_in;			// screen
 	defb 'S';							// channel
-	defw add_char, report_bad_io_dev;// workspace
+	defw add_char, report_bad_io_dev;	// workspace
 	defb 'W';							// channel
 	defb end_marker;					// no more channels
 
@@ -404,6 +391,8 @@ kt_alpha_sym:
 kt_dig_sym:
 	defb "_!@#$%&'()";
 
+
+
 ;	// used in 02_tokenizer and 06_screen_80
 token_table:
 	defb end_marker;
@@ -414,58 +403,58 @@ token_table:
 ; // TODO: EOF, LOC, LOF
 
 ;	// multi-argument functions
-	str "_A9", "_AA", "_AB";		// $84
+	str "_A9", "_AA", "_AB";			// $84
 
 ; // TODO: LEFT$, RIGHT$, MID$, STRING$
 
 
 ;	// PRINT arguments
-	str "SPC", "TAB";			// $87
+	str "SPC", "TAB";					// $87
 
 ;	// prefix operators (single-argument functions)
-	str "VAL$", "ASC", "VAL";		// $89
+	str "VAL$", "ASC", "VAL";			// $89
 	str "LEN", "SIN", "COS", "TAN";		// $8C
 	str "ASIN", "ACOS", "ATAN", "LOG";	// $90
 	str "EXP", "INT", "SQR", "SGN";		// $94
 	str "ABS", "PEEK", "INP", "USR";	// $98
-	str "STR$", "CHR$", "NOT";		// $9C
+	str "STR$", "CHR$", "NOT";			// $9C
 
 ; // TODO: FIX, DPEEK
 
 
 ;	// infix operators
-	str "MOD";				// $9F
+	str "MOD";							// $9F
 	str "OR", "AND", "<=", ">=";		// $A0
-	str "<>";				// $A4
+	str "<>";							// $A4
 
 ; // TODO: XOR
 
 
 ;	// other keywords
-	str "LINE", "THEN", "TO";		// $A5
-	str "STEP";				// $A8
+	str "LINE", "THEN", "TO";			// $A5
+	str "STEP";							// $A8
 
 ;	// commands
 	str "DEF FN", "BLOAD", "BSAVE", "CHDIR";	// $A9
 	str "COPY", "OPEN #", "CLOSE #", "WHILE";	// $AD
 	str "WEND", "SOUND", "FILES", "KILL";		// $B1
 	str "LOAD", "MKDIR", "NAME", "RMDIR";		// $B5
-	str "SAVE", "OUT", "LOCATE", "END";		// $B9
+	str "SAVE", "OUT", "LOCATE", "END";			// $B9
 	str "STOP", "READ", "DATA", "RESTORE";		// $BD
-	str "NEW", "ERROR", "CONT", "DIM";		// $C1
+	str "NEW", "ERROR", "CONT", "DIM";			// $C1
 
 tk_ptr_rem:
-	str "REM", "FOR", "GOTO", "GOSUB";		// $C5
+	str "REM", "FOR", "GOTO", "GOSUB";			// $C5
 	str "INPUT", "PALETTE", "LIST", "LET";		// $C9
 	str "WAIT", "NEXT", "POKE", "PRINT";		// $CD
 	str "DELETE", "RUN", "EDIT", "RANDOMIZE";	// $D1
-	str "IF", "CLS", "CALL", "CLEAR";		// $D5
+	str "IF", "CLS", "CALL", "CLEAR";			// $D5
 	str "RETURN", "COLOR", "TRON", "TROFF"		// $D9
-	str "ON", "RENUM", "OLD", "SCREEN";		// $DD
-	str "XOR", "EOF", "LOC", "LOF";			// $E1
+	str "ON", "RENUM", "OLD", "SCREEN";			// $DD
+	str "XOR", "EOF", "LOC", "LOF";				// $E1
 	str "LEFT$", "RIGHT$", "MID$", "STRING$";	// $E5
 	str "FIX", "DPEEK", "DPOKE", "MERGE";		// $E9
-	str "_ED", "_EE", "_EF", "_F0";			// $ED
+	str "_ED", "_EE", "_EF", "_F0";				// $ED
 	str "_F1", "_F2", "_F3", "_F4";
 	str "_F5", "_F6", "_F7", "_F8";
 	str "_F9", "_FA", "_FB", "_FC";
@@ -495,13 +484,13 @@ resources:
 	defb "../rsc", 0;					// resource folder
 
 old_bas_path:
-	defb "/system/temporar.y/old.bas", 0;
+	defb "/system/temporar.y/old.bas", 0;	// path to OLD.BAS
 
 sys_folder:
-	defb "system", 0
+	defb "system", 0;					// system folder name
 
 tmp_folder:
-	defb "temporar.y", 0
+	defb "temporar.y", 0;				// temporary folder name
 
 ;	// used in 09_command
 offst_tbl:
@@ -571,8 +560,8 @@ offst_tbl:
 	defw p__e8;							// 
 	defw p__e9;							// 
 	defw p__ea;							// 
-	defw p_dpoke;							// 
-	defw p_merge;							// 
+	defw p_dpoke;						// 
+	defw p_merge;						// 
 	defw p__ed;							// 
 	defw p__ee;							// 
 	defw p__ef;							// 

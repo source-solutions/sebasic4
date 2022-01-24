@@ -475,7 +475,7 @@ open_a:
 ;	// open R subroutine
 open_r:
 	call open_f;						// get parameters, copy to workspace and set IX to point to it
-	ld b, fa_read | fa_write | fa_open_al;	// create or open for reading / writing if file exists
+	ld b, fa_read|fa_write|fa_open_al;	// create or open for reading / writing if file exists
 	call open_file;						// open the file
 	jr open_end;						// immediate jump
 
@@ -857,7 +857,7 @@ close:
 close_valid:
 	call close_2;						// perform channel specific actions
 	ld bc, 0;							// signal stream not in use
-	ld de, -strms - 10;						// handle streams 0 to 2
+	ld de, -strms - 10;					// handle streams 0 to 2
 	ex de, hl;							// swap pointers
 	add hl, de;							// set carry with streams 3 to 15
 	jr c, close_1;						// jump if carry set
@@ -1137,11 +1137,11 @@ number:
 	cp number_mark;						// hidden number marker?
 	ret nz;								// return if not
 	inc hl;								// advance pointer six times
-	inc hl;
-	inc hl;
-	inc hl;
-	inc hl;
-	inc hl;
+	inc hl;								// 
+	inc hl;								// 
+	inc hl;								// 
+	inc hl;								// 
+	inc hl;								// 
 	ld a, (hl);							// code to A
 	ret;								// end of subroutine
 
@@ -1218,27 +1218,27 @@ out_char:
 	pop af;								// unstack character
 
 out_ch_1:
-	cp $80;							// token?
+	cp $80;								// token?
 	jr c, out_ch_2;						// jump, if not
-	bit 2, (iy + _flags2);					// in quotes?
+	bit 2, (iy + _flags2);				// in quotes?
 	jp nz, out_ch_2;					// jump, if so
-	push de;
-	call po_token;
-	pop de;
-	ret;
+	push de;							// 
+	call po_token;						// 
+	pop de;								// 
+	ret;								// 
+
 out_ch_2:
-	push hl
-	ld hl, flags;
-	res 0, (hl);
-	cp ' ';
-	jr nz, out_ch_3;
-	set 0, (hl);
+	push hl;							// 
+	ld hl, flags;						// 
+	res 0, (hl);						// 
+	cp ' ';								// 
+	jr nz, out_ch_3;					// 
+	set 0, (hl);						// 
+
 out_ch_3:
-	pop hl
+	pop hl;								// 
 	rst print_a;						// print character
 	ret;								// end of subroutine
-
-
 
 	org $196e;
 ;;
@@ -1457,43 +1457,46 @@ out_num_4:
 	ret;								// end of subroutine
 
 adjust_strms:
-	push bc;
-	push hl;
-	ld de, (chans);
-	and a;
-	sbc hl, de;
-	ex de, hl;
-	ld hl, strms + 6;
-strms_loop:
-	ld a, (hl);
-	inc l;
-	ex af, af';
-	ld a, (hl);
-	cp d;
-	jr c, strm_skip;
-	jr nz, strm_adj;
-	ex af, af'
-	cp e;
-	jr c, strm_skip;
-strm_adj:
-	push de;
-	ld d, (hl);
-	dec l
-	ld e, (hl);
-	ex de, hl;
-	and a;
-	sbc hl, bc
-	ex de, hl;
-	ld (hl), e
-	inc l
-	ld (hl), d
-	pop de;
-strm_skip:
-	inc l;
-	ld a, l;
-	cp strms + 38 - $100 * (strms / $100);
-	jr nz, strms_loop;
+	push bc;							// 
+	push hl;							// 
+	ld de, (chans);						// 
+	and a;								// 
+	sbc hl, de;							// 
+	ex de, hl;							// 
+	ld hl, strms + 6;					// 
 
-	pop hl;
-	pop bc;
-	ret
+strms_loop:
+	ld a, (hl);							// 
+	inc l;								// 
+	ex af, af';							// 
+	ld a, (hl);							// 
+	cp d;								// 
+	jr c, strm_skip;					// 
+	jr nz, strm_adj;					// 
+	ex af, af'							// 
+	cp e;								// 
+	jr c, strm_skip;					// 
+
+strm_adj:
+	push de;							// 
+	ld d, (hl);							// 
+	dec l								// 
+	ld e, (hl);							// 
+	ex de, hl;							// 
+	and a;								// 
+	sbc hl, bc;							// 
+	ex de, hl;							// 
+	ld (hl), e;							// 
+	inc l;								// 
+	ld (hl), d;							// 
+	pop de;								// 
+
+strm_skip:
+	inc l;								// 
+	ld a, l;							// 
+	cp strms+38 - $100 * (strms/$100);	//
+	jr nz, strms_loop;					// 
+
+	pop hl;								// 
+	pop bc;								// 
+	ret;								// 
