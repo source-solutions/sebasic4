@@ -671,7 +671,8 @@ po_stp_asciiz:
 
 ;	// token printing subroutine
 po_token:
-	sub tk_rnd;						// modify token code
+	sub tk_ptr_1st;						// modify token code
+
 po_tokens:
 	ld de, token_table;					// address token table
 	push af;							// stack code

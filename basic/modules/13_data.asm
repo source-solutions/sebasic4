@@ -391,25 +391,33 @@ kt_alpha_sym:
 kt_dig_sym:
 	defb "_!@#$%&'()";
 
-
-
 ;	// used in 02_tokenizer and 06_screen_80
 token_table:
 	defb end_marker;
 
+tk_ptr_1st:
 ;	// exceptional functions (no arguments, etc.)
 	str "RND", "INKEY$", "PI", "FN";	// $80
+	tk_rnd			equ $80;
+	tk_inkey_str	equ $81;
+	tk_pi			equ $82;
+	tk_fn			equ $83;
 
 ; // TODO: EOF, LOC, LOF
 
 ;	// multi-argument functions
 	str "_A9", "_AA", "_AB";			// $84
+	tk__a9			equ $84;
+	tk__aa			equ $85;
+	tk__ab			equ $86;
 
 ; // TODO: LEFT$, RIGHT$, MID$, STRING$
 
 
 ;	// PRINT arguments
 	str "SPC", "TAB";					// $87
+	tk_spc			equ $87;
+	tk_tab			equ $88;
 
 ;	// prefix operators (single-argument functions)
 	str "VAL$", "ASC", "VAL";			// $89
@@ -418,6 +426,28 @@ token_table:
 	str "EXP", "INT", "SQR", "SGN";		// $94
 	str "ABS", "PEEK", "INP", "USR";	// $98
 	str "STR$", "CHR$", "NOT";			// $9C
+	tk_val_str		equ $89;
+	tk_asc			equ $8a;
+	tk_val			equ $8b;
+	tk_len			equ $8c;
+	tk_sin			equ $8d;
+	tk_cos			equ $8e;
+	tk_tan			equ $8f;
+	tk_asin			equ $90;
+	tk_acos			equ $91;
+	tk_atan			equ $92;
+	tk_log			equ $93;
+	tk_exp			equ $94;
+	tk_int			equ $95;
+	tk_sqr			equ $96;
+	tk_sgn			equ $97;
+	tk_abs			equ $98;
+	tk_peek			equ $99;
+	tk_inp			equ $9a;
+	tk_usr			equ $9b;
+	tk_str_str		equ $9c;
+	tk_chr_str		equ $9d;
+	tk_not			equ $9e;
 
 ; // TODO: FIX, DPEEK
 
@@ -426,13 +456,22 @@ token_table:
 	str "MOD";							// $9F
 	str "OR", "AND", "<=", ">=";		// $A0
 	str "<>";							// $A4
+	tk_mod			equ $9f;
+	tk_or			equ $a0;
+	tk_and			equ $a1;
+	tk_l_eql		equ $a2;
+	tk_gr_eq		equ $a3;
+	tk_neql			equ $a4;
 
 ; // TODO: XOR
-
 
 ;	// other keywords
 	str "LINE", "THEN", "TO";			// $A5
 	str "STEP";							// $A8
+	tk_line			equ $a5;
+	tk_then			equ $a6;
+	tk_to			equ $a7;
+	tk_step			equ $a8;
 
 ;	// commands
 	str "DEF FN", "BLOAD", "BSAVE", "CHDIR";	// $A9
@@ -442,6 +481,34 @@ token_table:
 	str "SAVE", "OUT", "LOCATE", "END";			// $B9
 	str "STOP", "READ", "DATA", "RESTORE";		// $BD
 	str "NEW", "ERROR", "CONT", "DIM";			// $C1
+	tk_def_fn		equ $a9;
+	tk_bload		equ $aa;
+	tk_bsave		equ $ab;
+	tk_chdir		equ $ac;
+	tk_copy			equ $ad;
+	tk_open			equ $ae;
+	tk_close		equ $af;
+	tk_while		equ $b0;
+	tk_wend			equ $b1;
+	tk_sound		equ $b2;
+	tkey_files		equ $b3;
+	tk_kill			equ $b4;
+	tk_load			equ $b5;
+	tk_mkdir		equ $b6;
+	tk_name			equ $b7;
+	tk_rmdir		equ $b8;
+	tk_save			equ $b9;
+	tk_out			equ $ba;
+	tk_locate		equ $bb;
+	tk_end			equ $bc;
+	tk_stop			equ $bd;
+	tk_read			equ $be;
+	tk_data			equ $bf;
+	tk_restore		equ $c0;
+	tk_new			equ $c1;
+	tk_error		equ $c2;
+	tk_cont			equ $c3;
+	tk_dim			equ $c4;
 
 tk_ptr_rem:
 	str "REM", "FOR", "GOTO", "GOSUB";			// $C5
@@ -451,17 +518,78 @@ tk_ptr_rem:
 	str "IF", "CLS", "CALL", "CLEAR";			// $D5
 	str "RETURN", "COLOR", "TRON", "TROFF"		// $D9
 	str "ON", "RENUM", "OLD", "SCREEN";			// $DD
-	str "XOR", "EOF", "LOC", "LOF";				// $E1
+	tk_rem			equ $c5;
+	tk_for			equ $c6;
+	tk_goto			equ $c7;
+	tk_gosub		equ $c8;
+	tk_input		equ $c9;
+	tk_palette		equ $ca;
+	tk_list			equ $cb;
+	tk_let			equ $cc;
+	tk_wait			equ $cd;
+	tk_next			equ $ce;
+	tk_poke			equ $cf;
+	tk_print		equ $d0;
+	tk_delete		equ $d1;
+	tk_run			equ $d2;
+	tk_edit			equ $d3;
+	tk_randomize	equ $d4;
+	tk_if			equ $d5;
+	tk_cls			equ $d6;
+	tk_call			equ $d7;
+	tk_clear		equ $d8;
+	tk_return		equ $d9;
+	tk_color		equ $da;
+	tk_tron			equ $db;
+	tk_troff		equ $dc;
+	tk_on			equ $dd;
+	tk_renum		equ $de;
+	tk_old			equ $df;
+	tk_screen		equ $e0;
+
+	str "XOR", "_E2", "_E3", "_E4";				// $E1
 	str "LEFT$", "RIGHT$", "MID$", "STRING$";	// $E5
 	str "FIX", "DPEEK", "DPOKE", "MERGE";		// $E9
 	str "KEY", "_EE", "_EF", "_F0";				// $ED
+	tk_xor			equ $e1;
+	tk__e2			equ $e2;
+	tk__e3			equ $e3;
+	tk__e4			equ $e4;
+	tk_left_str		equ $e5;
+	tk_right_str	equ $e6;
+	tk_mid_str		equ $e7;
+	tk_string_str	equ $e8;
+	tk_fix			equ $e9;
+	tk_dpeek		equ $ea;
+	tk_dpoke		equ $eb;
+	tk_merge		equ $ec;
+	tk_key			equ $ed;
+	tk__ee			equ $ee;
+	tk__ef			equ $ef;
+	tk__f0			equ $f0;
+
 	str "_F1", "_F2", "_F3", "_F4";
 	str "_F5", "_F6", "_F7", "_F8";
 	str "_F9", "_FA", "_FB", "_FC";
 	str "_FD", "_FE";
+	tk__f1			equ $f1;
+	tk__f2			equ $f2;
+	tk__f3			equ $f3;
+	tk__f4			equ $f4;
+	tk__f5			equ $f5;
+	tk__f6			equ $f6;
+	tk__f7			equ $f7;
+	tk__f8			equ $f8;
+	tk__f9			equ $f9;
+	tk__fa			equ $fa;
+	tk__fb			equ $fb;
+	tk__fc			equ $fc;
+	tk__fd			equ $fd;
+	tk__fe			equ $fe;
 	
 tk_ptr_last:
 	str "_FF";
+	tk__ff			equ $ff;
 
 ;	// used in 15_files
 dir_msg:
@@ -582,9 +710,7 @@ offst_tbl:
 	defw p__fe;							// 
 	defw p__ff;							// 
 
-p_def:
-	defb var_syn;
-	defw c_def;
+;	// parameter table
 
 p_bload:
 	defb str_exp, ',', num_exp_no_f_ops;
@@ -594,45 +720,118 @@ p_bsave:
 	defb str_exp, ',', num_exp, ',', num_exp_no_f_ops;
 	defw c_bsave;
 
+p_call:
+	defb num_exp_no_f_ops;
+	defw c_call;
+
 p_chdir:
 	defb str_exp_no_f_ops;
 	defw c_chdir;
 
-p_copy:
-	defb str_exp, tk_to, str_exp_no_f_ops;
-	defw c_copy;
-
-p_open:
-	defb num_exp, ',', str_exp, var_syn;
-	defw c_open;
+p_clear:
+	defb num_exp_0;
+	defw c_clear;
 
 p_close:
 	defb num_exp_no_f_ops;
 	defw c_close;
 
-p_while:
-	defb var_syn;
-	defw c_while;
-
-p_wend:
+p_cls:
 	defb no_f_ops;
-	defw c_wend;
+	defw c_cls;
 
-p_sound:
+p_color:
 	defb two_c_s_num_no_f_ops;
-	defw c_sound;
+	defw c_color;
+
+p_cont:
+	defb no_f_ops;
+	dep_key:
+	defb var_syn;
+	defw c_key;
+
+p_copy:
+	defb str_exp, tk_to, str_exp_no_f_ops;
+	defw c_copy;
+
+p_data:
+	defb var_syn;
+	defw c_data;
+
+p_def:
+	defb var_syn;
+	defw c_def;
+
+p_delete:
+	defb num_exp, ',', num_exp_no_f_ops;
+	defw c_delete;
+
+p_dim:
+	defb var_syn;
+	defw c_dim;
+
+p_dpoke:
+	defb two_c_s_num_no_f_ops;
+	defw c_dpoke;
+
+p_edit:
+	defb num_exp_0;
+	defw c_edit;
+
+p_end:
+	defb no_f_ops;
+	defw c_end;
+
+p_error:
+	defb num_exp_no_f_ops;
+	defw c_error;
 
 p_files:
 	defb var_syn;
 	defw c_files;
 
+p_for:
+	defb chr_var, "=", num_exp, tk_to, num_exp, var_syn;
+	defw c_for;
+
+p_gosub:
+	defb num_exp_no_f_ops;
+	defw c_gosub;
+
+p_goto:
+	defb num_exp_no_f_ops;
+	defw c_goto;
+
+p_if:
+	defb num_exp, tk_then, var_syn;
+	defw c_if;
+
+p_input:
+	defb var_syn;
+	defw c_input;
+
 p_kill:
 	defb str_exp_no_f_ops;
 	defw c_kill;
 
+p_key:
+	defb var_syn;
+	defw c_key;
+
+p_let:
+	defb var_rqd, '=', expr_num_str;
+
+p_list:
+	defb var_syn;
+	defw c_list;
+
 p_load:
 	defb str_exp_no_f_ops;
 	defw c_load;
+
+p_locate:
+	defb two_c_s_num_no_f_ops;
+	defw c_locate;
 
 p_merge:
 	defb str_exp_no_f_ops;
@@ -646,176 +845,109 @@ p_name:
 	defb str_exp, tk_to, str_exp_no_f_ops;
 	defw c_name;
 
-p_rmdir:
-	defb str_exp_no_f_ops;
-	defw c_rmdir;
-
-p_save:
-	defb str_exp_no_f_ops;
-	defw c_save;
-
-p_out:
-	defb two_c_s_num_no_f_ops;
-	defw c_out;
-
-p_locate:
-	defb two_c_s_num_no_f_ops;
-	defw c_locate;
-
-p_end:
-	defb no_f_ops;
-	defw c_end;
-
-p_stop:
-	defb no_f_ops;
-	defw c_stop;
-
-p_read:
-	defb var_syn;
-	defw c_read;
-
-p_data:
-	defb var_syn;
-	defw c_data;
-
-p_restore:
-	defb num_exp_0;
-	defw c_restore;
+p_next:
+	defb chr_var, no_f_ops;
+	defw c_next;
 
 p_new:
 	defb no_f_ops;
 	defw c_new;
 
-p_error:
-	defb num_exp_no_f_ops;
-	defw c_error;
-
-p_cont:
+p_old:
 	defb no_f_ops;
-	defw c_cont;
-
-p_dim:
-	defb var_syn;
-	defw c_dim;
-
-p_rem:
-	defb var_syn;
-	defw c_rem;
-
-p_for:
-	defb chr_var, "=", num_exp, tk_to, num_exp, var_syn;
-	defw c_for;
-
-p_goto:
-	defb num_exp_no_f_ops;
-	defw c_goto;
-
-p_gosub:
-	defb num_exp_no_f_ops;
-	defw c_gosub;
-
-p_input:
-	defb var_syn;
-	defw c_input;
-
-p_key:
-	defb var_syn;
-	defw c_key;
-
-p_palette:
-	defb two_c_s_num_no_f_ops;
-	defw c_palette;
-
-p_list:
-	defb var_syn;
-	defw c_list;
-
-p_let:
-	defb var_rqd, '=', expr_num_str;
-
-p_wait:
-	defb num_exp_no_f_ops;
-	defw c_wait;
-
-p_next:
-	defb chr_var, no_f_ops;
-	defw c_next;
-
-p_poke:
-	defb two_c_s_num_no_f_ops;
-	defw c_poke;
-
-p_dpoke:
-	defb two_c_s_num_no_f_ops;
-	defw c_dpoke;
-
-p_print:
-	defb var_syn;
-	defw c_print;
-
-p_delete:
-	defb num_exp, ',', num_exp_no_f_ops;
-	defw c_delete;
-
-p_run:
-	defb var_syn;
-	defw c_run;
-
-p_edit:
-	defb num_exp_0;
-	defw c_edit;
-
-p_randomize:
-	defb num_exp_0;
-	defw c_randomize;
-
-p_if:
-	defb num_exp, tk_then, var_syn;
-	defw c_if;
-
-p_cls:
-	defb no_f_ops;
-	defw c_cls;
-
-p_call:
-	defb num_exp_no_f_ops;
-	defw c_call;
-
-p_clear:
-	defb num_exp_0;
-	defw c_clear;
-
-p_return:
-	defb no_f_ops;
-	defw c_return;
-
-p_color:
-	defb two_c_s_num_no_f_ops;
-	defw c_color;
-
-p_tron:
-	defb no_f_ops;
-	defw c_tron;
-
-p_troff:
-	defb no_f_ops;
-	defw c_troff;
+	defw c_old;
 
 p_on:
 	defb var_syn;
 	defw c_on;
 
+p_open:
+	defb num_exp, ',', str_exp, var_syn;
+	defw c_open;
+
+p_out:
+	defb two_c_s_num_no_f_ops;
+	defw c_out;
+
+p_palette:
+	defb two_c_s_num_no_f_ops;
+	defw c_palette;
+
+p_poke:
+	defb two_c_s_num_no_f_ops;
+	defw c_poke;
+
+p_print:
+	defb var_syn;
+	defw c_print;
+
+p_randomize:
+	defb num_exp_0;
+	defw c_randomize;
+
+p_read:
+	defb var_syn;
+	defw c_read;
+
+p_rem:
+	defb var_syn;
+	defw c_rem;
+
 p_renum:
 	defb var_syn;
 	defw c_renum;
 
-p_old:
+p_restore:
+	defb num_exp_0;
+	defw c_restore;
+
+p_return:
 	defb no_f_ops;
-	defw c_old;
+	defw c_return;
+
+p_rmdir:
+	defb str_exp_no_f_ops;
+	defw c_rmdir;
+
+p_run:
+	defb var_syn;
+	defw c_run;
+
+p_save:
+	defb str_exp_no_f_ops;
+	defw c_save;
 
 p_screen:
 	defb num_exp_no_f_ops;
 	defw c_screen;
+
+p_sound:
+	defb two_c_s_num_no_f_ops;
+	defw c_sound;
+
+p_stop:
+	defb no_f_ops;
+	defw c_stop;
+
+p_troff:
+	defb no_f_ops;
+	defw c_troff;
+
+p_tron:
+	defb no_f_ops;
+	defw c_tron;
+
+p_wait:
+	defb num_exp_no_f_ops;
+	defw c_wait;
+
+p_wend:
+	defb no_f_ops;
+	defw c_wend;
+
+p_while:
+	defb var_syn;
+	defw c_while;
 
 p__ee:
 	defb no_f_ops;
