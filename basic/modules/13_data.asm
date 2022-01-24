@@ -454,7 +454,7 @@ tk_ptr_rem:
 	str "XOR", "EOF", "LOC", "LOF";				// $E1
 	str "LEFT$", "RIGHT$", "MID$", "STRING$";	// $E5
 	str "FIX", "DPEEK", "DPOKE", "MERGE";		// $E9
-	str "_ED", "_EE", "_EF", "_F0";				// $ED
+	str "KEY", "_EE", "_EF", "_F0";				// $ED
 	str "_F1", "_F2", "_F3", "_F4";
 	str "_F5", "_F6", "_F7", "_F8";
 	str "_F9", "_FA", "_FB", "_FC";
@@ -550,19 +550,19 @@ offst_tbl:
 	defw p_renum;						// aa
 	defw p_old;							// 
 	defw p_screen;						// c5
-	defw p__e1;							// 
-	defw p__e2;							// 
-	defw p__e3;							// 
-	defw p__e4;							// 
-	defw p__e5;							// 
-	defw p__e6;							// 
-	defw p__e7;							// 
-	defw p__e8;							// 
-	defw p__e9;							// 
-	defw p__ea;							// 
+	defw p__ff;							// 
+	defw p__ff;							// 
+	defw p__ff;							// 
+	defw p__ff;							// 
+	defw p__ff;							// 
+	defw p__ff;							// 
+	defw p__ff;							// 
+	defw p__ff;							// 
+	defw p__ff;							// 
+	defw p__ff;							// 
 	defw p_dpoke;						// 
 	defw p_merge;						// 
-	defw p__ed;							// 
+	defw p_key;							// 
 	defw p__ee;							// 
 	defw p__ef;							// 
 	defw p__f0;							// 
@@ -718,6 +718,10 @@ p_input:
 	defb var_syn;
 	defw c_input;
 
+p_key:
+	defb var_syn;
+	defw c_key;
+
 p_palette:
 	defb two_c_s_num_no_f_ops;
 	defw c_palette;
@@ -812,58 +816,6 @@ p_old:
 p_screen:
 	defb num_exp_no_f_ops;
 	defw c_screen;
-
-p__e1:
-	defb no_f_ops;
-	defw c_rem;
-
-p__e2:
-	defb no_f_ops;
-	defw c_rem;
-
-p__e3:
-	defb no_f_ops;
-	defw c_rem;
-
-p__e4:
-	defb no_f_ops;
-	defw c_rem;
-
-p__e5:
-	defb no_f_ops;
-	defw c_rem;
-
-p__e6:
-	defb no_f_ops;
-	defw c_rem;
-
-p__e7:
-	defb no_f_ops;
-	defw c_rem;
-
-p__e8:
-	defb no_f_ops;
-	defw c_rem;
-
-p__e9:
-	defb no_f_ops;
-	defw c_rem;
-
-p__ea:
-	defb no_f_ops;
-	defw c_rem;
-
-p__eb:
-	defb no_f_ops;
-	defw c_rem;
-
-p__ec:
-	defb no_f_ops;
-	defw c_rem;
-
-p__ed:
-	defb no_f_ops;
-	defw c_rem;
 
 p__ee:
 	defb no_f_ops;

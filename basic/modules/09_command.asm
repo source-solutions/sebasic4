@@ -1885,11 +1885,81 @@ look_vars1:
 	res 6, (iy + _flags);				// indicate string
 	call syntax_z;						// checking syntax?
 	scf;								// set carry
-	jr nz, lv2;							// in runtime, not found CF=1, ZF=0
+	jr nz, lv2;		org					// in runtime, not found CF=1, ZF=0
 	and a;								// in syntax check, found CF=0, ZF=0
 	defb $3E;							// LD A, skip next byte
+
 lv_nstr:
 	ex af,af';							// restore AF
+
 lv2:
 	pop hl;								// restore location
 	ret;								// 
+
+; // set and list macros
+c_key:
+	rst get_char;						// first character
+	cp tk_list;							// LIST token?
+	jr z, key_list;						// jump if so
+	call expt_1num;						// get parameter
+	cp ',';								// comma?
+	jr nz, report_syntax_err3;			// error if not
+	rst next_char;						// next character
+	call expt_exp;						// expect string expression
+	call check_end;						// end of syntax checking
+	call unstack_z;						// return if checking syntax
+	ret;
+
+report_syntax_err3:
+	rst error;							// ekse
+	defb syntax_error;					// error
+
+key_list:
+	rst next_char;						// next character
+	call check_end;						// expect end of line
+	call unstack_z;						// return if checking syntax
+	ld a, 2;							// use stream #2
+	ld (iy + _vdu_flag), 0;				// signal normal listing
+	call chan_open;						// open channel if not
+
+	ld bc, 1;							// zero B and count to C
+	ld de, s_f1;						// address of first macro definition
+
+f_num_loop:
+	push bc;							// stack zero and macro number
+	push de;							// stack macro address
+	call pr_mac;						// output a line
+	pop de;								// unstack last macro address
+	pop bc;								// unstack zero and macro number
+	inc c;								// next macro number
+	ld a, 16;							// done all 15?
+	cp c;								// test against macro number
+	jp z, print_cr;						// exit via print_cr if so
+	ld h, b;							// zero H
+	ld l, a;							// HL = 16
+	add hl, de;							// next macro address
+	ex de, hl;							// result to DE
+	jr f_num_loop;						// loop until done
+
+pr_mac:
+	ld b, 0;							// zero high byte
+	ld a, 'F';							// F
+	rst print_a;						// print it
+	call out_num_1;						// print the number in C as a decimal
+	ld a, ':'							// :
+	rst print_a;						// print it
+	ld a, ' '							// space
+	rst print_a;						// print it
+
+pr_mac_loop:
+	ld a, (de);							// get character
+	and a;								// null terminator?
+	jp z, print_cr;						// return if so via print_cr
+	cp ctrl_cr;							// carriage return
+	jr nz, not_cr;						// not a CR
+	ld a, $1b;							// <- in IBM 437
+
+not_cr:
+	rst print_a;						// print the character
+	inc de;								// next character
+	jr pr_mac_loop;						// loop until done

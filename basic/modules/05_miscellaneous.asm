@@ -513,13 +513,6 @@ msg_loop:
 	jr msg_loop;						// loop until done
 
 ;;
-; <code>AUTO</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#AUTO" target="_blank" rel="noopener noreferrer">Language reference</a>
-;;
-c_auto:
-	ret
-
-;;
 ; <code>WHILE</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#WHILE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
