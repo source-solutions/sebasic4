@@ -400,6 +400,7 @@ class_08:
 ;;
 expt_2num:
 	call expt_1num;						// get expression
+	
 expt_comma_1num:
 	cp ',';								// comma?
 	jr nz, report_syntax_err;			// error if not
@@ -1555,8 +1556,8 @@ renum_1:
 	jr renum_2;							// immediate jump
 
 renum_error:
-	rst error;
-	defb syntax_error;
+	rst error;							// 
+	defb syntax_error;					// 
 
 line_10:
 	fwait;								// stack
@@ -1892,4 +1893,3 @@ lv_nstr:
 lv2:
 	pop hl;								// restore location
 	ret;								// 
-

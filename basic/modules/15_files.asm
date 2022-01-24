@@ -371,20 +371,6 @@ ifdef no_fs
 endif
 	call unstack_z;						// return if checking syntax
 	ld ix, old_bas_path;				// pointer to path
-	jr c_load_old;						// immediate jump
-
-;;
-; <code>LOAD</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
-; @deprecared To be replaced with non-tokenized version
-; @throws File not found; Path not found.
-;;
-c_load:
-	call unstack_z;						// return if checking syntax
-	call get_path;						// path to buffer
-	ld ix, $5a00;						// pointer to path
-
-c_load_old:
 	call f_open_read_ex;				// open file for reading
 	call f_get_stats;					// get program length
 
@@ -470,20 +456,6 @@ endif
 	defb f_chdir;						// change folder
 
 	ld ix, old_bas_path;				// pointer to path
-	jr c_save_old;						// immediate jump
-
-;;
-; <code>SAVE</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#SAVE" target="_blank" rel="noopener noreferrer">Language reference</a>
-; @deprecated To be replaced with non-tokenized version.
-; @throws File not found; Path not found.
-;;
-c_save:
-	call unstack_z;						// return if checking syntax
-	call get_path;						// path to buffer
-	ld ix, $5a00;						// pointer to path
-
-c_save_old:
 	call f_open_write_al;				// open file for writing
 
 ;	// get program length
@@ -691,6 +663,8 @@ last_entry:
 	ld a, ctrl_cr;						// carriage return
 	rst print_a;						// print it
 	ld a, (handle);						// get folder handle
+
+do_f_close:
 	rst divmmc;							// issue a hookcode
 	defb f_close;						// close it
 	ret;								// end of subroutine
@@ -781,8 +755,8 @@ chk_path_error:
 	ret;								// done
 
 report_path_not_found:
-	rst error;
-	defb path_not_found;
+	rst error;							// 
+	defb path_not_found;				// 
 
 ;	// copy path to workspace
 path_to_ix:
@@ -823,7 +797,7 @@ no_space:
 ;	// file channels
 get_handle:
 	ld ix, (curchl);					// get current channel
-	ld a, (ix + 7);						// get file handle
+	ld a, (ix + 5);						// get file handle
 	ld bc, 1;							// one byte to transfer
 	ret;								// done
 
@@ -833,11 +807,12 @@ file_in:
 	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_read;						// read a byte
+	jr c, report_bad_io_dev2;			// jump if error
 	dec c;								// decrement C (bytes read: should now be zero)
 	ld a, (membot);						// character to A
 	scf;								// set carry flag
 	ret z;								// return if zero flag set
-	or c;								// OR 0
+	and a;								// clear carry flag
 	ret;								// done
 
 file_out:
@@ -847,18 +822,53 @@ file_out:
 	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_write;						// write a byte
-	jp c, report_bad_io_dev;			// jump if error
-	or a;								// clear flags
+	jr c, report_bad_io_dev2;			// jump if error
+;	or a;								// clear flags
 	ret;								// done
 
+file_sr:
+	defw	file_out;					// 
+	defw	file_in;					// 
+	defb	'F';						// 
+
 open_file:
+	push bc;							// stack mode
+	ld hl, (prog);						// HL = start of BASIC program
+	dec hl;								// HL = end of channel descriptor area
+	ld bc, 6							// file channel descriptor length
+	add ix, bc;							// the filename will get moved by 6 bytes
+	call make_room;						// reserve channel descriptor
+	pop bc;								// BC = mode
+	push de;							// stack end of channel descriptor
    	ld a, '*';							// use current drive
-	and a;								// signal no error (clear carry flag)
+;	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_open;						// open file
-	jp c, report_bad_io_dev;			// jump if error
-	or a;								// clear flags
+	jr c, open_file_err;				// jump if error
+	pop de;								// unstack end of channel descriptor
+	ld (de), a;							// file descriptor
+	dec de;								// 
+	ld hl, file_sr + 4;					// HL = service routines' end
+	ld bc, 5;							// copy 5 bytes
+	lddr;								// do the copying
+	ld hl,(chans);						// HL = channel descriptor area
+	ex de, hl;							// DE = chan. desc. area. HL = channel desc. beginning - 1
+	sbc hl, de;							// HL = offset - 2
+	inc hl;								// HL = offset - 1
+	inc hl;								// HL = offset
+	ex de, hl;							// DE = offset
 	ret;								// done
+
+open_file_err:
+	pop de;								// unstack end of channel descriptor
+	inc de;								// DE = one past end of channel desc.
+	ld hl, -6;							// reclaim 6 bytes
+	add hl, de;							// HL = beginning of channel desc.
+	ex de, hl;							// HL = one past end, DE = beginning
+	call reclaim_1;						// free up the unsuccessful channel descriptor
+report_bad_io_dev2:
+	rst error;							// 
+	defb bad_io_device;					// report error
 
 f_length:
 	ld ix, f_stats;						// buffer for file stats
@@ -871,8 +881,115 @@ seek_f:
 	defb f_seek;						// seek to position in BCDE
 	ret;								// done
 	
-c_aload:
-	jp c_load;							// stub for ASCII BASIC loading
-	
-c_asave:
-	jp c_save;							// stub for ASCII BASIC saving
+c_merge:
+	call unstack_z;						// 
+	call open_load_merge;				// 
+	jr nextln;							// 
+
+;;
+; <code>LOAD</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
+;;
+c_load:
+	call unstack_z;						// 
+	call open_load_merge;				// 
+
+	ld de, (prog);						// 
+	ld hl, (vars);						// 
+	call reclaim_1;						// reclaim BASIC program
+
+nextln:
+	call set_min;						// 
+	ld a, $ff;							// 
+	call chan_open;						// 
+
+copyln:
+	call f_getc;						// 
+	jr nz, aload_end;					// 
+	cp $0a;								// 
+	jr z, readyln;						// 
+	cp $0d;								// 
+	jr z, readyln;						// 
+	rst print_a;						// 
+	jr copyln;							// 
+
+open_load_merge:
+	call path_to_ix;					// 
+	ld b, fa_read;						// 
+	ld a, "*";							// 
+	rst divmmc;							// 
+	defb f_open;						// 
+
+report_bad_io_dev3:
+	jr c, report_bad_io_dev2;			// 
+	ld (membot + 1), a;					// 
+	ret;								// 
+
+readyln:
+	ld hl, (membot);					// 
+	push hl;							// 
+	call tokenizer_0;					// 
+	ld hl, (err_sp);					// 
+	push hl;							// 
+	ld hl, scan_err;					// 
+	push hl;							// 
+	ld (err_sp), sp;					// 
+	call line_scan;						// 
+	pop hl;								// 
+
+scan_err:
+	pop hl;								// 
+	ld (err_sp), hl;					// 
+	ld hl, (e_line);					// 
+	ld (ch_add), hl;					// 
+	call e_line_no;						// 
+	ld a, c;							// 
+	or b;								// 
+	call nz, add_line;					// 
+	pop hl;								// 
+	ld (membot), hl;					// 
+	jr nextln;							// 
+
+aload_end:
+	ld a, (membot + 1);					// 
+	rst divmmc;							// 
+	defb f_close;						// 
+	jr c, report_bad_io_dev3;			// 
+	rst error;							// 
+	defb ok;							// 
+
+f_getc:
+	ld a, (membot + 1);					// 
+	ld ix, membot;						// 
+	ld bc, 1;							// 
+	rst divmmc;							// 
+	defb f_read;						// 
+
+f_getc_err:
+	jr c, report_bad_io_dev3;			// 
+	dec bc;								// 
+	ld a, c;							// 
+	or b;								// 
+	ret nz;								// 
+	ld a, (membot);						// 
+	ret;								// 
+
+;;
+; <code>SAVE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#SAVE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @deprecated To be replaced with non-tokenized version.
+; @throws File not found; Path not found.
+;;
+c_save:
+	call unstack_z;						// return if checking syntax
+	call path_to_ix;					// 
+	ld b, fa_write | fa_open_al;		// 
+	call open_file;						// 
+	ld hl, (chans);						// 
+	add hl, de;							// 
+	dec hl;								// 
+	ld (curchl), hl;					// 
+	call list_10;						// 
+	ld ix,(curchl);						// 
+	call close_file;					// it is, in fact, a jump, as the return address will be popped

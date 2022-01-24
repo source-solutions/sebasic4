@@ -1552,8 +1552,8 @@ last:
 
 
 fp_div:
-	fwait;
-	fdiv;
-	fint;
-	fce;
-	ret;
+	fwait;								// 
+	fdiv;								// 
+	fint;								// 
+	fce;								// 
+	ret;								// 

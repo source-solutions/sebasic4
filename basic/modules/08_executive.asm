@@ -315,12 +315,10 @@ report_ln_bf_overflow:
 ;;
 ; main add
 ;;
-main_add:
+add_line:
 	ld (e_ppc), bc;						// make new line current line
 	ld hl, (ch_add);					// sysvar to HL
 	ex de, hl;							// store it in DE
-	ld hl, report_ln_bf_overflow;		// set report
-	push hl;							// as return address
 	ld hl, (worksp);					// worksp to HL
 	scf;								// set carry flag
 	sbc hl, de;							// length from end of line number to end
@@ -368,6 +366,12 @@ main_add1:
 	ld (hl), d;							// least significant byte of line number
 
 main_add2:
+	ret
+
+main_add:
+	ld hl, report_ln_bf_overflow;		// set report
+	push hl;							// as return address
+	call add_line
 	pop af;								// discard report return address
 	jp main_exec;						// immediate jump
 
@@ -447,8 +451,6 @@ open_i:
 	call open_f;						// get parameters, copy to workspace and set IX to point to it
 	ld b, fa_read | fa_open_ex;			// open for reading if file exists
 	call open_file;						// open the file
-
-	ld de, 6;							// data bytes 6, 0
 	jr open_end;						// immediate jump
 
 ;	// open O subroutine
@@ -456,8 +458,6 @@ open_o:
 	call open_f;						// get parameters, copy to workspace and set IX to point to it
 	ld b, fa_write | fa_open_al;		// create or open for writing if file exists
 	call open_file;						// open the file
-
-	ld de, 6;							// data bytes 6, 0
 	jr open_end;						// immediate jump
 
 ;	// open A subroutine
@@ -470,17 +470,13 @@ open_a:
 	ld de, (f_size + 2);				// high word to DE
 	ld ixl, 0;							// seek from start of file
 	call seek_f;						// seek to end of file
-
-	ld de, 6;							// data bytes 6, 0
 	jr open_end;						// immediate jump
 
 ;	// open R subroutine
 open_r:
 	call open_f;						// get parameters, copy to workspace and set IX to point to it
-	ld b, fa_read | fa_write | fa_open_al;	// create or open for reading / writing if file exists
+	ld b, fa_read|fa_write|fa_open_al;	// create or open for reading / writing if file exists
 	call open_file;						// open the file
-
-	ld de, 6;							// data bytes 6, 0
 	jr open_end;						// immediate jump
 
 ;	// open K subroutine
@@ -582,6 +578,14 @@ cl_str_lu:
 	defb 0;								// null termniator
 
 close_file:
+	ld a, (ix+5);						// file handle
+	push ix;							// stack channel descriptor base
+	call do_f_close;					// cannot do rst divmmc below $4000
+	jp c, report_bad_io_dev;			// jump on error
+	pop hl;								// HL = channel descriptor base
+	ld bc, 6;							// BC = channel descriptor length
+	call adjust_strms;					// 
+	call reclaim_2;						// reclaim closed channel
 
 close_str:
 	pop hl;								// unstack channel information pointer
@@ -853,11 +857,11 @@ close:
 close_valid:
 	call close_2;						// perform channel specific actions
 	ld bc, 0;							// signal stream not in use
-	ld de, $a4e2;						// handle streams 0 to 2
+	ld de, -strms - 10;					// handle streams 0 to 2
 	ex de, hl;							// swap pointers
 	add hl, de;							// set carry with streams 3 to 15
 	jr c, close_1;						// jump if carry set
-	ld bc, init_strm + 12;				// address table
+	ld bc, init_strm + 10;				// address table
 	add hl, bc;							// find entry
 	ld c, (hl);							// address
 	inc hl;								// to
@@ -1038,6 +1042,7 @@ list_8:
 
 list_9:
 	call check_end;						// check end of statement
+list_10:
 	ld bc, 16383;						// last possible line
 	ld (t_addr), bc;					// BC to temporary pointer to parameter table
 	ld bc, 0;							// cleasr BC
@@ -1132,11 +1137,11 @@ number:
 	cp number_mark;						// hidden number marker?
 	ret nz;								// return if not
 	inc hl;								// advance pointer six times
-	inc hl;
-	inc hl;
-	inc hl;
-	inc hl;
-	inc hl;
+	inc hl;								// 
+	inc hl;								// 
+	inc hl;								// 
+	inc hl;								// 
+	inc hl;								// 
 	ld a, (hl);							// code to A
 	ret;								// end of subroutine
 
@@ -1213,29 +1218,27 @@ out_char:
 	pop af;								// unstack character
 
 out_ch_1:
-	cp $80;							// token?
+	cp $80;								// token?
 	jr c, out_ch_2;						// jump, if not
-	bit 2, (iy + _flags2);					// in quotes?
+	bit 2, (iy + _flags2);				// in quotes?
 	jp nz, out_ch_2;					// jump, if so
-	push de;
-	call po_token;
-	pop de;
-	ret;
+	push de;							// 
+	call po_token;						// 
+	pop de;								// 
+	ret;								// 
 
 out_ch_2:
-	push hl;
-	ld hl, flags;
-	res 0, (hl);
-	cp ' ';
-	jr nz, out_ch_3;
-	set 0, (hl);
+	push hl;							// 
+	ld hl, flags;						// 
+	res 0, (hl);						// 
+	cp ' ';								// 
+	jr nz, out_ch_3;					// 
+	set 0, (hl);						// 
 
 out_ch_3:
-	pop hl;
+	pop hl;								// 
 	rst print_a;						// print character
 	ret;								// end of subroutine
-
-
 
 	org $196e;
 ;;
@@ -1452,3 +1455,48 @@ out_num_4:
 	pop hl;								// unstack HL
 	pop de;								// and DE
 	ret;								// end of subroutine
+
+adjust_strms:
+	push bc;							// 
+	push hl;							// 
+	ld de, (chans);						// 
+	and a;								// 
+	sbc hl, de;							// 
+	ex de, hl;							// 
+	ld hl, strms + 6;					// 
+
+strms_loop:
+	ld a, (hl);							// 
+	inc l;								// 
+	ex af, af';							// 
+	ld a, (hl);							// 
+	cp d;								// 
+	jr c, strm_skip;					// 
+	jr nz, strm_adj;					// 
+	ex af, af'							// 
+	cp e;								// 
+	jr c, strm_skip;					// 
+
+strm_adj:
+	push de;							// 
+	ld d, (hl);							// 
+	dec l								// 
+	ld e, (hl);							// 
+	ex de, hl;							// 
+	and a;								// 
+	sbc hl, bc;							// 
+	ex de, hl;							// 
+	ld (hl), e;							// 
+	inc l;								// 
+	ld (hl), d;							// 
+	pop de;								// 
+
+strm_skip:
+	inc l;								// 
+	ld a, l;							// 
+	cp strms+38 - $100 * (strms/$100);	//
+	jr nz, strms_loop;					// 
+
+	pop hl;								// 
+	pop bc;								// 
+	ret;								// 
