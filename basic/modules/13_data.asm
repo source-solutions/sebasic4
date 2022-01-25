@@ -413,65 +413,65 @@ token_table:
 	str "RND";
 
 ;	// multi-argument functions
-;	tk_left_str		equ $87
-;	str "LEFT$";
-;	tk_mid_str		equ $88
-;	str "MID$";
-;	tk_right_str	equ $89
-;	str "RIGHT$";
-;	tk_string_str	equ $8a
-;	str "STRING$";
+	tk_left_str		equ $87
+	str "LEFT$";
+	tk_mid_str		equ $88
+	str "MID$";
+	tk_right_str	equ $89
+	str "RIGHT$";
+	tk_string_str	equ $8a
+	str "STRING$";
 
 ;	// PRINT arguments
-	tk_spc			equ $87;
+	tk_spc			equ $8b;
 	str "SPC";
-	tk_tab			equ $88;
+	tk_tab			equ $8c;
 	str "TAB";
 
 ;	// prefix operators (single-argument functions)
-	tk_val_str		equ $89;
+	tk_val_str		equ $8d;
 	str "VAL$";
-	tk_asc			equ $8a;
+	tk_asc			equ $8e;
 	str "ASC";
-	tk_val			equ $8b;
+	tk_val			equ $8f;
 	str "VAL";
-	tk_len			equ $8c;
+	tk_len			equ $90;
 	str "LEN";
-	tk_sin			equ $8d;
+	tk_sin			equ $91;
 	str "SIN";
-	tk_cos			equ $8e;
+	tk_cos			equ $92;
 	str "COS";
-	tk_tan			equ $8f;
+	tk_tan			equ $93;
 	str "TAN";
-	tk_asin			equ $90;
+	tk_asin			equ $94;
 	str "ASIN";
-	tk_acos			equ $91;
+	tk_acos			equ $95;
 	str "ACOS";
-	tk_atan			equ $92;
+	tk_atan			equ $96;
 	str "ATAN";
-	tk_log			equ $93;
+	tk_log			equ $97;
 	str "LOG";
-	tk_exp			equ $94;
+	tk_exp			equ $98;
 	str "EXP";
-	tk_int			equ $95;
+	tk_int			equ $99;
 	str "INT";
-	tk_sqr			equ $96;
+	tk_sqr			equ $9a;
 	str "SQR";
-	tk_sgn			equ $97;
+	tk_sgn			equ $9b;
 	str "SGN";
-	tk_abs			equ $98;
+	tk_abs			equ $9c;
 	str "ABS";
-	tk_peek			equ $99;
+	tk_peek			equ $9d;
 	str "PEEK";
-	tk_inp			equ $9a;
+	tk_inp			equ $9e;
 	str "INP";
-	tk_usr			equ $9b;
+	tk_usr			equ $9f;
 	str "USR";
-	tk_str_str		equ $9c;
+	tk_str_str		equ $a0;
 	str "STR$";
-	tk_chr_str		equ $9d;
+	tk_chr_str		equ $a1;
 	str "CHR$";
-	tk_not			equ $9e;
+	tk_not			equ $a2;
 	str "NOT";
 ;	tk_fix			equ $;
 ;	str "FIX;
@@ -479,42 +479,34 @@ token_table:
 ;	str "DPEEK";
 
 ;	// infix operators
-	tk_mod			equ $9f;
+	tk_mod			equ $a3;
 	str "MOD";
-	tk_or			equ $a0;
+	tk_or			equ $a4;
 	str "OR";
-	tk_and			equ $a1;
+	tk_and			equ $a5;
 	str "AND";
-	tk_l_eql		equ $a2;
+	tk_l_eql		equ $a6;
 	str "<=";
-	tk_gr_eq		equ $a3;
+	tk_gr_eq		equ $a7;
 	str ">=";
-	tk_neql			equ $a4;
+	tk_neql			equ $a8;
 	str "<>";
 ;	tk xor			equ $;
 ;	str "XOR";
 
 ;	// other keywords
-	tk_line			equ $a5;
+	tk_line			equ $a9;
 	str "LINE";
-	tk_then			equ $a6;
+	tk_then			equ $aa;
 	str "THEN";
-	tk_to			equ $a7;
+	tk_to			equ $ab;
 	str "TO";
-	tk_step			equ $a8;
+	tk_step			equ $ac;
 	str "STEP";
 
 ;	// functions (to be moved)
-	tk_xor			equ $a9;
+	tk_xor			equ $ad;
 	str "XOR";
-	tk_left_str		equ $aa;
-	str "LEFT$";
-	tk_right_str	equ $ab;
-	str "RIGHT$";
-	tk_mid_Str		equ $ac;
-	str "MID$";
-	tk_string_str	equ $ad;
-	str "STRING$";
 	tk_fix			equ $ae;
 	str "FIX";
 	tk_dpeek		equ $af;
