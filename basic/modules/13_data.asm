@@ -948,6 +948,9 @@ p_wend:
 p_while:
 	defb var_syn;
 	defw c_while;
+p_key:
+	defb var_syn;
+	defw c_key;
 
 p__ee:
 	defb no_f_ops;
