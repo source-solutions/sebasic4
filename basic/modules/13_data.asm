@@ -454,7 +454,7 @@ tk_ptr_rem:
 	str "XOR", "EOF", "LOC", "LOF";				// $E1
 	str "LEFT$", "RIGHT$", "MID$", "STRING$";	// $E5
 	str "FIX", "DPEEK", "DPOKE", "MERGE";		// $E9
-	str "_ED", "_EE", "_EF", "_F0";				// $ED
+	str "KEY", "_EE", "_EF", "_F0";				// $ED
 	str "_F1", "_F2", "_F3", "_F4";
 	str "_F5", "_F6", "_F7", "_F8";
 	str "_F9", "_FA", "_FB", "_FC";
@@ -562,7 +562,7 @@ offst_tbl:
 	defw p__ea;							// 
 	defw p_dpoke;						// 
 	defw p_merge;						// 
-	defw p__ed;							// 
+	defw p_key;							// 
 	defw p__ee;							// 
 	defw p__ef;							// 
 	defw p__f0;							// 
@@ -853,17 +853,9 @@ p__ea:
 	defb no_f_ops;
 	defw c_rem;
 
-p__eb:
-	defb no_f_ops;
-	defw c_rem;
-
-p__ec:
-	defb no_f_ops;
-	defw c_rem;
-
-p__ed:
-	defb no_f_ops;
-	defw c_rem;
+p_key:
+	defb var_syn;
+	defw c_key;
 
 p__ee:
 	defb no_f_ops;
