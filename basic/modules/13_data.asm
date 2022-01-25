@@ -191,7 +191,7 @@ tbl_addrs:
 	defw fp_get_argt;
 	defw fp_truncate;
 	defw fp_calc_2;
-	defw fp_dpeek;
+	defw fp_deek;
 	defw fp_re_stack;
 	defw fp_xor;
 	defw fp_div;
@@ -429,6 +429,8 @@ token_table:
 	str "TAB";
 
 ;	// prefix operators (single-argument functions)
+;	// note: cannot be re-ordered without modifying 10_expression.asm
+;	// see: s_negate
 	tk_val_str		equ $8d;
 	str "VAL$";
 	tk_asc			equ $8e;
@@ -473,10 +475,11 @@ token_table:
 	str "CHR$";
 	tk_not			equ $a2;
 	str "NOT";
-	tk_fix			equ $a3;
+	tk_deek			equ $a3;
+	str "DEEK";
+	tk_fix			equ $a4;
 	str "FIX";
-	tk_dpeek		equ $a4;
-	str "DPEEK";
+
 
 ;	// infix operators
 	tk_mod			equ $a5;
@@ -578,8 +581,8 @@ token_table:
 	str "DELETE";
 	tk_dim			equ $d2;
 	str "DIM";
-	tk_dpoke		equ $d3;
-	str "DPOKE";
+	tk_doke			equ $d3;
+	str "DOKE";
 	tk_edit			equ $d4;
 	str "EDIT";
 	tk_end			equ $d5;
@@ -689,7 +692,7 @@ offst_tbl:
 	defw p_def;
 	defw p_delete;
 	defw p_dim;
-	defw p_dpoke;
+	defw p_doke;
 	defw p_edit;
 	defw p_end;
 	defw p_error;
@@ -793,9 +796,9 @@ p_dim:
 	defb var_syn;
 	defw c_dim;
 
-p_dpoke:
+p_doke:
 	defb two_c_s_num_no_f_ops;
-	defw c_dpoke;
+	defw c_doke;
 
 p_edit:
 	defb num_exp_0;

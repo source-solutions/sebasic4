@@ -369,9 +369,9 @@ in_pk_stk:
 	jp stack_a;							// indirect exit
 
 ;;
-; DPEEK function
+; DEEK function
 ;;
-fp_dpeek:
+fp_deek:
 	call find_int2
 	push hl
 	ld l, c

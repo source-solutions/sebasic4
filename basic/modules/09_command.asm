@@ -823,10 +823,10 @@ c_poke:
 	ret;								// end of routine
 
 ;;
-; <code>DPOKE</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#DPOKE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; <code>DOKE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#DOKE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
-c_dpoke:
+c_doke:
 	call find_int2;
 	push bc;
 	call find_int2;
