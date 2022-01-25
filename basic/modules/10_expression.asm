@@ -93,7 +93,7 @@ scan_func:
 	defb tk_mid_str, s_mid - 1 - $;				// MID$
 	defb tk_string_str, s_string_str - 1 - $;	// STRING$
 	defb tk_fix, s_fix - 1 - $;					// FIX
-	defb tk_dpeek, s_dpeek - 1 - $;				// DPEEK
+	defb tk_deek, s_deek - 1 - $;				// DEEK
 	defb tk_str_str, s_str_j - 1 - $;			// STR$
 	defb 0;										// null terminator
 
@@ -244,7 +244,7 @@ s_fix:
 s_push_po_r:
 	jp s_push_po;						// 
 
-s_dpeek:
+s_deek:
 	ld bc, $10fc;						// 
 	jr s_push_po_r;						// 
 

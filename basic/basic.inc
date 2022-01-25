@@ -436,9 +436,9 @@ MACRO fsgl;
 ENDM
 
 ;;
-; X80 op-code: DPEEK
+; X80 op-code: DEEK
 ;;
-MACRO fdpeek;
+MACRO fdeek;
 	defb $3c;
 ENDM
 
