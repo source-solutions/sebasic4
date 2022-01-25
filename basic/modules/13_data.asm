@@ -473,44 +473,36 @@ token_table:
 	str "CHR$";
 	tk_not			equ $a2;
 	str "NOT";
-;	tk_fix			equ $;
-;	str "FIX;
-;	tk_dpeek		equ $;
-;	str "DPEEK";
+	tk_fix			equ $a3;
+	str "FIX";
+	tk_dpeek		equ $a4;
+	str "DPEEK";
 
 ;	// infix operators
-	tk_mod			equ $a3;
+	tk_mod			equ $a5;
 	str "MOD";
-	tk_or			equ $a4;
+	tk_or			equ $a6;
 	str "OR";
-	tk_and			equ $a5;
+	tk_and			equ $a7;
 	str "AND";
-	tk_l_eql		equ $a6;
+	tk_l_eql		equ $a8;
 	str "<=";
-	tk_gr_eq		equ $a7;
+	tk_gr_eq		equ $a9;
 	str ">=";
-	tk_neql			equ $a8;
+	tk_neql			equ $aa;
 	str "<>";
-;	tk xor			equ $;
-;	str "XOR";
+	tk_xor			equ $ab;
+	str "XOR";
 
 ;	// other keywords
-	tk_line			equ $a9;
+	tk_line			equ $ac;
 	str "LINE";
-	tk_then			equ $aa;
+	tk_then			equ $ad;
 	str "THEN";
-	tk_to			equ $ab;
+	tk_to			equ $ae;
 	str "TO";
-	tk_step			equ $ac;
+	tk_step			equ $af;
 	str "STEP";
-
-;	// functions (to be moved)
-	tk_xor			equ $ad;
-	str "XOR";
-	tk_fix			equ $ae;
-	str "FIX";
-	tk_dpeek		equ $af;
-	str "DPEEK";
 
 ;	// unassigned tokens
 	tk__b0			equ $b0;
