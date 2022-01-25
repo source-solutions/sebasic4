@@ -481,16 +481,16 @@ token_table:
 ;	// infix operators
 	tk_mod			equ $a5;
 	str "MOD";
-	tk_or			equ $a6;
-	str "OR";
-	tk_and			equ $a7;
-	str "AND";
-	tk_l_eql		equ $a8;
-	str "<=";
-	tk_gr_eq		equ $a9;
-	str ">=";
-	tk_neql			equ $aa;
+	tk_neql			equ $a6;
 	str "<>";
+	tk_l_eql		equ $a7;
+	str "<=";
+	tk_gr_eq		equ $a8;
+	str ">=";
+	tk_and			equ $a9;
+	str "AND";
+	tk_or			equ $aa;
+	str "OR";
 	tk_xor			equ $ab;
 	str "XOR";
 
