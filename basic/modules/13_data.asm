@@ -495,18 +495,18 @@ token_table:
 	str "XOR";
 
 ;	// other keywords
-	tk_line			equ $ac;
+	tk_else			equ $ac;
+	str "ELSE";
+	tk_line			equ $ad;
 	str "LINE";
-	tk_then			equ $ad;
-	str "THEN";
-	tk_to			equ $ae;
-	str "TO";
-	tk_step			equ $af;
+	tk_step			equ $ae;
 	str "STEP";
+	tk_then			equ $af;
+	str "THEN";
+	tk_to			equ $b0;
+	str "TO";
 
 ;	// unassigned tokens
-	tk__b0			equ $b0;
-	str "_B0";
 	tk__b1			equ $b1;
 	str "_B1";
 	tk__b2			equ $b2;
