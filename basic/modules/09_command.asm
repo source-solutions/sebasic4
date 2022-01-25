@@ -54,16 +54,16 @@ stmt_l_1a:
 	ld c, a;							// store command in C
 	rst next_char;						// advance character address
 	ld a, c;							// restore command to A
-	sub tk_def_fn;						// reduce range
+	sub first_cmd;						// reduce range
 	jr nc, stmt_l_2;					// jump with valid commands
 	ld hl, (ch_add);					// get character address
 	dec hl;								// previous character
 	ld (ch_add), hl;					// set it
 	ld a, (hl);							// get first character again
 	cp "'";								// is it a single quote?
-	ld a, tk_rem - tk_def_fn;			// make the token REM
+	ld a, tk_rem - first_cmd;			// make the token REM
 	jr z, stmt_l_2;						// and jump if so
-	ld a, tk_let - tk_def_fn;			// else make the token LET
+	ld a, tk_let - first_cmd;			// else make the token LET
 
 stmt_l_2:
 	rlca;								// double the command
@@ -1067,7 +1067,7 @@ break_key:
 c_def:
 	call syntax_z;						// checking syntax?
 	jr z, def_fn_1;						// jump if not
-	ld a, tk_def_fn;					// DEF FN?
+	ld a, tk_def;						// DEF FN?
 	jp pass_by;							// immediate jump
 
 def_fn_1:

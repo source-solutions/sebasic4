@@ -396,201 +396,298 @@ kt_dig_sym:
 token_table:
 	defb end_marker;
 
-	tk_ptr_1st		equ $80
 ;	// exceptional functions (no arguments, etc.)
-	str "RND", "INKEY$", "PI", "FN";	// $80
+	first_tk		equ $80
 	tk_rnd			equ $80;
+	str "RND";
 	tk_inkey_str	equ $81;
+	str "INKEY$";
 	tk_pi			equ $82;
+	str "PI";
 	tk_fn			equ $83;
-
-; // TODO: EOF, LOC, LOF
+	str "FN";
+	tk_eof			equ $84;
+;	str "EOF #";
+	str "_A9";
+	tk_loc			equ $85;
+;	str "LOC #";
+	str "_AA";
+	tk_lof			equ $86;
+;	str "LOF #";
+	str "_AB";
 
 ;	// multi-argument functions
-	str "_A9", "_AA", "_AB";			// $84
-	tk__a9			equ $84;
-	tk__aa			equ $85;
-	tk__ab			equ $86;
-
-; // TODO: LEFT$, RIGHT$, MID$, STRING$
-
+;	tk_left_str		equ $87
+;	str "LEFT$";
+;	tk_mid_str		equ $88
+;	str "MID$";
+;	tk_right_str	equ $89
+;	str "RIGHT$";
+;	tk_string_str	equ $8a
+;	str "STRING$";
 
 ;	// PRINT arguments
-	str "SPC", "TAB";					// $87
 	tk_spc			equ $87;
+	str "SPC";
 	tk_tab			equ $88;
+	str "TAB";
 
 ;	// prefix operators (single-argument functions)
-	str "VAL$", "ASC", "VAL";			// $89
-	str "LEN", "SIN", "COS", "TAN";		// $8C
-	str "ASIN", "ACOS", "ATAN", "LOG";	// $90
-	str "EXP", "INT", "SQR", "SGN";		// $94
-	str "ABS", "PEEK", "INP", "USR";	// $98
-	str "STR$", "CHR$", "NOT";			// $9C
 	tk_val_str		equ $89;
+	str "VAL$";
 	tk_asc			equ $8a;
+	str "ASC";
 	tk_val			equ $8b;
+	str "VAL";
 	tk_len			equ $8c;
+	str "LEN";
 	tk_sin			equ $8d;
+	str "SIN";
 	tk_cos			equ $8e;
+	str "COS";
 	tk_tan			equ $8f;
+	str "TAN";
 	tk_asin			equ $90;
+	str "ASIN";
 	tk_acos			equ $91;
+	str "ACOS";
 	tk_atan			equ $92;
+	str "ATAN";
 	tk_log			equ $93;
+	str "LOG";
 	tk_exp			equ $94;
+	str "EXP";
 	tk_int			equ $95;
+	str "INT";
 	tk_sqr			equ $96;
+	str "SQR";
 	tk_sgn			equ $97;
+	str "SGN";
 	tk_abs			equ $98;
+	str "ABS";
 	tk_peek			equ $99;
+	str "PEEK";
 	tk_inp			equ $9a;
+	str "INP";
 	tk_usr			equ $9b;
+	str "USR";
 	tk_str_str		equ $9c;
+	str "STR$";
 	tk_chr_str		equ $9d;
+	str "CHR$";
 	tk_not			equ $9e;
-
-; // TODO: FIX, DPEEK
-
+	str "NOT";
+;	tk_fix			equ $;
+;	str "FIX;
+;	tk_dpeek		equ $;
+;	str "DPEEK";
 
 ;	// infix operators
-	str "MOD";							// $9F
-	str "OR", "AND", "<=", ">=";		// $A0
-	str "<>";							// $A4
 	tk_mod			equ $9f;
+	str "MOD";
 	tk_or			equ $a0;
+	str "OR";
 	tk_and			equ $a1;
+	str "AND";
 	tk_l_eql		equ $a2;
+	str "<=";
 	tk_gr_eq		equ $a3;
+	str ">=";
 	tk_neql			equ $a4;
-
-; // TODO: XOR
+	str "<>";
+;	tk xor			equ $;
+;	str "XOR";
 
 ;	// other keywords
-	str "LINE", "THEN", "TO";			// $A5
-	str "STEP";							// $A8
 	tk_line			equ $a5;
+	str "LINE";
 	tk_then			equ $a6;
+	str "THEN";
 	tk_to			equ $a7;
+	str "TO";
 	tk_step			equ $a8;
+	str "STEP";
 
 ;	// commands
-	str "DEF FN", "BLOAD", "BSAVE", "CHDIR";	// $A9
-	str "COPY", "OPEN #", "CLOSE #", "WHILE";	// $AD
-	str "WEND", "SOUND", "FILES", "KILL";		// $B1
-	str "LOAD", "MKDIR", "NAME", "RMDIR";		// $B5
-	str "SAVE", "OUT", "LOCATE", "END";			// $B9
-	str "STOP", "READ", "DATA", "RESTORE";		// $BD
-	str "NEW", "ERROR", "CONT", "DIM";			// $C1
-	tk_def_fn		equ $a9;
+	first_cmd		equ $a9
+	tk_def			equ $a9;
+	str "DEF FN";
 	tk_bload		equ $aa;
+	str "BLOAD";
 	tk_bsave		equ $ab;
+	str "BSAVE";
 	tk_chdir		equ $ac;
+	str "CHDIR";
 	tk_copy			equ $ad;
+	str "COPY";
 	tk_open			equ $ae;
+	str "OPEN #";
 	tk_close		equ $af;
+	str "CLOSE #";
 	tk_while		equ $b0;
+	str "WHILE";
 	tk_wend			equ $b1;
+	str "WEND";
 	tk_sound		equ $b2;
-	tkey_files		equ $b3;
+	str "SOUND";
+	tk_files		equ $b3;
+	str "FILES";
 	tk_kill			equ $b4;
+	str "KILL";
 	tk_load			equ $b5;
+	str "LOAD";
 	tk_mkdir		equ $b6;
+	str "MKDIR";
 	tk_name			equ $b7;
+	str "NAME";
 	tk_rmdir		equ $b8;
+	str "RMDIR";
 	tk_save			equ $b9;
+	str "SAVE";
 	tk_out			equ $ba;
+	str "OUT";
 	tk_locate		equ $bb;
+	str "LOCATE";
 	tk_end			equ $bc;
+	str "END";
 	tk_stop			equ $bd;
+	str "STOP";
 	tk_read			equ $be;
+	str "READ";
 	tk_data			equ $bf;
+	str "DATA";
 	tk_restore		equ $c0;
+	str "RESTORE";
 	tk_new			equ $c1;
+	str "NEW";
 	tk_error		equ $c2;
+	str "ERROR";
 	tk_cont			equ $c3;
+	str "CONT";
 	tk_dim			equ $c4;
+	str "DIM";
 
 tk_ptr_rem:
-	str "REM", "FOR", "GOTO", "GOSUB";			// $C5
-	str "INPUT", "PALETTE", "LIST", "LET";		// $C9
-	str "WAIT", "NEXT", "POKE", "PRINT";		// $CD
-	str "DELETE", "RUN", "EDIT", "RANDOMIZE";	// $D1
-	str "IF", "CLS", "CALL", "CLEAR";			// $D5
-	str "RETURN", "COLOR", "TRON", "TROFF"		// $D9
-	str "ON", "RENUM", "OLD", "SCREEN";			// $DD
 	tk_rem			equ $c5;
+	str "REM";
 	tk_for			equ $c6;
+	str "FOR";
 	tk_goto			equ $c7;
+	str "GOTO";
 	tk_gosub		equ $c8;
+	str "GOSUB";
 	tk_input		equ $c9;
+	str "INPUT";
 	tk_palette		equ $ca;
+	str "PALETTE";
 	tk_list			equ $cb;
+	str "LIST";
 	tk_let			equ $cc;
+	str "LET";
 	tk_wait			equ $cd;
+	str "WAIT";
 	tk_next			equ $ce;
+	str "NEXT";
 	tk_poke			equ $cf;
+	str "POKE";
 	tk_print		equ $d0;
+	str "PRINT";
 	tk_delete		equ $d1;
+	str "DELETE";
 	tk_run			equ $d2;
+	str "RUN";
 	tk_edit			equ $d3;
+	str "EDIT";
 	tk_randomize	equ $d4;
+	str "RANDOMIZE";
 	tk_if			equ $d5;
+	str "IF";
 	tk_cls			equ $d6;
+	str "CLS";
 	tk_call			equ $d7;
+	str "CALL";
 	tk_clear		equ $d8;
+	str "CLEAR";
 	tk_return		equ $d9;
+	str "RETURN";
 	tk_color		equ $da;
+	str "COLOR";
 	tk_tron			equ $db;
+	str "TRON";
 	tk_troff		equ $dc;
+	str "TROFF";
 	tk_on			equ $dd;
+	str "ON";
 	tk_renum		equ $de;
+	str "RENUM";
 	tk_old			equ $df;
+	str "OLD";
 	tk_screen		equ $e0;
-
-	str "XOR", "_E2", "_E3", "_E4";				// $E1
-	str "LEFT$", "RIGHT$", "MID$", "STRING$";	// $E5
-	str "FIX", "DPEEK", "DPOKE", "MERGE";		// $E9
-	str "KEY", "_EE", "_EF", "_F0";				// $ED
+	str "SCREEN";
 	tk_xor			equ $e1;
+	str "XOR";
 	tk__e2			equ $e2;
+	str "_E2";
 	tk__e3			equ $e3;
+	str "_E3";
 	tk__e4			equ $e4;
+	str "_E4";
 	tk_left_str		equ $e5;
+	str "LEFT$";
 	tk_right_str	equ $e6;
+	str "RIGHT$";
 	tk_mid_str		equ $e7;
+	str "MID$";
 	tk_string_str	equ $e8;
+	str "STRING$";
 	tk_fix			equ $e9;
+	str "FIX";
 	tk_dpeek		equ $ea;
+	str "DPEEK";
 	tk_dpoke		equ $eb;
+	str "DPOKE";
 	tk_merge		equ $ec;
+	str "MERGE";
 	tk_key			equ $ed;
+	str "KEY";
 	tk__ee			equ $ee;
+	str "_EE";
 	tk__ef			equ $ef;
+	str "_EF";
 	tk__f0			equ $f0;
-
-	str "_F1", "_F2", "_F3", "_F4";
-	str "_F5", "_F6", "_F7", "_F8";
-	str "_F9", "_FA", "_FB", "_FC";
-	str "_FD", "_FE";
+	str "_F0";
 	tk__f1			equ $f1;
+	str "_F1";
 	tk__f2			equ $f2;
+	str "_F2";
 	tk__f3			equ $f3;
+	str "_F3";
 	tk__f4			equ $f4;
+	str "_F4";
 	tk__f5			equ $f5;
+	str "_F5";
 	tk__f6			equ $f6;
+	str "_F6";
 	tk__f7			equ $f7;
+	str "_F7";
 	tk__f8			equ $f8;
+	str "_F8";
 	tk__f9			equ $f9;
+	str "_F9";
 	tk__fa			equ $fa;
+	str "_FA";
 	tk__fb			equ $fb;
+	str "_FB";
 	tk__fc			equ $fc;
+	str "_FC";
 	tk__fd			equ $fd;
+	str "_FD";
 	tk__fe			equ $fe;
+	str "_FE";
 	
 tk_ptr_last:
-	str "_FF";
 	tk__ff			equ $ff;
+	str "_FF";
 
 ;	// used in 15_files
 dir_msg:

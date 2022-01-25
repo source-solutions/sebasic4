@@ -233,8 +233,8 @@ tokenizer_14:
 	pop af;								// restore token
 	sub 1;								// dec A and set carry if zero
 	jp c, tokenizer_1;					// jump if carry flag set.
-	cp tk_ptr_1st - 1; 					// first token?
-;	cp tk_ptr_1st - 7; 					// first token? (used with 0-5)
+	cp first_tk - 1; 					// first token?
+;	cp first_tk - 7; 					// first token? (used with 0-5)
 	ret z;								// return if so
 	push ix;							// IX to
 	pop hl;								// HL

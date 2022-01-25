@@ -671,7 +671,7 @@ po_stp_asciiz:
 
 ;	// token printing subroutine
 po_token:
-	sub tk_ptr_1st;						// modify token code
+	sub first_tk;						// modify token code
 
 po_tokens:
 	ld de, token_table;					// address token table
