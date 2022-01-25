@@ -1896,19 +1896,70 @@ lv2:
 	pop hl;								// restore location
 	ret;								// 
 
-; // set and list macros
+;;
+; <code>KEY</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#KEY" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
 c_key:
 	rst get_char;						// first character
 	cp tk_list;							// LIST token?
 	jr z, key_list;						// jump if so
 	call expt_1num;						// get parameter
 	cp ',';								// comma?
-	jr nz, report_syntax_err3;			// error if not
+	jr nz, report_syntax_err3;			// jump if not
+	call syntax_z;						// checking syntax?
+	jr nz, key_0;						// jump if not	
 	rst next_char;						// next character
 	call expt_exp;						// expect string expression
 	call check_end;						// end of syntax checking
-	call unstack_z;						// return if checking syntax
-	ret;
+
+key_0:
+	call find_int1;						// parameter to A
+	cp 16;								// in range (0 to 15)?
+	jr nc, report_syntax_err3;			// error if not
+	and a;								// test for zero
+	jr z, report_syntax_err3;			// error if so
+
+	ld hl, s_f1;						// address of first macro
+	ld de, 16;							// each entry is offest by 16 bytes
+
+offst_loop:
+	dec a;								// reduce range (0 to 14)
+	jr z, mcr_addr_found;				// nothing to add so jump
+	add hl, de;							// add offset
+	jr offst_loop;						// loop
+
+mcr_addr_found:
+	push hl;							// stack macro address
+
+	ld b, 15;							// loop counter
+zero_mcr:
+	ld (hl), 0;							// zero out the macro
+	inc hl;								// next byte
+	djnz zero_mcr;						// clear 15 bytes (16th byte is always zero)
+
+	rst next_char;						// next character
+	call expt_exp;						// expect string expression
+	call stk_fetch;						// get parameters: DE = start, BC = length
+
+	ld a, b;							// high byte to A
+	and a;								// test for zero
+	jr nz, report_syntax_err3;			// string is at least 256 characters in legnth
+
+	ld a, c;							// test for
+	or b;								// empty string
+	jr z, report_syntax_err3;			// error if so
+
+	cp 16;								// test range (1 to 15)
+	jr c, copy_mcr;						// jump if so
+
+	ld c, 15;							// force length 15
+
+copy_mcr:
+	pop hl;								// unstack macro address
+	ex de, hl;							// make macro address destination
+	ldir;								// copy up to first 15 bytes of string to macro address
+	ret;								// done
 
 report_syntax_err3:
 	rst error;							// ekse
@@ -1928,7 +1979,7 @@ key_list:
 f_num_loop:
 	push bc;							// stack zero and macro number
 	push de;							// stack macro address
-	call pr_mac;						// output a line
+	call pr_mcr;						// output a line
 	pop de;								// unstack last macro address
 	pop bc;								// unstack zero and macro number
 	inc c;								// next macro number
@@ -1941,7 +1992,7 @@ f_num_loop:
 	ex de, hl;							// result to DE
 	jr f_num_loop;						// loop until done
 
-pr_mac:
+pr_mcr:
 	ld b, 0;							// zero high byte
 	ld a, 'F';							// F
 	rst print_a;						// print it
@@ -1951,7 +2002,7 @@ pr_mac:
 	ld a, ' '							// space
 	rst print_a;						// print it
 
-pr_mac_loop:
+pr_mcr_loop:
 	ld a, (de);							// get character
 	and a;								// null terminator?
 	jp z, print_cr;						// return if so via print_cr
@@ -1962,4 +2013,4 @@ pr_mac_loop:
 not_cr:
 	rst print_a;						// print the character
 	inc de;								// next character
-	jr pr_mac_loop;						// loop until done
+	jr pr_mcr_loop;						// loop until done
