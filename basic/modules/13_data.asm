@@ -395,22 +395,22 @@ kt_dig_sym:
 token_table:
 	defb end_marker;
 
-;	// exceptional functions (no arguments, etc.)
+;	// exceptional functions (no arguments, and so on)
 	first_tk		equ $80
-	tk_rnd			equ $80;
-	str "RND";
-	tk_inkey_str	equ $81;
-	str "INKEY$";
-	tk_pi			equ $82;
-	str "PI";
-	tk_fn			equ $83;
-	str "FN";
-	tk_eof			equ $84;
+	tk_eof			equ $80;
 	str "EOF #";
-	tk_loc			equ $85;
+	tk_fn			equ $81;
+	str "FN";
+	tk_inkey_str	equ $82;
+	str "INKEY$";
+	tk_loc			equ $83;
 	str "LOC #";
-	tk_lof			equ $86;
+	tk_lof			equ $84;
 	str "LOF #";
+	tk_pi			equ $85;
+	str "PI";
+	tk_rnd			equ $86;
+	str "RND";
 
 ;	// multi-argument functions
 ;	tk_left_str		equ $87
