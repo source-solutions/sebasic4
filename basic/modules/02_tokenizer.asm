@@ -62,6 +62,41 @@ tokenizer_4:
 	bit 0, c;							// in quotes?
 	jr nz, in_q;						// jump if so
 
+sbst_eq:
+	cp '=';								// test for equals
+	jr nz, sbst_neql;					// jump if not
+	inc hl;								// advance one character
+	ld a, '<';							// less than
+	cp (hl);							// test for it
+	jr z, sbst_sym_eq;					// jump if so;
+	ld a, '>';							// greater than
+	cp (hl);							// test for it
+	jr z, sbst_sym_eq;					// jump if so;
+	dec hl;								// restore pointer
+	ld a, (hl);							// restore value
+	jr sbst_neql;						// jump for next test
+
+sbst_sym_eq:
+	ld (hl), '=';						// swap
+	dec hl;								// symbols
+	jr do_sbst;							// do substitution
+
+sbst_neql:
+	cp '>';								// test for greater than
+	jr nz, sbst_l_paren;				// jump if not
+	inc hl;								// advance one character
+	ld a, '<';							// less than
+	cp (hl);							// test for it
+	jr z, sbst_gt;						// jump if so
+	dec hl;								// restore pointer
+	ld a, (hl);							// restore value
+	jr sbst_l_paren;					// jump for next test
+
+sbst_gt:
+	ld (hl), '>';						// greater than
+	dec hl;								// back one character
+	jr do_sbst;							// do substitution
+
 sbst_l_paren
 	cp '[';								// left square bracket?
 	jr nz, sbst_r_paren;				// jump if not
@@ -127,7 +162,7 @@ tokenizer_6:
 
 tokenizer_7:
 	inc hl;								// next character
-	jr tokenizer_4;						// repeat until end of line
+	jp tokenizer_4;						// repeat until end of line
 
 tokenizer_8:
 	ld (mem_5_1), hl;					// store position
@@ -156,7 +191,7 @@ tokenizer_10:
 	ex de, hl;							// token character address to HL
 	cp (hl);							// final character?
 	ex de, hl;							// token character address to DE
-	jr nz, tokenizer_3;					// start at next with no match
+	jp nz, tokenizer_3;					// start at next with no match
 	cp 128 + '@';						// non-alpha?
 	jr c, tokenizer_12;					// jump if so
 
@@ -225,4 +260,3 @@ tokenizer_17:
 	res 5,a;							// make upper case
 	set 7, c;							// set flag if alpha
 	ret;								// end of subroutine
-
