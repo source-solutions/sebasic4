@@ -45,6 +45,7 @@
 	include "modules/13_data.asm"
 	include "modules/14_screen_40.asm"
 	include "modules/15_files.asm"
+	include "modules/16_messages.asm"
 
 ;	// last byte
 org $5bb9;
