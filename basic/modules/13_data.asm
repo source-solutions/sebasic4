@@ -154,30 +154,30 @@ tbl_ops_priors:
 
 ;	// note priority is always $10 except for NOT which is $06
 tbl_prefix_ops:
-	defb op_fabs + %11000000;			// ABS
-	defb op_facos + %11000000;			// ACOS
-	defb op_fasc + %11000000;			// ASC
-	defb op_fasin + %11000000;			// ASIN
-	defb op_fatan + %11000000;			// ATAN
-	defb op_fchrs + %11000000			// CHR$
-	defb op_fcos + %11000000;			// COS
-	defb op_fdeek + %11000000;			// DEEK
-	defb op_fexp + %11000000;			// EXP
-	defb op_fquot + %11000000;			// FIX
-	defb op_finp + %11000000;			// INP
-	defb op_fint + %11000000;			// INT
-	defb op_flen + %11000000;			// LEN
-	defb op_flogn + %11000000;			// LOG
-	defb op_fnot + %11000000;			// NOT
-	defb op_fpeek + %11000000;			// PEEK
-	defb op_fsin + %11000000;			// SIN
-	defb op_fsgn + %11000000;			// SGN
-	defb op_fsqrt + %11000000;			// SQR
-	defb op_fstrs + %11000000;			// STR$
-	defb op_ftan + %11000000;			// TAN
-	defb op_fusr + %11000000;			// USR
-	defb op_fval + %11000000;			// VAL
-	defb op_fvals + %11000000;			// VAL$
+	defb op_fabs	+ %11 000000;			// ABS
+	defb op_facos	+ %11 000000;			// ACOS
+	defb op_fasc	+ %11 000000;			// ASC
+	defb op_fasin	+ %11 000000;			// ASIN
+	defb op_fatan	+ %11 000000;			// ATAN
+	defb op_fchrs	+ %01 000000			// CHR$
+	defb op_fcos	+ %11 000000;			// COS
+	defb op_fdeek	+ %11 000000;			// DEEK
+	defb op_fexp	+ %11 000000;			// EXP
+	defb op_fquot	+ %11 000000;			// FIX
+	defb op_finp	+ %11 000000;			// INP
+	defb op_fint	+ %11 000000;			// INT
+	defb op_flen	+ %10 000000;			// LEN
+	defb op_flogn	+ %11 000000;			// LOG
+	defb op_fnot	+ %11 000000;			// NOT
+	defb op_fpeek	+ %11 000000;			// PEEK
+	defb op_fsin	+ %11 000000;			// SIN
+	defb op_fsgn	+ %11 000000;			// SGN
+	defb op_fsqrt	+ %11 000000;			// SQR
+	defb op_fstrs	+ %01 000000;			// STR$
+	defb op_ftan	+ %11 000000;			// TAN
+	defb op_fusr	+ %11 000000;			// USR
+	defb op_fval	+ %10 000000;			// VAL
+	defb op_fvals	+ %00 000000;			// VAL$
 
 ;	// used in 12_calculator
 constants:
@@ -312,12 +312,6 @@ tbl_offs equ $ - tbl_addrs
 	defw fp_stk_const_xx;
 	defw fp_st_mem_xx;
 	defw fp_get_mem_xx;
-
-
-
-
-
-
 
 ;	// used in 07_editor
 ed_f_keys_t:
@@ -1006,8 +1000,6 @@ p_wend:
 p_while:
 	defb var_syn;
 	defw c_while;
-
-
 
 ;	// used in 15_files
 dir_msg:
