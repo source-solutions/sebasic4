@@ -709,6 +709,7 @@ ENDM
 ;	// keyboard buffer
 
 	k_buff		equ $5b00;
+	k_buff_sz	equ %01111111;		// 128 bytes
 
 ;	// system variables
 
