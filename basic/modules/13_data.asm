@@ -104,50 +104,22 @@ file_chan:
 
 ;	// used in 10_expression
 tbl_ops_priors:
-	defb '+', $cf, 8;					// +	%11000000 + fadd
-	defb '-', $c3, 8;					// -	%11000000 + fsub
-	defb '*', $c4, 11;					// *	%11000000 + fmul
-	defb '/', $c5, 11;					// /	%11000000 + fdiv
-	defb '^', $c6, 12;					// ^	%11000000 + fexp
-	defb '=', $ce, 7;					// =	%11000000 + fcp(_eq)
-	defb '>', $cc, 7;					// >	%11000000 + fcp(_gt)
-	defb '<', $cd, 7;					// <	%11000000 + fcp(_lt)
-	defb tk_l_eql, $c9, 7;				// <=	%11000000 + fcp(_le)
-	defb tk_gr_eq, $ca, 7;				// >=	%11000000 + fcp(_ge)
-	defb tk_neql, $cb, 7;				// <>	%11000000 + fcp(ne)
-	defb tk_or, $c7, 4;					// OR	%11000000 + fbor
-	defb tk_and, $c8, 5;				// AND	%11000000 + fband
-	defb tk_xor, $fe, 3;				// XOR  %11000000 + fxor
-	defb tk_mod, $f2, 9;				// MOD  %11000000 + fmod
-	defb '\\', $ff, 10;					// div 	%11000000 + fquot
-	defb 0;								// null terminator
-
-;	// note priority is always $10 except for NOT which is $06
-tbl_prefix_ops:
-	defb tk_abs, $ea;					// ABS	%11000000 + fabs
-	defb tk_acos, $e3;					// ACOS	%11000000 + facos
-	defb tk_asc, $dc;					// ASC	%11000000 + fasc
-	defb tk_asin, $e2;					// ASIN	%11000000 + fasin
-	defb tk_atan, $e4;					// ATAN	%11000000 + fatan
-	defb tk_chr_str, $ef;				// CHR$	%11000000 + fchrs
-	defb tk_cos, $e0;					// COS	%11000000 + fcos
-	defb tk_deek, $fc;					// DEEK	%11000000 + fdeek
-	defb tk_exp, $e6;					// EXP	%11000000 + fexp
-	defb tk_fix, $fa;					// FIX	%11000000 + ftrn
-	defb tk_inp, $ec;					// INP	%11000000 + finp 
-	defb tk_int, $e7;					// INT	%11000000 + fint
-	defb tk_len, $de;					// LEN	%11000000 + flen
-	defb tk_log, $e5;					// LOG	%11000000 + flog
-	defb tk_not, $f0;					// NOT	%11000000 + fnot
-	defb tk_peek, $eb;					// PEEK	%11000000 + fpeek
-	defb tk_sin, $df;					// SIN	%11000000 + fsin
-	defb tk_sgn, $e9;					// SGN	%11000000 + fsgn
-	defb tk_sqr, $e8;					// SQR	%11000000 + fsqrt
-	defb tk_str_str, $ee;				// STR$	%11000000 + fstrs
-	defb tk_tan, $e1;					// TAN	%11000000 + ftan
-	defb tk_usr, $ed;					// USR	%11000000 + fusr
-	defb tk_val, $dd;					// VAL	%11000000 + fval
-	defb tk_val_str, $d8;				// VAL$	%11000000 + fvals
+	defb '+', op_fadd + %11000000, 8;	// +
+	defb '-', op_fsub + %11000000, 8;	// -
+	defb '*', op_fmul + %11000000, 11;	// *
+	defb '/', op_fdiv + %11000000, 11;	// /
+	defb '^', op_fexp + %11000000, 12;	// ^
+	defb '=', $0e + %11000000, 7;		// =  fcp(_eq)
+	defb '>', $0c + %11000000, 7;		// >  fcp(_gt)
+	defb '<', $0d + %11000000, 7;		// <  fcp(_lt)
+	defb tk_l_eql, $09 + %11000000, 7;	// <= fcp(_le)
+	defb tk_gr_eq, $0a + %11000000, 7;	// >= fcp(_ge)
+	defb tk_neql, $0b + %11000000, 7;	// <> fcp(ne)
+	defb tk_or, op_fbor + %11000000, 4;	// OR
+	defb tk_and, op_fband + $c0, 5;		// AND
+	defb tk_xor, op_fxor + %11000000, 3;// XOR
+	defb tk_mod, op_fmod + %11000000, 9;// MOD
+	defb '\\', op_fquot + %11000000, 10;// \
 	defb 0;								// null terminator
 
 ;	// used in 12_calculator
@@ -159,69 +131,123 @@ constants:
 	defb $00, $00, $0a, $00, $00;		// 10
 
 tbl_addrs:
+	op_fjpt equ $00;
 	defw fp_jump_true;
+	op_fxch equ $01;
 	defw fp_exchange;
+	op_fdel equ $02;
 	defw fp_delete;
+	op_fsub equ $03;
 	defw fp_subtract;
+	op_fmul equ $04;
 	defw fp_multiply;
+	op_fdiv equ $05;
 	defw fp_division;
+	op_ftop equ $06;
 	defw fp_to_power;
+	op_fbor equ $07;
 	defw fp_or;
+	op_fband equ $08;
 	defw fp_no_and_no;
+	op_fcp equ $09;
 	defw fp_comparison;
 	defw fp_comparison;
 	defw fp_comparison;
 	defw fp_comparison;
 	defw fp_comparison;
 	defw fp_comparison;
+	op_fadd equ $0f;
 	defw fp_addition;
+	op_bands equ $10;
 	defw fp_str_and_no;
+	op_fcps equ $11;
 	defw fp_comparison;
 	defw fp_comparison;
 	defw fp_comparison;
 	defw fp_comparison;
 	defw fp_comparison;
 	defw fp_comparison;
+	op_fcat equ $17;
 	defw fp_strs_add;
+	op_fvals equ $18;
 	defw fp_val_str;
+	op_fmuls equ $19;
 	defw fp_mul_str;
+	op_fread equ $1a;
 	defw fp_read_in;
+	op_fneg equ $1b;
 	defw fp_negate;
+	op_fasc equ $1c;
 	defw fp_asc;
+	op_fval equ $1d;
 	defw fp_val;
+	op_flen equ $1e;
 	defw fp_len;
+	op_fsin equ $1f;
 	defw fp_sin;
+	op_fcos equ $20;
 	defw fp_cos;
+	op_ftan equ $21;
 	defw fp_tan;
+	op_fasin equ $22;
 	defw fp_asin;
+	op_facos equ $23;
 	defw fp_acos;
+	op_fatan equ $24;
 	defw fp_atan;
+	op_flogn equ $25;
 	defw fp_log;
+	op_fexp equ $26;
 	defw fp_exp;
+	op_fint equ $27;
 	defw fp_int;
+	op_fsqrt equ $28;
 	defw fp_sqr;
+	op_fsgn equ $29;
 	defw fp_sgn;
+	op_fabs equ $2a;
 	defw fp_abs;
+	op_fpeek equ $2b;
 	defw fp_peek;
+	op_finp equ $2c;
 	defw fp_inp;
+	op_fusr equ $2d;
 	defw fp_usr_no;
+	op_fstrs equ $2e;
 	defw fp_str_str;
+	op_fchrs equ $2f;
 	defw fp_chr_str;
+	op_fnot equ $30;
 	defw fp_not;
+	op_fmove equ $31;
 	defw fp_duplicate;
+	op_fmod equ $32;
 	defw fp_n_mod_m;
+	op_fjp equ $33;
 	defw fp_jump;
+	op_fstk equ $34;
 	defw fp_stk_data;
+	op_fdjnz equ $35;
 	defw fp_dec_jr_nz;
+	op_fltz equ $36;
 	defw fp_less_0;
+	op_fgtz equ $37;
 	defw fp_greater_0;
+	op_fce equ $38;
 	defw fp_end_calc;
+	op_fget equ $39;
 	defw fp_get_argt;
+	op_ftrn equ $3a;
 	defw fp_truncate;
+	op_fsgl equ $3b;
 	defw fp_calc_2;
+	op_fdeek equ $3c;
 	defw fp_deek;
+	op_frstk equ $3d;
 	defw fp_re_stack;
+	op_fxor equ $3e;
 	defw fp_xor;
+	op_fquot equ $3f;
 	defw fp_quot;
 
 tbl_offs equ $ - tbl_addrs
@@ -1002,6 +1028,33 @@ p_wend:
 p_while:
 	defb var_syn;
 	defw c_while;
+
+;	// note priority is always $10 except for NOT which is $06
+tbl_prefix_ops:
+	defb op_fabs + %11000000;			// ABS
+	defb op_facos + %11000000;			// ACOS
+	defb op_fasc + %11000000;			// ASC
+	defb op_fasin + %11000000;			// ASIN
+	defb op_fatan + %11000000;			// ATAN
+	defb op_fchrs + %11000000			// CHR$
+	defb op_fcos + %11000000;			// COS
+	defb op_fdeek + %11000000;			// DEEK
+	defb op_fexp + %11000000;			// EXP
+	defb op_fquot + %11000000;			// FIX
+	defb op_finp + %11000000;			// INP
+	defb op_fint + %11000000;			// INT
+	defb op_flen + %11000000;			// LEN
+	defb op_flogn + %11000000;			// LOG
+	defb op_fnot + %11000000;			// NOT
+	defb op_fpeek + %11000000;			// PEEK
+	defb op_fsin + %11000000;			// SIN
+	defb op_fsgn + %11000000;			// SGN
+	defb op_fsqrt + %11000000;			// SQR
+	defb op_fstrs + %11000000;			// STR$
+	defb op_ftan + %11000000;			// TAN
+	defb op_fusr + %11000000;			// USR
+	defb op_fval + %11000000;			// VAL
+	defb op_fvals + %11000000;			// VAL$
 
 ;	// used in 15_files
 dir_msg:
