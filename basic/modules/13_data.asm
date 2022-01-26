@@ -122,6 +122,17 @@ tbl_ops_priors:
 	defb '\\', $ff, 10;					// div 	%11000000 + fquot
 	defb 0;								// null terminator
 
+;	// note priority is always $10 except for NOT which is $06
+tbl_prefix_ops:
+	defb tk_asc, $dc;					// ASC	%11000000 + fasc
+	defb tk_chr_str, $ef;				// CHR$	%11000000 + fchrs
+	defb tk_len, $de;					// LEN	%11000000 + flen
+	defb tk_not, $f0;					// NOT	%11000000 + fnot
+	defb tk_str_str, $ee;				// STR$	%11000000 + fstrs
+	defb tk_val, $dd;					// VAL	%11000000 + fval
+	defb tk_val_str, $d8;				// VAL$	%11000000 + fvals
+	defb 0;								// null %11000000 + terminator
+
 ;	// used in 12_calculator
 constants:
 	defb $00, $00, $00, $00, $00;		// 0
