@@ -124,11 +124,28 @@ tbl_ops_priors:
 
 ;	// note priority is always $10 except for NOT which is $06
 tbl_prefix_ops:
+	defb tk_abs, $;ea					// ABS	%11000000 + fabs
+	defb tk_acos, $e3;					// ACOS	%11000000 + facos
 	defb tk_asc, $dc;					// ASC	%11000000 + fasc
+	defb tk_asin, $e2;					// ASIN	%11000000 + fasin
+	defb tk_atan, $e4;					// ATAN	%11000000 + fatan
 	defb tk_chr_str, $ef;				// CHR$	%11000000 + fchrs
+	defb tk_cos, $e0;					// COS	%11000000 + fcos
+	defb tk_deek, $fc;					// DEEK	%11000000 + fdeek
+	defb tk_exp, $e6;					// EXP	%11000000 + fexp
+	defb tk_fix, $fa;					// FIX	%11000000 + ftrn
+	defb tk_inp, $ec;					// INP	%11000000 + fin 
+	defb tk_int, $e7;					// INT	%11000000 + fint
 	defb tk_len, $de;					// LEN	%11000000 + flen
+	defb tk_log, $e5;					// LOG	%11000000 + flog
 	defb tk_not, $f0;					// NOT	%11000000 + fnot
+	defb tk_peek, $eb;					// PEEK	%11000000 + fpeek
+	defb tk_sin, $df;					// SIN	%11000000 + fsin
+	defb tk_sgn, $e9;					// SGN	%11000000 + fsgn
+	defb tk_sqr, $e8;					// SQR	%11000000 + fsqrt
 	defb tk_str_str, $ee;				// STR$	%11000000 + fstrs
+	defb tk_tan, $e1;					// TAN	%11000000 + ftan
+	defb tk_usr, $ed;					// USR	%11000000 + fusr
 	defb tk_val, $dd;					// VAL	%11000000 + fval
 	defb tk_val_str, $d8;				// VAL$	%11000000 + fvals
 	defb 0;								// null terminator
