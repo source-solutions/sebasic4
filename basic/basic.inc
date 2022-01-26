@@ -338,7 +338,7 @@ ENDM
 ;;
 ; X80 op-code: IN
 ;;
-MACRO fin;
+MACRO finp;
 	defb $2c;
 ENDM
 

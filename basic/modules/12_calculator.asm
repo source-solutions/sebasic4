@@ -1551,7 +1551,7 @@ last:
 	ret;								// end of subroutine
 
 
-fp_div:
+fp_quot:
 	fwait;								// 
 	fdiv;								// 
 	fint;								// 
