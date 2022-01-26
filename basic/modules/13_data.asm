@@ -131,7 +131,7 @@ tbl_prefix_ops:
 	defb tk_str_str, $ee;				// STR$	%11000000 + fstrs
 	defb tk_val, $dd;					// VAL	%11000000 + fval
 	defb tk_val_str, $d8;				// VAL$	%11000000 + fvals
-	defb 0;								// null %11000000 + terminator
+	defb 0;								// null terminator
 
 ;	// used in 12_calculator
 constants:
