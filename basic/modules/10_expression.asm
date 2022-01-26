@@ -91,8 +91,8 @@ scan_func:
 	defb tk_right_str, s_right - 1 - $;			// RIGHT$
 	defb tk_mid_str, s_mid - 1 - $;				// MID$
 	defb tk_string_str, s_string_str - 1 - $;	// STRING$
-	defb tk_fix, s_fix - 1 - $;					// FIX
-	defb tk_deek, s_deek - 1 - $;				// DEEK
+;	defb tk_fix, s_fix - 1 - $;					// FIX
+;	defb tk_deek, s_deek - 1 - $;				// DEEK
 	defb tk_str_str, s_str_j - 1 - $;			// STR$
 	defb 0;										// null terminator
 
@@ -237,15 +237,15 @@ s_string_str:
 	rst next_char;						// next character
 	jp s_string;						// 
 
-s_fix:
-	ld bc, $10fa;						// priority $10, opcode $fa (#3a)
-
-s_push_po_r:
-	jp s_push_po;						// 
-
-s_deek:
-	ld bc, $10fc;						// 
-	jr s_push_po_r;						// 
+;s_fix:
+;	ld bc, $10fa;						// priority $10, opcode $fa (#3a)
+;
+;s_push_po_r:
+;	jp s_push_po;						// 
+;
+;s_deek:
+;	ld bc, $10fc;						// 
+;	jr s_push_po_r;						// 
 
 s_pi:
 	call syntax_z;						// checking syntax?
@@ -339,29 +339,44 @@ s_letter:
 ;	// FIXME - replace contortions with a single lookup table
 
 s_negate:
-	ld bc, $08db;						// priority $09, op-code $d8
+	ld bc, $08db;						// priority $08, op-code $db
 	cp '-';								// minus?
 	jr z, s_push_po;					// jump if unary minus
-	ld bc, $1018;						// priority $10, op-code $18
-	cp tk_val_str;						// VAL$?
-	jr z, s_push_po;					// jump if so
-	sub tk_asc;							// ASC to NOT?
-	jp c, report_syntax_err;			// error if not
-	ld bc, $06f0;						// priority $06, op-code $f0
-	cp 20;								// NOT?
-	jr z, s_push_po;					// jump if so
-	jp nc, report_syntax_err;			// error if out of range
-	ld b, $10;							// priority $10
-	add a, 220;							// get op-code ($dc to $ef)
-	ld c, a;							// op-code to C
-	cp 223;								// ASC, VAL, or LEN?
-	jr nc, s_no_to_str;					// jump if so
-	res 6, c;							// clear bit 6 of C
 
-s_no_to_str:
-	cp 238;								// STR$ or CHR$
-	jr c, s_push_po;					// jump if so
-	res 7, c;							// clear bit 7 of C
+;	ld bc, $1018;						// priority $10, op-code $18
+;	cp tk_val_str;						// VAL$?
+;	jr z, s_push_po;					// jump if so
+;	sub tk_asc;							// ASC to NOT?
+;	jp c, report_syntax_err;			// error if not
+;	ld bc, $06f0;						// priority $06, op-code $f0
+;	cp 20;								// NOT?
+;	jr z, s_push_po;					// jump if so
+;	jp nc, report_syntax_err;			// error if out of range
+;	ld b, $10;							// priority $10
+;	add a, 220;							// get op-code ($dc to $ef)
+;	ld c, a;							// op-code to C
+;	cp 223;								// ASC, VAL, or LEN?
+;	jr nc, s_no_to_str;					// jump if so
+;	res 6, c;							// clear bit 6 of C
+
+;s_no_to_str:
+;	cp 238;								// STR$ or CHR$
+;	jr c, s_push_po;					// jump if so
+;	res 7, c;							// clear bit 7 of C
+
+	sub tk_abs;							// reduce range
+	jp c, report_syntax_err;			// error if lower than range
+	cp tk_val_str - tk_abs + 1;			// VAL$ or less?
+	jp nc, report_syntax_err;			// error if greater than range
+	ld hl, tbl_prefix_ops;				// base table address
+	ld c, a;							// offset
+	ld b, 0;							// to BC
+	add hl, bc;							// get address in table
+	ld c, (hl);							// opcode to C
+	ld b, $10;							// priority $10
+	cp tk_not - tk_abs;					// NOT?
+	jr nz, s_push_po;					// jump if not
+	ld b, $06;							// priority $06
 
 s_push_po:
 	push bc;							// stack priority and op-code
