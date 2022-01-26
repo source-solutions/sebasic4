@@ -336,6 +336,8 @@ s_letter:
 	call stack_num;						// stack it
 	jr s_cont_2;						// immediate jump
 
+;	// FIXME - replace contortions with a single lookup table
+
 s_negate:
 	ld bc, $08db;						// priority $09, op-code $d8
 	cp '-';								// minus?
