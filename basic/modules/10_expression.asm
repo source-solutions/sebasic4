@@ -17,7 +17,6 @@
 ;	// --- EXPRESSION EVALUATION -----------------------------------------------
 
 ;	// FIXME - futher optimization is possible (see: indexer_0)
-;	//         BIN$ and OCT$ are not yet implemented
 
 	org $24fc;
 ;;
