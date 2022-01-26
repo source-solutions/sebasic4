@@ -345,7 +345,7 @@ key_input_1:
 	push af;							// stack code
 	inc l;								// HL contains next addres in buffer
 	ld a, l;							// low byte to A
-	and %00111111;						// 32 bytes in circular buffer
+	and k_buff_sz;						// 128 bytes in circular buffer
 	ld (iy - _k_tail), a;				// new tail pointer to sysvar
 	bit 5, (iy + _vdu_flag);			// lower display requires clearing?
 	call nz, cls_lower;					// if so do it

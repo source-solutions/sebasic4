@@ -22,7 +22,7 @@
 
 	slam equ 1;							// uncomment to build SLAM+128/divMMC version
 
-	scrl_mssg equ $4000;				// check against symbol table before building
+	messages equ $58c0;					// check against symbol table before building
 
 ;	// restarts
 	divmmc equ $08;
@@ -35,8 +35,8 @@
 	paging equ $7ffd;
 
 ;	// control codes
-	ctrl_cr			equ $0d;
-	ctrl_lf			equ $0a;
+	ctrl_cr equ $0d;
+	ctrl_lf equ $0a;
 
 	org $0000;
 	di;									// interrupts off
@@ -906,7 +906,7 @@ ln_load:
 	call (open_ex-cf_ram)+$c100;		// open file if it exits
 
 	ret c;								// return if error
-	ld ix, scrl_mssg;					// file destination
+	ld ix, messages;					// file destination
 	ld bc, 576;							// 576 bytes of data to load
 	jr any_load;						// continue to common code
 

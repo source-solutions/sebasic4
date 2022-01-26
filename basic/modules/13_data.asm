@@ -19,7 +19,37 @@
 
 ;	// --- DATA TABLES ---------------------------------------------------------
 
+;	// Executable code cannot be stored between $3d00 and $3fff because the
+;	// divMMC hardware traps these locations
+
+;	// Data stored from $4000 is located in RAM and can be modified by the boot
+;	// ROM or the user
+
 	org $3d00;
+
+;	// used in 14_screen_40
+;	// attributes are stored internally with the foreground in the high nibble and the background in the low nibble
+;	// this table converts an attribute to its 64-color equivalent in the default palette.
+;	// must be stored on an edge so that $hh + attibute byte will give the correct converted attribute value
+
+attributes:
+	defb $00, $08, $10, $18, $20, $28, $30, $38, $80, $88, $90, $98, $a0, $a8, $b0, $b8; background 0-15, foreground 0
+	defb $01, $09, $11, $19, $21, $29, $31, $39, $81, $89, $91, $99, $a1, $a9, $b1, $b9; background 0-15, foreground 1
+	defb $02, $0a, $12, $1a, $22, $2a, $32, $3a, $82, $8a, $92, $9a, $a2, $aa, $b2, $ba; background 0-15, foreground 2
+	defb $03, $0b, $13, $1b, $23, $2b, $33, $3b, $83, $8b, $93, $9b, $a3, $ab, $b3, $bb; background 0-15, foreground 3
+	defb $04, $0c, $14, $1c, $24, $2c, $34, $3c, $84, $8c, $94, $9c, $a4, $ac, $b4, $bc; background 0-15, foreground 4
+	defb $05, $0d, $15, $1d, $25, $2d, $35, $3d, $85, $8d, $95, $9d, $a5, $ad, $b5, $bd; background 0-15, foreground 5
+	defb $06, $0e, $16, $1e, $26, $2e, $36, $3e, $86, $8e, $96, $9e, $a6, $ae, $b6, $be; background 0-15, foreground 6
+	defb $07, $0f, $17, $1f, $27, $2f, $37, $3f, $87, $8f, $97, $9f, $a7, $af, $b7, $bf; background 0-15, foreground 7
+	defb $40, $48, $50, $58, $60, $68, $70, $78, $c0, $c8, $d0, $d8, $e0, $e8, $f0, $f8; background 0-15, foreground 8
+	defb $41, $49, $51, $59, $61, $69, $71, $79, $c1, $c9, $d1, $d9, $e1, $e9, $f1, $f9; background 0-15, foreground 9
+	defb $42, $4a, $52, $5a, $62, $6a, $72, $7a, $c2, $ca, $d2, $da, $e2, $ea, $f2, $fa; background 0-15, foreground 10
+	defb $43, $4b, $53, $5b, $63, $6b, $73, $7b, $c3, $cb, $d3, $db, $e3, $eb, $f3, $fb; background 0-15, foreground 11
+	defb $44, $4c, $54, $5c, $64, $6c, $74, $7c, $c4, $cc, $d4, $dc, $e4, $ec, $f4, $fc; background 0-15, foreground 12
+	defb $45, $4d, $55, $5d, $65, $6d, $75, $7d, $c5, $cd, $d5, $dd, $e5, $ed, $f5, $fd; background 0-15, foreground 13
+	defb $46, $4e, $56, $5e, $66, $6e, $76, $7e, $c6, $ce, $d6, $de, $e6, $ee, $f6, $fe; background 0-15, foreground 14
+	defb $47, $4f, $57, $5f, $67, $6f, $77, $7f, $c7, $cf, $d7, $df, $e7, $ef, $f7, $ff; background 0-15, foreground 15
+
 copyright:
 
 ifndef slam
@@ -121,6 +151,33 @@ tbl_ops_priors:
 	defb tk_mod, op_fmod + %11000000, 9;// MOD
 	defb '\\', op_fquot + %11000000, 10;// \
 	defb 0;								// null terminator
+
+;	// note priority is always $10 except for NOT which is $06
+tbl_prefix_ops:
+	defb op_fabs	+ %11000000;		// ABS
+	defb op_facos	+ %11000000;		// ACOS
+	defb op_fasc	+ %11000000;		// ASC
+	defb op_fasin	+ %11000000;		// ASIN
+	defb op_fatan	+ %11000000;		// ATAN
+	defb op_fchrs	+ %01000000;		// CHR$
+	defb op_fcos	+ %11000000;		// COS
+	defb op_fdeek	+ %11000000;		// DEEK
+	defb op_fexp	+ %11000000;		// EXP
+	defb op_fquot	+ %11000000;		// FIX
+	defb op_finp	+ %11000000;		// INP
+	defb op_fint	+ %11000000;		// INT
+	defb op_flen	+ %10000000;		// LEN
+	defb op_flogn	+ %11000000;		// LOG
+	defb op_fnot	+ %11000000;		// NOT
+	defb op_fpeek	+ %11000000;		// PEEK
+	defb op_fsin	+ %11000000;		// SIN
+	defb op_fsgn	+ %11000000;		// SGN
+	defb op_fsqrt	+ %11000000;		// SQR
+	defb op_fstrs	+ %01000000;		// STR$
+	defb op_ftan	+ %11000000;		// TAN
+	defb op_fusr	+ %11000000;		// USR
+	defb op_fval	+ %10000000;		// VAL
+	defb op_fvals	+ %00000000;		// VAL$
 
 ;	// used in 12_calculator
 constants:
@@ -255,91 +312,6 @@ tbl_offs equ $ - tbl_addrs
 	defw fp_stk_const_xx;
 	defw fp_st_mem_xx;
 	defw fp_get_mem_xx;
-
-;	4 spare bytes
-
-	defw 0
-	defw 0
-
-;	// used in 14_screen_40
-;	// attributes are stored internally with the foreground in the high nibble and the background in the low nibble
-;	// this table converts an attribute to its 64-color equivalent in the default palette.
-
-	org $3f00
-
-attributes:
-	defb $00, $08, $10, $18, $20, $28, $30, $38, $80, $88, $90, $98, $a0, $a8, $b0, $b8; background 0-15, foreground 0
-	defb $01, $09, $11, $19, $21, $29, $31, $39, $81, $89, $91, $99, $a1, $a9, $b1, $b9; background 0-15, foreground 1
-	defb $02, $0a, $12, $1a, $22, $2a, $32, $3a, $82, $8a, $92, $9a, $a2, $aa, $b2, $ba; background 0-15, foreground 2
-	defb $03, $0b, $13, $1b, $23, $2b, $33, $3b, $83, $8b, $93, $9b, $a3, $ab, $b3, $bb; background 0-15, foreground 3
-	defb $04, $0c, $14, $1c, $24, $2c, $34, $3c, $84, $8c, $94, $9c, $a4, $ac, $b4, $bc; background 0-15, foreground 4
-	defb $05, $0d, $15, $1d, $25, $2d, $35, $3d, $85, $8d, $95, $9d, $a5, $ad, $b5, $bd; background 0-15, foreground 5
-	defb $06, $0e, $16, $1e, $26, $2e, $36, $3e, $86, $8e, $96, $9e, $a6, $ae, $b6, $be; background 0-15, foreground 6
-	defb $07, $0f, $17, $1f, $27, $2f, $37, $3f, $87, $8f, $97, $9f, $a7, $af, $b7, $bf; background 0-15, foreground 7
-	defb $40, $48, $50, $58, $60, $68, $70, $78, $c0, $c8, $d0, $d8, $e0, $e8, $f0, $f8; background 0-15, foreground 8
-	defb $41, $49, $51, $59, $61, $69, $71, $79, $c1, $c9, $d1, $d9, $e1, $e9, $f1, $f9; background 0-15, foreground 9
-	defb $42, $4a, $52, $5a, $62, $6a, $72, $7a, $c2, $ca, $d2, $da, $e2, $ea, $f2, $fa; background 0-15, foreground 10
-	defb $43, $4b, $53, $5b, $63, $6b, $73, $7b, $c3, $cb, $d3, $db, $e3, $eb, $f3, $fb; background 0-15, foreground 11
-	defb $44, $4c, $54, $5c, $64, $6c, $74, $7c, $c4, $cc, $d4, $dc, $e4, $ec, $f4, $fc; background 0-15, foreground 12
-	defb $45, $4d, $55, $5d, $65, $6d, $75, $7d, $c5, $cd, $d5, $dd, $e5, $ed, $f5, $fd; background 0-15, foreground 13
-	defb $46, $4e, $56, $5e, $66, $6e, $76, $7e, $c6, $ce, $d6, $de, $e6, $ee, $f6, $fe; background 0-15, foreground 14
-	defb $47, $4f, $57, $5f, $67, $6f, $77, $7f, $c7, $cf, $d7, $df, $e7, $ef, $f7, $ff; background 0-15, foreground 15
-
-;	// the remaining part of BASIC exists in RAM and can therefore be modified by the user
-
-	org $4000
-
-;	// the next 576 bytes are used for localization
-
-;	// used in 06_screen_80
-scrl_mssg:
-	defb "Scroll?", 0;
-
-;	// padding for translation
-	org scrl_mssg + 12
-
-sp_in_sp:
-	defb " in ", 0;
-
-ready:
-	defb "Ready", 0;
-
-;	// padding for translation
-	org ready + 13
-
-;	// used in 08_executive
-rpt_mesgs:
-	defb "Ok", 0;						// code 255
-	defb "Break", 0;					// code 0
-	defb "NEXT without FOR", 0;			// code 1
-	defb "Syntax error", 0;				// code 2
-	defb "RETURN without GOSUB", 0;		// code 3
-	defb "Out of DATA", 0;				// code 4
-	defb "Illegal function call", 0;	// code 5
-	defb "Overflow", 0;+				// code 6
-	defb "Out of memory", 0;			// code 7
-	defb "Undefined line number", 0;	// code 8
-	defb "Subscript out of range", 0;	// code 9
-	defb "Undefined variable", 0;		// no equivalent
-	defb "Address out of range", 0;		// no equivalent
-	defb "Statement missing", 0;		// no equivalent
-	defb "Type mismatch", 0;			// code 13
-	defb "Out of screen", 0;			// no equivalent
-	defb "Bad I/O device", 0;			// no equivalent
-	defb "Undefined stream", 0;			// no equivalent
-	defb "Undefined channel", 0;		// no equivalent
-	defb "Undefined user function", 0;	// code 18
-	defb "Line buffer overflow", 0;		// code 23
-	defb "FOR without NEXT", 0;			// code 26
-	defb "File not found", 0;			// code 53
-	defb "Input past end", 0;			// code 62
-	defb "Path not found", 0;			// code 76
-
-;	// A total of 576 bytes are allocated for translated error messages
-
-	org scrl_mssg + 576
-
-	defb 0;								// one spare byte to align tables
 
 ;	// used in 07_editor
 ed_f_keys_t:
@@ -1028,33 +1000,6 @@ p_wend:
 p_while:
 	defb var_syn;
 	defw c_while;
-
-;	// note priority is always $10 except for NOT which is $06
-tbl_prefix_ops:
-	defb op_fabs + %11000000;			// ABS
-	defb op_facos + %11000000;			// ACOS
-	defb op_fasc + %11000000;			// ASC
-	defb op_fasin + %11000000;			// ASIN
-	defb op_fatan + %11000000;			// ATAN
-	defb op_fchrs + %11000000			// CHR$
-	defb op_fcos + %11000000;			// COS
-	defb op_fdeek + %11000000;			// DEEK
-	defb op_fexp + %11000000;			// EXP
-	defb op_fquot + %11000000;			// FIX
-	defb op_finp + %11000000;			// INP
-	defb op_fint + %11000000;			// INT
-	defb op_flen + %11000000;			// LEN
-	defb op_flogn + %11000000;			// LOG
-	defb op_fnot + %11000000;			// NOT
-	defb op_fpeek + %11000000;			// PEEK
-	defb op_fsin + %11000000;			// SIN
-	defb op_fsgn + %11000000;			// SGN
-	defb op_fsqrt + %11000000;			// SQR
-	defb op_fstrs + %11000000;			// STR$
-	defb op_ftan + %11000000;			// TAN
-	defb op_fusr + %11000000;			// USR
-	defb op_fval + %11000000;			// VAL
-	defb op_fvals + %11000000;			// VAL$
 
 ;	// used in 15_files
 dir_msg:
