@@ -99,63 +99,63 @@ ENDM
 ; X80 op-code: jump if true
 ;;
 MACRO fjpt n;
-	defb 0, {n} - $ - 1;
+	defb op_fjpt, {n} - $ - 1;
 ENDM
 
 ;;
 ; X80 op-code: exchange
 ;;
 MACRO fxch;
-	defb 1;
+	defb op_fxch;
 ENDM
 
 ;;
 ; X80 op-code: delete
 ;;
 MACRO fdel;
-	defb 2;
+	defb op_fdel;
 ENDM
 
 ;;
 ; X80 op-code: subtract
 ;;
 MACRO fsub;
-	defb 3;
+	defb op_fsub;
 ENDM
 
 ;;
 ; X80 op-code: multiply
 ;;
 MACRO fmul;
-	defb 4;
+	defb op_fmul;
 ENDM
 
 ;;
 ; X80 op-code: divide
 ;;
 MACRO fdiv;
-	defb 5;
+	defb op_fdiv;
 ENDM
 
 ;;
 ; X80 op-code: to power
 ;;
 MACRO ftop;
-	defb 6;
+	defb op_ftop;
 ENDM
 
 ;;
 ; X80 op-code: binary OR
 ;;
 MACRO fbor;
-	defb 7;
+	defb op_fbor;
 ENDM
 
 ;;
 ; X80 op-code: binary AND
 ;;
 MACRO fband;
-	defb 8;
+	defb op_fband;
 ENDM
 
 ;;
@@ -163,21 +163,21 @@ ENDM
 ; @param eq, <code>ge</code>, <code>gt</code>, <code>gz</code>, <code>lt</code>, <code>lz</code>, <code>ne</code>
 ;;
 MACRO fcp n;
-	defb 9 + {n}
+	defb op_fcp + {n}
 ENDM
 
 ;;
 ; X80 op-code: add
 ;;
 MACRO fadd;
-	defb $0f;
+	defb op_fadd;
 ENDM
 
 ;;
 ; X80 op-code: binary and string
 ;;
 MACRO fbands;
-	defb $10;
+	defb op_bands;
 ENDM
 
 ;;
@@ -185,203 +185,203 @@ ENDM
 ; @param eq, <code>ge</code>, <code>gt</code>, <code>gz</code>, <code>lt</code>, <code>lz</code>, <code>ne</code>
 ;;
 MACRO fcps n;
-	defb $11 + {n};
+	defb op_fcps + {n};
 ENDM
 
 ;;
 ; X80 op-code: concatenate string
 ;;
 MACRO fcat;
-	defb $17;
+	defb op_fcat;
 ENDM
 
 ;;
 ; X80 op-code: value string
 ;;
 MACRO fvals;
-	defb $18;
+	defb op_fvals;
 ENDM
 
 ;;
 ; X80 op-code: string by number multiplication
 ;;
 MACRO fmuls;
-	defb $19;
+	defb op_fmuls;
 ENDM
 
 ;;
 ; X80 op-code: read in
 ;;
 MACRO fread;
-	defb $1a;
+	defb op_fread;
 ENDM
 
 ;;
 ; X80 op-code: negate
 ;;
 MACRO fneg;
-	defb $1b;
+	defb op_fneg;
 ENDM
 
 ;;
 ; X80 op-code: character to ASCII
 ;;
 MACRO fasc;
-	defb $1c;
+	defb op_fasc;
 ENDM
 
 ;;
 ; X80 op-code: value
 ;;
 MACRO fval;
-	defb $1d;
+	defb op_fval;
 ENDM
 
 ;;
 ; X80 op-code: length of string
 ;;
 MACRO flen;
-	defb $1e;
+	defb op_flen;
 ENDM
 
 ;;
 ; X80 op-code: sine
 ;;
 MACRO fsin;
-	defb $1f;
+	defb op_fsin;
 ENDM
 
 ;;
 ; X80 op-code: cosine
 ;;
 MACRO fcos;
-	defb $20;
+	defb op_fcos;
 ENDM
 
 ;;
 ; X80 op-code: tangent
 ;;
 MACRO ftan;
-	defb $21;
+	defb op_ftan;
 ENDM
 
 ;;
 ; X80 op-code: arcsine
 ;;
 MACRO fasin;
-	defb $22;
+	defb op_fasin;
 ENDM
 
 ;;
 ; X80 op-code: arc-cosine
 ;;
 MACRO facos;
-	defb $23;
+	defb op_facos;
 ENDM
 
 ;;
 ; X80 op-code: arctangent
 ;;
 MACRO fatan;
-	defb $24;
+	defb op_fatan;
 ENDM
 
 ;;
 ; X80 op-code: natural logarithm
 ;;
 MACRO flogn;
-	defb $25;
+	defb op_flogn;
 ENDM
 
 ;;
 ; X80 op-code: exponential
 ;;
 MACRO fexp;
-	defb $26;
+	defb op_fexp;
 ENDM
 
 ;;
 ; X80 op-code: integer (rounded down)
 ;;
 MACRO fint;
-	defb $27;
+	defb op_fint;
 ENDM
 
 ;;
 ; X80 op-code: square root
 ;;
 MACRO fsqrt;
-	defb $28;
+	defb op_fsqrt;
 ENDM
 
 ;;
 ; X80 op-code: signum
 ;;
 MACRO fsgn;
-	defb $29;
+	defb op_fsgn;
 ENDM
 
 ;;
 ; X80 op-code: absolute value
 ;;
 MACRO fabs;
-	defb $2a;
+	defb op_fabs;
 ENDM
 
 ;;
 ; X80 op-code: PEEK
 ;;
 MACRO fpeek;
-	defb $2b;
+	defb op_fpeek;
 ENDM
 
 ;;
 ; X80 op-code: IN
 ;;
 MACRO finp;
-	defb $2c;
+	defb op_finp;
 ENDM
 
 ;;
 ; X80 op-code: user address
 ;;
 MACRO fusr;
-	defb $2d;
+	defb op_fusr;
 ENDM
 
 ;;
 ; X80 op-code: string
 ;;
 MACRO fstrs;
-	defb $2e;
+	defb op_fstrs;
 ENDM
 
 ;;
 ; X80 op-code: character
 ;;
 MACRO fchrs;
-	defb $2f;
+	defb op_fchrs;
 ENDM
 
 ;;
 ; X80 op-code: NOT
 ;;
 MACRO fnot;
-	defb $30;
+	defb op_fnot;
 ENDM
 
 ;;
 ; X80 op-code: move
 ;;
 MACRO fmove;
-	defb $31;
+	defb op_fmove;
 ENDM
 
 ;;
 ; X80 op-code: modulus
 ;;
 MACRO fmod;
-	defb $32;
+	defb op_fmod;
 ENDM
 
 ;;
@@ -389,14 +389,14 @@ ENDM
 ; @param address to jump to
 ;;
 MACRO fjp n;
-	defb $33, {n} - $ - 1;
+	defb op_fjp, {n} - $ - 1;
 ENDM
 
 ;;
 ; X80 op-code: stack data
 ;;
 MACRO fstk;
-	defb $34;
+	defb op_fstk;
 ENDM
 
 ;;
@@ -404,63 +404,77 @@ ENDM
 ; @param address to jump to
 ;;
 MACRO fdjnz n;							// djnz
-	defb $35, {n} - $ - 1;
+	defb op_fdjnz, {n} - $ - 1;
+ENDM
+
+;;
+; X80 op-code: less than zero
+;;
+MACRO fltz;
+	defb op_fltz;
+ENDM
+
+;;
+; X80 op-code: greater than zero
+;;
+MACRO fgtz;
+	defb op_fgtz;
 ENDM
 
 ;;
 ; X80 op-code: CPU enable
 ;;
 MACRO fce;
-	defb $38;
+	defb op_fce;
 ENDM
 
 ;;
 ; X80 op-code: get
 ;;
 MACRO fget;
-	defb $39;
+	defb op_fget;
 ENDM
 
 ;;
 ; X80 op-code: truncate
 ;;
 MACRO ftrn;
-	defb $3a;
+	defb op_ftrn;
 ENDM
 
 ;;
 ; X80 op-code: single operation
 ;;
 MACRO fsgl;
-	defb $3b;
+	defb op_fsgl;
 ENDM
 
 ;;
 ; X80 op-code: DEEK
 ;;
 MACRO fdeek;
-	defb $3c;
+	defb op_fdeek;
 ENDM
 
 ;;
 ; X80 op-code: restack
 ;;
 MACRO frstk;
-	defb $3d;
+	defb op_frstk;
 ENDM
 
 ;;
 ; X80 op-code: exclusive or
 ;;
 MACRO fxor;
-	defb $3e;
+	defb op_fxor;
 ENDM
 
 ;;
 ; X80 op-code: integer quotient
 ;;
 MACRO fquot;
-	defb $3f;
+	defb op_fquot;
 ENDM
 
 ;;
