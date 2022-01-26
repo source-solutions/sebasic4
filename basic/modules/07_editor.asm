@@ -269,7 +269,7 @@ ed_ins:
 ; help editing
 ;;
 ed_help:
-	ret;								// FIXME - stub for INSERT key
+	ret;								// FIXME - stub for HELP key
 
 ;;
 ; clr editing
