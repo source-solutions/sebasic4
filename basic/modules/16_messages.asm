@@ -20,7 +20,7 @@
 ;	// --- MESSAGES ------------------------------------------------------------
 ;	// A total of 576 bytes are allocated for localized messages
 
-    org $597a
+    org $58c0
 
 ;	// used in 06_screen_80
 scrl_mssg:

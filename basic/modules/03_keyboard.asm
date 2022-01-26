@@ -255,7 +255,7 @@ k_end:
 	ld (hl), a;							// code to keyboard buffer
 	inc l;								// HL contains next addres in buffer
 	ld a, l;							// low byte to A
-	and %00111111;						// 32 bytes in circular buffer
+	and %00111111;						// 64 bytes in circular buffer
 	ld (iy - _k_head), a;				// new head pointer to sysvar
 	ret;								// end of subroutine
 

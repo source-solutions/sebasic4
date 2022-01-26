@@ -530,8 +530,6 @@ ENDM
 ;	// miscellaneous
 
 	end_marker		equ $80;
-	k_buff			equ $5b00;
-
 
 ;	// colors
 
@@ -707,6 +705,10 @@ ENDM
 	pal_map		equ $dfc0
 	attr_map	equ $e000
 	font		equ	$f800		
+
+;	// keyboard buffer
+
+	k_buff		equ $5b00;
 
 ;	// system variables
 
