@@ -689,7 +689,7 @@ po_each:
 	inc de;								// increment pointer
 	add a, a;							// inverted bit to carry flag
 	jr nc, po_each;						// loop until done
-	pop de;								// D = 0 to 96 for tokens, 0 for messages
+	pop de;								// D = 0 to 127 for tokens, 0 for messages
 	cp 72;								// last character a $?
 	jr z, po_tr_sp;						// jump if so
 	cp 130;								// last character less than A?
@@ -697,9 +697,9 @@ po_each:
 
 po_tr_sp:
 	ld a, d;							// offset to A
-	cp 3;								// FN?
+	cp 1;								// FN?
 	jr z, po_sv_sp;						// jump if so
-	cp 7;								// RND, INKEY$, PI, FN, BIN$, OCT$, HEX$
+	cp 7;								// EOF #, INKEY$, LOC #, LOF#, PI, RND
 	ret c;								// return if so
 
 po_sv_sp:
