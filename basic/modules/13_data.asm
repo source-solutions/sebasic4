@@ -74,6 +74,17 @@ bytes_free:
 	defb " BASIC bytes free", ctrl_cr;
 	defb ctrl_cr, 0;
 
+;	// used in 02_tokenizer
+
+sbst_chr_tbl:
+	defb '[', '(';						// (
+	defb ']', ')';						// )
+	defb '?', tk_print;					// PRINT
+	defb '&', tk_and;					// AND
+	defb '~', tk_not;					// NOT
+	defb '|', tk_or;					// OR
+	defb 0;								// null end marker
+
 ;	// used in 04_audio
 semi_tone:
 	deff 261.625565300599;				// C
