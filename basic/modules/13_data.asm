@@ -74,6 +74,17 @@ bytes_free:
 	defb " BASIC bytes free", ctrl_cr;
 	defb ctrl_cr, 0;
 
+;	// used in 02_tokenizer
+
+sbst_chr_tbl:
+	defb '[', '(';						// (
+	defb ']', ')';						// )
+	defb '?', tk_print;					// PRINT
+	defb '&', tk_and;					// AND
+	defb '~', tk_not;					// NOT
+	defb '|', tk_or;					// OR
+	defb 0;								// null end marker
+
 ;	// used in 04_audio
 semi_tone:
 	deff 261.625565300599;				// C
@@ -153,17 +164,19 @@ tbl_ops_priors:
 	defb 0;								// null terminator
 
 ;	// note priority is always $10 except for NOT which is $06
+;	// bit 6 = input, bit 7 = output; 0 = string, 1 = number
+
 tbl_prefix_ops:
 	defb op_fabs	+ %11000000;		// ABS
 	defb op_facos	+ %11000000;		// ACOS
-	defb op_fasc	+ %11000000;		// ASC
+	defb op_fasc	+ %10000000;		// ASC
 	defb op_fasin	+ %11000000;		// ASIN
 	defb op_fatan	+ %11000000;		// ATAN
 	defb op_fchrs	+ %01000000;		// CHR$
 	defb op_fcos	+ %11000000;		// COS
 	defb op_fdeek	+ %11000000;		// DEEK
 	defb op_fexp	+ %11000000;		// EXP
-	defb op_fquot	+ %11000000;		// FIX
+	defb op_ftrn	+ %11000000;		// FIX
 	defb op_finp	+ %11000000;		// INP
 	defb op_fint	+ %11000000;		// INT
 	defb op_flen	+ %10000000;		// LEN
@@ -173,7 +186,6 @@ tbl_prefix_ops:
 	defb op_fsin	+ %11000000;		// SIN
 	defb op_fsgn	+ %11000000;		// SGN
 	defb op_fsqrt	+ %11000000;		// SQR
-	defb op_fstrs	+ %01000000;		// STR$
 	defb op_ftan	+ %11000000;		// TAN
 	defb op_fusr	+ %11000000;		// USR
 	defb op_fval	+ %10000000;		// VAL
@@ -445,67 +457,64 @@ token_table:
 	str "MID$";
 	tk_right_str	equ $89
 	str "RIGHT$";
-	tk_string_str	equ $8a
+	tk_str_str		equ $8a;
+	str "STR$";
+	tk_string_str	equ $8b;
 	str "STRING$";
 
 ;	// PRINT arguments
-	tk_spc			equ $8b;
+	tk_spc			equ $8c;
 	str "SPC";
-	tk_tab			equ $8c;
+	tk_tab			equ $8d;
 	str "TAB";
 
 ;	// prefix operators (single-argument functions)
-;	// note: cannot be re-ordered without modifying 10_expression.asm
-;	// see: s_negate
-	tk_val_str		equ $8d;
-	str "VAL$";
-	tk_asc			equ $8e;
-	str "ASC";
-	tk_val			equ $8f;
-	str "VAL";
-	tk_len			equ $90;
-	str "LEN";
-	tk_sin			equ $91;
-	str "SIN";
-	tk_cos			equ $92;
-	str "COS";
-	tk_tan			equ $93;
-	str "TAN";
-	tk_asin			equ $94;
-	str "ASIN";
-	tk_acos			equ $95;
+	tk_abs			equ $8e;
+	str "ABS";
+	tk_acos			equ $8f;
 	str "ACOS";
-	tk_atan			equ $96;
+	tk_asc			equ $90;
+	str "ASC";
+	tk_asin			equ $91;
+	str "ASIN";
+	tk_atan			equ $92;
 	str "ATAN";
-	tk_log			equ $97;
-	str "LOG";
-	tk_exp			equ $98;
+	tk_chr_str		equ $93;
+	str "CHR$";
+	tk_cos			equ $94;
+	str "COS";
+	tk_deek			equ $95;
+	str "DEEK";
+	tk_exp			equ $96;
 	str "EXP";
+	tk_fix			equ $97;
+	str "FIX";
+	tk_inp			equ $98;
+	str "INP";
 	tk_int			equ $99;
 	str "INT";
-	tk_sqr			equ $9a;
-	str "SQR";
-	tk_sgn			equ $9b;
-	str "SGN";
-	tk_abs			equ $9c;
-	str "ABS";
+	tk_len			equ $9a;
+	str "LEN";
+	tk_log			equ $9b;
+	str "LOG";
+	tk_not			equ $9c;
+	str "NOT";
 	tk_peek			equ $9d;
 	str "PEEK";
-	tk_inp			equ $9e;
-	str "INP";
-	tk_usr			equ $9f;
+	tk_sin			equ $9e;
+	str "SIN";
+	tk_sgn			equ $9f;
+	str "SGN";
+	tk_sqr			equ $a0;
+	str "SQR";
+	tk_tan			equ $a1;
+	str "TAN";
+	tk_usr			equ $a2;
 	str "USR";
-	tk_str_str		equ $a0;
-	str "STR$";
-	tk_chr_str		equ $a1;
-	str "CHR$";
-	tk_not			equ $a2;
-	str "NOT";
-	tk_deek			equ $a3;
-	str "DEEK";
-	tk_fix			equ $a4;
-	str "FIX";
-
+	tk_val			equ $a3;
+	str "VAL";
+	tk_val_str		equ $a4;
+	str "VAL$";
 
 ;	// infix operators
 	tk_mod			equ $a5;

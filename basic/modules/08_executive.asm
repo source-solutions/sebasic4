@@ -1095,7 +1095,7 @@ out_line1:
 	pop bc;								// unstack BC
 	ret nc;								// return if listing finished
 	push bc;							// stack BC
-	call out_num_2;						// print line number with leading spaces
+	call out_num_2;						// print line number
 	inc hl;								// point to
 	inc hl;								// first
 	inc hl;								// command

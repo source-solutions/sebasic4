@@ -15,7 +15,7 @@
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
 ;;
-;	// --- TOKENIZER AND DETOKENIZER ROUTINES ----------------------------------
+;	// --- TOKENIZER -----------------------------------------------------------
 ;;
 
 ;;
@@ -83,54 +83,43 @@ sbst_sym_eq:
 
 sbst_neql:
 	cp '>';								// test for greater than
-	jr nz, sbst_l_paren;				// jump if not
+	jr nz, sbst_lookup;					// jump if not
 	inc hl;								// advance one character
 	ld a, '<';							// less than
 	cp (hl);							// test for it
 	jr z, sbst_gt;						// jump if so
 	dec hl;								// restore pointer
 	ld a, (hl);							// restore value
-	jr sbst_l_paren;					// jump for next test
+	jr sbst_lookup;					// jump for next test
 
 sbst_gt:
 	ld (hl), '>';						// greater than
 	dec hl;								// back one character
 	jr do_sbst;							// do substitution
 
-sbst_l_paren
-	cp '[';								// left square bracket?
-	jr nz, sbst_r_paren;				// jump if not
-	ld a, '(';							// left parenthesis to A
-	jr do_sbst;							// immediate jump
+sbst_lookup:
+	ld (mem_5_1), hl;					// store position
+	ld b, a;							// store code point
+	ld hl, sbst_chr_tbl;				// address table
 
-sbst_r_paren:
-	cp ']';								// right square bracket?
-	jr nz, sbst_print;					// jump if not
-	ld a, ')';							// left parenthesis to A
-	jr do_sbst;							// immediate jump
+sbst_lk_loop:
+	ld a, (hl);							// code in table
+	and a;								// null terminator?
+	jr z, sbst_not_found;				// jump if so
+	inc hl;								// advance
+	inc hl;								// pointer
+	cp b;								// match?
+	jr nz, sbst_lk_loop;				// loop until done
+	dec hl;								// back one position
+	ld a, (hl);							// get substitute value;
+	ld hl, (mem_5_1);					// restore HL
+	ld (hl), a;							// substitute value
+	inc hl;								// next character
+	jr tokenizer_4;						// immediate jump
 
-sbst_print
-	cp '?';								// question mark?
-	jr nz, sbst_and;					// jump if not
-	ld a, tk_print;						// PRINT token to A
-	jr do_sbst;							// immediate jump
-
-sbst_and:
-	cp '&';								// 
-	jr nz, sbst_not;					// jump if not
-	ld a, tk_and;						// 
-	jr do_sbst;							// immediate jump
-
-sbst_not:
-	cp '~';								// 
-	jr nz, sbst_or;						// jump if not
-	ld a, tk_not;						// 
-	jr do_sbst;							// immediate jump
-
-sbst_or:
-	cp '|';								// 
-	jr nz, in_q;						// jump if not
-	ld a, tk_or;						// 
+sbst_not_found:
+	ld hl, (mem_5_1);					// restore HL
+	ld a, (hl);							// restore character
 
 do_sbst:
 	ld (hl), a;							// write character back (for subs)
@@ -162,7 +151,7 @@ tokenizer_6:
 
 tokenizer_7:
 	inc hl;								// next character
-	jp tokenizer_4;						// repeat until end of line
+	jr tokenizer_4;						// repeat until end of line
 
 tokenizer_8:
 	ld (mem_5_1), hl;					// store position
