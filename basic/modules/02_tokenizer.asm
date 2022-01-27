@@ -48,11 +48,19 @@ tokenizer_4:
 	ld a, (hl);							// get character
 
 	bit 0, c;							// in quotes?
-	jr nz, in_q;						// jump if so
+	jp nz, in_q;						// jump if so
 
 colon_else:
 	cp ' ';								// is it space?
 	jr nz, sbst_eq;						// jump if not
+
+	dec hl;								// previous character
+	ld a, (hl);							// get it
+	cp ':';								// colon?
+	inc hl;								// current character
+	ld a, (hl);							// restore it
+	jr z, sbst_eq;						// jump if there is already a colon
+
 	ld (mem_5_1), hl;					// store position
 	inc hl;								//
 	ld a, (hl);							//
@@ -136,7 +144,7 @@ sbst_lk_loop:
 	ld hl, (mem_5_1);					// restore HL
 	ld (hl), a;							// substitute value
 	inc hl;								// next character
-	jr tokenizer_4;						// immediate jump
+	jp tokenizer_4;						// immediate jump
 
 sbst_not_found:
 	ld hl, (mem_5_1);					// restore HL
