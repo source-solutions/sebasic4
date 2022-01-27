@@ -481,24 +481,26 @@ c_if:
 	fce;								// exit calculator
 	ex de, hl;							// swap pointers
 	call test_zero;						// zero?
-	jr nc, if_1;							// jump if not
+	jr nc, if_1;						// jump if not
 
-	rst get_char;
-	ld b, 1;
+	rst get_char;						// 
+	ld b, 1;							// 
+
 if_2:	call get_next;
 	cp $0d;								// end-of-line
 	jp z, line_end;
 
-	cp tk_else;
-	jr z, if_3;
-	cp tk_if;
-	jr nz, if_2;
-	inc b;
-	jr if_2;
+	cp tk_else;							// ELSE?
+	jr z, if_3;							// jump if so
+	cp tk_if;							// IF?
+	jr nz, if_2;						// jump if not
+	inc b;								//
+	jr if_2;							// immediate jump
 
 if_3:
-	djnz if_2;
-	ld (ch_add), hl;
+	djnz if_2;							//
+	ld (ch_add), hl;					//
+
 if_1:
 	jp stmt_l_1;						// next statement
 
@@ -593,8 +595,8 @@ f_found:
 	ret;								// indirect jump to stmt_ret
 
 report_for_wo_next:
-	rst error;
-	defb for_without_next;
+	rst error;							// 
+	defb for_without_next;				// 
 
 ;;
 ; look program
@@ -665,8 +667,8 @@ c_next:
 	jp goto_2;							// immediate jump
 
 report_next_wo_for:
-	rst error;
-	defb next_without_for;
+	rst error;							// 
+	defb next_without_for;				// 
 
 ;;
 ; next loop
@@ -850,16 +852,16 @@ c_poke:
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#DOKE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_doke:
-	call find_int2;
-	push bc;
-	call find_int2;
-	ld l, c
-	ld h, b
-	pop bc
-	ld (hl), c
-	inc hl
-	ld (hl), b
-	ret
+	call find_int2;						// 
+	push bc;							// 
+	call find_int2;						// 
+	ld l, c;							// 
+	ld h, b;							//
+	pop bc;								// 
+	ld (hl), c;							// 
+	inc hl;								// 
+	ld (hl), b;							// 
+	ret;								// 
 
 ;;
 ; two parameters
@@ -1009,11 +1011,11 @@ report_oo_mem:
 	jp error_3;							// error
 
 ;free_mem:
-;	ld bc, $0000;
-;	call test_room;
-;	ld c, l;
-;	ld b, h;
-;	ret;
+;	ld bc, $0000;						// 
+;	call test_room;						// 
+;	ld c, l;							// 
+;	ld b, h;							// 
+;	ret;								// 
 
 ;;
 ; <code>RETURN</code> command
@@ -2039,14 +2041,15 @@ not_cr:
 	jr pr_mcr_loop;						// loop until done
 
 get_next:
-	ld a, (hl)
-	call number
-	inc hl
-	cp '"'
-	ret nz
+	ld a, (hl);							// 
+	call number;						// 
+	inc hl;								// 
+	cp '"';								// 
+	ret nz;								// 
+
 skip_quot:
-	ld a, (hl)
-	inc hl
-	cp '"'
-	jr nz, skip_quot
-	jr get_next
+	ld a, (hl);							// 
+	inc hl;								// 
+	cp '"';								// 
+	jr nz, skip_quot;					// 
+	jr get_next;						// 
