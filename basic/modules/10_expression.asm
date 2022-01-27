@@ -1062,27 +1062,6 @@ sv_comma:
 sv_close:
 	cp ')';								// closing parenthesis?
 	jr z, sv_dim;						// jump if so
-	cp de, hl;							// pointer to DE
-	jr sv_count;						// immediate jump
-
-sv_comma:
-	push hl;							// stack counter
-	rst get_char;						// get current character
-	pop hl;								// unstack counter
-	cp ',';								// comma?
-	jr z, sv_loop;						// jump if so
-	bit 7, c;							// checking syntax?
-	jr z, report_sscrpt_oo_rng;			// jump if so
-	bit 6, c;							// string array?
-	jr nz, sv_close;					// jump if so
-	cp ')';								// closing parenthesis?
-	jr nz, sv_rpt_c;					// jump if not
-	rst next_char;						// increment ch_add
-	ret;								// end of subroutine
-
-sv_close:
-	cp ')';								// closing parenthesis?
-	jr z, sv_dim;						// jump if so
 	cp tk_to;							// TO?
 	jr nz, sv_rpt_c;					// jump if not
 
