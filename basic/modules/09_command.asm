@@ -166,6 +166,13 @@ c_end:
 	jp error_3;							// generate error message
 
 ;;
+; ELSE
+;;
+c_else:
+	call syntax_z;
+	jp z, stmt_l_1a;					// check the statement after ELSE
+
+;;
 ; <code>REM</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#REM" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
@@ -474,7 +481,7 @@ c_if:
 	fce;								// exit calculator
 	ex de, hl;							// swap pointers
 	call test_zero;						// zero?
-	jp c, line_end;						// jump if not
+	jp c, line_end;						// jump if so
 
 if_1:
 	jp stmt_l_1;						// next statement

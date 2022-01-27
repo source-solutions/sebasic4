@@ -713,7 +713,7 @@ tk_ptr_last:
 
 ;	// used in 09_command
 offst_tbl:
-	defw p_rem;							// ELSE
+	defw p_else;
 	defw p_bload;
 	defw p_bsave;
 	defw p_call;
@@ -954,6 +954,10 @@ p_read:
 p_rem:
 	defb var_syn;
 	defw c_rem;
+
+p_else:
+	defb var_syn;
+	defw c_else;
 
 p_renum:
 	defb var_syn;
