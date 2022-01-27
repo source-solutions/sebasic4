@@ -75,67 +75,71 @@ syntax_z:
 	ret;								// end of subroutine
 
 err_brace:
-	pop hl;
-	ld (err_sp), hl;
-	ld sp, hl;
-	ld a, $0d;
-	ld hl, (x_ptr);
-	ld bc, 0;
-	cpir;
-	dec hl;
-	ld (hl), '}';
-	ret
+	pop hl;								// 
+	ld (err_sp), hl;					// 
+	ld sp, hl;							// 
+	ld a, $0d;							// 
+	ld hl, (x_ptr);						// 
+	ld bc, 0;							// 
+	cpir;								// 
+	dec hl;								// 
+	ld (hl), '}';						// 
+	ret									// 
 
 f_brace:
-	ld (hl), $0d;							// temporary end-of-line marker
-	ld hl, (err_sp);
+	ld (hl), $0d;						// temporary end-of-line marker
+	ld hl, (err_sp);					// 
 	push hl;							// save err_sp
-	ld hl, err_brace;
+	ld hl, err_brace;					// 
 	push hl;							// set error handler
-	ld (err_sp), sp;
-	ld (ch_add), de;
+	ld (err_sp), sp;					// 
+	ld (ch_add), de;					// 
 	push de;							// save beginning of expression
-	call scanning;
-	cp $0d;
-	jr nz, s_rport_c;
+	call scanning;						// 
+	cp $0d;								// 
+	jr nz, s_rport_c;					// 
 	pop hl;								// restore beginning of expression
-	call remove_fp;
-	ld (ch_add), hl;
-	dec hl;
-	ld (hl), '}';							// restore closing brace
+	call remove_fp;						// 
+	ld (ch_add), hl;					// 
+	dec hl;								// 
+	ld (hl), '}';						// restore closing brace
 	pop hl;								// discard error handler
-	pop hl;
-	ld (err_sp), hl;
-	jr s_brce;
+	pop hl;								// 
+	ld (err_sp), hl;					// 
+	jr s_brce;							// 
 
 s_brace_j:
-	rst get_char;							// HL = address of opening brace
+	rst get_char;						// HL = address of opening brace
 	push hl;							// save beginning
 	ld bc, 0;							// nesting depth
+
 s_brcl1:
 	inc bc;								// nest one deeper
+
 s_brcl:
-	rst next_char;
+	rst next_char;						// 
 	cp $0d;								// missing closing brace
-	jp z, report_syntax_err;
-	cp '{';
-	jr z, s_brcl1;
-	cp '}';
-	jr nz, s_brcl;
-	dec bc;
-	ld a, c;
-	or b;
-	jr nz, s_brcl;
+	jp z, report_syntax_err;			// 
+	cp '{';								// 
+	jr z, s_brcl1;						// 
+	cp '}';								// 
+	jr nz, s_brcl;						// 
+	dec bc;								// 
+	ld a, c;							// 
+	or b;								// 
+	jr nz, s_brcl;						// 
 	pop de;								// DE = address of opening brace
 	inc de;								// step past opening brace
-	call syntax_z;
-	jr z, f_brace;
+	call syntax_z;						// 
+	jr z, f_brace;						// 
 	xor a;								// referenced string
 	sbc hl, de;							// HL = length
-	ld c, l;
+	ld c, l;							// 
 	ld b, h;							// BC = length
-	rst next_char;							// step past closing brace
-s_brce:	jr s_string
+	rst next_char;						// step past closing brace
+
+s_brce:
+	jr s_string;						// 
 
 ;	// scanning function table
 scan_func:
@@ -155,11 +159,11 @@ scan_func:
 	defb tk_mid_str, s_mid - 1 - $;				// MID$
 	defb tk_string_str, s_string_str - 1 - $;	// STRING$
 	defb tk_str_str, s_str_j - 1 - $;			// STR$
-	defb '{', s_brace - 1 - $;
+	defb '{', s_brace - 1 - $;					// {
 	defb 0;										// null terminator
 
 s_brace:
-	jr	s_brace_j
+	jr	s_brace_j;						// 
 
 ;;
 ; scanning function
@@ -214,6 +218,7 @@ s_bracket:
 	cp ')';								// closing parenthesis?
 	jp nz, report_syntax_err;			// error if missing
 	rst next_char;						// next character
+
 s_cont_2r:
 	jp s_cont_2;						// immediate jump
 
@@ -425,7 +430,6 @@ s_cont_3:
 	call slicing;						// change parameters
 	rst next_char;						// next character
 	jr s_cont_3;						// immediate jump
-
 
 ;;
 ; '$' at the end of long variable names
@@ -1058,6 +1062,27 @@ sv_comma:
 sv_close:
 	cp ')';								// closing parenthesis?
 	jr z, sv_dim;						// jump if so
+	cp de, hl;							// pointer to DE
+	jr sv_count;						// immediate jump
+
+sv_comma:
+	push hl;							// stack counter
+	rst get_char;						// get current character
+	pop hl;								// unstack counter
+	cp ',';								// comma?
+	jr z, sv_loop;						// jump if so
+	bit 7, c;							// checking syntax?
+	jr z, report_sscrpt_oo_rng;			// jump if so
+	bit 6, c;							// string array?
+	jr nz, sv_close;					// jump if so
+	cp ')';								// closing parenthesis?
+	jr nz, sv_rpt_c;					// jump if not
+	rst next_char;						// increment ch_add
+	ret;								// end of subroutine
+
+sv_close:
+	cp ')';								// closing parenthesis?
+	jr z, sv_dim;						// jump if so
 	cp tk_to;							// TO?
 	jr nz, sv_rpt_c;					// jump if not
 
@@ -1240,6 +1265,7 @@ stk_store:
 	push bc;							// stack BC
 	call test_5_sp;						// room for five bytes?
 	pop bc;								// unstack BC
+
 stk_store_nocheck:
 	ld hl, (stkend);					// address of first location to HL
 	ld (hl), a;							// write first byte
