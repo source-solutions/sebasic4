@@ -533,18 +533,18 @@ token_table:
 	str "XOR";
 
 ;	// other keywords
-	tk_else			equ $ac;
-	str "ELSE";
-	tk_line			equ $ad;
+	tk_line			equ $ac;
 	str "LINE";
-	tk_step			equ $ae;
+	tk_step			equ $ad;
 	str "STEP";
-	tk_then			equ $af;
+	tk_then			equ $ae;
 	str "THEN";
-	tk_to			equ $b0;
+	tk_to			equ $af;
 	str "TO";
 
 ;	// unassigned tokens
+	tk__b0			equ $b0;
+	str "_B0";
 	tk__b1			equ $b1;
 	str "_B1";
 	tk__b2			equ $b2;
@@ -583,11 +583,11 @@ token_table:
 	str "_C2";
 	tk__c3			equ $c3;
 	str "_C3";
-	tk__c4			equ $c4;
-	str "_C4";
 
 ;	// commands
-	first_cmd		equ $c5
+	first_cmd		equ $c4;
+	tk_else			equ $c4;
+	str "ELSE";
 	tk_bload		equ $c5;
 	str "BLOAD";
 	tk_bsave		equ $c6;
@@ -713,6 +713,7 @@ tk_ptr_last:
 
 ;	// used in 09_command
 offst_tbl:
+	defw p_rem;							// ELSE
 	defw p_bload;
 	defw p_bsave;
 	defw p_call;
