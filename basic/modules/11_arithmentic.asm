@@ -1062,8 +1062,8 @@ oflow_clr:
 	ret;								// end of subroutine
 
 report_overflow_2:
-	rst error;
-	defb overflow;
+	rst error;							// throw
+	defb overflow;						// error
 
 ;;
 ; division
