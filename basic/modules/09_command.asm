@@ -2044,6 +2044,10 @@ get_next:
 	ld a, (hl);							// 
 	call number;						// 
 	inc hl;								// 
+	cp ':';								// 
+	jr z, count_stmt;					// 
+	cp tk_then;							// 
+	jr z, count_stmt;					// 
 	cp '"';								// 
 	ret nz;								// 
 
@@ -2053,3 +2057,7 @@ skip_quot:
 	cp '"';								// 
 	jr nz, skip_quot;					// 
 	jr get_next;						// 
+
+count_stmt:
+	inc (iy + _subppc);					// 
+	ret;								// 
