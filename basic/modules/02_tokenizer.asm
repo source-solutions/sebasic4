@@ -48,7 +48,7 @@ tokenizer_4:
 	ld a, (hl);							// get character
 
 	bit 0, c;							// in quotes?
-	jr nz, in_q;						// jump if so
+	jp nz, in_q;						// jump if so
 
 colon_else:
 	cp ' ';								// is it space?
@@ -87,9 +87,9 @@ colon_else:
 	inc hl;								// next character
 	jr tokenizer_4;						// immediate jump
 
-;not_else:
-;	ld hl, (mem_5_1);					// restore position
-;	ld a, (hl);							// restore character
+not_else:
+	ld hl, (mem_5_1);					// restore position
+	ld a, (hl);							// restore character
 
 sbst_eq:
 	cp '=';								// test for equals
@@ -144,7 +144,7 @@ sbst_lk_loop:
 	ld hl, (mem_5_1);					// restore HL
 	ld (hl), a;							// substitute value
 	inc hl;								// next character
-	jr tokenizer_4;						// immediate jump
+	jp tokenizer_4;						// immediate jump
 
 sbst_not_found:
 	ld hl, (mem_5_1);					// restore HL
@@ -180,7 +180,7 @@ tokenizer_6:
 
 tokenizer_7:
 	inc hl;								// next character
-	jr tokenizer_4;						// repeat until end of line
+	jp tokenizer_4;						// repeat until end of line
 
 tokenizer_8:
 	ld (mem_5_1), hl;					// store position
