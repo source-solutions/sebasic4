@@ -169,8 +169,8 @@ be_octave:
 	jp beeper;							// exit via beeper subroutine
 
 report_overflow_0:
-	rst error;
-	defb overflow;
+	rst error;							// 
+	defb overflow;						// 
 
 ;;
 ; play bell
