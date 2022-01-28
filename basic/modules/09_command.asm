@@ -570,8 +570,8 @@ f_found:
 	ret;								// indirect jump to stmt_ret
 
 report_for_wo_next:
-	rst error;
-	defb for_without_next;
+	rst error;							// 
+	defb for_without_next;				// 
 
 ;;
 ; look program
@@ -642,8 +642,8 @@ c_next:
 	jp goto_2;							// immediate jump
 
 report_next_wo_for:
-	rst error;
-	defb next_without_for;
+	rst error;							// 
+	defb next_without_for;				// 
 
 ;;
 ; next loop
@@ -827,16 +827,16 @@ c_poke:
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#DOKE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_doke:
-	call find_int2;
-	push bc;
-	call find_int2;
-	ld l, c
-	ld h, b
-	pop bc
-	ld (hl), c
-	inc hl
-	ld (hl), b
-	ret
+	call find_int2;						// get first parameter in BC
+	push bc;							// stack it
+	call find_int2;						// get second parameter
+	ld l, c;							// copy
+	ld h, b;							// to HL
+	pop bc;								// unstack first parameter
+	ld (hl), c;							// write first parameter
+	inc hl;								// to address in
+	ld (hl), b;							// second parameter
+	ret;								// done
 
 ;;
 ; two parameters
@@ -986,11 +986,11 @@ report_oo_mem:
 	jp error_3;							// error
 
 ;free_mem:
-;	ld bc, $0000;
-;	call test_room;
-;	ld c, l;
-;	ld b, h;
-;	ret;
+;	ld bc, 0;							// clear BC
+;	call test_room;						// how much room is there?
+;	ld c, l;							// result
+;	ld b, h;							// to BC
+;	ret;								// done
 
 ;;
 ; <code>RETURN</code> command
@@ -1894,7 +1894,7 @@ lv_nstr:
 
 lv2:
 	pop hl;								// restore location
-	ret;								// 
+	ret;								// done
 
 ;;
 ; <code>KEY</code> command
