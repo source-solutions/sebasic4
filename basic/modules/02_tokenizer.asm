@@ -50,6 +50,47 @@ tokenizer_4:
 	bit 0, c;							// in quotes?
 	jr nz, in_q;						// jump if so
 
+;colon_else:
+;	cp ' ';								// is it space?
+;	jr nz, sbst_eq;						// jump if not
+;
+;	dec hl;								// previous character
+;	ld a, (hl);							// get it
+;	cp ':';								// colon?
+;	inc hl;								// current character
+;	ld a, (hl);							// restore it
+;	jr z, sbst_eq;						// jump if there is already a colon
+;
+;	ld (mem_5_1), hl;					// store position
+;	inc hl;								//
+;	ld a, (hl);							//
+;	or %00100000;						// make lowercase
+;	cp 'e';								// is it E;
+;	jr nz, not_else;					// jump if not
+;	inc hl;								//
+;	ld a, (hl);							//
+;	or %00100000;						// make lowercase
+;	cp 'l';								// is it E;
+;	jr nz, not_else;					// jump if not
+;	inc hl;								//
+;	ld a, (hl);							//
+;	or %00100000;						// make lowercase
+;	cp 's';								// is it E;
+;	jr nz, not_else;					// jump if not
+;	inc hl;								//
+;	ld a, (hl);							//
+;	or %00100000;						// make lowercase
+;	cp 'e';								// is it E;
+;	jr nz, not_else;					// jump if not
+;	ld hl, (mem_5_1);					// restore position
+;	ld (hl), ':';						// insert colon
+;	inc hl;								// next character
+;	jr tokenizer_4;						// immediate jump
+;
+;not_else:
+;	ld hl, (mem_5_1);					// restore position
+;	ld a, (hl);							// restore character
+
 sbst_eq:
 	cp '=';								// test for equals
 	jr nz, sbst_neql;					// jump if not
