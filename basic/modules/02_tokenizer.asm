@@ -27,18 +27,6 @@ tokenizer:
 	call editor;						// prepare line
 	call var_end_hl;					// varaibles end marker location to HL
 
-dot_test:
-	inc hl;								// next character
-	ld a, (hl);							// get character
-	cp 'A';								// start of command
-	jr nc, tokenizer_0;					// jump if so
-	cp ctrl_cr;							// end of line?
-	jr z, tokenizer_0;					// jump if so
-;	cp '.';								// dot command?
-;	jr nz, dot_test;					// jump if not;
-;	ld (hl), ' ';						// else remove it
-	jr dot_test;						// loop until command or EOL found
-
 tokenizer_0:
 	xor a;								// first pass
 	ld de, tk_ptr_rem;					// check REM first
@@ -60,7 +48,48 @@ tokenizer_4:
 	ld a, (hl);							// get character
 
 	bit 0, c;							// in quotes?
-	jr nz, in_q;						// jump if so
+	jp nz, in_q;						// jump if so
+
+colon_else:
+	cp ' ';								// is it space?
+	jr nz, sbst_eq;						// jump if not
+
+	dec hl;								// previous character
+	ld a, (hl);							// get it
+	cp ':';								// colon?
+	inc hl;								// current character
+	ld a, (hl);							// restore it
+	jr z, sbst_eq;						// jump if there is already a colon
+
+	ld (mem_5_1), hl;					// store position
+	inc hl;								//
+	ld a, (hl);							//
+	or %00100000;						// make lowercase
+	cp 'e';								// is it E;
+	jr nz, not_else;					// jump if not
+	inc hl;								//
+	ld a, (hl);							//
+	or %00100000;						// make lowercase
+	cp 'l';								// is it E;
+	jr nz, not_else;					// jump if not
+	inc hl;								//
+	ld a, (hl);							//
+	or %00100000;						// make lowercase
+	cp 's';								// is it E;
+	jr nz, not_else;					// jump if not
+	inc hl;								//
+	ld a, (hl);							//
+	or %00100000;						// make lowercase
+	cp 'e';								// is it E;
+	jr nz, not_else;					// jump if not
+	ld hl, (mem_5_1);					// restore position
+	ld (hl), ':';						// insert colon
+	inc hl;								// next character
+	jr tokenizer_4;						// immediate jump
+
+not_else:
+	ld hl, (mem_5_1);					// restore position
+	ld a, (hl);							// restore character
 
 sbst_eq:
 	cp '=';								// test for equals
@@ -90,7 +119,7 @@ sbst_neql:
 	jr z, sbst_gt;						// jump if so
 	dec hl;								// restore pointer
 	ld a, (hl);							// restore value
-	jr sbst_lookup;					// jump for next test
+	jr sbst_lookup;						// jump for next test
 
 sbst_gt:
 	ld (hl), '>';						// greater than
@@ -115,7 +144,7 @@ sbst_lk_loop:
 	ld hl, (mem_5_1);					// restore HL
 	ld (hl), a;							// substitute value
 	inc hl;								// next character
-	jr tokenizer_4;						// immediate jump
+	jp tokenizer_4;						// immediate jump
 
 sbst_not_found:
 	ld hl, (mem_5_1);					// restore HL
@@ -151,7 +180,7 @@ tokenizer_6:
 
 tokenizer_7:
 	inc hl;								// next character
-	jr tokenizer_4;						// repeat until end of line
+	jp tokenizer_4;						// repeat until end of line
 
 tokenizer_8:
 	ld (mem_5_1), hl;					// store position

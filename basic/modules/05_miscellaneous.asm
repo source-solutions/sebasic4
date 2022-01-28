@@ -279,13 +279,13 @@ c_locate:
 	jr z, loc_80;						// jump if not
 
 	ld a, c;							// get column
-	or a
-	jr z, loc_err
+	or a;								// test for zero
+	jr z, loc_err						// jump if so
 	cp 41;								// in range?
 	jr nc, loc_err;						// error if not
 	ld a, b;							// get row
-	or a
-	jr z, loc_err
+	or a;								// test for zero
+	jr z, loc_err;						// jump if so
 	cp 24;								// upper screen?
 	jr nc, loc_err;						// jump if not
 	ld a, 42;							// left most
@@ -293,13 +293,13 @@ c_locate:
 
 loc_80:
 	ld a, c;							// get column
-	or a
-	jr z, loc_err
+	or a;								// test for zero
+	jr z, loc_err;						// jump if so
 	cp 81;								// in range?
 	jr nc, loc_err;						// error if not
 	ld a, b;							// get row
-	or a
-	jr z, loc_err
+	or a;								// test for zero
+	jr z, loc_err;						// jump if so
 	cp 24;								// upper screen?
 	jr nc, loc_err;						// jump if not
 
@@ -317,8 +317,8 @@ loc_40:
 	jp cl_set;							// exit via cl_set
 
 loc_err:
-	rst error;
-	defb out_of_screen;
+	rst error;							// 
+	defb out_of_screen;					// 
 
 ;;
 ; <code>PALETTE</code> command
@@ -390,7 +390,7 @@ set_pal:
 	out (c), a;							// set it
 	ld b, $ff;							// address I/O data
 	out (c), e;							// write it
-	ret;								//
+	ret;								// end of routine
 
 ;	// trace on
 ;;

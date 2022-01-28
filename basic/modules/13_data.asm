@@ -775,6 +775,9 @@ offst_tbl:
 	defw p_while;
 
 ;	// parameter table
+p_else:
+	defb var_syn;
+	defw c_else;
 
 p_bload:
 	defb str_exp, ',', num_exp_no_f_ops;
@@ -954,10 +957,6 @@ p_read:
 p_rem:
 	defb var_syn;
 	defw c_rem;
-
-p_else:
-	defb var_syn;
-	defw c_else;
 
 p_renum:
 	defb var_syn;

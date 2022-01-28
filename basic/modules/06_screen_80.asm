@@ -193,7 +193,7 @@ inverse_3:
 	inc d;								// point to next screen location
 	inc l;								// point to next font data
 	djnz pos_3a;						// loop 8 times
-	jp pr_all_f;
+	jp pr_all_f;						// immediate jump
 
 pos_5:
 	inc de;								// next column
@@ -299,10 +299,6 @@ inverse_6a:
 	ret;								// immediate return
 
 ;;
-;
-;;
-
-;;
 ; print out
 ;;
 print_out:
@@ -344,7 +340,7 @@ ctlchrtab:
 
 ;	// sound bell subroutine
 po_bel:
-	jp bell;
+	jp bell;							// immediate jump
 
 ;;
 ; print tab
@@ -376,7 +372,7 @@ po_vt:
 
 ;	// print clr subroutine
 po_clr:
-	jp c_cls;
+	jp c_cls;							// immediate jump
 
 ;;
 ; print carriage return
@@ -762,8 +758,8 @@ po_scr:
 	ret;								// return via cl_set
 
 report_oo_scr:
-	rst error;
-	defb out_of_screen;
+	rst error;							// 
+	defb out_of_screen;					// 
 
 po_scr_2:
 	dec (iy + _scr_ct);					// reduce scroll count
@@ -796,8 +792,9 @@ po_scr_3:
 
 report_break:
 	call flush_kb;						// clear keyboard buffer
-	rst error;
-	defb msg_break;
+
+	rst error;							// 
+	defb msg_break;						// 
 
 po_scr_4:
 	cp 2;								// lower part fits?
