@@ -123,7 +123,7 @@ stmt_ret:
 
 stmt_r_1:
 	bit 7, (iy + _nsppc);				// statement jump required?
-	jr nz, stmt_next;					// jump if not
+	jp nz, stmt_next;					// jump if not
 	ld hl, (newppc);					// get new line number
 	bit 7, h;							// statement in editing area?
 	jr z, line_new;						// jump if not
@@ -164,6 +164,15 @@ c_end:
 	ld (ppc), bc;						// set line number
 	ld l, ok;							// error to A
 	jp error_3;							// generate error message
+
+;;
+; ELSE
+;;
+c_else:
+	pop bc;								// discard statement return address
+	call syntax_z;						// 
+	jp z, stmt_l_1a;					// check the statement after ELSE
+	push bc;							// put it temporarily back
 
 ;;
 ; <code>REM</code> command
@@ -474,7 +483,26 @@ c_if:
 	fce;								// exit calculator
 	ex de, hl;							// swap pointers
 	call test_zero;						// zero?
-	jp c, line_end;						// jump if not
+	jr nc, if_1;						// jump if not
+
+	rst get_char;						// 
+	ld b, 1;							//
+
+if_2:
+	call get_next;						// 
+	cp $0d;								// end-of-line
+	jp z, line_end;						// 
+
+	cp tk_else;							// 
+	jr z, if_3;							// 
+	cp tk_if;							// 
+	jr nz, if_2;						// 
+	inc b;								// 
+	jr if_2;							// 
+
+if_3:
+	djnz if_2;							// 
+	ld (ch_add), hl;					// 
 
 if_1:
 	jp stmt_l_1;						// next statement
@@ -570,8 +598,8 @@ f_found:
 	ret;								// indirect jump to stmt_ret
 
 report_for_wo_next:
-	rst error;							// 
-	defb for_without_next;				// 
+	rst error;							// throw
+	defb for_without_next;				// error
 
 ;;
 ; look program
@@ -642,8 +670,8 @@ c_next:
 	jp goto_2;							// immediate jump
 
 report_next_wo_for:
-	rst error;							// 
-	defb next_without_for;				// 
+	rst error;							// throw
+	defb next_without_for;				// error
 
 ;;
 ; next loop
@@ -2014,3 +2042,25 @@ not_cr:
 	rst print_a;						// print the character
 	inc de;								// next character
 	jr pr_mcr_loop;						// loop until done
+
+get_next:
+	ld a, (hl);							// 
+	call number;						// 
+	inc hl;								// 
+	cp ':';								// 
+	jr z, count_stmt;					// 
+	cp tk_then;							// 
+	jr z, count_stmt;					// 
+	cp '"';								// 
+	ret nz;								// 
+
+skip_quot:
+	ld a, (hl);							// 
+	inc hl;								// 
+	cp '"';								// 
+	jr nz, skip_quot;					// 
+	jr get_next;						// 
+
+count_stmt:
+	inc (iy + _subppc);					// 
+	ret;								// 

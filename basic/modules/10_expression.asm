@@ -262,10 +262,10 @@ s_right:
 	ld b, (hl);							// 
 	dec hl;								// 
 	ld c, (hl);							// BC = start address
-	ex de, hl;							// swap DE and HL
+	ex de, hl;							// 
 	add hl, bc;							// HL = new start address
 	ex de, hl;							// DE = new start address
-	ld (hl), e;							// store it
+	ld (hl), e;							// 
 	inc hl;								// 
 	ld (hl), d;							// commit new start address
 	jr s_cont_2r;						// immediate jump
