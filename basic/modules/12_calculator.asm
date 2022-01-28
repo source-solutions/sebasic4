@@ -372,15 +372,15 @@ in_pk_stk:
 ; DEEK function
 ;;
 fp_deek:
-	call find_int2
-	push hl
-	ld l, c
-	ld h, b
-	ld c, (hl)
-	inc hl
-	ld b, (hl)
-	pop hl
-	jp stack_bc;
+	call find_int2;						// get address in BC
+	push hl;							// stack it
+	ld l, c;							// address
+	ld h, b;							// to HL
+	ld c, (hl);							// value in (HL)
+	inc hl;								// to 
+	ld b, (hl);							// BC
+	pop hl;								// unstack HL
+	jp stack_bc;						// immediate jump
 
 ;	// FIXME - (should restore IY to err-nr on return)
 ;;
@@ -410,7 +410,7 @@ fp_mul_str:
 	call stack_bc;						// stack string length (calculator)
 	fwait;								// arg2, length
 	fmul;								// arg2 * length
-	fce;								// 
+	fce;								// exit calculator
 	call find_int2;						// BC = new string length
 	pop hl;								// HL = old string length
 	sbc hl, bc;							// HL = length difference
@@ -429,25 +429,25 @@ fp_mul_str:
 	push de;							// stack string address
 	rst bc_spaces;						// allocate space for mirrored string
 	pop hl;								// HL = string address
-	push de;							// 
-	push bc;							// 
-	ldir;								// 
-	pop bc;								// 
-	pop hl;								// 
-	push hl;							// 
-	call mirror;						// 
-	pop de;								// 
-	ld hl, (stkend);					// 
-	dec hl;								// 
-	dec hl;								// 
-	dec hl;								// 
-	ld (hl), d;							// 
-	dec hl;								// 
-	ld (hl), e;							// 
+	push de;							// stack destination
+	push bc;							// stack byte count
+	ldir;								// do block copy
+	pop bc;								// unstack byte count
+	pop hl;								// unstack source
+	push hl;							// restack source
+	call mirror;						// mirror string
+	pop de;								// new destination is old source
+	ld hl, (stkend);					// new source from STKEND 
+	dec hl;								// skip
+	dec hl;								// two
+	dec hl;								// bytes
+	ld (hl), d;							// store
+	dec hl;								// new
+	ld (hl), e;							// destination in STKEND
 
 fp_mul_str_e:
-	ld de, (stkend);					// 
-	ret;								// 
+	ld de, (stkend);					// contents of STKEND to DE
+	ret;								// done
 
 d_slong:
 	push hl;							// address pointer
@@ -1550,7 +1550,9 @@ last:
 	fce;								// exit calculator
 	ret;								// end of subroutine
 
-
+;;
+; quotient operation
+;;
 fp_quot:
 	fwait;								// 
 	fdiv;								// 
