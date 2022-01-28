@@ -711,7 +711,7 @@ po_sv_sp:
 po_save:
 	push de;							// stack DE
 	exx;								// preserve HL and BC
-	rst print_a;						// print one character
+	call out_ch_2;						// print one character
 	exx;								// restore HL and BC
 	pop de;								// unstack DE
 	ret;								// end of subroutine
