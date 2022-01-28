@@ -123,7 +123,7 @@ stmt_ret:
 
 stmt_r_1:
 	bit 7, (iy + _nsppc);				// statement jump required?
-	jr nz, stmt_next;					// jump if not
+	jp nz, stmt_next;					// jump if not
 	ld hl, (newppc);					// get new line number
 	bit 7, h;							// statement in editing area?
 	jr z, line_new;						// jump if not
@@ -169,8 +169,10 @@ c_end:
 ; ELSE
 ;;
 c_else:
+	pop bc;							// discard statement return address
 	call syntax_z;
 	jp z, stmt_l_1a;					// check the statement after ELSE
+	push bc;						// put it temporarily back
 
 ;;
 ; <code>REM</code> command
