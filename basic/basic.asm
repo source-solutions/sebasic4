@@ -47,11 +47,9 @@
 	include "modules/15_files.asm"
 	include "modules/16_messages.asm"
 
-;	// last byte
+;	// last byte of program
 	org $5bb9
 	defb $A0
 
 ;	// this will be overwritten with system variables
 	defb "The supreme art of war is to subdue the enemy without fighting-Sun Tzu";
-
-;	// last byte is at $5bff
