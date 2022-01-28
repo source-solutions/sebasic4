@@ -27,18 +27,6 @@ tokenizer:
 	call editor;						// prepare line
 	call var_end_hl;					// varaibles end marker location to HL
 
-dot_test:
-	inc hl;								// next character
-	ld a, (hl);							// get character
-	cp 'A';								// start of command
-	jr nc, tokenizer_0;					// jump if so
-	cp ctrl_cr;							// end of line?
-	jr z, tokenizer_0;					// jump if so
-;	cp '.';								// dot command?
-;	jr nz, dot_test;					// jump if not;
-;	ld (hl), ' ';						// else remove it
-	jr dot_test;						// loop until command or EOL found
-
 tokenizer_0:
 	xor a;								// first pass
 	ld de, tk_ptr_rem;					// check REM first
@@ -90,7 +78,7 @@ sbst_neql:
 	jr z, sbst_gt;						// jump if so
 	dec hl;								// restore pointer
 	ld a, (hl);							// restore value
-	jr sbst_lookup;					// jump for next test
+	jr sbst_lookup;						// jump for next test
 
 sbst_gt:
 	ld (hl), '>';						// greater than
