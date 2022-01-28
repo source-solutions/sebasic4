@@ -75,38 +75,38 @@ syntax_z:
 	ret;								// end of subroutine
 
 err_brace:
-	pop hl;								// 
-	ld (err_sp), hl;					// 
-	ld sp, hl;							// 
-	ld a, $0d;							// 
-	ld hl, (x_ptr);						// 
-	ld bc, 0;							// 
-	cpir;								// 
-	dec hl;								// 
-	ld (hl), '}';						// 
-	ret									// 
+	pop hl;								// unstack HL
+	ld (err_sp), hl;					// store it in ERR-SP
+	ld sp, hl;							// swap pointers
+	ld a, $0d;							// carriage return
+	ld hl, (x_ptr);						// X-PTR to HL 
+	ld bc, 0;							// clear BC
+	cpir;								// loop until done
+	dec hl;								// back one place
+	ld (hl), '}';						// store closing curly brace
+	ret									// done
 
 f_brace:
 	ld (hl), $0d;						// temporary end-of-line marker
-	ld hl, (err_sp);					// 
+	ld hl, (err_sp);					// ERR-SP to HL
 	push hl;							// save err_sp
-	ld hl, err_brace;					// 
-	push hl;							// set error handler
-	ld (err_sp), sp;					// 
-	ld (ch_add), de;					// 
+	ld hl, err_brace;					// HL points to the brace error handler
+	push hl;							// set it
+	ld (err_sp), sp;					// replace the normal error handler
+	ld (ch_add), de;					// set the character address from DE
 	push de;							// save beginning of expression
-	call scanning;						// 
-	cp $0d;								// 
-	jr nz, s_rport_c;					// 
+	call scanning;						// evaluate the contents of the braces
+	cp $0d;								// carraige return?
+	jr nz, s_rport_c;					// jump if not
 	pop hl;								// restore beginning of expression
-	call remove_fp;						// 
-	ld (ch_add), hl;					// 
-	dec hl;								// 
+	call remove_fp;						// remove hidden values
+	ld (ch_add), hl;					// restore character address
+	dec hl;								// back one place
 	ld (hl), '}';						// restore closing brace
 	pop hl;								// discard error handler
-	pop hl;								// 
-	ld (err_sp), hl;					// 
-	jr s_brce;							// 
+	pop hl;								// old error handler to HL
+	ld (err_sp), hl;					// restore it
+	jr s_brce;							// immediate jump
 
 s_brace_j:
 	rst get_char;						// HL = address of opening brace
@@ -117,29 +117,29 @@ s_brcl1:
 	inc bc;								// nest one deeper
 
 s_brcl:
-	rst next_char;						// 
-	cp $0d;								// missing closing brace
-	jp z, report_syntax_err;			// 
-	cp '{';								// 
-	jr z, s_brcl1;						// 
-	cp '}';								// 
-	jr nz, s_brcl;						// 
-	dec bc;								// 
-	ld a, c;							// 
-	or b;								// 
-	jr nz, s_brcl;						// 
+	rst next_char;						// get next character
+	cp $0d;								// carriage return? (missing closing brace)
+	jp z, report_syntax_err;			// jump if so
+	cp '{';								// opening brace?
+	jr z, s_brcl1;						// jump if so
+	cp '}';								// closing brace?
+	jr nz, s_brcl;						// jump if not
+	dec bc;								// reduce counter
+	ld a, c;							// zero
+	or b;								// reached?
+	jr nz, s_brcl;						// jump if not
 	pop de;								// DE = address of opening brace
 	inc de;								// step past opening brace
-	call syntax_z;						// 
-	jr z, f_brace;						// 
+	call syntax_z;						// checking syntax?
+	jr z, f_brace;						// jump if so
 	xor a;								// referenced string
 	sbc hl, de;							// HL = length
-	ld c, l;							// 
+	ld c, l;							// to
 	ld b, h;							// BC = length
 	rst next_char;						// step past closing brace
 
 s_brce:
-	jr s_string;						// 
+	jr s_string;						// immediate jump
 
 ;	// scanning function table
 scan_func:
@@ -262,10 +262,10 @@ s_right:
 	ld b, (hl);							// 
 	dec hl;								// 
 	ld c, (hl);							// BC = start address
-	ex de, hl;							// 
+	ex de, hl;							// swap DE and HL
 	add hl, bc;							// HL = new start address
 	ex de, hl;							// DE = new start address
-	ld (hl), e;							// 
+	ld (hl), e;							// store it
 	inc hl;								// 
 	ld (hl), d;							// commit new start address
 	jr s_cont_2r;						// immediate jump
@@ -302,10 +302,10 @@ s_mid:
 	jp s_mid_cont;						// immediate jump
 
 s_string_str:
-	call s_2_coord;						// 
-	call nz, s_strng_s;					// 
+	call s_2_coord;						// expect two variables
+	call nz, s_strng_s;					// jump if not
 	rst next_char;						// next character
-	jp s_string;						// 
+	jp s_string;						// immediate jump
 
 s_pi:
 	call syntax_z;						// checking syntax?
@@ -320,7 +320,7 @@ s_pi_end:
 	jr s_numeric;						// immediate jump
 
 s_str_j:
-	jp s_str;							// 
+	jp s_str;							// immediate jump
 
 ;	// fast RND function
 s_rnd:
@@ -329,38 +329,38 @@ s_rnd:
 	ld hl, (seed);						// get current value of seed
 	ld e, l;							// store it
 	ld d, h;							// in DE
-	xor a;								//
+	xor a;								// LD A, 0
 	ld bc, $062c;						// B = loop counter, C = %00101100 (read bit by bit in reverse)
 
 rndl:
-	adc hl, hl;							//
-	adc a, a;							//
-	rl c;								//
-	jr nc, noadd;						//
-	add hl, de;							//
-	adc a, 0;							//
+	adc hl, hl;							// 16-bit add with carry
+	adc a, a;							// 8-bit add with carry
+	rl c;								// rotate A left through carry
+	jr nc, noadd;						// jump if carry is clear
+	add hl, de;							// seed to HL
+	adc a, 0;							// carry set for 0
 
 noadd:
-	djnz rndl;							//
-	ld c, 75;							//
-	adc hl, bc;							//
-	adc a, b;							//
-	jr z, nomod;						//
-	ld c, a;							//
-	sbc hl, bc;							//
-	jr c, domod;						//
+	djnz rndl;							// loop until done
+	ld c, 75;							// change bit pattern in C
+	adc hl, bc;							// 16-bit addition with carry
+	adc a, b;							// 8-bit addition with carry
+	jr z, nomod;						// jump if zero
+	ld c, a;							// A to C
+	sbc hl, bc;							// HL = HL - BC
+	jr c, domod;						// jump with carry
 
 nomod:
-	dec hl;								//
+	dec hl;								// HL = HL - 1
 
 domod:
-	ld (seed), hl;						//
-	ld c, l;							//
-	ld b, h;							//
-	call stack_bc;						//
-	call fp_re_stack;					//
-	ld a, (hl);							//
-	or a;								//
+	ld (seed), hl;						// modify seed
+	ld c, l;							// HL to
+	ld b, h;							// BC
+	call stack_bc;						// stack it
+	call fp_re_stack;					// rebalance
+	ld a, (hl);							// result to A
+	or a;								// 
 	jr z, s_pi_end;						//
 	sub $10;							//
 	ld (hl), a;							//
@@ -798,8 +798,8 @@ fn_skpovr_1:
 	ld a, (hl);							// code to A
 ;	cp ' ' + 1;							// > space?
 ;	jr c, fn_skpovr;					// jump if so
-	cp ' ';								// 
-	jr z, fn_skpovr;					// 
+	cp ' ';								// space?
+	jr z, fn_skpovr;					// jump if so
 	ret;								// end of subroutine
 
 ;;
@@ -1840,8 +1840,8 @@ not_bin:
 	jr dec_sto_1;						// immediate jump
 
 report_overflow_1:
-	rst error;							//
-	defb overflow;						//
+	rst error;							// throw
+	defb overflow;						// error
 
 decimal:
 	rst next_char;						// get next character
@@ -2205,7 +2205,8 @@ s_str_low:
 	inc hl;								// 
 	dec bc;								// 
 
-str_p:	call mirror;					// 
+str_p:
+	call mirror;						// 
 	pop de;								// 
 	pop bc;								// 
 	jp s_string;						// 
