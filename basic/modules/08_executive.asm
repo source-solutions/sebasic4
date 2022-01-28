@@ -376,8 +376,8 @@ main_add:
 	jp main_exec;						// immediate jump
 
 report_bad_io_dev:
-	rst error;
-	defb bad_io_device;
+	rst error;							// 
+	defb bad_io_device;					// 
 
 ;;
 ; wait key
@@ -1222,21 +1222,21 @@ out_ch_1:
 	jr c, out_ch_2;						// jump, if not
 	bit 2, (iy + _flags2);				// in quotes?
 	jp nz, out_ch_2;					// jump, if so
-	push de;							// 
-	call po_token;						// 
-	pop de;								// 
-	ret;								// 
+	push de;							// stack DE
+	call po_token;						// print the token
+	pop de;								// unstack DE
+	ret;								// done
 
 out_ch_2:
-	push hl;							// 
-	ld hl, flags;						// 
-	res 0, (hl);						// 
-	cp ' ';								// 
-	jr nz, out_ch_3;					// 
-	set 0, (hl);						// 
+	push hl;							// stack HL
+	ld hl, flags;						// point to FLAGS
+	res 0, (hl);						// clear leading space
+	cp ' ';								// test for space
+	jr nz, out_ch_3;					// jump if not
+	set 0, (hl);						// else set leading space required
 
 out_ch_3:
-	pop hl;								// 
+	pop hl;								// unstack HL
 	rst print_a;						// print character
 	ret;								// end of subroutine
 
@@ -1457,46 +1457,46 @@ out_num_4:
 	ret;								// end of subroutine
 
 adjust_strms:
-	push bc;							// 
-	push hl;							// 
-	ld de, (chans);						// 
-	and a;								// 
-	sbc hl, de;							// 
-	ex de, hl;							// 
-	ld hl, strms + 6;					// 
+	push bc;							// stack BC
+	push hl;							// stack HL
+	ld de, (chans);						// current channel pointer to DE
+	and a;								// prepare for 16-bit substraction
+	sbc hl, de;							// HL = HL - DE
+	ex de, hl;							// result to DE
+	ld hl, strms + 6;					// start of non-system streams to HL
 
 strms_loop:
-	ld a, (hl);							// 
-	inc l;								// 
-	ex af, af';							// 
-	ld a, (hl);							// 
-	cp d;								// 
-	jr c, strm_skip;					// 
-	jr nz, strm_adj;					// 
-	ex af, af'							// 
-	cp e;								// 
-	jr c, strm_skip;					// 
+	ld a, (hl);							// first stream record to A
+	inc l;								// next stream record
+	ex af, af';							// store first record in A''
+	ld a, (hl);							// second record to A
+	cp d;								// compare
+	jr c, strm_skip;					// jump if in range
+	jr nz, strm_adj;					// else adjust
+	ex af, af'							// first record to A
+	cp e;								// compare
+	jr c, strm_skip;					// jump if no adjustment required
 
 strm_adj:
-	push de;							// 
-	ld d, (hl);							// 
-	dec l								// 
-	ld e, (hl);							// 
-	ex de, hl;							// 
-	and a;								// 
-	sbc hl, bc;							// 
-	ex de, hl;							// 
-	ld (hl), e;							// 
-	inc l;								// 
-	ld (hl), d;							// 
-	pop de;								// 
+	push de;							// stack DE
+	ld d, (hl);							// second stream record to D
+	dec l								// previous stream record
+	ld e, (hl);							// fisrt stream record to E
+	ex de, hl;							// records to HL
+	and a;								// prepare for 16-bit subtraction
+	sbc hl, bc;							// HL = HL - BC
+	ex de, hl;							// result to DE
+	ld (hl), e;							// E to first record
+	inc l;								// next record
+	ld (hl), d;							// D to second record
+	pop de;								// unstack DE
 
 strm_skip:
-	inc l;								// 
-	ld a, l;							// 
-	cp strms+38 - $100 * (strms/$100);	//
-	jr nz, strms_loop;					// 
+	inc l;								// next address
+	ld a, l;							// to A
+	cp strms+38 - $100 * (strms/$100);	// compare stream
+	jr nz, strms_loop;					// loop until match
 
-	pop hl;								// 
-	pop bc;								// 
-	ret;								// 
+	pop hl;								// unstack HL
+	pop bc;								// unstack BC
+	ret;								// done
