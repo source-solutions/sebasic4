@@ -44,6 +44,27 @@ tokenizer_3:
 	push ix;							// restore token
 	pop de;								// position to DE
 
+;	push hl;							// stack pointer
+;
+;trim_spaces:
+;	ld a, (hl);							// get character
+;
+;trim_spaces_1:
+;	inc hl;								// next character
+;	cp ctrl_cr;							// end of line
+;	jr z, trim_done;					// jump if so
+;	cp ' ';								// space?
+;	jr nz, trim_spaces;					// jump if not
+;	ld a, (hl);							// get next character
+;	cp ' ';								// space?
+;	jr nz, trim_spaces_1;				// loop if not
+;	call ed_backspace;					// remove second space;
+;	dec hl;								// previous character
+;	jr trim_spaces;						// loop
+;
+;trim_done:
+;	pop hl;								// restore pointer
+
 tokenizer_4:
 	ld a, (hl);							// get character
 
@@ -56,9 +77,10 @@ colon_else:
 
 	dec hl;								// previous character
 	ld a, (hl);							// get it
+
 	cp ':';								// colon?
 	inc hl;								// current character
-	ld a, (hl);							// restore it
+	ld a, (hl);							// restore current character
 	jr z, sbst_eq;						// jump if there is already a colon
 
 	ld (mem_5_1), hl;					// store position
