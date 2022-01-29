@@ -27,6 +27,15 @@ tokenizer:
 	call editor;						// prepare line
 	call var_end_hl;					// varaibles end marker location to HL
 
+	ld hl, (e_line);					// fetch line start
+rm_extra_ld_sp:
+	ld a, (hl);							// get chacater;
+	inc hl;								// advance character;
+	call numeric;						// digit?
+	jr nc, rm_extra_ld_sp;				// loop if so
+	cp ' ';								// space?
+	call z, ed_backspace;				// if so remove it
+
 tokenizer_0:
 	xor a;								// first pass
 	ld de, tk_ptr_rem;					// check REM first
