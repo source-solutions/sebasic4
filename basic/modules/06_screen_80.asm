@@ -508,14 +508,16 @@ add_columns:
 	bit 0, (iy + _vdu_flag);			// lower screen?
 	jr z, write_char;					// jump if not
 
-	ld b, (iy + _df_sz);				// number of rows in lower display
-	ld de, 80;							// 80 characters per row
-	ld hl, $df80 + 80;					// end of character map + 80 (line 0)
+	jr no_write_char;					// BUG PATCH - lower screen was not updating character map correctly
 
-sbc_lines:
-	sbc hl, de;							// subtract 80 characters for each row
-	djnz sbc_lines;						// B holds line count (zero on loop exit)
-	add hl, bc;							// add column offset
+;	ld b, (iy + _df_sz);				// number of rows in lower display
+;	ld de, 80;							// 80 characters per row
+;	ld hl, $df80 + 80;					// end of character map + 80 (line 0)
+
+;sbc_lines:
+;	sbc hl, de;							// subtract 80 characters for each row
+;	djnz sbc_lines;						// B holds line count (zero on loop exit)
+;	add hl, bc;							// add column offset
 	
 write_char:
 	ld bc, paging;						// paging address
@@ -525,6 +527,8 @@ write_char:
 	ld (hl), a;							// write character to map
 	out (c), d;							// page framebuffer out
 	ei;									// interrupts on
+
+no_write_char:
 	pop hl;								// restore screen address
 ;	// character map code ends
 
