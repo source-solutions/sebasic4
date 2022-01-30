@@ -6,7 +6,6 @@ boot.rom
 unodos-0.sys
 unodos-1.sys
 pasmo.exe
-*.BAS
 /reference/*
 *.ZX1
 ba????.bmp

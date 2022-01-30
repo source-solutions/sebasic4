@@ -907,7 +907,7 @@ ln_load:
 
 	ret c;								// return if error
 	ld ix, messages;					// file destination
-	ld bc, 576;							// 576 bytes of data to load
+	ld bc, 592;							// 592 bytes of data to load
 	jr any_load;						// continue to common code
 
 kb_found:

@@ -1,5 +1,5 @@
 cd basic
-..\rasm\rasm -pasmo basic.asm -ob ..\bin\23.bin
+..\rasm\rasm -pasmo basic.asm -ob ..\bin\23.bin -sz -os ../bin/symbols.txt
 cd ..\boot
 ..\rasm\rasm -pasmo boot.asm -ob ..\bin\boot.rom
 erase basic.bin

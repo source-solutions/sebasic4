@@ -1,5 +1,5 @@
 cd basic
-../rasm/rasm-mac -pasmo basic.asm -ob ../bin/23.bin
+../rasm/rasm-mac -pasmo basic.asm -ob ../bin/23.bin -sz -os ../bin/symbols.txt
 cd ../boot
 ../rasm/rasm-mac -pasmo boot.asm -ob ../bin/boot.rom
 rm basic.bin
