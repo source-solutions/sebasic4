@@ -1029,6 +1029,9 @@ prgpath:
 rootpath:
 	defb '/', 0;						// root	
 
+;cur_path:
+;	defb '.', 0;						// current path
+
 appname:
 	defb ".prg", 0;						// application extension
 
@@ -1036,7 +1039,7 @@ resources:
 	defb "../rsc", 0;					// resource folder
 
 old_bas_path:
-	defb "/system/temporar.y/old.bas", 0;	// path to OLD.BAS
+	defb "/system/temporar.y/old.bas",0;// path to OLD.BAS
 
 sys_folder:
 	defb "system", 0;					// system folder name
