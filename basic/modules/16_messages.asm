@@ -18,7 +18,7 @@
 ;	// these addresses must not contain code or when the PC is in this range, paging will take place.
 
 ;	// --- MESSAGES ------------------------------------------------------------
-;	// A total of 576 bytes are allocated for localized messages
+;	// A total of 592 bytes are allocated for localized messages
 
     org $58b0
 
