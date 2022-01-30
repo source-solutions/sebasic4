@@ -63,12 +63,13 @@ ifdef slam
 endif
 
 	defb ctrl_cr;
-	defb "SE BASIC IV 4.2 Cordelia", ctrl_cr;
+	defb "SE BASIC IV 4.2-b9 Cordelia", ctrl_cr;
 	defb "Copyright (C)2022 Source Solutions, Inc.", ctrl_cr;
 	defb ctrl_cr;
 	timestamp 'YY-MM-DD h:m';			// RASM directive
-;	defb "Release YYMMDD";				// 
-	defb ctrl_cr, ctrl_cr, 0;
+	defb ctrl_cr;
+;	defb "GPL-3.0 License", ctrl_cr;
+	defb ctrl_cr, 0;
 
 bytes_free:
 	defb " BASIC bytes free", ctrl_cr;
