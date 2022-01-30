@@ -1025,7 +1025,7 @@ skip_while:
 skip_while_0:
 	inc hl;
 	ld a, (hl);
-	cp $c0
+	cp $40
 	jr nc, report_missing_wend;
 	ld d, a;
 	inc hl;
