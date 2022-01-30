@@ -993,6 +993,7 @@ c_gosub:
 	ld (err_sp), sp;					// point sysvar to it
 	push de;							// stack stmt_ret address
 	call c_goto;						// set newppc and nsppc
+test_20_bytes:
 	ld bc, 20;							// 20 bytes required
 
 ;;
@@ -2064,3 +2065,4 @@ skip_quot:
 count_stmt:
 	inc (iy + _subppc);					// 
 	ret;								// 
+

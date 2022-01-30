@@ -1011,7 +1011,7 @@ p_wend:
 	defw c_wend;
 
 p_while:
-	defb var_syn;
+	defb num_exp_no_f_ops;
 	defw c_while;
 
 ;	// used in 15_files
