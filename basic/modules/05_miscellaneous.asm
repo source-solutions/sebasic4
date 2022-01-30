@@ -520,16 +520,3 @@ msg_loop:
 	ret z;								// return when done
 	jr msg_loop;						// loop until done
 
-;;
-; <code>WHILE</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#WHILE" target="_blank" rel="noopener noreferrer">Language reference</a>
-;;
-c_while:
-	ret
-
-;;
-; <code>WEND</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#WEND" target="_blank" rel="noopener noreferrer">Language reference</a>
-;;
-c_wend:
-	ret

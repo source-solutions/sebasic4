@@ -993,6 +993,7 @@ c_gosub:
 	ld (err_sp), sp;					// point sysvar to it
 	push de;							// stack stmt_ret address
 	call c_goto;						// set newppc and nsppc
+test_20_bytes:
 	ld bc, 20;							// 20 bytes required
 
 ;;
@@ -1031,6 +1032,8 @@ c_return:
 	ld a, d;							// D to A
 	cp $3e;								// test for gosub end marker
 	jr z, report_ret_wo_gosub;			// error if so
+
+c_return_wend:
 	dec sp;								// three locations required
 	ex (sp), hl;						// swap statement number and error address
 	ex de, hl;							// statement number to DE
@@ -2064,3 +2067,4 @@ skip_quot:
 count_stmt:
 	inc (iy + _subppc);					// 
 	ret;								// 
+
