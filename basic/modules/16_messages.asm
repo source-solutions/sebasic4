@@ -18,9 +18,9 @@
 ;	// these addresses must not contain code or when the PC is in this range, paging will take place.
 
 ;	// --- MESSAGES ------------------------------------------------------------
-;	// A total of 592 bytes are allocated for localized messages
+;	// A total of 608 bytes are allocated for localized messages
 
-    org $58b0
+    org $58a0
 
 ;	// used in 06_screen_80
 scrl_mssg:
