@@ -67,29 +67,28 @@ text:
 
 ;	// Aardman
 text:
-	defb "Aardman [Nina Simone: My Baby Just Cares For Me] (Version 1.1)", 13;
+	defb "Aardman (Version 1.1)", 13;
  	defb "Copyright (C) 1987 Aardman Animations, (P) 1958 Bethlehem Records.", 13;
-;	defb "12345678901234567890123456789012345678901234567890123456789012345678901234567890"
 	defb 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
+	defb "Nina Simone's 'My Baby Just Cares For Me' originally appeared on the 1958 album", 13;
+	defb "'Little Girl Blue'. Nearly three decades later in 1987 it became a hit after it", 13;
+	defb "was featured in a Chanel No. 5 perfume advert with Bond girl Carole Bouquet", 13;
+	defb "directed by Ridley Scott. Re-released, the song reached #5 in the UK chart.", 13;
 	defb 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
+	defb "Aardman Animations was commissioned to produce a video to accompany the single.", 13;
+	defb "Previously known mainly for the clay animation character Morph from television", 13;
+	defb "programs hosted by Tony Hart, in 1986 the studio produced the video for Peter", 13;
+	defb "Gabriel's number one single 'Sledgehammer' from his fifth studio album 'So'.", 13;
 	defb 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
+	defb "This video is set in a nightclub with anthropomorphic cats. Simone is the singer,", 13;
+	defb "and the object of her affection is a clumsy cat who the bouncers try to prevent", 13;
+	defb "from entering the nightclub. Directed by Peter Lord, it won the Best Promotional", 13;
+	defb "Material Under 5 Minutes award at the Ottawa International Animation festival.", 13;
 	defb 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
+	defb "Besides the clay animation, the video also uses close-ups of the band's", 13;
+	defb "instruments and includes a memorable sequence featuring the piano keyboard.", 13;
+	defb "The monochromatic tones of the video made it a good candidate for conversion to", 13;
+	defb "the DMA player format previously used in the 'Bad Apple !!' demo.", 13;
 	defb 0;
 	defb "NOW PRESS SPACE TO START THE DEMO", 0;
 
