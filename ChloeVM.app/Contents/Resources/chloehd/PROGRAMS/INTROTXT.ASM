@@ -40,27 +40,26 @@ pr_key:
 text:
 	defb "2019 (Version 1.1)", 13;
  	defb "Copyright (C) 2020 Source Solutions, Inc.", 13;
-;	defb "12345678901234567890123456789012345678901234567890123456789012345678901234567890"
 	defb 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
+	defb "In November 2019, Chloe Corporation launched a Patreon to rasie funds for the", 13;
+	defb "development of the Chloe 280SE. To accompany the launch event, a short video was", 13;
+	defb "produced parodying the open titles of Ridley Scott's Blade Runner, which is set", 13;
+	defb "in an alternate 2019 (the idea being that the Chloe is from an alternate 1987).", 13;
 	defb 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
+	defb "The video includes a version of the film's opening scroll, replacing Tyrell with", 13;
+	defb "Intel, Replicants with Microcomputers, and Retirement with Emulation. The music", 13;
+	defb "is 'If I Didn't Care' recorded by The Ink Spots in 1939, used in the workprint", 13;
+	defb "cut of the film and the theatrical trailer. It is now in the public domain.", 13;
 	defb 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
+	defb "Stills from the opening flight over Los Angelese are used as the backdrop to the", 13;
+	defb "machine specifications: CPU, RAM, bus speed, palette, VRAM, display modes,", 13;
+	defb "character sets, audio, co-processor, ROM, BASIC, file system and I/O devices.", 13;
+	defb "Then a still from Scott's 1984 Apple advert, noting open [hard|firm|soft]ware.", 13;
 	defb 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
+	defb "The final card also parodies the advert: You'll see why 2019 won't be like 2019.", 13;
+	defb "The demo recreates the video, mainly using code from the slideshow app. The", 13;
+	defb "scrolling text is done by streaming a BMP file directly to VRAM from disk. The", 13;
+	defb "music was added later with the MID > Aria Maestosa > Arkos Tracker II workflow.", 13;
 	defb 0;
 	defb "NOW PRESS SPACE TO START THE DEMO", 0;
 
