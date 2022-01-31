@@ -119,6 +119,7 @@ text:
 	defb 0;
 	defb "NOW PRESS SPACE TO START THE DEMO", 0;
 
+
 ;	// Take On Me
 text:
 	defb "Take On Me (Version 1.1)", 13;
@@ -144,6 +145,7 @@ text:
 	defb "views on YouTube. It has been converted for the Bad Apple!! demo's DMA player.", 13;
 	defb 0;
 	defb "NOW PRESS SPACE TO START THE DEMO", 0;
+
 
 ;	// Kayahara
 text:
@@ -200,31 +202,31 @@ text:
 	defb 0;
 	defb "NOW PRESS SPACE TO START THE DEMO", 0;
 
+
 ;	// Slideshow
 text:
 	defb "Slideshow (Version 1.1)", 13;
  	defb "Copyright (C) 2019 Source Solutions, Inc.", 13;
-;	defb "12345678901234567890123456789012345678901234567890123456789012345678901234567890"
 	defb 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
+	defb "The slideshow app was the first demos written specifically for the Chloe 280SE.", 13;
+	defb "It was intended as a tech demo to show off how to recursively read files from a", 13;
+	defb "folder, fade palettes in or out, and use the frame counter to synchronize video.", 13;
+	defb "The example images were converted from Avril Harrison's Deluxe Paint originals.", 13;
 	defb 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
+	defb "Until the Alicia VDP chip is implemented, the best color resolution the Chloe", 13;
+	defb "can manage without palette cycling is a 256x192 display with 8x1 attributes and", 13;
+	defb "64 colors from a palette of 256 colors, with a red/green bias. Surprisingly,", 13;
+	defb "converted images can look better than even 32 color images with per-pixel color.", 13;
 	defb 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
+	defb "The optimal conversion technique is to scale or crop the orignial 24-bit image", 13;
+	defb "to 256x192 pixels and then pattern dither it to a uniform palette of 128 colors.", 13;
+	defb "Then convert the image in Image2ULAplus using Timex 8x1 mode with no dithering.", 13;
+	defb "Save the image in SCR format and copy it to the RSC folder in Slideshow app.", 13;
 	defb 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
+	defb "The music is 'Clair de lune', third movement from Debussy's 'Suite bergamasque'.", 13;
+	defb "It is one of his most famous works. Isao Tomita's electronic recording from his", 13;
+	defb "1974 album 'Snowflakes Are Dancing' was used during the closing ceremony of the", 13;
+	defb "Tokyo 2020 Olympics. This arrangement used Aria Maestosa and Arkos Tracker II.", 13;
 	defb 0;
 	defb "NOW PRESS SPACE TO START THE SHOW", 0;
 
@@ -255,6 +257,7 @@ text:
 	defb "imported into Arkos Trakcer II. The player code is taken from The Last V8 demo.", 13;
 	defb 0;
 	defb "NOW PRESS SPACE TO START THE DEMO", 0;
+
 
 ;	// VDP Test
 text:
@@ -311,6 +314,7 @@ text:
 	defb "was added at a later date. Instead of a sample, it uses the PSG noise channel.";
 	defb 0;
 	defb "NOW PRESS SPACE TO START THE DEMO", 0;
+
 
 ; 	// Juggler
 text:
