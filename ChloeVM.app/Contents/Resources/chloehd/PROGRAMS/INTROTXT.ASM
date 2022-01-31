@@ -124,27 +124,25 @@ text:
 text:
 	defb "Take On Me (Version 1.1)", 13;
  	defb "Copyright (C) 1985 Limehouse Productions, (P) 1985 Warner Bros. Records.", 13;
-;	defb "12345678901234567890123456789012345678901234567890123456789012345678901234567890"
 	defb 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
+	defb "Norwegian synth-pop band A-ha's hit record 'Take On Me' was not an instant", 13;
+	defb "success. The original recording, produced by Tony Mansfield and released in 1984"
+	defb "only reached #137 in the UK chart. This version is understated compared to the", 13;
+	defb "more recognizable version, and has a video of the band performing the song.", 13;
 	defb 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
+	defb "Mansfield produced most of the tracks on the band's debut album 'Hunting High", 13;
+	defb "and Low', released in 1985. It was a huge success, going on to sell more than", 13;
+	defb "11 million. And in 1986 A-ha was nominated for Best New Artist at the Grammys.", 13.
 	defb 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
+	defb "In an unusual step, the record company gave the band a chance to re-record the", 13;
+	defb "song, this time with Alan Tarney as producer. This was the version most people", 13;
+	defb "are familar with, but it was released with another performance videa and once", 13;
+	defb "again flopped. In an even more unusual step, a new video was commissioned.", 13;
 	defb 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
+	defb "It was directed by Steve Barron, who had already made his name in music video,", 13;
+	defb "using rotoscoped animation that took a team of artists six months to create.", 13;
+	defb "It took siz prizes at the 1986 MTV Video Music Awards and has reached a billion", 13;
+	defb "views on YouTube. It has been converted for the Bad Apple!! demo's DMA player.", 13;
 	defb 0;
 	defb "NOW PRESS SPACE TO START THE DEMO", 0;
 
