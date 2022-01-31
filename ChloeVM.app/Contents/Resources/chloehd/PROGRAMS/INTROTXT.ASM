@@ -59,7 +59,7 @@ text:
 	defb "The final card also parodies the advert: You'll see why 2019 won't be like 2019.", 13;
 	defb "The demo recreates the video, mainly using code from the slideshow app. The", 13;
 	defb "scrolling text is done by streaming a BMP file directly to VRAM from disk. The", 13;
-	defb "music was added later with the MID > Aria Maestosa > Arkos Tracker II workflow.", 13;
+	defb "music was added later with the MIDI > Aria Maestosa > Arkos Tracker II workflow.", 13;
 	defb 0;
 	defb "NOW PRESS SPACE TO START THE DEMO", 0;
 
@@ -92,7 +92,7 @@ text:
 	defb "NOW PRESS SPACE TO START THE DEMO", 0;
 
 
-;	// Bad Apple !!
+;	// Bad Apple!!
 text:
 	defb "Bad Apple!! (Version 1.1)", 13;
  	defb "Copyright (C) 2018 Miguel Angel Rodriguez Jodar. ZX Projects. ZX-UNO Team.", 13;
@@ -233,27 +233,26 @@ text:
 text:
 	defb "Skyfall (Version 1.1)", 13;
  	defb "Copyright (C) 2012 Adele Adkins & Paul Epworth", 13;
-;	defb "12345678901234567890123456789012345678901234567890123456789012345678901234567890"
 	defb 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
+	defb "The boot chime of the Chloe 280SE is Cm9, a variation of the James Bond chord.", 13;
+	defb "Sony Pictures President of Music Lia Vollack suggested to Eon Productions that", 13;
+	defb "they ask Adele to record the theme song for Bond 23 because her voice had a", 13;
+	defb "soulful, haunting, evocative quality and classic Shirley Bassey feel.", 13;
 	defb 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
+	defb "Paul Epworth who had produced her second studio album '21' was brought in to co-", 13;
+	defb "write. Although the first draft was written in 10 minutes, the process toook 18", 13;
+	defb "months to complete, culminating in two studio sessions at Abbey Road Studios in", 13;
+	defb "London with a 77-piece orchestra conducted by J. A. C. Redford.", 13;
 	defb 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
+	defb "The song intentionally references Monty Norman's 'James Bond Theme' after the", 13;
+	defb "first chorus and his leitmotif for the character was included with his approval.", 13;
+	defb "A slew of awards followed, including an Oscar, a Grammy and a Golden Globe.", 13;
+	defb "Like the Chloe, the film is modern but harks back to a past that never existed.", 13;
 	defb 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
-	defb "", 13;
+	defb "This demo was the fist make use of the Chloe's MIDI to PSG workflow. It starts", 13;
+	defb "with a MIDI file of the full arrangement. This is reduced to six tracks with one", 13;
+	defb "note polyphony per track in Aria Maestosa. This version of the MIDI file is then", 13;
+	defb "imported into Arkos Trakcer II. The player code is taken from The Last V8 demo.", 13;
 	defb 0;
 	defb "NOW PRESS SPACE TO START THE DEMO", 0;
 
