@@ -219,7 +219,7 @@ text:
 	defb "its copyrighted material but retains that copyright.", 13;
 	defb 13;
 	defb "  |BLUE  |RED   |MAGEN.|GREEN |CYAN  |YELLOW|WHITE |      |      |BLAKC |", 13;
-	defb "  |EDIT  |CAPS L|TRUE V|INV. V|<     |\/    |/\    |>     |GRAPH.|DELETE|", 13;
+	defb "  |EDIT  |CAPS L|TRUE V|INV. V|<     |\\/    |/\\    |>     |GRAPH.|DELETE|", 13;
 	defb "  |1    !|2    @|3    #|4    $|5    %|6    &|7    '|8    (|9    )|0    _|", 13;
 	defb "  |DEF FN|FN    |LINE  |OPEN# |CLOSE#|MOVE  |ERASE |POINT |CAT   |FORMAT|", 13;
 	defb "     |SIN   |COS   |TAN   |INT   |RND   |STR$  |CHR$  |CODE  |PEEK  |TAB   |", 13;
