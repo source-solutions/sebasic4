@@ -110,8 +110,8 @@ text:
 	defb 13;
 	defb "Mansfield produced most of the tracks on the band's debut album ", '"', "Hunting High", 13;
 	defb "and Low", '"', ", released in 1985. It was a huge success, going on to sell more than", 13;
-	defb "11 million copies. Five singles were released from the album and in 1986 A-ha became", 13;
-	defb "the first Norweigan band nominated for a Gramyy (Best New Artist, losing to Sade).", 13;
+	defb "11 million copies. Five singles were released from the album and in 1986 A-ha", 13;
+	defb "became the first Norweigan band to be nominated for a Gramyy (Best New Artist).", 13;
 	defb 13;
 	defb "In an unusual step, the record company gave the band a chance to re-record the", 13;
 	defb "song, this time with Alan Tarney as producer. This is the version most people", 13;
