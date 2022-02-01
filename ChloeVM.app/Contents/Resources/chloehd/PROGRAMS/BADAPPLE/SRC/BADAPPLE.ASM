@@ -103,10 +103,10 @@ text:
 	defb "Bad Apple!! (Version 1.1)", 13;
  	defb "Copyright (C) 2018 Miguel Angel Rodriguez Jodar. ZX Projects. ZX-UNO Team.", 13;
 	defb 13;
-	defb "'Bad Apple!!' was originally the soundtrack to level 3 in the 1998 NEC PC-98", 13;
-	defb "video game 'Lotus Land Story, episode 4 of the 'Touhou Project' by Jun'ya Ota.", 13;
+	defb '"', "Bad Apple!!", '"', " was originally the soundtrack to level 3 in the 1998 NEC PC-98", 13;
+	defb "video game ", '"', "Lotus Land Story", '"', ", episode 4 of the ", '"', "Touhou Project", '"', " by Jun'ya Ota.", 13;
 	defb "In 2007 it was remixed by Masayoshi Minoshima with singer Nomico on an album", 13;
-	defb "called 'Lovelight'. Fan videos (MADs) based on the song soen began to appear.", 13;
+	defb "called ", '"', "Lovelight", '"', ". Fan videos (MADs) based on the song soen began to appear.", 13;
 	defb 13;
 	defb "In 1998 Nico Nico user Anira made a video featuring a storyboard with precise", 13;
 	defb "details of what he considered would be the best video clip for the song. That", 13;
@@ -115,10 +115,10 @@ text:
 	defb 13;
 	defb "Despite being rendered in 3D, the video uses a shadow puppet or silhouette style", 13;
 	defb "of animation. It has spawned numerous fan versions and even featured on a CNN", 13;
-	defb "news report in 2010. Interest spiked again in 2014 when the '8080 Domination'", 13;
+	defb "news report in 2010. Interest spiked again in 2014 when the ", '"', "8080 Domination", '"', 13;
 	defb "demo for the IBM 5150 was released with 640x200 resolution at 30 FPS.", 13;
 	defb 13;
-	defb "This led to a string of ports to other systems including the C64, Vectrex, 2600", 13;
+	defb "This led to a string of ports to other systems including the C64, Vectrex, 2600,", 13;
 	defb "NES, Genesis, TI-84+ and Amiga. Many of these versions have PSG audio and a", 13;
 	defb "lower frame rate. In 2018 ZX-UNO Team released a version using the DMA at 25 FPS", 13;
 	defb "with 8-bit digital audio. This demo is a 30 FPS version of that release.", 13;

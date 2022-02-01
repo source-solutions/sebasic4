@@ -1,2 +1,2 @@
 prg:
-	pasmo TC2048.ASM ../PRG/TC2048.PRG
+	pasmo JUGGLER.ASM ../PRG/JUGGLER.PRG

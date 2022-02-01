@@ -672,7 +672,7 @@ text:
 	defb "Kayahara (Version 1.2)", 13;
  	defb "Copyright (C) 2003 Nobuyuki Kayahara", 13;
 	defb 13;
-	defb "The 'Spinning Dancer', also known as the 'Silhouette Illusion', is a kinetic,", 13;
+	defb "The ", '"', "Spinning Dancer", '"', ", also known as the ", '"', "Silhouette Illusion", '"', ", is a kinetic,", 13;
 	defb "bistable, animated optical illusion originally distributed as a GIF animation.", 13;
 	defb "Created in 2003 by web designer Nobuyuki Kayahara, the illusion derives from the", 13;
 	defb "lack of visual clues for depth. The direction of spin depends on the observer.", 13;
@@ -684,7 +684,7 @@ text:
 	defb 13;
 	defb "Curiously, if you place a mirror vertically next to the image, both the original", 13;
 	defb "and the reflection may be seen to spin in the same direction. From 2008 to 2009,", 13;
-	defb "the animation appeared in the popular internet 'right brain-left brain test' to", 13;
+	defb "the animation appeared in the popular internet ", '"', "right brain-left brain test", '"', " to", 13;
 	defb "determine the viewer's dominant hemisphere. The animation doesn't work this way.", 13;
 	defb 13;
 	defb "This demo was originally written as a memory test for an earlier version of the", 13;

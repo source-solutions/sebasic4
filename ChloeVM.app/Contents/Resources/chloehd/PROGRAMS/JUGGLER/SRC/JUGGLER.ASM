@@ -198,10 +198,10 @@ text:
 	defb " The images were generated with a standard Amiga with 512K memory. A ray", 13;
 	defb " tracing method was used, which simulates rays of light reflecting within", 13;
 	defb " a mathematically defined scene. Each image requires the calculation of", 13;
-	defb " 64,000 light rays and takes approximately 1 hour to generate.", 13;
+	defb " 64,000 light rays and takes approximately one hour to generate.", 13;
 	defb 13;
-	defb " The images were cropped to 256 x 192 pixels and combined into a single", 13;
-	defb " 1024 x 1152 pixel image. The color palette was reduced from 4096 colors", 13;
+	defb " The images were cropped to 256x192 pixels and combined into a single", 13;
+	defb " 1024x1152 pixel image. The color palette was reduced from 4096 colors", 13;
 	defb " to 64 colors using Photoshop's selective algorithm. These colors were", 13;
 	defb " then converted to the G3R3B2 color space to provide a uniform palette.", 13;
 	defb 13;

@@ -344,11 +344,11 @@ text:
 	defb "The optimal conversion technique is to scale or crop the orignial 24-bit image", 13;
 	defb "to 256x192 pixels and then pattern dither it to a uniform palette of 128 colors.", 13;
 	defb "Then convert the image in Image2ULAplus using Timex 8x1 mode with no dithering.", 13;
-	defb "Save the image in SCR format and copy it to the RSC folder in Slideshow app.", 13;
+	defb "Save the image in SCR format and copy it to the RSC folder in the slideshow app.", 13;
 	defb 13;
-	defb "The music is 'Clair de lune', third movement from Debussy's 'Suite bergamasque'.", 13;
+	defb "The music is ", '"', "Clair de lune", '"', ", third movement from Debussy's ", '"', "Suite bergamasque", '"', ".", 13;
 	defb "It is one of his most famous works. Isao Tomita's electronic recording from his", 13;
-	defb "1974 album 'Snowflakes Are Dancing' was used during the closing ceremony of the", 13;
+	defb "1974 album ", '"', "Snowflakes Are Dancing", '"', " was used during the closing ceremony of the", 13;
 	defb "Tokyo 2020 Olympics. This arrangement used Aria Maestosa and Arkos Tracker II.", 13;
 	defb 0;
 	defb "NOW PRESS SPACE TO START THE SHOW", 0;
