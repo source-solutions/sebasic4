@@ -1,0 +1,2 @@
+prg:
+	pasmo BADAPPLE.ASM ../PRG/BADAPPLE.PRG

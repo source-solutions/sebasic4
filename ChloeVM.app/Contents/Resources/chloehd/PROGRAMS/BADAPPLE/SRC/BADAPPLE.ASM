@@ -36,9 +36,48 @@
 ;	// constants
 	prescaler equ 227;					// prescaler for timed DMA: (ROUND (3500000 / 15350)) - 1
 	lbuffer equ 1024;					// DMA buffer length
+	print_a equ $10;					// print a character
+	chan_open equ $1601;				// channel open
 
 ;	// app entry point
 	org $6000
+
+;	// print intro text
+pr_text:
+	ld a, 12;							// FF
+	rst print_a;						// clear screen
+	ld a, 2;							// select main screen
+	call chan_open;						// select channel
+	ld hl, text;						// point to text
+
+pr_loop:
+	ld a, (hl);							// get character
+	and a;								// terminating byte?
+	jr z, pr_lower;						// jump if so;
+	rst print_a;						// print character
+	inc hl;								// point to next character
+	jr pr_loop;							// loop until done
+
+pr_lower
+	inc hl;								// next position
+	push hl;							// stack pointer
+	ld a, 1;							// select lower screen
+	call chan_open;						// select channel
+	pop hl;								// unstack pointer
+
+pr_l_loop:
+	ld a, (hl);							// get character
+	and a;								// terminating byte?
+	jr z, pr_key;						// jump if so;
+	rst print_a;						// print character
+	inc hl;								// point to next character
+	jr pr_l_loop;						// loop until done
+
+pr_key:
+	ld a, $7f;							// high byte of I/O address
+	in a, ($fe);						// read byte
+	rra;								// set carry if space pressed
+	jp c, pr_key;						// loop until space pressed
 
 ;	// set palette
 	ld c, $3b;							// ZXI port
@@ -59,6 +98,32 @@
 	out ($ff), a;						// set low-res screen mode
 
 	jp L8000
+
+text:
+	defb "Bad Apple!! (Version 1.1)", 13;
+ 	defb "Copyright (C) 2018 Miguel Angel Rodriguez Jodar. ZX Projects. ZX-UNO Team.", 13;
+	defb 13;
+	defb '"', "Bad Apple!!", '"', " was originally the soundtrack to level 3 in the 1998 NEC PC-98", 13;
+	defb "video game ", '"', "Lotus Land Story", '"', ", episode 4 of the ", '"', "Touhou Project", '"', " by Jun'ya Ota.", 13;
+	defb "In 2007 it was remixed by Masayoshi Minoshima with singer Nomico on an album", 13;
+	defb "called ", '"', "Lovelight", '"', ". Fan videos (MADs) based on the song soen began to appear.", 13;
+	defb 13;
+	defb "In 1998 Nico Nico user Anira made a video featuring a storyboard with precise", 13;
+	defb "details of what he considered would be the best video clip for the song. That", 13;
+	defb "video has now had over a million views. In 2009 he released the finished video.", 13;
+	defb "It has now had over 20 million combined views on Nico Nico and YouTube.", 13;
+	defb 13;
+	defb "Despite being rendered in 3D, the video uses a shadow puppet or silhouette style", 13;
+	defb "of animation. It has spawned numerous fan versions and even featured on a CNN", 13;
+	defb "news report in 2010. Interest spiked again in 2014 when the ", '"', "8080 Domination", '"', 13;
+	defb "demo for the IBM 5150 was released with 640x200 resolution at 30 FPS.", 13;
+	defb 13;
+	defb "This led to a string of ports to other systems including the C64, Vectrex, 2600,", 13;
+	defb "NES, Genesis, TI-84+ and Amiga. Many of these versions have PSG audio and a", 13;
+	defb "lower frame rate. In 2018 ZX-UNO Team released a version using the DMA at 25 FPS", 13;
+	defb "with 8-bit digital audio. This demo is a 30 FPS version of that release.", 13;
+	defb 0;
+	defb "NOW PRESS SPACE TO START THE DEMO", 0;
 
 	org $8000
 

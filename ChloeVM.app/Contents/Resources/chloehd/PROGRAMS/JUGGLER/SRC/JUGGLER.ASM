@@ -24,7 +24,7 @@ pr_text:
 
 pr_loop:
 	ld a, (hl);							// get character
-	cp $ff;								// terminating byte?
+	and a;								// terminating byte?
 	jr z, pr_lower;						// jump if so;
 	rst print_a;						// print character
 	inc hl;								// point to next character
@@ -39,7 +39,7 @@ pr_lower
 
 pr_l_loop:
 	ld a, (hl);							// get character
-	cp $ff;								// terminating byte?
+	and a;								// terminating byte?
 	jr z, pr_key;						// jump if so;
 	rst print_a;						// print character
 	inc hl;								// point to next character
@@ -192,30 +192,30 @@ reg:
 	defb 0
 
 text:
-	defb " Juggler (Version 1.2)", 13
- 	defb " Copyright ", 0, " 1986 Eric Graham", 13
+	defb " Juggler (Version 1.2)", 13;
+ 	defb " Copyright (C) 1986 Eric Graham", 13;
+	defb 13;
+	defb " The images were generated with a standard Amiga with 512K memory. A ray", 13;
+	defb " tracing method was used, which simulates rays of light reflecting within", 13;
+	defb " a mathematically defined scene. Each image requires the calculation of", 13;
+	defb " 64,000 light rays and takes approximately one hour to generate.", 13;
+	defb 13;
+	defb " The images were cropped to 256x192 pixels and combined into a single", 13;
+	defb " 1024x1152 pixel image. The color palette was reduced from 4096 colors", 13;
+	defb " to 64 colors using Photoshop's selective algorithm. These colors were", 13;
+	defb " then converted to the G3R3B2 color space to provide a uniform palette.", 13;
+	defb 13;
+	defb " Taking the three most significant bits for green and red, and the two", 13;
+	defb " most significant bits for blue resulted in 50 unique colors. These were", 13;
+	defb " then order sorted and distributed across the four CLUTs to provide an", 13;
+	defb " optimal palette. The individual images were converted in Image2ULAplus.", 13;
 	defb 13
-	defb " The images were generated with a standard Amiga with 512K memory.  A ray", 13
-	defb " tracing method was used, which simulates rays of light reflecting within", 13
-	defb " a mathematically defined scene.  Each image requires the calculation of", 13
-	defb " 64,000 light rays and takes approximately 1 hour to generate.", 13
-	defb 13
-	defb " The images were cropped to 256 x 192 pixels and combined into a single", 13
-	defb " 1024 x 1152 pixel image.  The color palette was reduced from 4096 colors", 13
-	defb " to 64 colors using Photoshop's selective algorithm.  These colors were", 13
-	defb " then converted to the G3R3B2 color space to provide a uniform palette.", 13
-	defb 13
-	defb " Taking the three most significant bits for green and red, and the two", 13
-	defb " most significant bits for blue resulted in 50 unique colors.  These were", 13
-	defb " then order sorted and distributed across the four CLUTs to provide an", 13
-	defb " optimal palette.  The individual images were converted in Image2ULAplus.", 13
-	defb 13
-	defb " An image uses 12K bytes for storage.  Images are loaded in less than 30", 13
-	defb " milliseconds.  A fixed palette is used to avoid having to set the", 13
-	defb " palette registers on each frame.  This enables a constant frame rate of", 13
-	defb " 30 frames per second."
-	defb $ff
-	defb " NOW PRESS SPACE TO START THE MOVIE", $ff
+	defb " An image uses 12K bytes for storage. Images are loaded in less than 30", 13;
+	defb " milliseconds. A fixed palette is used to avoid having to set the", 13;
+	defb " palette registers on each frame. This enables a constant frame rate of", 13;
+	defb " 30 frames per second.";
+	defb 0;
+	defb " NOW PRESS SPACE TO START THE DEMO", 0;
 
 palette:
 	incbin "PALETTE.RAW"

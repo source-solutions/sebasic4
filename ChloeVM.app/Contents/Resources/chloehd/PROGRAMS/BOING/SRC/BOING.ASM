@@ -24,7 +24,7 @@ pr_text:
 
 pr_loop:
 	ld a, (hl);							// get character
-	cp $ff;								// terminating byte?
+	and a;								// terminating byte?
 	jr z, pr_lower;						// jump if so;
 	rst print_a;						// print character
 	inc hl;								// point to next character
@@ -39,7 +39,7 @@ pr_lower
 
 pr_l_loop:
 	ld a, (hl);							// get character
-	cp $ff;								// terminating byte?
+	and a;								// terminating byte?
 	jr z, pr_key;						// jump if so;
 	rst print_a;						// print character
 	inc hl;								// point to next character
@@ -226,30 +226,30 @@ reg:
 	defb 0
 
 text:
-	defb "Boing Ball Demo", 13
- 	defb "Copyright ", 0, " 2021 Source Solutions, Inc.", 13
-	defb 13
-	defb "The original version of this demo was created by Robert J. Mical and Dale Luck", 13
-	defb "for the 1984 Consumer Electronics Show (CES) in Las Vegas. It was designed to", 13
-	defb "show off the custom chips in the prototype Amiga. Written in a single night,", 13
-	defb "aided only by warm beer, it originally lacked horizontal movement and sound.", 13
-	defb 13
-	defb "The effect was created using palette cycling and bitplanes to move a static", 13
-	defb "image around the screen with the appearance of rotation. The entire 32 color", 13
-	defb "palette was required, despite the image using only seven unique colors.", 13
-	defb "The sound effect was created by hitting a garage door with a foam bat.", 13
-	defb 13
-	defb "The final design for the Chloe 280SE hardware would be able to produce an", 13
-	defb "exact copy of the original demo. But since that's not ready yet, this demo", 13
-	defb "uses 61 images, streamed from disk at 30 frames per second. Each images was", 13
-	defb "created by hand in Photoshop. They were then combined into an animated GIF.", 13
-	defb 13
-	defb "The individual images were converted by Image2ULAplus to 8x1 attribute format.", 13
-	defb "The player loops backwards and forwards between the images to give the", 13 
-	defb "appearance of perpetual movement. There is probably enough CPU time to add the", 13
-	defb "sound effect at a later date."
-	defb $ff
-	defb "NOW PRESS SPACE TO START THE DEMO", $ff
+	defb "Boing Ball (Version 1.1)", 13;
+ 	defb "Copyright (C) 2021 Source Solutions, Inc.", 13;
+	defb 13;
+	defb "The original version of this demo was created by Robert J. Mical and Dale Luck", 13;
+	defb "for the 1984 Consumer Electronics Show (CES) in Las Vegas. It was designed to", 13;
+	defb "show off the custom chips in the prototype Amiga. Written in a single night,", 13;
+	defb "aided only by warm beer, it originally lacked horizontal movement and sound.", 13;
+	defb 13;
+	defb "The effect was created using palette cycling and bit planes to move a static", 13;
+	defb "image around the screen with the appearance of rotation. The entire 32 color", 13;
+	defb "palette was required, despite the image using only seven unique colors.", 13;
+	defb "The sound effect was created by hitting a garage door with a foam bat.", 13;
+	defb 13;
+	defb "The final design for the Chloe 280SE hardware would be able to produce an", 13;
+	defb "exact copy of the original demo. But since that's not ready yet, this demo", 13;
+	defb "uses 61 images, streamed from disk at 30 frames per second. Each images was", 13;
+	defb "created by hand in Photoshop. They were then combined into an animated GIF.", 13;
+	defb 13;
+	defb "The individual images were converted by Image2ULAplus to 8x1 attribute format.", 13;
+	defb "The player loops backwards and forwards between the images to give the", 13 ;
+	defb "appearance of perpetual movement. As with the original demo, the sound effect", 13;
+	defb "was added at a later date. Instead of a sample, it uses the PSG noise channel.";
+	defb 0;
+	defb "NOW PRESS SPACE TO START THE DEMO", 0;
 
 palette:
 	incbin "PALETTE.RAW"

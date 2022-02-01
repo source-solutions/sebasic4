@@ -28,7 +28,48 @@
 
 	ad724 equ $fb;						// AD724 video encoder 
 
+	print_a equ $10;					// print a character
+	chan_open equ $1601;				// channel open
+
 	org $6000
+
+;	// print intro text
+
+pr_text:
+	ld a, 12;							// FF
+	rst print_a;						// clear screen
+	ld a, 2;							// select main screen
+	call chan_open;						// select channel
+	ld hl, text;						// point to text
+
+pr_loop:
+	ld a, (hl);							// get character
+	and a;								// terminating byte?
+	jr z, pr_lower;						// jump if so;
+	rst print_a;						// print character
+	inc hl;								// point to next character
+	jr pr_loop;							// loop until done
+
+pr_lower
+	inc hl;								// next position
+	push hl;							// stack pointer
+	ld a, 1;							// select lower screen
+	call chan_open;						// select channel
+	pop hl;								// unstack pointer
+
+pr_l_loop:
+	ld a, (hl);							// get character
+	and a;								// terminating byte?
+	jr z, pr_key;						// jump if so;
+	rst print_a;						// print character
+	inc hl;								// point to next character
+	jr pr_l_loop;						// loop until done
+
+pr_key:
+	ld a, $7f;							// high byte of I/O address
+	in a, ($fe);						// read byte
+	rra;								// set carry if space pressed
+	jp c, pr_key;						// loop until space pressed
 
 ;	// load ROM file
 	ld ix, filename;					// /rsc/48.rom
@@ -169,3 +210,29 @@ shadow_ram:
 
 ;	// start the emulator
 	jp 1;								// skip over divMMC trap
+
+text:
+	defb "Timex Computer 2048 Emulator (Version 1.3)", 13;
+ 	defb "Copyright (C) 1982 Comcast Corporation, (C) 1984 Timex Group B.V.", 13;
+	defb 13;
+	defb "Comcast Corpoartion and Timex Group have kindly given their permission for", 13;
+	defb "the redistribution of thier copyrighted material but retain their copyrights.", 13;
+	defb 13;
+	defb "|BLUE  |RED   |MAGEN.|GREEN |CYAN  |YELLOW|WHITE |      |      |BLACK |", 13;
+	defb "|EDIT  |CAPS L|TRUE V|INV. V|<     |\\/    |/\\    |>     |GRAPH.|DELETE|", 13;
+	defb "|1    !|2    @|3    #|4    $|5    %|6    &|7    '|8    (|9    )|0    _|", 13;
+	defb "|DEF FN|FN    |LINE  |OPEN# |CLOSE#|MOVE  |ERASE |POINT |CAT   |FORMAT|", 13;
+	defb "   |SIN   |COS   |TAN   |INT   |RND   |STR$  |CHR$  |CODE  |PEEK  |TAB   |", 13;
+	defb "   |Q   <=|W   <>|E   >=|R     |T     |Y     |U     |I     |O     |P     |", 13;
+	defb "   |  PLOT|  DRAW|   REM|   RUN|RANDO.|RETURN|    IF| INPUT|  POKE| PRINT|", 13;
+	defb "   |ASN   |ACS   |ATN   |VERIFY|MERGE |[     |]     |IN    |OUT   |(C)   |", 13;
+	defb "     |READ  |RESTO.|DATA  |SGN   |ABS   |SQR   |VAL   |LEN   |USR   |       |", 13;
+	defb "     |A     |S     |D     |F     |G     |H     |J     |K     |L     | ENTER |", 13;
+	defb "     |   NEW|  SAVE|   DIM|   FOR|  GOTO| GOSUB|  LOAD|  LIST|   LET|       |", 13;
+	defb "     |~     ||     |\\     |{     |}     |CIRCLE|VAL$  |SCREE.|ATTR  |       |", 13;
+	defb "|       |LN    |EXP   |LPRINT|LLIST |BIN   |INKEY$|PI    |      |         |", 13;
+	defb "| CAPS  |Z    :|X    `|C    ?|V    /|B    *|N    ,|M    .|SYMBOL|  BREAK  |", 13;
+	defb "| SHIFT |  COPY| CLEAR| CONT.|   CLS|BORDER|  NEXT| PAUSE| SHIFT|  SPACE  |", 13;
+	defb "|       |BEEP  |INK   |PAPER |FLASH |BRIGHT|OVER  |INVER.|      |         |", 13;
+	defb 0;
+	defb "NOW PRESS SPACE TO START THE EMULATOR", 0;

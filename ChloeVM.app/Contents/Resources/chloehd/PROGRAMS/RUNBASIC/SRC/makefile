@@ -1,0 +1,2 @@
+prg:
+	pasmo RUNBASIC.ASM ../PRG/RUNBASIC.PRG

@@ -20,7 +20,7 @@
 	include "uno.inc";					// label definitions
 	include "os.inc";					// label definitions
 
-;	slam equ 1;							// uncomment to build SLAM+128/divMMC version
+	slam equ 1;							// uncomment to build SLAM+128/divMMC version
 
 	scrl_mssg equ $4000;				// check against symbol table before building
 
