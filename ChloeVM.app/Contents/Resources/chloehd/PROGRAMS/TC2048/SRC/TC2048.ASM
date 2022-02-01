@@ -216,7 +216,7 @@ text:
  	defb "Copyright (C) 1982 Comcast Corporation, (C) 1984 Timex Group B.V.", 13;
 	defb 13;
 	defb "Comcast Corpoartion and Timex Group have kindly given their permission for", 13;
-	defb "the redistribution of thier copyrighted material but retains their copyrights.", 13;
+	defb "the redistribution of thier copyrighted material but retain their copyrights.", 13;
 	defb 13;
 	defb "|BLUE  |RED   |MAGEN.|GREEN |CYAN  |YELLOW|WHITE |      |      |BLACK |", 13;
 	defb "|EDIT  |CAPS L|TRUE V|INV. V|<     |\\/    |/\\    |>     |GRAPH.|DELETE|", 13;
@@ -230,9 +230,9 @@ text:
 	defb "     |A     |S     |D     |F     |G     |H     |J     |K     |L     | ENTER |", 13;
 	defb "     |   NEW|  SAVE|   DIM|   FOR|  GOTO| GOSUB|  LOAD|  LIST|   LET|       |", 13;
 	defb "     |~     ||     |\\     |{     |}     |CIRCLE|VAL$  |SCREE.|ATTR  |       |", 13;
-	defb "|       |LN    |EXP   |LPRINT|LLIST |BIN   |INKEY$|PI    |      |          |", 13;
-	defb "| CAPS  |Z    :|X    `|C    ?|V    /|B    *|N    ,|M    .|SYMBOL|   BREAK  |", 13;
-	defb "| SHIFT |  COPY| CLEAR| CONT.|   CLS|BORDER|  NEXT| PAUSE| SHIFT|   SPACE  |", 13;
-	defb "|       |BEEP  |INK   |PAPER |FLASH |BRIGHT|OVER  |INVER.|      |          |", 13;
+	defb "|       |LN    |EXP   |LPRINT|LLIST |BIN   |INKEY$|PI    |      |         |", 13;
+	defb "| CAPS  |Z    :|X    `|C    ?|V    /|B    *|N    ,|M    .|SYMBOL|  BREAK  |", 13;
+	defb "| SHIFT |  COPY| CLEAR| CONT.|   CLS|BORDER|  NEXT| PAUSE| SHIFT|  SPACE  |", 13;
+	defb "|       |BEEP  |INK   |PAPER |FLASH |BRIGHT|OVER  |INVER.|      |         |", 13;
 	defb 0;
 	defb "NOW PRESS SPACE TO START THE EMULATOR", 0;
