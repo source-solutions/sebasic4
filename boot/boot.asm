@@ -1039,7 +1039,7 @@ eof:
 	ret;			                	// return
 
 cf_path:
-	defb "/SYSTEM/CONFIG.SYS", 0;		// null terminated path to config.sys file
+	defb "/SYSTEM/PREFEREN.CES/SYSTEM.PRF", 0; // null terminated path to SYSTEM.PRF file
 
 cp_path:
 	defb "/SYSTEM/FONTS/";				// path for language files
