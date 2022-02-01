@@ -36,9 +36,48 @@
 ;	// constants
 	prescaler equ 227;					// prescaler for timed DMA: (ROUND (3500000 / 15350)) - 1
 	lbuffer equ 1024;					// DMA buffer length
+	print_a equ $10;					// print a character
+	chan_open equ $1601;				// channel open
 
 ;	// app entry point
 	org $6000
+
+;	// print intro text
+pr_text:
+	ld a, 12;							// FF
+	rst print_a;						// clear screen
+	ld a, 2;							// select main screen
+	call chan_open;						// select channel
+	ld hl, text;						// point to text
+
+pr_loop:
+	ld a, (hl);							// get character
+	and a;								// terminating byte?
+	jr z, pr_lower;						// jump if so;
+	rst print_a;						// print character
+	inc hl;								// point to next character
+	jr pr_loop;							// loop until done
+
+pr_lower
+	inc hl;								// next position
+	push hl;							// stack pointer
+	ld a, 1;							// select lower screen
+	call chan_open;						// select channel
+	pop hl;								// unstack pointer
+
+pr_l_loop:
+	ld a, (hl);							// get character
+	and a;								// terminating byte?
+	jr z, pr_key;						// jump if so;
+	rst print_a;						// print character
+	inc hl;								// point to next character
+	jr pr_l_loop;						// loop until done
+
+pr_key:
+	ld a, $7f;							// high byte of I/O address
+	in a, ($fe);						// read byte
+	rra;								// set carry if space pressed
+	jp c, pr_key;						// loop until space pressed
 
 ;	// set palette
 	ld c, $3b;							// ZXI port
@@ -59,6 +98,31 @@
 	out ($ff), a;						// set low-res screen mode
 
 	jp L8000
+
+text:
+	defb "Take On Me (Version 1.1)", 13;
+ 	defb "Copyright (C) 1985 Limehouse Productions, (P) 1985 Warner Bros. Records.", 13;
+	defb 13;
+	defb "Norwegian synth-pop band A-ha's hit record 'Take On Me' was not an instant", 13;
+	defb "success. The original recording, produced by Tony Mansfield and released in 1984"
+	defb "only reached #137 in the UK chart. This version is understated compared to the", 13;
+	defb "more recognizable version, and has a video of the band performing the song.", 13;
+	defb 13;
+	defb "Mansfield produced most of the tracks on the band's debut album 'Hunting High", 13;
+	defb "and Low', released in 1985. It was a huge success, going on to sell more than", 13;
+	defb "11 million. And in 1986 A-ha was nominated for Best New Artist at the Grammys.", 13;
+	defb 13;
+	defb "In an unusual step, the record company gave the band a chance to re-record the", 13;
+	defb "song, this time with Alan Tarney as producer. This was the version most people", 13;
+	defb "are familar with, but it was released with another performance videa and once", 13;
+	defb "again flopped. In an even more unusual step, a new video was commissioned.", 13;
+	defb 13;
+	defb "It was directed by Steve Barron, who had already made his name in music video,", 13;
+	defb "using rotoscoped animation that took a team of artists six months to create.", 13;
+	defb "It took siz prizes at the 1986 MTV Video Music Awards and has reached a billion", 13;
+	defb "views on YouTube. It has been converted for the Bad Apple!! demo's DMA player.", 13;
+	defb 0;
+	defb "NOW PRESS SPACE TO START THE DEMO", 0;
 
 	org $8000
 
