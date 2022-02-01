@@ -215,8 +215,8 @@ text:
 	defb "Timex Computer 2048 Emulator (Version 1.3)", 13;
  	defb "Copyright (C) 1982 Comcast Corporation, (C) 1984 Timex Group B.V.", 13;
 	defb 13;
-	defb "Comcast Corpoartion and Timex Group have kindly given their permission for the", 13;
-	defb "redistribution of thier copyrighted material but retains that copyright.", 13;
+	defb "Comcast Corpoartion and Timex Group have kindly given their permission for", 13;
+	defb "the redistribution of thier copyrighted material but retains their copyrights.", 13;
 	defb 13;
 	defb "|BLUE  |RED   |MAGEN.|GREEN |CYAN  |YELLOW|WHITE |      |      |BLACK |", 13;
 	defb "|EDIT  |CAPS L|TRUE V|INV. V|<     |\\/    |/\\    |>     |GRAPH.|DELETE|", 13;
