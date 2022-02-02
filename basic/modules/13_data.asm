@@ -149,7 +149,7 @@ tbl_ops_priors:
 	defb '-', op_fsub + %11000000, 8;	// -
 	defb '*', op_fmul + %11000000, 11;	// *
 	defb '/', op_fdiv + %11000000, 11;	// /
-	defb '^', op_fexp + %11000000, 12;	// ^
+	defb '^', op_ftop + %11000000, 12;	// ^
 	defb '=', $0e + %11000000, 7;		// =  fcp(_eq)
 	defb '>', $0c + %11000000, 7;		// >  fcp(_gt)
 	defb '<', $0d + %11000000, 7;		// <  fcp(_lt)
