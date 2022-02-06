@@ -69,9 +69,9 @@
 ;	// F8  - $0A		- 10 + 39 = 49
 ;	// F6  - $0B		- 11 + 39 = 50
 ;	// F4  - $0C		- 12 + 39 = 51
-;	// F13 - $7C EXT	- 13 (51)
-;	// F14 - $7E		- 14 (52)
-;	// F15 - $77 EXT	- 15 (53)
+;	// F13 - $2F		- 13 (51)
+;	// F14 - $37		- 14 (52)
+;	// F15 - $3F		- 15 (53)
 
 ;;
 ;	// --- KEYBOARD ROUTINES ---------------------------------------------------
@@ -83,7 +83,6 @@
 key_scan:
 	ld de, $ffff;						// set DE to no key
 	call f_key_scan;					// test F-keys
-
 	ld bc, $fefe;						// B = counter, C = port
 	ld l, 47;							// initial key value
 
@@ -126,25 +125,16 @@ key_done:
 
 ;	// additional keys scanning subroutine
 f_key_scan:
-
-;	// test code (f-keys are not supported in emulator)
-;	ld bc, mouse_b;						// substitute mouse click for keypress
-;	in a, (c);							// read mouse button
-;	cp 253;								// left button pressed?
-;	jr nz, f_key_scan_1;				// jump if not
-;	ld a, 1;							// else set scan code to F9
-;	jr f_key_found;						// and jump 
-;
-;f_key_scan_1:
-;	// end of test code
-
 	ld bc, uno_reg;						// Uno register port
 	ld a, 5;							// Key state
 	out (c), a;							// Select key state
 	inc b;								// Uno data port
 	in a, (c);							// Get key state
-	bit 0, a;							// test for a key (also does RES 0, a)
+	bit 0, a;							// test for a key
 	ret z;								// back if no key pressed
+
+	bit 1, a;							// test for a key
+	ret z;								// back if key released
 
 	dec b;								// Uno register port
 	ld a, 4;							// PS/2 scancode port
@@ -167,30 +157,23 @@ test_f11:
 	jr f_key_found;						// jump if so
 
 test_f13:
-	cp $7c;								// was it F13?
+	cp $2f;								// was it F13?
 	jr nz, test_f14;					// jump if not
 	ld a, 13;							// alter from $7c to $0D
 	jr f_key_found;						// jump if so
 
 test_f14:
-	cp $7e;								// was it F13?
+	cp $37;								// was it F13?
 	jr nz, test_f15;					// jump if not
 	ld a, 14;							// alter from $7e to $0E
 	jr f_key_found;						// jump if so
 
 test_f15:
-	cp $77;								// was it F13?
+	cp $3f;								// was it F13?
 	ret nz;								// return with no match
 	ld a, 15;							// alter from $77 to $0F
 
 f_key_found:
-;	cp 0;								// value on port should never be zero
-;	ret z;								// so this routine should not be needed
-;	cp 2;								// value on port should never be 2
-;	ret z;								// so this routine should not be needed
-;	cp 8;								// value on port should never be 8
-;	ret z;								// so this routine should not be needed
-
 	add a, 39;							// original matrix has 40 keys. 
 	ld e, a;							// key value to E
 	ret;								// return;
