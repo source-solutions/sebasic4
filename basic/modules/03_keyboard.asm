@@ -133,7 +133,7 @@ f_key_scan:
 	bit 0, a;							// test for a key
 	ret z;								// back if no key pressed
 
-	bit 1, a;							// test for a key
+	bit 2, a;							// test for a key
 	ret z;								// back if key released
 
 	dec b;								// Uno register port
