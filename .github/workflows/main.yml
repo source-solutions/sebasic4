@@ -10,14 +10,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Run a one-line script
-        run: sudo apt install git
- 
       - name: get RASM
         run: |
           git clone https://github.com/EdouardBERGE/rasm.git
-
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
