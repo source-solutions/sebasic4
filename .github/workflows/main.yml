@@ -1,24 +1,14 @@
 name: CI
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v2
-
-      - name: get RASM
-        run: |
-          git clone https://github.com/EdouardBERGE/rasm.git
-          cd rasm
-          make
-          sudo mv rasm.exe /usr/local/bin/rasm
 
       - name: Run a one-line script
         run: echo Hello, world!
