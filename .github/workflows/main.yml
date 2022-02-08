@@ -14,3 +14,4 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install git
+          git clone https://github.com/EdouardBERGE/rasm.git
