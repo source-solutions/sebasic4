@@ -12,4 +12,5 @@ jobs:
 
       - name: get RASM
         run: |
-          git clone https://github.com/EdouardBERGE/rasm.git
+          sudo apt-get update
+          sudo apt-get install git
