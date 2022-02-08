@@ -29,7 +29,7 @@
 	save "../bin/23.bin", 0, 23552
 
 ;	// modules
-
+	include "modules/00_fake.asm"
 	include "modules/01_restarts.asm"
 	include "modules/02_tokenizer.asm"
 	include "modules/03_keyboard.asm"
