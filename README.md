@@ -1,6 +1,4 @@
-![example event parameter](https://github.com/cheveron/sebasic4/actions/workflows/main.yml/badge.svg?event=push)
-![example branch parameter](https://github.com/cheveron/sebasic4/actions/workflows/main.yml/badge.svg?branch=main)
-![example workflow](https://github.com/cheveron/sebasic4/actions/workflows/main.yml/badge.svg)
+![example branch parameter](https://github.com/cheveron/sebasic4/actions/workflows/main.yml/badge.svg?branch=main?event=push)
 
 # SE Basic IV
 
