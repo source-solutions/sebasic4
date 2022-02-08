@@ -15,12 +15,7 @@ jobs:
  
       - name: get RASM
         run: |
-          sudo apt-get update
-          sudo apt-get install git
           git clone https://github.com/EdouardBERGE/rasm.git
-          cd rasm
-          make
-          sudo mv rasm.exe /usr/local/bin/rasm
 
       - name: Run a multi-line script
         run: |
