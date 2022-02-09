@@ -619,35 +619,31 @@ my %helpdoc_msg = (
 				"Strona <a href=\"constant-values.$html_ext\">Wartości stałe</a> zawiera stałe ".
 				"oraz ich wartości.\n",
 
-		"EN"	=>	"<CENTER><H1>How this API Document is Organized</H1></CENTER>\n".
+		"EN"	=>	"<H1>How this API document is organized</H1>\n".
 				"This API (Application Programming Interface) document has pages corresponding ".
 				"to the items in the navigation bar, described as follows.\n".
 				"<H3>File</H3><BLOCKQUOTE>\n".
 				"<P>Each file has its own separate page. Each of these pages has three ".
 				"sections consisting of a file description, summary tables, and detailed ".
 				"member descriptions:\n<UL>\n".
-				"<LI>File name</LI>\n<LI>File description<BR><BR><BR></LI>\n".
+				"<LI>File name</LI>\n<LI>File description</LI>\n".
 				"<LI>Variable summary</LI>\n<LI>Structure summary</LI>\n".
-				"<LI>Macro summary</LI>\n<LI>Function summary<BR><BR><BR></LI>\n".
+				"<LI>Macro summary</LI>\n<LI>Function summary</LI>\n".
 				"<LI>Variable details</LI>\n<LI>Structure details</LI>\n".
 				"<LI>Macro details</LI>\n<LI>Function details</LI>\n</UL>\n".
 				"Each summary entry contains the first sentence from the detailed description ".
 				"for that item. The summary entries are alphabetical, as in the detailed ".
 				"descriptions.</BLOCKQUOTE>\n".
-				"<H3>Deprecated List</H3><BLOCKQUOTE>\n".
-				"The <A HREF=\"deprecated-list.$html_ext\">Deprecated List</A> page lists all of the ".
+				"<H3>Deprecated</H3><BLOCKQUOTE>\n".
+				"The <A HREF=\"deprecated-list.$html_ext\">deprecated list</A> page lists all of the ".
 				"API that have been deprecated. A deprecated API is not recommended for use, ".
 				"generally due to improvements, and a replacement API is usually given. ".
 				"Deprecated APIs may be removed in future implementations.</BLOCKQUOTE>\n".
 				"<H3>Index</H3><BLOCKQUOTE>\n".
-				"The <A HREF=\"index-all.$html_ext\">Index</A> contains an alphabetic list of all ".
+				"The <A HREF=\"index-all.$html_ext\">index</A> contains an alphabetic list of all ".
 				"files, functions, and variables.</BLOCKQUOTE>\n".
-				"<H3>PREVIOUS FILE / NEXT FILE</H3>\n".
-				"These links take you to the next or previous file.\n".
-				"<H3>FRAMES / NO FRAMES</H3>\n".
-				"These links show and hide the HTML frames. All pages are available with or without frames.\n".
-				"<H3>Constant values</H3>\n".
-				"The <a href=\"constant-values.$html_ext\">Constant values</a> page lists the ".
+				"<H3>Constants</H3>\n".
+				"The <a href=\"constant-values.$html_ext\">constant values</a> page lists the ".
 				"constants and their values.\n",
 		);
 
@@ -1912,27 +1908,188 @@ if ( $stylesheetfile eq "" ) {
 
 	open(my $css, ">:encoding($charset)", "stylesheet.css") or die "$0: stylesheet.css: $!\n";
 
-	print $css "/* AsmDoc style sheet; see http://rudy.mif.pg.gda.pl/~bogdro/inne/ */\n\n".
-		"/* Define colors, fonts and other style attributes here to override the defaults */\n\n".
-		"/* Page background color */\n".
-		"body { background-color: #FFFFFF; color: #000000; }\n\n".
-		"/* Headings */\n".
-		"h1 { font-size: 145%; }\n\n".
-		"/* Table colors */\n".
-		".TableHeadingColor     { background: #CCCCFF; color: #000000; }\n".
-		".TableSubHeadingColor  { background: #EEEEFF; color: #000000; }\n".
-		".TableRowColor         { background: #FFFFFF; color: #000000; }\n\n".
-		"/* Font used in left-hand frame lists */\n".
-		".FrameTitleFont   { font-size: 100%; font-family: Helvetica, Arial, sans-serif; color: #000000; }\n".
-		".FrameHeadingFont { font-size:  90%; font-family: Helvetica, Arial, sans-serif; color: #000000; }\n".
-		".FrameItemFont    { font-size:  90%; font-family: Helvetica, Arial, sans-serif; color: #000000; }\n".
-		"\n/* Navigation bar fonts and colors */\n".
-		".NavBarCell1    { background-color: #EEEEFF; color: #000000; }\n".
-		".NavBarCell1Rev { background-color: #00008B; color: #FFFFFF; }\n".
-		".NavBarFont1    { font-family: Arial, Helvetica, sans-serif; color: #000000; }\n".
-		".NavBarFont1Rev { font-family: Arial, Helvetica, sans-serif; color: #FFFFFF; }\n\n".
-		".NavBarCell2    { font-family: Arial, Helvetica, sans-serif; background-color: #FFFFFF; color:#000000; }\n".
-		".NavBarCell3    { font-family: Arial, Helvetica, sans-serif; background-color: #FFFFFF; color:#000000; }\n";
+	print $css "/* Style sheet for AsmDoc; see http://rudy.mif.pg.gda.pl/~bogdro/inne/ */\n".
+	"/* Copyright (c) 2020 Source Solutions, Inc. */\n".
+	"\n".
+	"/* Google fonts */\n".
+	"\@import url('https://fonts.googleapis.com/css?family=Montserrat&display=swap');\n".
+	"\@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');\n".
+	"\n".
+	"/* body */\n".
+	"body {\n".
+	"    font-family: Roboto, sans-serif;\n".
+	"    color: #333333;\n".
+	"    background: #f9f9f9;\n".
+	"    font-size: 14px;\n".
+	"    padding: 0px;}\n".
+	"\n".
+	"/* defined term */\n".
+	"dt {\n".
+	"    padding-top: 7px;\n".
+	"    padding-bottom: 7px;\n".
+	"    font-weight: bold;\n".
+	"    color: #0e7c86;\n".
+	"    font-size: 13px;}\n".
+	"\n".
+	"dd code {\n".
+	"    color: #e53935;\n".
+	"    background-color: rgba(38,50,56,0.05);\n".
+	"    font-family: Courier,monospace;\n".
+	"    border-radius: 2px;\n".
+	"    border: 1px solid rgba(38,50,56,0.1);\n".
+	"    padding: 0 5px;\n".
+	"    font-size: 13px;\n".
+	"    font-weight: 400;\n".
+	"    word-break: break-word;}\n".
+	"\n".
+	"/* links */\n".
+	"a {\n".
+	"    text-decoration: none;\n".
+	"    color: #32329f;}\n".
+	"\n".
+	"/* headings */\n".
+	"h1 {\n".
+	"    font-family: Montserrat,sans-serif;\n".
+	"    font-weight: 400;\n".
+	"    font-size: 1.85714em;\n".
+	"    line-height: 1.6em;\n".
+	"    color: #32329f;\n".
+	"    margin-top: 0;\n".
+	"    margin-bottom: 0.5em;}\n".
+	"\n".
+	"h2 {\n".
+	"    font-family: Montserrat,sans-serif;\n".
+	"    font-weight: 400;\n".
+	"    font-size: 1.85714em;\n".
+	"    line-height: 1.6em;\n".
+	"	color: #32329f;}\n".
+	"\n".
+	"h3 {\n".
+	"    font-size: 1.3em;\n".
+	"    padding: 0.2em 0;\n".
+	"    margin: 14px 0 14px;\n".
+	"    color: #333333;\n".
+	"    font-weight: normal;}\n".
+	"\n".
+	"/* horizontal rule */\n".
+	"hr {\n".
+	"    border-top: 1px solid rgba(38,50,56,0.5);\n".
+	"    border-left: 0px;\n".
+	"    border-right: 0px;\n".
+	"    border-bottom: 0px;}\n".
+	"\n".
+	"/* tables */\n".
+	"table {\n".
+	"    border-collapse: collapse;}\n".
+	"\n".
+	"/* table colors */\n".
+	".TableHeadingColor {\n".
+	"    font-family: Roboto, sans-serif;\n".
+	"    font-size: 1.17em;\n".
+	"    font-weight: bold;\n".
+	"	background: #333333;\n".
+	"    color: #ffffff;\n".
+	"    border: 1px solid #333333;}\n".
+	".TableSubHeadingColor {\n".
+	"    font-family: Roboto, sans-serif;\n".
+	"    font-size: 1.17em;\n".
+	"    font-weight: bold;\n".
+	"	background: #333333;\n".
+	"    color: #ffffff;\n".
+	"    border: 1px solid #333333;}\n".
+	".TableSubHeadingColor a {\n".
+	"    color: white;}\n".
+	".TableRowColor {\n".
+	"    font-size: 13px;\n".
+	"    background: #f9f9f9;\n".
+	"    color: rgba(102,102,102,0.9);}\n".
+	".TableRowColor a {\n".
+	"    font-family: Courier, monospace;\n".
+	"    font-size: 13px;\n".
+	"    font-weight: normal;\n".
+	"    color: #333333;}\n".
+	".TableRowColor a:hover {\n".
+	"    font-weight: bold;}\n".
+	"\n".
+	"/* font used in left-hand frame lists */\n".
+	".FrameTitleFont {\n".
+	"    font-family: Montserrat, sans-serif;\n".
+	"    font-size: 0.929em;\n".
+	"    text-transform: none;\n".
+	"    color: #333333;}\n".
+	".FrameHeadingFont {\n".
+	"    font-family: Montserrat, sans-serif;\n".
+	"    font-size: 0.929em;\n".
+	"    text-transform: none;\n".
+	"    color: #333333;}\n".
+	".FrameItemFont {\n".
+	"    font-family: Montserrat, sans-serif;\n".
+	"    font-size: 0.929em;\n".
+	"    text-transform: none;\n".
+	"    color: #333333;\n".
+	"    margin: 0px;\n".
+	"    border: 0px;}\n".
+	".FrameItemFont a {\n".
+	"    cursor: pointer;\n".
+	"    color: rgb(51, 51, 51);\n".
+	"    background-color: #f9f9f9;\n".
+	"    margin: 0px;\n".
+	"    border: 0px;\n".
+	"    padding: 6px;\n".
+	"    display: flex;\n".
+	"    -webkit-box-pack: justify;\n".
+	"    justify-content: space-between;\n".
+	"    font-family: Montserrat, sans-serif;\n".
+	"    font-size: 0.929em;\n".
+	"    text-transform: none;}\n".
+	".FrameItemFont a:hover {\n".
+	"    color: #32329f;\n".
+	"    background-color: #e1e1e1;}\n".
+	"\n".
+	"/* navigation bar fonts and colors */\n".
+	".NavBarCell1 {\n".
+	"    background-color: #333333;\n".
+	"    color:#e1e1e1;\n".
+	"    padding: 3px;\n".
+	"}\n".
+	".NavBarCell1Rev {\n".
+	"    background-color: #333333;\n".
+	"    color: #e1e1e1;\n".
+	"    padding: 3px;}\n".
+	"\n".
+	".NavBarFont1 {\n".
+	"    color: #e1e1e1;\n".
+	"    background-color: #333333;\n".
+	"    font-family: Roboto, sans-serif;\n".
+	"    border-radius: 2px;\n".
+	"    border: 1px solid rgba(38,50,56,0.1);\n".
+	"    padding: 0 5px;\n".
+	"    font-size: 13px;\n".
+	"    font-weight: 400;\n".
+	"    word-break: break-word;\n".
+	"}\n".
+	".NavBarFont1Rev {\n".
+	"    color: #333333;\n".
+	"    background-color: #ffffff;\n".
+	"    font-family: Roboto, sans-serif;\n".
+	"    border-radius: 2px;\n".
+	"    border: 1px solid rgba(38,50,56,0.1);\n".
+	"    padding: 0 5px;\n".
+	"    font-size: 13px;\n".
+	"    font-weight: bold;\n".
+	"    word-break: break-word;}\n".
+	"\n".
+	".NavBarCell2 {\n".
+	"    visibility: hidden;}\n".
+	".NavBarCell3 {\n".
+	"    visibility: hidden;}\n".
+	"\n".
+	"body a[title=\"Skip navigation links\"] {\n".
+	"    visibility: hidden;}\n".
+	"\n".
+	"frame a[target=\"classFrame\"] {\n".
+	"    border: 0;\n".
+	"    margin: 0;}\n";
 
 	close $css;
 }
