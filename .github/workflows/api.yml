@@ -20,8 +20,8 @@ jobs:
           perl asmdoc.pl -author -version ../basic/basic.inc ../basic/modules/*.asm
 
       - uses: actions/checkout@v2
-          with:
-            ref: gh-pages
+        with:
+        ref: gh-pages
 
       - name:
         docs: |
