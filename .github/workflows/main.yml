@@ -25,7 +25,3 @@ jobs:
           cat ../bin/basic.rom >> ../ChloeVM.app/Contents/Resources/se.rom
           cd ../rasm
           ./rasm-deb-i386 firmware.asm -ob ../bin/FIRMWA~1.BIN
-          git checkout gh-pages
-          git add api/*
-          git commit -m "update API docs"
-          git push
