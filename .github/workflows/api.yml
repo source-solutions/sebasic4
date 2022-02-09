@@ -18,3 +18,16 @@ jobs:
         run: |
           cd api
           perl asmdoc.pl -author -version ../basic/basic.inc ../basic/modules/*.asm
+
+      - uses: actions/checkout@v2
+          with:
+            ref: gh-pages
+
+      - name:
+        docs: |
+          date > generated.txt
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "generated"
+          git push
