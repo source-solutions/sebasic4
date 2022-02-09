@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  asmdoc:
     runs-on: ubuntu-latest
 
     steps:
@@ -18,11 +18,10 @@ jobs:
         run: |
           cd api
           perl asmdoc.pl -author -version ../basic/basic.inc ../basic/modules/*.asm
-          date > generated.txt
           git config user.name github-actions
           git config user.email github-actions@github.com
           git fetch
           git checkout gh-pages
           echo git add .
-          echo git commit -m "generated"
+          echo git commit -m "asmdoc"
           echo git push
