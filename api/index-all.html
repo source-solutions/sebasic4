@@ -38,6 +38,9 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DD>
  add character
  
+<DT><A HREF="08_executive-asm.html#add_line"><B>add_line</B></A> - function in file <A HREF="08_executive-asm.html">08_executive.asm</A>
+<DD>
+ main add
 <DT><A HREF="08_executive-asm.html#auto_list"><B>auto_list</B></A> - function in file <A HREF="08_executive-asm.html">08_executive.asm</A>
 <DD>
  auto list
@@ -52,7 +55,10 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
  add back
 </DL><HR>
 <A NAME="B__" ID="B__"><!-- --></A><H2><B>B</B></H2>
-<DL><DT><A HREF="04_audio-asm.html#beeper"><B>beeper</B></A> - function in file <A HREF="04_audio-asm.html">04_audio.asm</A>
+<DL><DT><A HREF="01_restarts-asm.html#bc_1_space"><B>bc_1_space</B></A> - function in file <A HREF="01_restarts-asm.html">01_restarts.asm</A>
+<DD>
+ make one space
+<DT><A HREF="04_audio-asm.html#beeper"><B>beeper</B></A> - function in file <A HREF="04_audio-asm.html">04_audio.asm</A>
 <DD>
 
  1-bit speaker
@@ -64,18 +70,12 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
  binary digit
 </DL><HR>
 <A NAME="C__" ID="C__"><!-- --></A><H2><B>C</B></H2>
-<DL><DT><A HREF="01_restarts-asm.html#call"><B>call</B></A> - function in file <A HREF="01_restarts-asm.html">01_restarts.asm</A>
-<DD>`					// restart frame counter
-<DT><A HREF="01_restarts-asm.html#ch_add_plus_1"><B>ch_add_plus_1</B></A> - function in file <A HREF="01_restarts-asm.html">01_restarts.asm</A>
+<DL><DT><A HREF="01_restarts-asm.html#ch_add_plus_1"><B>ch_add_plus_1</B></A> - function in file <A HREF="01_restarts-asm.html">01_restarts.asm</A>
 <DD>
  increment ch-add
 <DT><A HREF="04_audio-asm.html#c_sound"><B>c_sound</B></A> - function in file <A HREF="04_audio-asm.html">04_audio.asm</A>
 <DD>
  <code>SOUND</code> command
- 
-<DT><A HREF="05_miscellaneous-asm.html#c_auto"><B>c_auto</B></A> - function in file <A HREF="05_miscellaneous-asm.html">05_miscellaneous.asm</A>
-<DD>
- <code>AUTO</code> command
  
 <DT><A HREF="05_miscellaneous-asm.html#c_call"><B>c_call</B></A> - function in file <A HREF="05_miscellaneous-asm.html">05_miscellaneous.asm</A>
 <DD>
@@ -198,6 +198,13 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DD>
  <code>DEF</code> command
  
+<DT><A HREF="09_command-asm.html#c_doke"><B>c_doke</B></A> - function in file <A HREF="09_command-asm.html">09_command.asm</A>
+<DD>
+ <code>DOKE</code> command
+ 
+<DT><A HREF="09_command-asm.html#c_else"><B>c_else</B></A> - function in file <A HREF="09_command-asm.html">09_command.asm</A>
+<DD>
+ ELSE
 <DT><A HREF="09_command-asm.html#c_end"><B>c_end</B></A> - function in file <A HREF="09_command-asm.html">09_command.asm</A>
 <DD>
  <code>END</code> command
@@ -221,6 +228,10 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DT><A HREF="09_command-asm.html#c_input"><B>c_input</B></A> - function in file <A HREF="09_command-asm.html">09_command.asm</A>
 <DD>
  <code>INPUT</code> command
+ 
+<DT><A HREF="09_command-asm.html#c_key"><B>c_key</B></A> - function in file <A HREF="09_command-asm.html">09_command.asm</A>
+<DD>
+ <code>KEY</code> command
  
 <DT><A HREF="09_command-asm.html#c_next"><B>c_next</B></A> - function in file <A HREF="09_command-asm.html">09_command.asm</A>
 <DD>
@@ -332,52 +343,71 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DD>
  <code>BLOAD</code> command
  
+ 
 <DT><A HREF="15_files-asm.html#c_bsave"><B>c_bsave</B></A> - function in file <A HREF="15_files-asm.html">15_files.asm</A>
 <DD>
  <code>BSAVE</code> command
+ 
  
 <DT><A HREF="15_files-asm.html#c_chdir"><B>c_chdir</B></A> - function in file <A HREF="15_files-asm.html">15_files.asm</A>
 <DD>
  <code>CHDIR</code> command
  
+ 
 <DT><A HREF="15_files-asm.html#c_copy"><B>c_copy</B></A> - function in file <A HREF="15_files-asm.html">15_files.asm</A>
 <DD>
  <code>COPY</code> command
+ 
  
 <DT><A HREF="15_files-asm.html#c_files"><B>c_files</B></A> - function in file <A HREF="15_files-asm.html">15_files.asm</A>
 <DD>
  <code>FILES</code> command
  
+ 
 <DT><A HREF="15_files-asm.html#c_kill"><B>c_kill</B></A> - function in file <A HREF="15_files-asm.html">15_files.asm</A>
 <DD>
  <code>KILL</code> command
+ 
  
 <DT><A HREF="15_files-asm.html#c_load"><B>c_load</B></A> - function in file <A HREF="15_files-asm.html">15_files.asm</A>
 <DD>
  <code>LOAD</code> command
  
+ 
+<DT><A HREF="15_files-asm.html#c_merge"><B>c_merge</B></A> - function in file <A HREF="15_files-asm.html">15_files.asm</A>
+<DD>
+ <code>MERGE</code> command
+ 
+ 
 <DT><A HREF="15_files-asm.html#c_mkdir"><B>c_mkdir</B></A> - function in file <A HREF="15_files-asm.html">15_files.asm</A>
 <DD>
  <code>MKDIR</code> command
+ 
  
 <DT><A HREF="15_files-asm.html#c_name"><B>c_name</B></A> - function in file <A HREF="15_files-asm.html">15_files.asm</A>
 <DD>
  <code>NAME</code> command
  
+ 
+<DT><A HREF="15_files-asm.html#c_old"><B>c_old</B></A> - function in file <A HREF="15_files-asm.html">15_files.asm</A>
+<DD>
+ <code>OLD</code> command
+ 
+ 
 <DT><A HREF="15_files-asm.html#c_rmdir"><B>c_rmdir</B></A> - function in file <A HREF="15_files-asm.html">15_files.asm</A>
 <DD>
  <code>RMDIR</code> command
+ 
  
 <DT><A HREF="15_files-asm.html#c_save"><B>c_save</B></A> - function in file <A HREF="15_files-asm.html">15_files.asm</A>
 <DD>
  <code>SAVE</code> command
  
+ 
+ 
 </DL><HR>
 <A NAME="D__" ID="D__"><!-- --></A><H2><B>D</B></H2>
-<DL><DT><A HREF="02_tokenizer-asm.html#detokenizer"><B>detokenizer</B></A> - function in file <A HREF="02_tokenizer-asm.html">02_tokenizer.asm</A>
-<DD>
- detokenizer
-<DT><A HREF="08_executive-asm.html#differ"><B>differ</B></A> - function in file <A HREF="08_executive-asm.html">08_executive.asm</A>
+<DL><DT><A HREF="08_executive-asm.html#differ"><B>differ</B></A> - function in file <A HREF="08_executive-asm.html">08_executive.asm</A>
 <DD>
  difference
 <DT><A HREF="10_expression-asm.html#de_plus_1_to_de"><B>de_plus_1_to_de</B></A> - function in file <A HREF="10_expression-asm.html">10_expression.asm</A>
@@ -524,6 +554,9 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DD>
  X80 op-code: compare string
  
+<DT><A HREF="basic-inc.html#fdeek"><B>fdeek</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
+<DD>
+ X80 op-code: DEEK
 <DT><A HREF="basic-inc.html#fdel"><B>fdel</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
 <DD>
  X80 op-code: delete
@@ -543,10 +576,10 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DT><A HREF="basic-inc.html#fgt"><B>fgt</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
 <DD>
  X80 op-code: get (mem 0 to 5)
-<DT><A HREF="basic-inc.html#fhex"><B>fhex</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
+<DT><A HREF="basic-inc.html#fgtz"><B>fgtz</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
 <DD>
- X80 op-code: HEX$
-<DT><A HREF="basic-inc.html#fin"><B>fin</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
+ X80 op-code: greater than zero
+<DT><A HREF="basic-inc.html#finp"><B>finp</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
 <DD>
  X80 op-code: IN
 <DT><A HREF="basic-inc.html#fint"><B>fint</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
@@ -565,6 +598,9 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DT><A HREF="basic-inc.html#flogn"><B>flogn</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
 <DD>
  X80 op-code: natural logarithm
+<DT><A HREF="basic-inc.html#fltz"><B>fltz</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
+<DD>
+ X80 op-code: less than zero
 <DT><A HREF="basic-inc.html#fmod"><B>fmod</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
 <DD>
  X80 op-code: modulus
@@ -574,21 +610,21 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DT><A HREF="basic-inc.html#fmul"><B>fmul</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
 <DD>
  X80 op-code: multiply
+<DT><A HREF="basic-inc.html#fmuls"><B>fmuls</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
+<DD>
+ X80 op-code: string by number multiplication
 <DT><A HREF="basic-inc.html#fneg"><B>fneg</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
 <DD>
  X80 op-code: negate
-<DT><A HREF="basic-inc.html#fnew1"><B>fnew1</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
-<DD>
- X80 op-code: reserved
-<DT><A HREF="basic-inc.html#fnew2"><B>fnew2</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
-<DD>
- X80 op-code: reserved
 <DT><A HREF="basic-inc.html#fnot"><B>fnot</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
 <DD>
  X80 op-code: NOT
 <DT><A HREF="basic-inc.html#fpeek"><B>fpeek</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
 <DD>
  X80 op-code: PEEK
+<DT><A HREF="basic-inc.html#fquot"><B>fquot</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
+<DD>
+ X80 op-code: integer quotient
 <DT><A HREF="basic-inc.html#fread"><B>fread</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
 <DD>
  X80 op-code: read in
@@ -646,9 +682,6 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DT><A HREF="basic-inc.html#fusr"><B>fusr</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
 <DD>
  X80 op-code: user address
-<DT><A HREF="basic-inc.html#fusrs"><B>fusrs</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
-<DD>
- X80 op-code: user string
 <DT><A HREF="basic-inc.html#fval"><B>fval</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
 <DD>
  X80 op-code: value
@@ -661,6 +694,9 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DT><A HREF="basic-inc.html#fxch"><B>fxch</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
 <DD>
  X80 op-code: exchange
+<DT><A HREF="basic-inc.html#fxor"><B>fxor</B></A> - macro in file <A HREF="basic-inc.html">basic.inc</A>
+<DD>
+ X80 op-code: exclusive or
 <DT><A HREF="09_command-asm.html#fetch_num"><B>fetch_num</B></A> - function in file <A HREF="09_command-asm.html">09_command.asm</A>
 <DD>
  fetch a number
@@ -707,7 +743,7 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
  integer truncation towards zero
 <DT><A HREF="12_calculator-asm.html#fp_0_div_1"><B>fp_0_div_1</B></A> - function in file <A HREF="12_calculator-asm.html">12_calculator.asm</A>
 <DD>
- zero or one
+ zero or minus one
 <DT><A HREF="12_calculator-asm.html#fp_abs"><B>fp_abs</B></A> - function in file <A HREF="12_calculator-asm.html">12_calculator.asm</A>
 <DD>
  absolute magnitude
@@ -738,6 +774,9 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DT><A HREF="12_calculator-asm.html#fp_dec_jr_nz"><B>fp_dec_jr_nz</B></A> - function in file <A HREF="12_calculator-asm.html">12_calculator.asm</A>
 <DD>
  decrease counter
+<DT><A HREF="12_calculator-asm.html#fp_deek"><B>fp_deek</B></A> - function in file <A HREF="12_calculator-asm.html">12_calculator.asm</A>
+<DD>
+ DEEK function
 <DT><A HREF="12_calculator-asm.html#fp_delete"><B>fp_delete</B></A> - function in file <A HREF="12_calculator-asm.html">12_calculator.asm</A>
 <DD>
  delete
@@ -759,9 +798,6 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DT><A HREF="12_calculator-asm.html#fp_greater_0"><B>fp_greater_0</B></A> - function in file <A HREF="12_calculator-asm.html">12_calculator.asm</A>
 <DD>
  greater than zero operation
-<DT><A HREF="12_calculator-asm.html#fp_hex_str"><B>fp_hex_str</B></A> - function in file <A HREF="12_calculator-asm.html">12_calculator.asm</A>
-<DD>
- HEX$ function
 <DT><A HREF="12_calculator-asm.html#fp_inp"><B>fp_inp</B></A> - function in file <A HREF="12_calculator-asm.html">12_calculator.asm</A>
 <DD>
  INP function
@@ -783,6 +819,9 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DT><A HREF="12_calculator-asm.html#fp_log"><B>fp_log</B></A> - function in file <A HREF="12_calculator-asm.html">12_calculator.asm</A>
 <DD>
  natural logarithm function
+<DT><A HREF="12_calculator-asm.html#fp_mul_str"><B>fp_mul_str</B></A> - function in file <A HREF="12_calculator-asm.html">12_calculator.asm</A>
+<DD>
+ multiplication of string by a number
 <DT><A HREF="12_calculator-asm.html#fp_n_mod_m"><B>fp_n_mod_m</B></A> - function in file <A HREF="12_calculator-asm.html">12_calculator.asm</A>
 <DD>
  modulus
@@ -843,15 +882,15 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DT><A HREF="12_calculator-asm.html#fp_usr_no"><B>fp_usr_no</B></A> - function in file <A HREF="12_calculator-asm.html">12_calculator.asm</A>
 <DD>
  USR (number) function
-<DT><A HREF="12_calculator-asm.html#fp_usr_str"><B>fp_usr_str</B></A> - function in file <A HREF="12_calculator-asm.html">12_calculator.asm</A>
-<DD>
- USR (string) function
 <DT><A HREF="12_calculator-asm.html#fp_val"><B>fp_val</B></A> - function in file <A HREF="12_calculator-asm.html">12_calculator.asm</A>
 <DD>
  VAL function
 <DT><A HREF="12_calculator-asm.html#fp_val_str"><B>fp_val_str</B></A> - function in file <A HREF="12_calculator-asm.html">12_calculator.asm</A>
 <DD>
  VAL$ function
+<DT><A HREF="12_calculator-asm.html#fp_xor"><B>fp_xor</B></A> - function in file <A HREF="12_calculator-asm.html">12_calculator.asm</A>
+<DD>
+ XOR operation
 </DL><HR>
 <A NAME="G__" ID="G__"><!-- --></A><H2><B>G</B></H2>
 <DL><DT><A HREF="basic-inc.html#ge"><B>ge</B></A> - variable in file <A HREF="basic-inc.html">basic.inc</A>
@@ -967,9 +1006,15 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DT><A HREF="09_command-asm.html#look_prog"><B>look_prog</B></A> - function in file <A HREF="09_command-asm.html">09_command.asm</A>
 <DD>
  look program
+<DT><A HREF="09_command-asm.html#look_vars1"><B>look_vars1</B></A> - function in file <A HREF="09_command-asm.html">09_command.asm</A>
+<DD>
+ long string variable name in assignment
 <DT><A HREF="10_expression-asm.html#look_vars"><B>look_vars</B></A> - function in file <A HREF="10_expression-asm.html">10_expression.asm</A>
 <DD>
  look variables
+<DT><A HREF="10_expression-asm.html#lstrng"><B>lstrng</B></A> - function in file <A HREF="10_expression-asm.html">10_expression.asm</A>
+<DD>
+ long-named string variable assignment
 <DT><A HREF="11_arithmentic-asm.html#log_2_a"><B>log_2_a</B></A> - function in file <A HREF="11_arithmentic-asm.html">11_arithmentic.asm</A>
 <DD>
  log (2^A)
@@ -981,9 +1026,6 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DL><DT><A HREF="04_audio-asm.html#mute_psg"><B>mute_psg</B></A> - function in file <A HREF="04_audio-asm.html">04_audio.asm</A>
 <DD>
  mute PSG
-<DT><A HREF="08_executive-asm.html#main_add"><B>main_add</B></A> - function in file <A HREF="08_executive-asm.html">08_executive.asm</A>
-<DD>
- main add
 <DT><A HREF="08_executive-asm.html#main_exec"><B>main_exec</B></A> - function in file <A HREF="08_executive-asm.html">08_executive.asm</A>
 <DD>
  main execution loop
@@ -993,6 +1035,10 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DT><A HREF="08_executive-asm.html#make_string"><B>make_string</B></A> - function in file <A HREF="08_executive-asm.html">08_executive.asm</A>
 <DD>
  make string
+<DT><A HREF="12_calculator-asm.html#mirror"><B>mirror</B></A> - function in file <A HREF="12_calculator-asm.html">12_calculator.asm</A>
+<DD>
+ Mirror a memory area
+ HL = start, BC = length
 <DT><A HREF="12_calculator-asm.html#move_fp"><B>move_fp</B></A> - function in file <A HREF="12_calculator-asm.html">12_calculator.asm</A>
 <DD>
  move a floating point number
@@ -1095,8 +1141,6 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
  print all characters
 <DT><A HREF="06_screen_80-asm.html#print_out"><B>print_out</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
 <DD>
-
- print out
 <DT><A HREF="08_executive-asm.html#pointers"><B>pointers</B></A> - function in file <A HREF="08_executive-asm.html">08_executive.asm</A>
 <DD>
  pointers
@@ -1156,6 +1200,13 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DT><A HREF="01_restarts-asm.html#rst_28"><B>rst_28</B></A> - function in file <A HREF="01_restarts-asm.html">01_restarts.asm</A>
 <DD>
  calculator
+<DT><A HREF="01_restarts-asm.html#rst_30"><B>rst_30</B></A> - function in file <A HREF="01_restarts-asm.html">01_restarts.asm</A>
+<DD>
+ make spaces
+ 
+<DT><A HREF="01_restarts-asm.html#rst_38"><B>rst_38</B></A> - function in file <A HREF="01_restarts-asm.html">01_restarts.asm</A>
+<DD>
+ maskable interrupt
 <DT><A HREF="07_editor-asm.html#remove_fp"><B>remove_fp</B></A> - function in file <A HREF="07_editor-asm.html">07_editor.asm</A>
 <DD>
  remove floating point
@@ -1166,12 +1217,16 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DT><A HREF="08_executive-asm.html#reserve"><B>reserve</B></A> - function in file <A HREF="08_executive-asm.html">08_executive.asm</A>
 <DD>
  reserve
+<DT><A HREF="10_expression-asm.html#rstrng"><B>rstrng</B></A> - function in file <A HREF="10_expression-asm.html">10_expression.asm</A>
+<DD>
+ long-named string re-assignment
 <DT><A HREF="11_arithmentic-asm.html#re_st_two"><B>re_st_two</B></A> - function in file <A HREF="11_arithmentic-asm.html">11_arithmentic.asm</A>
 <DD>
  restack two
 <DT><A HREF="15_files-asm.html#run_app"><B>run_app</B></A> - function in file <A HREF="15_files-asm.html">15_files.asm</A>
 <DD>
  <code>RUN</code> command with <i>string</i> parameter
+ 
  
 </DL><HR>
 <A NAME="S__" ID="S__"><!-- --></A><H2><B>S</B></H2>
@@ -1221,6 +1276,9 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DT><A HREF="10_expression-asm.html#s_loop"><B>s_loop</B></A> - function in file <A HREF="10_expression-asm.html">10_expression.asm</A>
 <DD>
  scanning main loop
+<DT><A HREF="10_expression-asm.html#s_lstr"><B>s_lstr</B></A> - function in file <A HREF="10_expression-asm.html">10_expression.asm</A>
+<DD>
+ '$' at the end of long variable names
 <DT><A HREF="10_expression-asm.html#s_u_plus"><B>s_u_plus</B></A> - function in file <A HREF="10_expression-asm.html">10_expression.asm</A>
 <DD>
  scanning function
@@ -1263,6 +1321,9 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DT><A HREF="12_calculator-asm.html#stk_pntrs"><B>stk_pntrs</B></A> - function in file <A HREF="12_calculator-asm.html">12_calculator.asm</A>
 <DD>
  stack pointers
+<DT><A HREF="12_calculator-asm.html#str_fetch"><B>str_fetch</B></A> - function in file <A HREF="12_calculator-asm.html">12_calculator.asm</A>
+<DD>
+ Like stk_fetch, but fetches only BC and DE and leaves STKEND alone.
 </DL><HR>
 <A NAME="T__" ID="T__"><!-- --></A><H2><B>T</B></H2>
 <DL><DT><A HREF="02_tokenizer-asm.html#tokenizer"><B>tokenizer</B></A> - function in file <A HREF="02_tokenizer-asm.html">02_tokenizer.asm</A>
@@ -1294,6 +1355,9 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DT><A HREF="09_command-asm.html#var_a_1"><B>var_a_1</B></A> - function in file <A HREF="09_command-asm.html">09_command.asm</A>
 <DD>
  variable in assignment
+<DT><A HREF="10_expression-asm.html#v_cont"><B>v_cont</B></A> - function in file <A HREF="10_expression-asm.html">10_expression.asm</A>
+<DD>
+ Check last character of a long variable name
 </DL><HR>
 <A NAME="W__" ID="W__"><!-- --></A><H2><B>W</B></H2>
 <DL><DT><A HREF="08_executive-asm.html#wait_key"><B>wait_key</B></A> - function in file <A HREF="08_executive-asm.html">08_executive.asm</A>

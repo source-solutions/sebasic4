@@ -173,6 +173,11 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
  
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="basic-inc.html#fdeek">fdeek</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ X80 op-code: DEEK
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="basic-inc.html#fdel">fdel</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  X80 op-code: delete
@@ -204,12 +209,12 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
  X80 op-code: get (mem 0 to 5)
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE><B><A HREF="basic-inc.html#fhex">fhex</A></B></CODE><BR>
+<TD><CODE><B><A HREF="basic-inc.html#fgtz">fgtz</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
- X80 op-code: HEX$
+ X80 op-code: greater than zero
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE><B><A HREF="basic-inc.html#fin">fin</A></B></CODE><BR>
+<TD><CODE><B><A HREF="basic-inc.html#finp">finp</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  X80 op-code: IN
 </TD></TR>
@@ -240,6 +245,11 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
  X80 op-code: natural logarithm
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="basic-inc.html#fltz">fltz</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ X80 op-code: less than zero
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="basic-inc.html#fmod">fmod</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  X80 op-code: modulus
@@ -255,19 +265,14 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
  X80 op-code: multiply
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="basic-inc.html#fmuls">fmuls</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ X80 op-code: string by number multiplication
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="basic-inc.html#fneg">fneg</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  X80 op-code: negate
-</TD></TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE><B><A HREF="basic-inc.html#fnew1">fnew1</A></B></CODE><BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
- X80 op-code: reserved
-</TD></TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE><B><A HREF="basic-inc.html#fnew2">fnew2</A></B></CODE><BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
- X80 op-code: reserved
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="basic-inc.html#fnot">fnot</A></B></CODE><BR>
@@ -278,6 +283,11 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <TD><CODE><B><A HREF="basic-inc.html#fpeek">fpeek</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  X80 op-code: PEEK
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="basic-inc.html#fquot">fquot</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ X80 op-code: integer quotient
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="basic-inc.html#fread">fread</A></B></CODE><BR>
@@ -375,11 +385,6 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
  X80 op-code: user address
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE><B><A HREF="basic-inc.html#fusrs">fusrs</A></B></CODE><BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
- X80 op-code: user string
-</TD></TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="basic-inc.html#fval">fval</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  X80 op-code: value
@@ -398,6 +403,11 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <TD><CODE><B><A HREF="basic-inc.html#fxch">fxch</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  X80 op-code: exchange
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="basic-inc.html#fxor">fxor</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ X80 op-code: exclusive or
 </TD></TR>
 </TABLE><BR>
 
@@ -561,6 +571,12 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 
 </DD></DL><HR>
 
+<A NAME="fdeek" ID="fdeek"><!-- --></A><H3>fdeek</H3>
+<DL><DD>
+ X80 op-code: DEEK
+
+</DD></DL><HR>
+
 <A NAME="fdel" ID="fdel"><!-- --></A><H3>fdel</H3>
 <DL><DD>
  X80 op-code: delete
@@ -599,13 +615,13 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 
 </DD></DL><HR>
 
-<A NAME="fhex" ID="fhex"><!-- --></A><H3>fhex</H3>
+<A NAME="fgtz" ID="fgtz"><!-- --></A><H3>fgtz</H3>
 <DL><DD>
- X80 op-code: HEX$
+ X80 op-code: greater than zero
 
 </DD></DL><HR>
 
-<A NAME="fin" ID="fin"><!-- --></A><H3>fin</H3>
+<A NAME="finp" ID="finp"><!-- --></A><H3>finp</H3>
 <DL><DD>
  X80 op-code: IN
 
@@ -643,6 +659,12 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 
 </DD></DL><HR>
 
+<A NAME="fltz" ID="fltz"><!-- --></A><H3>fltz</H3>
+<DL><DD>
+ X80 op-code: less than zero
+
+</DD></DL><HR>
+
 <A NAME="fmod" ID="fmod"><!-- --></A><H3>fmod</H3>
 <DL><DD>
  X80 op-code: modulus
@@ -661,21 +683,15 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 
 </DD></DL><HR>
 
+<A NAME="fmuls" ID="fmuls"><!-- --></A><H3>fmuls</H3>
+<DL><DD>
+ X80 op-code: string by number multiplication
+
+</DD></DL><HR>
+
 <A NAME="fneg" ID="fneg"><!-- --></A><H3>fneg</H3>
 <DL><DD>
  X80 op-code: negate
-
-</DD></DL><HR>
-
-<A NAME="fnew1" ID="fnew1"><!-- --></A><H3>fnew1</H3>
-<DL><DD>
- X80 op-code: reserved
-
-</DD></DL><HR>
-
-<A NAME="fnew2" ID="fnew2"><!-- --></A><H3>fnew2</H3>
-<DL><DD>
- X80 op-code: reserved
 
 </DD></DL><HR>
 
@@ -688,6 +704,12 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <A NAME="fpeek" ID="fpeek"><!-- --></A><H3>fpeek</H3>
 <DL><DD>
  X80 op-code: PEEK
+
+</DD></DL><HR>
+
+<A NAME="fquot" ID="fquot"><!-- --></A><H3>fquot</H3>
+<DL><DD>
+ X80 op-code: integer quotient
 
 </DD></DL><HR>
 
@@ -805,12 +827,6 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 
 </DD></DL><HR>
 
-<A NAME="fusrs" ID="fusrs"><!-- --></A><H3>fusrs</H3>
-<DL><DD>
- X80 op-code: user string
-
-</DD></DL><HR>
-
 <A NAME="fval" ID="fval"><!-- --></A><H3>fval</H3>
 <DL><DD>
  X80 op-code: value
@@ -832,6 +848,12 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <A NAME="fxch" ID="fxch"><!-- --></A><H3>fxch</H3>
 <DL><DD>
  X80 op-code: exchange
+
+</DD></DL><HR>
+
+<A NAME="fxor" ID="fxor"><!-- --></A><H3>fxor</H3>
+<DL><DD>
+ X80 op-code: exclusive or
 
 </DD></DL><HR>
 

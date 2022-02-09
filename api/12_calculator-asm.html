@@ -51,7 +51,7 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="12_calculator-asm.html#fp_0_div_1">fp_0_div_1</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
- zero or one
+ zero or minus one
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="12_calculator-asm.html#fp_abs">fp_abs</A></B></CODE><BR>
@@ -104,6 +104,11 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
  decrease counter
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="12_calculator-asm.html#fp_deek">fp_deek</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ DEEK function
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="12_calculator-asm.html#fp_delete">fp_delete</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  delete
@@ -139,11 +144,6 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
  greater than zero operation
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE><B><A HREF="12_calculator-asm.html#fp_hex_str">fp_hex_str</A></B></CODE><BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
- HEX$ function
-</TD></TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="12_calculator-asm.html#fp_inp">fp_inp</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  INP function
@@ -177,6 +177,11 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <TD><CODE><B><A HREF="12_calculator-asm.html#fp_log">fp_log</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  natural logarithm function
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="12_calculator-asm.html#fp_mul_str">fp_mul_str</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ multiplication of string by a number
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="12_calculator-asm.html#fp_n_mod_m">fp_n_mod_m</A></B></CODE><BR>
@@ -279,11 +284,6 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
  USR (number) function
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE><B><A HREF="12_calculator-asm.html#fp_usr_str">fp_usr_str</A></B></CODE><BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
- USR (string) function
-</TD></TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="12_calculator-asm.html#fp_val">fp_val</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  VAL function
@@ -294,9 +294,20 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
  VAL$ function
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="12_calculator-asm.html#fp_xor">fp_xor</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ XOR operation
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="12_calculator-asm.html#loc_mem">loc_mem</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  memory location
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="12_calculator-asm.html#mirror">mirror</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ Mirror a memory area
+ HL = start, BC = length
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="12_calculator-asm.html#move_fp">move_fp</A></B></CODE><BR>
@@ -312,6 +323,11 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <TD><CODE><B><A HREF="12_calculator-asm.html#stk_pntrs">stk_pntrs</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  stack pointers
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="12_calculator-asm.html#str_fetch">str_fetch</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ Like stk_fetch, but fetches only BC and DE and leaves STKEND alone.
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="12_calculator-asm.html#test_5_sp">test_5_sp</A></B></CODE><BR>
@@ -339,7 +355,7 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 
 <A NAME="fp_0_div_1" ID="fp_0_div_1"><!-- --></A><H3>fp_0_div_1</H3>
 <DL><DD>
- zero or one
+ zero or minus one
 
 </DD></DL><HR>
 
@@ -403,6 +419,12 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 
 </DD></DL><HR>
 
+<A NAME="fp_deek" ID="fp_deek"><!-- --></A><H3>fp_deek</H3>
+<DL><DD>
+ DEEK function
+
+</DD></DL><HR>
+
 <A NAME="fp_delete" ID="fp_delete"><!-- --></A><H3>fp_delete</H3>
 <DL><DD>
  delete
@@ -445,12 +467,6 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 
 </DD></DL><HR>
 
-<A NAME="fp_hex_str" ID="fp_hex_str"><!-- --></A><H3>fp_hex_str</H3>
-<DL><DD>
- HEX$ function
-
-</DD></DL><HR>
-
 <A NAME="fp_inp" ID="fp_inp"><!-- --></A><H3>fp_inp</H3>
 <DL><DD>
  INP function
@@ -490,6 +506,12 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <A NAME="fp_log" ID="fp_log"><!-- --></A><H3>fp_log</H3>
 <DL><DD>
  natural logarithm function
+
+</DD></DL><HR>
+
+<A NAME="fp_mul_str" ID="fp_mul_str"><!-- --></A><H3>fp_mul_str</H3>
+<DL><DD>
+ multiplication of string by a number
 
 </DD></DL><HR>
 
@@ -613,12 +635,6 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 
 </DD></DL><HR>
 
-<A NAME="fp_usr_str" ID="fp_usr_str"><!-- --></A><H3>fp_usr_str</H3>
-<DL><DD>
- USR (string) function
-
-</DD></DL><HR>
-
 <A NAME="fp_val" ID="fp_val"><!-- --></A><H3>fp_val</H3>
 <DL><DD>
  VAL function
@@ -631,9 +647,22 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 
 </DD></DL><HR>
 
+<A NAME="fp_xor" ID="fp_xor"><!-- --></A><H3>fp_xor</H3>
+<DL><DD>
+ XOR operation
+
+</DD></DL><HR>
+
 <A NAME="loc_mem" ID="loc_mem"><!-- --></A><H3>loc_mem</H3>
 <DL><DD>
  memory location
+
+</DD></DL><HR>
+
+<A NAME="mirror" ID="mirror"><!-- --></A><H3>mirror</H3>
+<DL><DD>
+ Mirror a memory area
+ HL = start, BC = length
 
 </DD></DL><HR>
 
@@ -652,6 +681,12 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <A NAME="stk_pntrs" ID="stk_pntrs"><!-- --></A><H3>stk_pntrs</H3>
 <DL><DD>
  stack pointers
+
+</DD></DL><HR>
+
+<A NAME="str_fetch" ID="str_fetch"><!-- --></A><H3>str_fetch</H3>
+<DL><DD>
+ Like stk_fetch, but fetches only BC and DE and leaves STKEND alone.
 
 </DD></DL><HR>
 

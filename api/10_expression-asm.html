@@ -110,6 +110,11 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
  look variables
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="10_expression-asm.html#lstrng">lstrng</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ long-named string variable assignment
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="10_expression-asm.html#numeric">numeric</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  numeric
@@ -118,6 +123,11 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <TD><CODE><B><A HREF="10_expression-asm.html#oct_digit">oct_digit</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  octal digit
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="10_expression-asm.html#rstrng">rstrng</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ long-named string re-assignment
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="10_expression-asm.html#s_fn_sbrn">s_fn_sbrn</A></B></CODE><BR>
@@ -133,6 +143,11 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <TD><CODE><B><A HREF="10_expression-asm.html#s_loop">s_loop</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  scanning main loop
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="10_expression-asm.html#s_lstr">s_lstr</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ '$' at the end of long variable names
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="10_expression-asm.html#s_u_plus">s_u_plus</A></B></CODE><BR>
@@ -186,6 +201,11 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  syntax z
  
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="10_expression-asm.html#v_cont">v_cont</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ Check last character of a long variable name
 </TD></TR>
 </TABLE><BR>
 
@@ -276,6 +296,12 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 
 </DD></DL><HR>
 
+<A NAME="lstrng" ID="lstrng"><!-- --></A><H3>lstrng</H3>
+<DL><DD>
+ long-named string variable assignment
+
+</DD></DL><HR>
+
 <A NAME="numeric" ID="numeric"><!-- --></A><H3>numeric</H3>
 <DL><DD>
  numeric
@@ -285,6 +311,12 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <A NAME="oct_digit" ID="oct_digit"><!-- --></A><H3>oct_digit</H3>
 <DL><DD>
  octal digit
+
+</DD></DL><HR>
+
+<A NAME="rstrng" ID="rstrng"><!-- --></A><H3>rstrng</H3>
+<DL><DD>
+ long-named string re-assignment
 
 </DD></DL><HR>
 
@@ -303,6 +335,12 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <A NAME="s_loop" ID="s_loop"><!-- --></A><H3>s_loop</H3>
 <DL><DD>
  scanning main loop
+
+</DD></DL><HR>
+
+<A NAME="s_lstr" ID="s_lstr"><!-- --></A><H3>s_lstr</H3>
+<DL><DD>
+ '$' at the end of long variable names
 
 </DD></DL><HR>
 
@@ -368,6 +406,12 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
  syntax z
  
 <DT><B>See Also: </B><DD> UnoDOS 3 entry points
+
+</DD></DL><HR>
+
+<A NAME="v_cont" ID="v_cont"><!-- --></A><H3>v_cont</H3>
+<DL><DD>
+ Check last character of a long variable name
 
 </DD></DL><HR>
 

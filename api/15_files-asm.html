@@ -21,7 +21,7 @@
 <TD ALIGN="right" VALIGN="top" ROWSPAN="3"></TD></TR>
 <TR><TD BGCOLOR="white" CLASS="NavBarCell2">
 <A HREF="14_screen_40-asm.html" TITLE="File"><B>PREVIOUS FILE</B></A>&nbsp;&nbsp;
-NEXT FILE</TD>
+<A HREF="16_messages-asm.html" TITLE="File"><B>NEXT FILE</B></A></TD>
 <TD BGCOLOR="white" CLASS="NavBarCell2">
 <A HREF="index.html?15_files-asm.html" TARGET="_top"><B>FRAMES</B></A>  &nbsp;&nbsp;
 <A HREF="15_files-asm.html" TARGET="_top"><B>NO FRAMES</B></A>  &nbsp;&nbsp;
@@ -47,11 +47,13 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  <code>BLOAD</code> command
  
+ 
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="15_files-asm.html#c_bsave">c_bsave</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  <code>BSAVE</code> command
+ 
  
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
@@ -59,11 +61,13 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  <code>CHDIR</code> command
  
+ 
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="15_files-asm.html#c_copy">c_copy</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  <code>COPY</code> command
+ 
  
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
@@ -71,11 +75,13 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  <code>FILES</code> command
  
+ 
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="15_files-asm.html#c_kill">c_kill</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  <code>KILL</code> command
+ 
  
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
@@ -83,11 +89,20 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  <code>LOAD</code> command
  
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="15_files-asm.html#c_merge">c_merge</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ <code>MERGE</code> command
+ 
+ 
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="15_files-asm.html#c_mkdir">c_mkdir</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  <code>MKDIR</code> command
+ 
  
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
@@ -95,11 +110,20 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  <code>NAME</code> command
  
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="15_files-asm.html#c_old">c_old</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ <code>OLD</code> command
+ 
+ 
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="15_files-asm.html#c_rmdir">c_rmdir</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  <code>RMDIR</code> command
+ 
  
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
@@ -107,11 +131,14 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  <code>SAVE</code> command
  
+ 
+ 
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="15_files-asm.html#run_app">run_app</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  <code>RUN</code> command with <i>string</i> parameter
+ 
  
 </TD></TR>
 </TABLE><BR>
@@ -126,6 +153,8 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
  <code>BLOAD</code> command
  
 <DT><B>See Also: </B><DD> <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#BLOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
+ 
+<DT><B>Throws: </B><DD> File not found; Path not found.
 
 </DD></DL><HR>
 
@@ -134,6 +163,8 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
  <code>BSAVE</code> command
  
 <DT><B>See Also: </B><DD> <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#BSAVE" target="_blank" rel="noopener noreferrer">Language reference</a>
+ 
+<DT><B>Throws: </B><DD> File not found; Path not found.
 
 </DD></DL><HR>
 
@@ -142,6 +173,8 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
  <code>CHDIR</code> command
  
 <DT><B>See Also: </B><DD> <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CHDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
+ 
+<DT><B>Throws: </B><DD> Path not found.
 
 </DD></DL><HR>
 
@@ -150,6 +183,8 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
  <code>COPY</code> command
  
 <DT><B>See Also: </B><DD> <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#COPY" target="_blank" rel="noopener noreferrer">Language reference</a>
+ 
+<DT><B>Throws: </B><DD> File not found; Path not found.
 
 </DD></DL><HR>
 
@@ -158,6 +193,8 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
  <code>FILES</code> command
  
 <DT><B>See Also: </B><DD> <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#FILES" target="_blank" rel="noopener noreferrer">Language reference</a>
+ 
+<DT><B>Throws: </B><DD> File not found; Path not found.
 
 </DD></DL><HR>
 
@@ -166,6 +203,8 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
  <code>KILL</code> command
  
 <DT><B>See Also: </B><DD> <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#KILL" target="_blank" rel="noopener noreferrer">Language reference</a>
+ 
+<DT><B>Throws: </B><DD> File not found; Path not found.
 
 </DD></DL><HR>
 
@@ -174,6 +213,18 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
  <code>LOAD</code> command
  
 <DT><B>See Also: </B><DD> <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
+ 
+<DT><B>Throws: </B><DD> File not found; Path not found.
+
+</DD></DL><HR>
+
+<A NAME="c_merge" ID="c_merge"><!-- --></A><H3>c_merge</H3>
+<DL><DD>
+ <code>MERGE</code> command
+ 
+<DT><B>See Also: </B><DD> <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#MERGE" target="_blank" rel="noopener noreferrer">Language reference</a>
+ 
+<DT><B>Throws: </B><DD> File not found; Path not found.
 
 </DD></DL><HR>
 
@@ -182,6 +233,8 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
  <code>MKDIR</code> command
  
 <DT><B>See Also: </B><DD> <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#MKDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
+ 
+<DT><B>Throws: </B><DD> Path not found.
 
 </DD></DL><HR>
 
@@ -190,6 +243,18 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
  <code>NAME</code> command
  
 <DT><B>See Also: </B><DD> <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#NAME" target="_blank" rel="noopener noreferrer">Language reference</a>
+ 
+<DT><B>Throws: </B><DD> File not found; Path not found.
+
+</DD></DL><HR>
+
+<A NAME="c_old" ID="c_old"><!-- --></A><H3>c_old</H3>
+<DL><DD>
+ <code>OLD</code> command
+ 
+<DT><B>See Also: </B><DD> <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#OLD" target="_blank" rel="noopener noreferrer">Language reference</a>
+ 
+<DT><B>Throws: </B><DD> File not found; Path not found.
 
 </DD></DL><HR>
 
@@ -198,6 +263,8 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
  <code>RMDIR</code> command
  
 <DT><B>See Also: </B><DD> <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RMDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
+ 
+<DT><B>Throws: </B><DD> Path not found.
 
 </DD></DL><HR>
 
@@ -206,6 +273,10 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
  <code>SAVE</code> command
  
 <DT><B>See Also: </B><DD> <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#SAVE" target="_blank" rel="noopener noreferrer">Language reference</a>
+ 
+<DT><B>Deprecated: </B><DD> To be replaced with non-tokenized version.
+ 
+<DT><B>Throws: </B><DD> File not found; Path not found.
 
 </DD></DL><HR>
 
@@ -214,6 +285,8 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
  <code>RUN</code> command with <i>string</i> parameter
  
 <DT><B>See Also: </B><DD> <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RUN" target="_blank" rel="noopener noreferrer">Language reference</a>
+ 
+<DT><B>Throws: </B><DD> File not found; Path not found.
 
 </DD></DL><HR>
 
@@ -232,7 +305,7 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <TD ALIGN="right" VALIGN="top" ROWSPAN="3"></TD></TR>
 <TR><TD BGCOLOR="white" CLASS="NavBarCell2">
 <A HREF="14_screen_40-asm.html" TITLE="File"><B>PREVIOUS FILE</B></A>&nbsp;&nbsp;
-NEXT FILE</TD>
+<A HREF="16_messages-asm.html" TITLE="File"><B>NEXT FILE</B></A></TD>
 <TD BGCOLOR="white" CLASS="NavBarCell2">
 <A HREF="index.html?15_files-asm.html" TARGET="_top"><B>FRAMES</B></A>  &nbsp;&nbsp;
 <A HREF="15_files-asm.html" TARGET="_top"><B>NO FRAMES</B></A>  &nbsp;&nbsp;
