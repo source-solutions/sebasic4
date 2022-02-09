@@ -16,6 +16,7 @@ jobs:
 
       - name:
         run: |
+          sudo apt-get install perl
           cd api
           perl asmdoc.pl -author -version ../basic/basic.inc ../basic/modules/*.asm
           date > generated.txt
