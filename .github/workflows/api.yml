@@ -18,11 +18,11 @@ jobs:
         run: |
           cd api
           perl asmdoc.pl -author -version ../basic/basic.inc ../basic/modules/*.asm
-          git config user.name github-actions
-          git config user.email github-actions@github.com
           cd ..
           mkdir ../temp
           cp api/* ../temp
+          git config user.name github-actions
+          git config user.email github-actions@github.com
           git fetch
           git checkout gh-pages
           cp ../temp/* api
