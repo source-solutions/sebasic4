@@ -8,7 +8,7 @@
 
 # SE Basic IV
 
-SE Basic IV is a free open-source BASIC interpreter for the Z80 architecture. Although it aims for a high degree of compatibility with Microsoft BASIC, there are some differences. SE Basic IV is designed to run on the [Chloe 280SE](https://github.com/cheveron/sebasic4/wiki/Chloe-280SE) but it is also compatible with Timex Sinclair models with 128K of RAM, esxDOS, Timex video modes and ULAplus. SE Basic IV runs plain text `.BAS` files. It implements floating-point arithmetic in the extended [Microsoft Binary Format](https://github.com/cheveron/sebasic4/wiki/Technical-reference#microsoft-binary-format-extended) (MBF) and can therefore read and write binary data files created by 6502 versions of Microsoft BASIC.  
+[SE Basic IV](https://cheveron.github.io/sebasic4/) is a free open-source BASIC interpreter for the Z80 architecture. Although it aims for a high degree of compatibility with Microsoft BASIC, there are some differences. SE Basic IV is designed to run on the [Chloe 280SE](https://github.com/cheveron/sebasic4/wiki/Chloe-280SE) but it is also compatible with Timex Sinclair models with 128K of RAM, esxDOS, Timex video modes and ULAplus. SE Basic IV runs plain text `.BAS` files. It implements floating-point arithmetic in the extended [Microsoft Binary Format](https://github.com/cheveron/sebasic4/wiki/Technical-reference#microsoft-binary-format-extended) (MBF) and can therefore read and write binary data files created by 6502 versions of Microsoft BASIC.  
 
 * [Quick start guide](https://github.com/cheveron/sebasic4/wiki/Quick-start-guide), the essentials needed to get started.
 * [User's guide](https://github.com/cheveron/sebasic4/wiki/User's-guide), in-depth guide to using BASIC.
