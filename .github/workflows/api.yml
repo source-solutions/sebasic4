@@ -1,0 +1,24 @@
+name: API docs
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name:
+        run: |
+          cd api
+          perl asmdoc.pl -author -version ../basic/basic.inc ../basic/modules/*.asm
+          git checkout gh-pages
+          git add api/*
+          git commit -m "update API docs"
+          git push
