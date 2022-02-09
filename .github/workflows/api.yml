@@ -26,6 +26,6 @@ jobs:
           git fetch
           git checkout gh-pages
           cp ../temp/* api
-          echo git add .
-          echo git commit -m "asmdoc"
-          echo git push origin gh-pages
+          git add .
+          git commit -m "asmdoc"
+          git push origin gh-pages
