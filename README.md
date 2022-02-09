@@ -1,4 +1,4 @@
-[![CI](https://github.com/cheveron/sebasic4/actions/workflows/main.yml/badge.svg)](https://github.com/cheveron/sebasic4/actions/workflows/main.yml)
+[![build](https://github.com/cheveron/sebasic4/actions/workflows/main.yml/badge.svg)](https://github.com/cheveron/sebasic4/actions/workflows/main.yml)
 [![API docs](https://github.com/cheveron/sebasic4/actions/workflows/api.yml/badge.svg)](https://github.com/cheveron/sebasic4/actions/workflows/api.yml)
 ![GitHub issues by-label](https://img.shields.io/github/issues/cheveron/sebasic4/bug)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/cheveron/sebasic4)
