@@ -19,6 +19,13 @@ jobs:
           cd api
           perl asmdoc.pl -author -version ../basic/basic.inc ../basic/modules/*.asm
           git checkout gh-pages
+
+      - uses: actions/checkout@v2
+          with:
+            ref: my-branch
+
+      - name:
+        add: |
           git add api/*
           git commit -m "update API docs"
           git push
