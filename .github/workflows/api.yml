@@ -28,4 +28,4 @@ jobs:
           cp ../temp/* api
           echo git add .
           echo git commit -m "asmdoc"
-          echo git push
+          echo git push origin gh-pages
