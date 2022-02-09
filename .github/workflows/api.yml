@@ -16,14 +16,15 @@ jobs:
 
       - name:
         run: |
-          git fetch
-          git checkout main
-          git pull
           cd api
           perl asmdoc.pl -author -version ../basic/basic.inc ../basic/modules/*.asm
           git config user.name github-actions
           git config user.email github-actions@github.com
+          mkdir ../temp
+          cp api/* ../temp
+          git fetch
           git checkout gh-pages
+          cp ../temp/* api
           echo git add .
           echo git commit -m "asmdoc"
           echo git push
