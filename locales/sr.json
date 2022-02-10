@@ -1,1 +1,5 @@
-{}
+{
+    "NAME": "Serbian",
+    "FILENAME": "SR-1251.LN",
+    "ICONV": "CP1251"
+}
