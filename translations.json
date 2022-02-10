@@ -32,8 +32,8 @@
     "WHILE": "WEND without WHILE",
     "FILE": "File not found",
     "INPUT": "Input past end",
-    "PATH": "Path not found",
-    },
+    "PATH": "Path not found"
+  },
   "nl": {
     "NAME": "Dutch",
     "FILENAME": "NL.LN",
@@ -67,7 +67,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "fi": {
     "NAME": "Finnish",
@@ -102,7 +102,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "fr": {
     "NAME": "French",
@@ -137,7 +137,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "de": {
     "NAME": "German",
@@ -172,7 +172,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "el": {
     "NAME": "Greek",
@@ -207,7 +207,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "he": {
     "NAME": "Hebrew",
@@ -242,7 +242,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "he-atari": {
     "NAME": "Hebrew (Atari ST)",
@@ -277,7 +277,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "hu": {
     "NAME": "Hungarian",
@@ -312,7 +312,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "it": {
     "NAME": "Italian",
@@ -347,7 +347,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "ja": {
     "NAME": "Japanese (half width katakana)",
@@ -382,7 +382,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "lt": {
     "NAME": "Lithuanian",
@@ -417,7 +417,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "pt": {
     "NAME": "Portuguese",
@@ -452,7 +452,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "ru": {
     "NAME": "Russian",
@@ -489,7 +489,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "es": {
     "NAME": "Spanish",
@@ -524,7 +524,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "tr": {
     "NAME": "Turkish",
@@ -559,7 +559,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "uk": {
     "NAME": "Ukranian",
@@ -594,7 +594,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "vi": {
     "NAME": "Vietnamese",
@@ -629,7 +629,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "pt-br": {
     "NAME": "Brazilian Portuguese",
@@ -664,7 +664,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "es-la": {
     "NAME": "Latin American Spanish",
@@ -699,8 +699,8 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
-  },
+    "PATH": ""
+   },
   "nl-be": {
     "NAME": "Flemish",
     "FILENAME": "NLBE1252.LN",
@@ -734,7 +734,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "bg": {
     "NAME": "Bulgarian",
@@ -769,7 +769,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "cs": {
     "NAME": "Czech",
@@ -804,7 +804,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "sl": {
     "NAME": "Slovak",
@@ -839,7 +839,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "da": {
     "NAME": "Danish",
@@ -874,7 +874,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "et": {
     "NAME": "Estonian",
@@ -909,7 +909,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "pl": {
     "NAME": "Polish",
@@ -944,7 +944,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "rm": {
     "NAME": "Romanian",
@@ -979,7 +979,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "sr": {
     "NAME": "Serbian",
@@ -1014,7 +1014,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "sr-latn": {
     "NAME": "Serbian (Latin)",
@@ -1049,7 +1049,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "hr": {
     "NAME": "Croation",
@@ -1084,7 +1084,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "sv": {
     "NAME": "Swedish",
@@ -1119,7 +1119,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "ga": {
     "NAME": "Irish",
@@ -1154,7 +1154,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "cy": {
     "NAME": "Welsh",
@@ -1189,7 +1189,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "br": {
     "NAME": "Breton",
@@ -1224,7 +1224,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "gd": {
     "NAME": "Scottish Gaelic",
@@ -1259,7 +1259,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "kw": {
     "NAME": "Cornish",
@@ -1294,7 +1294,7 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   },
   "gv": {
     "NAME": "Manx",
@@ -1329,6 +1329,6 @@
     "WHILE": "",
     "FILE": "",
     "INPUT": "",
-    "PATH": "",
+    "PATH": ""
   }
 }
