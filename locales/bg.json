@@ -1,1 +1,21 @@
-{}
+{
+    "FILENAME": "BG-1251.LN",
+    "ICONV": "CP1251",
+    "SYNTAX": "",
+    "ERROR": "",
+    "OK": "",
+    "SUBSCRIPT": "",
+    "GOSUB": "",
+    "DATA": "",
+    "ADDRESS": "",
+    "LINE": "",
+    "SCROLL": "",
+    "NAME": "Bulgarian",
+    "READY": "",
+    "VARIABLE": "",
+    "MEMORY": "",
+    "CALL": "",
+    "OVERFLOW": "",
+    "FOR": "",
+    "BREAK": ""
+}
