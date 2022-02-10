@@ -1,7 +1,7 @@
 {
     "NAME": "Russian (KOI8-R)",
     "FILENAME": "RU-KOI8R.LN",
-    "ICONV": "KOI8-R"
+    "ICONV": "KOI8-R",
     "SCROLL": "Прокрутка?_",
     "ERROR": " в _",
     "READY": "Готов_______",
