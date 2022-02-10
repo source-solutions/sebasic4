@@ -1,1 +1,5 @@
-{}
+{
+    "NAME": "Russian",
+    "FILENAME": "RU-KOI8R.LN / RU-1250.LN",
+    "ICONV": "KOI8-R / CP1250"
+}
