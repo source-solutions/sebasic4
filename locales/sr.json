@@ -1,7 +1,7 @@
 {
     "NAME": "Serbian",
     "FILENAME": "SR-1251.LN",
-    "ICONV": "CP1251"
+    "ICONV": "CP1251",
     "SCROLL": "Листање?___",
     "ERROR": " у _",
     "READY": "Спреман_____",
