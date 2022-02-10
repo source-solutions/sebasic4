@@ -1,5 +1,8 @@
 [![build](https://github.com/cheveron/sebasic4/actions/workflows/main.yml/badge.svg)](https://github.com/cheveron/sebasic4/actions/workflows/main.yml)
 [![API docs](https://github.com/cheveron/sebasic4/actions/workflows/api.yml/badge.svg)](https://github.com/cheveron/sebasic4/actions/workflows/api.yml)
+<a href="https://hosted.weblate.org/engage/sebasic4/">
+<img src="https://hosted.weblate.org/widgets/sebasic4/-/svg-badge.svg" alt="Translation status" />
+</a>
 ![GitHub issues by-label](https://img.shields.io/github/issues/cheveron/sebasic4/bug)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/cheveron/sebasic4)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/cheveron/sebasic4)
