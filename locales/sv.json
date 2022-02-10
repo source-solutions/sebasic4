@@ -14,7 +14,7 @@
     "SYNTAX": "Syntaxfel",
     "CALL": "Olaglig funktionsanrop",
     "FUNCTION": "Odefinierad användarfunktion",
-    "ERROR": " i _ ",
+    "ERROR": " i _",
     "READY": "Redo________",
     "GOSUB": "RETURN utan GOSUB",
     "DATA": "Ut ur DATA",

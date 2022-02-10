@@ -1,6 +1,6 @@
 {
     "NAME": "Latvian",
-    "READY": "Gatavs_______",
+    "READY": "Gatavs______",
     "OK": "Labi",
     "MEMORY": "Nepietiek atmiņa",
     "LINE": "Nenoteikts rindas numurs",
@@ -26,7 +26,7 @@
     "BUFFER": "Līnijas bufera pārplūšana",
     "FILENAME": "LA-1252.LN",
     "ICONV": "CP1252",
-    "SCROLL": "Ritināt?____",
+    "SCROLL": "Ritināt?___",
     "ERROR": " in ",
     "FILE": "Fails nav atrasts",
     "INPUT": "Ievade garām beigām",
