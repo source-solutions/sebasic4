@@ -1,7 +1,7 @@
 {
     "NAME": "Ukrainian",
     "FILENAME": "UK-1251.LN",
-    "ICONV": "CP1251"
+    "ICONV": "CP1251",
     "SCROLL": "Прокрутити?",
     "ERROR": " в _",
     "READY": "Готово______",
