@@ -985,7 +985,6 @@ f_getc_err:
 ;;
 ; <code>SAVE</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#SAVE" target="_blank" rel="noopener noreferrer">Language reference</a>
-; @deprecated To be replaced with non-tokenized version.
 ; @throws File not found; Path not found.
 ;;
 c_save:
