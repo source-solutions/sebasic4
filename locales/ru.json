@@ -1,7 +1,7 @@
 {
     "NAME": "Russian",
-    "FILENAME": "RU-1250.LN",
-    "ICONV": "CP1250",
+    "FILENAME": "RU-1251.LN",
+    "ICONV": "CP1251",
     "SCROLL": "Прокрутка?_",
     "ERROR": " в _ ",
     "READY": "Готов_______",
