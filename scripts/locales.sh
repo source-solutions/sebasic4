@@ -41,4 +41,3 @@ for f in *.json; do
     mv TEMP.LN $fname
     perl -pi -e 's/_/\0/g' $fname
 done
-rm TEMP.LN
