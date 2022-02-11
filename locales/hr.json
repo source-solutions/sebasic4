@@ -1,7 +1,7 @@
 {
     "NAME": "Croatian",
-    "FILENAME": "HR-1252.LN",
-    "ICONV": "CP1252",
+    "FILENAME": "HR-1250.LN",
+    "ICONV": "CP1250",
     "OK": "U redu",
     "BREAK": "Stanka",
     "FOR": "NEXT bez FOR",
