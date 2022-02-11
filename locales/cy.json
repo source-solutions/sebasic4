@@ -1,7 +1,7 @@
 {
     "NAME": "Welsh",
-    "FILENAME": "CY.LN",
-    "ICONV": "IBM437",
+    "FILENAME": "CY-1252.LN",
+    "ICONV": "CP1252",
     "SCROLL": "Sgroliwch?_",
     "ERROR": " yn ",
     "READY": "Barod_______",
