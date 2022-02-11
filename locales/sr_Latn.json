@@ -1,7 +1,7 @@
 {
     "NAME": "Serbian (Latin)",
-    "FILENAME": "SR-1252.LN",
-    "ICONV": "CP1252",
+    "FILENAME": "SR-1250.LN",
+    "ICONV": "CP1250",
     "OK": "U redu",
     "BREAK": "Prekid",
     "OVERFLOW": "Previše",
@@ -27,7 +27,7 @@
     "STREAM": "Nedefinisan prenos",
     "GOSUB": "RETURN bez GOSUB",
     "DATA": "Nedostaje DATA",
-    "CALL": "Pozvanа nedozvoljene radnje",
+    "CALL": "Pozvana nedozvoljene radnje",
     "SUBSCRIPT": "Indeks van dometa",
     "FUNCTION": "Nedefinisana korisnička funkcija",
     "BUFFER": "Preopterećen bafer",
