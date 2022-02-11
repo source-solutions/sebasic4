@@ -1,4 +1,4 @@
-cd ../locales
+cd locales
 for f in *.json; do  
     export jname=${f%}
     name=$(jq -r .NAME $jname)
