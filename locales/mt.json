@@ -1,7 +1,7 @@
 {
     "NAME": "Maltese",
-    "FILENAME": "MT-1252.LN",
-    "ICONV": "CP1252",
+    "FILENAME": "MT-IR109.LN",
+    "ICONV": "ISO-8859-3",
     "SCROLL": "Skrollja?__",
     "ERROR": " fi ",
     "READY": "Lest________",
