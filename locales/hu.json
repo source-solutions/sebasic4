@@ -1,6 +1,6 @@
 {
     "NAME": "Hungarian",
-    "FILENAME": "HU-1250.LN",
+    "FILENAME": "HU-1252.LN",
     "BREAK": "Megszakítás",
     "FOR": "NEXT nélkül FOR",
     "SYNTAX": "Szintaktikus hiba",
@@ -22,7 +22,7 @@
     "CHANNEL": "Definiálatlan csatorna",
     "DATA": "A DATA-hez képest",
     "OVERFLOW": "Túlcsordulás",
-    "ICONV": "CP1250",
+    "ICONV": "CP1252",
     "SCROLL": "Görgetés?__",
     "ERROR": " : _",
     "CALL": "Nem megengedett függvényhívás",
