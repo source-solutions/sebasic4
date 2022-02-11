@@ -1,7 +1,7 @@
 {
     "NAME": "Romanian",
-    "FILENAME": "RM-1252.LN",
-    "ICONV": "CP1252",
+    "FILENAME": "RM-IR226.LN",
+    "ICONV": "ISO-8859-16",
     "SCROLL": "Defilează?_",
     "ERROR": " în ",
     "BREAK": "Întrerupere",
@@ -29,7 +29,7 @@
     "STREAM": "Flux nedefinit",
     "BUFFER": "Tampon de scurgere peste linie",
     "DEVICE": "Dispozitiv I/O nepotrivit",
-    "INPUT": "Intrare peste sfârşit",
+    "INPUT": "Intrare peste sfârșit",
     "NEXT": "FOR fără NEXT",
     "WHILE": "WEND fără WHILE"
 }
