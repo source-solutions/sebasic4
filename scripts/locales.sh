@@ -5,7 +5,7 @@ for f in *.json; do
     echo Generating $name
     fname=$(jq -r .FILENAME $jname)
     iconv=$(jq -r .ICONV $jname)
-    scroll=$(jq -r .SCROLL < $jname)
+    scroll=$(jq -r .SCROLL $jname)
     error=$(jq -r .ERROR $jname)
     ready=$(jq -r .READY $jname)
     ok=$(jq -r .OK $jname)
@@ -35,10 +35,10 @@ for f in *.json; do
     file=$(jq -r .FILE $jname)
     input=$(jq -r .INPUT $jname)
     path=$(jq -r .PATH $jname)
-    echo $scroll"\0"$error"\0"$ready"\0"$ok"\0"$break"\0"$for"\0"$synatx"\0"$gosub"\0"$data"\0"$call"\0"$overflow"\0"$memory"\0"$line"\0"$subscript"\0"$variable"\0"$address"\0"$statement"\0"$type"\0"$screen"\0"$device"\0"$stream"\0"$channel"\0"$function"\0"$buffer"\0"$next"\0"$wend"\0"$while"\0"$file"\0"$input"\0"$path"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" > TEMP.LN
-    perl -pi -e 's/\\0/\0/g' $fname
+    echo $scroll"_"$error"_"$ready"_"$ok"_"$break"_"$for"_"$synatx"_"$gosub"_"$data"_"$call"_"$overflow"_"$memory"_"$line"_"$subscript"_"$variable"_"$address"_"$statement"_"$type"_"$screen"_"$device"_"$stream"_"$channel"_"$function"_"$buffer"_"$next"_"$wend"_"$while"_"$file"_"$input"_"$path"________________________________________________________________________________________________________________________________________" > TEMP.LN
     iconv -f UTF8 -t $iconv TEMP.LN > $fname
     head -c 608 $fname > TEMP.LN
     mv TEMP.LN $fname
     perl -pi -e 's/_/\0/g' $fname
+    mv $fname ../ChloeVM.app/Contents/Resources/chloehd/SYSTEM/LANGUAGE.S/$fname
 done
