@@ -1,7 +1,13 @@
 ### language (including code page if required)
 
+## Arabic (code page 1256 is not yet implemented)
+# ln=AR-1256
+
 ## Bulgarian
 # ln=BG-1251
+
+## Bosnian (Latin)
+# ln=BS-1250
 
 ## Czech
 # ln=CS-1250
@@ -48,6 +54,12 @@ ln=ESLA1252
 ## Hungarian
 # ln=HU-1252
 
+## Indonesian
+# ln=ID
+
+## Icelandic
+# ln=IS-1242
+
 ## Italian
 # ln=IT
 
@@ -60,8 +72,14 @@ ln=ESLA1252
 ## Latvian
 # ln=LV-1257
 
+## Macedonian
+# ln=MK-1251
+
 ## Maltese (IR109 code page not yet implemented)
 # MT-IR109
+
+## Norwegian Bokmål
+# ln=NB-1252
 
 ## Dutch
 # ln=NL
@@ -84,6 +102,15 @@ ln=ESLA1252
 ## Russian (KOI8-R - required for JCUKEN keyboard layout)
 # ln=RU-KOI8R
 
+## Slovak
+# ln=SK-1250
+
+## Slovene
+# ln=SL-1250
+
+## Albanian
+# ln=SQ-1250
+
 ## Serbian
 # ln=SR-1251
 
@@ -92,6 +119,9 @@ ln=ESLA1252
 
 ## Swedish
 # ln=SV-1252
+
+## Swahili
+# ln=SW
 
 ## Turkish
 # ln=TR-1254
