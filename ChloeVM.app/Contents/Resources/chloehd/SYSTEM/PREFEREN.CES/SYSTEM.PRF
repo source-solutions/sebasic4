@@ -186,6 +186,12 @@ cp=1252-EUW
 ## Cyrillic (JCUKEN)
 # cp=KOI8-R
 
+## Mac (Roman)
+# cp=MACROMAN
+
+## NeXT
+# cp=NEXT
+
 ## Commodore 8=bit
 # cp=PETSCII
 
