@@ -1,0 +1,2 @@
+prg:
+	pasmo DARKSTAR.ASM ../PRG/DARKSTAR.PRG
