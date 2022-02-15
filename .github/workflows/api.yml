@@ -1,4 +1,4 @@
-name: build and deploy API portal
+name: API
 
 on:
   push:
