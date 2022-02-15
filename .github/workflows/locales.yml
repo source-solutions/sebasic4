@@ -1,4 +1,4 @@
-name: locales
+name: build localized message bundles
 
 on:
   workflow_dispatch:
