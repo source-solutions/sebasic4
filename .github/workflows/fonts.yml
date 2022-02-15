@@ -1,4 +1,4 @@
-name: Build code pages
+name: build code pages
 
 on:
   workflow_dispatch:
