@@ -6,7 +6,6 @@
 ![GitHub issues by-label](https://img.shields.io/github/issues/cheveron/sebasic4/bug)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/cheveron/sebasic4)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/cheveron/sebasic4)
-![GitHub](https://img.shields.io/github/license/cheveron/sebasic4)
 
 # SE Basic IV
 
