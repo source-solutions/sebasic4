@@ -1,4 +1,4 @@
-cd asmdoc
+cd api
 setlocal enabledelayedexpansion enableextensions
 set LIST=
 for %%x in (..\basic\modules\*.asm) do set LIST=!LIST! %%x

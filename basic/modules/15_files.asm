@@ -51,11 +51,11 @@ run_app:
 	call unstack_z;						// return if checking syntax
 	call get_dest;						// app name to second buffer
 	ld hl, basepath;					// base path
-	ld de, $5a00;						// point to first buffer
+	ld de, $5800;						// point to first buffer
 	ld bc, 10;							// byte count
 	ldir;								// copy basepath
 
-	ld hl, $5900;						// source
+	ld hl, $5700;						// source
 	ld bc, 11;							// maximum name length
 
 copy11:
@@ -80,7 +80,7 @@ endcp11:
 	ldir;								// copy it
 
 	ld a, '*';							// use current drive
-	ld ix, $5a00;						// pointer to path
+	ld ix, $5800;						// pointer to path
 	rst divmmc;							// issue a hookcode
 	defb f_chdir;						// change folder
 	call chk_path_error;				// test for error
@@ -89,7 +89,7 @@ endcp11:
 	ld sp, $6000;						// lower stack
 
 ; get shortname
-	ld hl, $5900 - 1;					// start of filename - 1
+	ld hl, $5700 - 1;					// start of filename - 1
 	ld b, 9;							// maximum name length + 1
 
 skip8:
@@ -106,14 +106,13 @@ endskp8:
 	ldir;								// copy it
 ; end of get shortname
 
-	ld ix, $5900;						// default program name
+	ld ix, $5700;						// default program name
 	call open_r_exists;					// open file for reading if it exists
 
 	jr c, app_not_found;				// jump if error
 	ld (handle), a;						// store handle
 
 	ld ix, f_stats;						// buffer for file stats
-	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_fstat;						// get file stats
 	jr c, app_not_found;				// jump if error
@@ -122,12 +121,10 @@ endskp8:
 	ld bc, (f_size);					// get length
 	ld ix, $6000;						// get address
 
-	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_read;						// 
 	jr c, app_not_found;				// jump if error
 	ld a, (handle);						// 
-	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_close;						// 
 	jr c, app_not_found;				// jump if error
@@ -152,7 +149,6 @@ open_r_exists:
 
 open_f_common:
    	ld a, '*';							// use current drive
-	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_open;						// open file
     ret;                                // done
@@ -172,12 +168,10 @@ open_f_ret:
 	ret;								// end of subroutine
 
 f_write_out:
-	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_write;						// change folder
 	jr c, report_file_not_found;		// jump if error
 	ld a, (handle);						// restore handle from sysvar
-	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_close;						// change folder
 	jr c, report_file_not_found;		// jump if error
@@ -185,12 +179,10 @@ f_write_out:
 	ret;								// done
 
 f_read_in:
-	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_read;						// 
 	jp c, report_file_not_found;		// jump if error
 	ld a, (handle);						// 
-	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_close;						// 
 	jr c, report_file_not_found;		// jump if error
@@ -213,7 +205,7 @@ get_path:
 	or b;								// empty string
 	jp z, report_bad_fn_call;			// error if so
 	ex de, hl;							// start to HL
-	ld de, $5a00;						// destination - FIXME use workspace
+	ld de, $5800;						// destination - FIXME use workspace
 	call ldir_space;					// copy it (converting spaces to underscores)
 	ex de, hl;							// end to HL
 	ld (hl), 0;							// set end marker
@@ -225,7 +217,7 @@ get_dest:
 	or b;								// empty string
 	jp z, report_bad_fn_call;			// error if so
 	ex de, hl;							// start to HL
-	ld de, $5900;						// destination - FIXME use workspace
+	ld de, $5700;						// destination - FIXME use workspace
 	call ldir_space;					// copy it (converting spaces to underscores)
 	ex de, hl;							// end to HL
 	ld (hl), 0;							// set end marker
@@ -248,8 +240,7 @@ c_bload:
 	call unstack_z;						// return if checking syntax
 	call find_int2;						// get address
 	ld (f_addr), bc;					// store it
-	call get_path;						// path to buffer
-	ld ix, $5a00;						// pointer to path
+	call path_to_ix;					// path to buffer
 
 bload_2:
 	call f_open_read_ex;				// open file for reading
@@ -273,8 +264,8 @@ c_bsave:
 	ld (f_size), bc;					// store it
 	call find_int2;						// get address
 	ld (f_addr), bc;					// store it
-	call get_path;						// path to buffer
-	ld ix, $5a00;						// pointer to path
+	call path_to_ix;					// path to buffer
+
 	call f_open_write_al;				// open file for writing
 
 ;	// get binary length
@@ -292,10 +283,10 @@ c_copy:
 	call unstack_z;						// return if checking syntax
 	call get_dest;						// path to buffer (dest)
 	call get_path;						// path to buffer (source)
-	ld ix, $5a00;						// pointer to path
+	ld ix, $5800;						// pointer to path
 	call f_open_read_ex;				// open file for reading
 	call f_get_stats;					// get file length
-	ld ix, $5900;						// pointer to path
+	ld ix, $5700;						// pointer to path
 
 	call open_w_create;					// open file for writing if it exists
 
@@ -330,14 +321,12 @@ lt_256:
 copy_close:
 ;	// close source
 	ld a, (handle);						// restore handle from sysvar
-	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_close;						// change folder
 	jp c, report_file_not_found;		// jump if error
 
 ;	// close destination
 	ld a, (handle_1);					// restore handle from sysvar
-	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_close;						// change folder
 	jp c, report_file_not_found;		// jump if error
@@ -349,8 +338,7 @@ copy_close:
 ;	// call with bytes to copy in C
 read_chunk:
 	ld a, (handle);						// get file handle to source
-	ld ix, $5900;						// 256 byte buffer
-	and a;								// signal no error (clear carry flag)
+	ld ix, $5700;						// 256 byte buffer
 	rst divmmc;							// issue a hookcode
 	defb f_read;						// read a byte
 	jp c, report_file_not_found;		// jump if error
@@ -358,13 +346,17 @@ read_chunk:
 
 write_chunk:
 	ld a, (handle_1);					// get file handle to destination
-	ld ix, $5900;						// 256 byte buffer
-	and a;								// signal no error (clear carry flag)
+	ld ix, $5700;						// 256 byte buffer
 	rst divmmc;							// issue a hookcode
 	defb f_write;						// write a byte
 	jp c, report_file_not_found;		// jump if error
 	ret;								// else done
 
+;;
+; <code>OLD</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#OLD" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
+;;
 c_old:
 ifdef no_fs
 	ret;
@@ -407,12 +399,11 @@ endif
 ;;
 c_name:
 	call unstack_z;						// return if checking syntax
-	call get_dest;						// path to buffer (dest)
-	call get_path;						// path to buffer (source)
-	ld a, '*';							// use current drive
-	ld ix, $5a00;						// pointer to source
-	ld de, $5900;						// pointer to dest
-	and a;								// signal no error (clear carry flag)
+;	call paths_to_de_ix;				// destination and source paths to buffer
+	call path_to_de;					// path to buffer (dest)
+	push de;							// stack destination
+	call path_to_ix;					// path to buffer (source)
+	pop de;								// unstack destination
 	rst divmmc;							// issue a hookcode
 	defb f_rename;						// change folder
 	jp c, report_file_not_found;		// jump if error
@@ -488,8 +479,7 @@ c_files:
 use_cwd:
 	call unstack_z;						// return if checking syntax
 	ld a, '*';							// use current drive
-	ld ix, $5a00;						// folder path buffer
-	and a;								// signal no error (clear carry flag)
+	ld ix, $5800;						// folder path buffer
 	rst divmmc;							// issue a hookcode
 	defb f_getcwd;						// get current working folder
 	jp c, report_path_not_found;		// jump if error
@@ -503,13 +493,12 @@ open_folder:
 	call chan_open;						// open channel
 	ld b, 0;							// folder access mode (read only?)
 	ld a, '*';							// use current drive
-	ld ix, $5a00;						// folder path buffer
-	and a;								// signal no error (clear carry flag)
+	ld ix, $5800;						// folder path buffer
 	rst divmmc;							// issue a hookcode
 	defb f_opendir;						// open folder
 	jp c, report_file_not_found;		// jump if error
 	ld (handle), a;						// store folder handle
-	ld hl, $5a00;						// point to file path
+	ld hl, $5800;						// point to file path
 
 pr_asciiz_uc:
 	ld a, (hl);							// get character
@@ -534,15 +523,14 @@ pr_asciiz_uc_end:
 	rst print_a;						// print it
 
 read_folders:
-	ld ix, $5900;						// folder buffer
+	ld ix, $5700;						// folder buffer
 	ld a, (handle);						// get folder handle
-	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_readdir;						// read a folder entry
 	jp c, report_file_not_found;		// jump if read failed
 	or a;								// last entry?
 	jr z, read_files;					// jump if so
-	ld hl, $5900;						// folder buffer
+	ld hl, $5700;						// folder buffer
 	ld a, (hl);							// attibutes to A
 	and %00010000;						// folder?
 	jr z, read_folders;					// skip files
@@ -599,23 +587,21 @@ read_files:
 	defb f_close;						// close it
 	ld b, 0;							// folder access mode (read only?)
 	ld a, '*';							// use current drive
-	ld ix, $5a00;						// folder path buffer
-	and a;								// signal no error (clear carry flag)
+	ld ix, $5800;						// folder path buffer
 	rst divmmc;							// issue a hookcode
 	defb f_opendir;						// open folder
 	jp c, report_file_not_found;		// jump if error
 	ld (handle), a;						// store folder handle
 
 read_files_2:
-	ld ix, $5900;						// folder buffer
+	ld ix, $5700;						// folder buffer
 	ld a, (handle);						// get folder handle
-	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_readdir;						// read a folder entry
 	jp c, report_file_not_found;		// jump if read failed
 	or a;								// last entry?
 	jr z, last_entry;					// jump if so
-	ld hl, $5900;						// folder buffer
+	ld hl, $5700;						// folder buffer
 	ld a, (hl);							// attibutes to A
 	and %00010000;						// folder?
 	jr nz, read_files_2;				// skip folders
@@ -689,8 +675,6 @@ no_:
 c_kill:
 	call unstack_z;						// return if checking syntax
 	call path_to_ix;					// path to buffer
-	ld a, '*';							// use current drive
-	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_unlink;						// release file
 	jp c, report_file_not_found;		// jump if error
@@ -716,8 +700,6 @@ endif
 c_chdir:
 	call unstack_z;						// return if checking syntax
 	call path_to_ix;					// path to buffer
-	ld a, '*';							// use current drive
-	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_chdir;						// change folder
 	jr chk_path_error;					// test for error
@@ -730,8 +712,6 @@ c_chdir:
 c_mkdir:
 	call unstack_z;						// return if checking syntax
 	call path_to_ix;					// path to buffer
-	ld a, '*';							// use current drive
-	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_mkdir;						// create folder
 	jr chk_path_error;					// test for error
@@ -744,8 +724,6 @@ c_mkdir:
 c_rmdir:
 	call unstack_z;						// return if checking syntax
 	call path_to_ix;					// path to buffer
-	ld a, '*';							// use current drive
-	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_rmdir;						// change folder
 
@@ -759,6 +737,13 @@ report_path_not_found:
 	defb path_not_found;				// 
 
 ;	// copy path to workspace
+;paths_to_de_ix:
+;	call path_to_de;					// destination to DE
+;	push de;							// stack it
+;	call path_to_ix;					// source to IX
+;	pop de;								// restore destination
+;	ret;								// done
+
 path_to_ix:
 	ld hl, (ch_add);					// get current value of ch-add
 	push hl;							// stack it
@@ -774,6 +759,26 @@ path_to_ix:
 	dec hl;								// last byte of string
 	ld (hl), 0;							// replace with zero
 	pop ix;								// pointer to ch_add
+	pop hl;								// get last value
+	ld (ch_add), hl;					// and restore ch_add
+	ld a, '*';							// use current drive
+	ret;								// done
+
+path_to_de:
+	ld hl, (ch_add);					// get current value of ch-add
+	push hl;							// stack it
+	call stk_fetch;						// get parameters
+	push de;							// stack start address
+	inc bc;								// increase length by one
+	rst bc_spaces;						// make space
+	pop hl;								// unstack start address
+	ld (ch_add), de;					// pointer to ch_add
+	push de;							// stack it
+	call ldir_space;					// copy the string to the workspace (converting spaces to underscores)
+	ex de, hl;							// swap pointers
+	dec hl;								// last byte of string
+	ld (hl), 0;							// replace with zero
+	pop de;								// pointer to ch_add
 	pop hl;								// get last value
 	ld (ch_add), hl;					// and restore ch_add
 	ret;								// done
@@ -804,7 +809,6 @@ get_handle:
 file_in:
 	call get_handle;					// get the file descriptor in A
 	ld ix, membot;						// store character in membot
-	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_read;						// read a byte
 	jr c, report_bad_io_dev2;			// jump if error
@@ -819,7 +823,6 @@ file_out:
 	ld (membot), a;						// store character to write in membot
 	call get_handle;					// get the file descriptor in A
 	ld ix, membot;						// get character from membot
-	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_write;						// write a byte
 	jr c, report_bad_io_dev2;			// jump if error
@@ -841,7 +844,6 @@ open_file:
 	pop bc;								// BC = mode
 	push de;							// stack end of channel descriptor
    	ld a, '*';							// use current drive
-;	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_open;						// open file
 	jr c, open_file_err;				// jump if error
@@ -866,6 +868,7 @@ open_file_err:
 	add hl, de;							// HL = beginning of channel desc.
 	ex de, hl;							// HL = one past end, DE = beginning
 	call reclaim_1;						// free up the unsuccessful channel descriptor
+
 report_bad_io_dev2:
 	rst error;							// 
 	defb bad_io_device;					// report error
@@ -880,7 +883,12 @@ seek_f:
 	rst divmmc;							// issue a hookcode
 	defb f_seek;						// seek to position in BCDE
 	ret;								// done
-	
+
+;;
+; <code>MERGE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#MERGE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
+;;
 c_merge:
 	call unstack_z;						// 
 	call open_load_merge;				// 
@@ -917,7 +925,6 @@ copyln:
 open_load_merge:
 	call path_to_ix;					// 
 	ld b, fa_read;						// 
-	ld a, "*";							// 
 	rst divmmc;							// 
 	defb f_open;						// 
 
@@ -978,7 +985,6 @@ f_getc_err:
 ;;
 ; <code>SAVE</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#SAVE" target="_blank" rel="noopener noreferrer">Language reference</a>
-; @deprecated To be replaced with non-tokenized version.
 ; @throws File not found; Path not found.
 ;;
 c_save:
@@ -993,99 +999,3 @@ c_save:
 	call list_10;						// 
 	ld ix,(curchl);						// 
 	call close_file;					// it is, in fact, a jump, as the return address will be popped
-
-;;
-; <code>WHILE</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#WHILE" target="_blank" rel="noopener noreferrer">Language reference</a>
-;;
-c_while:
-	fwait;
-	fdel;
-	fce;
-	ex de, hl;
-	call test_zero;
-	jr c, skip_while;
-	pop de;				// fetch return address
-	ld h, (iy + _subppc);		// statement number
-	ex (sp), hl;			// put on the stack, HL = error handler
-	inc sp;				// but only 1 byte
-	ld bc, (ppc);			// line number
-	push bc;			// put on the stack
-	push hl;			// stack error handler
-	ld (err_sp), sp;		// update ERR_SP
-	push de;			// stack return address
-	jp test_20_bytes;		// continue like GO SUB
-
-skip_while:
-	ld bc, 0;			// nesting depth
-	rst get_char;
-	cp ':';
-	jr z, skip_while_1;
-
-skip_while_0:
-	inc hl;
-	ld a, (hl);
-	cp $40
-	jr nc, report_missing_wend;
-	ld d, a;
-	inc hl;
-	ld e, (hl);			// DE = line number
-	ld (ppc), de;
-	ld (iy + _subppc), 0;
-	inc hl;
-	ld e, (hl);
-	inc hl
-	ld d, (hl);			// DE = line length
-	ex de, hl;			// HL = line length
-	add hl, de;
-	inc hl;				// HL = next line pointer
-	ld (nxtlin), hl;
-	ex hl, de;			// HL = pointer before the first character in the line
-	ld (ch_add), hl;
-
-skip_while_1:
-	inc (iy + _subppc);		// increase statement counter
-	rst next_char;
-	cp tk_while;			// WHILE ?
-	jr nz, skip_while_2;		// jump, if not
-	inc bc;				// increase nesting depth
-
-skip_while_2:
-	cp tk_wend;			// WEND ?
-	jr nz, skip_while_3;		// jump, if not
-	ld a, c;
-	or b;
-	jr nz, skip_wend;
-	rst next_char;			// skip WEND token
-	ret;				// continue with execution
-
-skip_wend:
-	dec bc;				// decrease nesting depth
-
-skip_while_3:
-	inc hl;
-	ld a, (hl);
-	call number;
-	cp ':';
-	jr z, skip_while_4;
-	cp $0d;
-	jr z, skip_while_0;
-	cp tk_then;
-	jr nz, skip_while_3;
-
-skip_while_4:
-	ld (ch_add), hl;
-	jr skip_while_1;
-
-report_missing_wend:
-	rst error;
-	defb for_without_next;		// TODO: while_without_wend
-
-
-
-;;
-; <code>WEND</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#WEND" target="_blank" rel="noopener noreferrer">Language reference</a>
-;;
-c_wend:
-	jp c_return;			// TODO: same code, different error message

@@ -531,6 +531,7 @@ ENDM
 
 	end_marker		equ $80;
 
+
 ;	// colors
 
 	black			equ 0;
@@ -616,12 +617,14 @@ ENDM
 	op_hex			equ '$';
 	op_oct			equ '@';
 
+
 ;	// substitutes
 
 	sb_and			equ '&'
 	sb_not			equ '~'
 	sb_or			equ '|'
 	sb_print		equ '?'
+
 
 ;	// i/o ports
 
@@ -638,6 +641,7 @@ ENDM
 	ay_reg			equ	$c0f5
 	paging			equ	$7ffd
 	ay_128dat		equ	$bffd
+
 
 ;	// restarts
 
@@ -668,35 +672,6 @@ ENDM
 	str_exp_no_f_ops		equ $0b;
 
 
-;	// errors
-
-	ok						equ $ff;
-	msg_break				equ $00;
-	next_without_for		equ $01;
-	syntax_error			equ $02;
-	return_without_gosub	equ $03;
-	out_of_data				equ $04;
-	illegal_function_call	equ $05;
-	overflow				equ $06;
-	out_of_memory			equ $07;
-	undefined_line_number	equ $08;
-	subscript_out_of_range	equ $09;
-	undefined_variable		equ $0a;
-	address_out_of_range	equ $0b;
-	statement_missing		equ $0c;
-	type_mismatch			equ $0d;
-	out_of_screen			equ $0e;
-	bad_io_device			equ $0f;
-	undefined_stream		equ $10;
-	undefined_channel		equ $11;
-	undefined_user_function	equ $12;
-	line_buffer_overflow	equ $13;
-	for_without_next		equ $14;
-	file_not_found			equ $15;
-	input_past_end			equ $16;
-	path_not_found			equ $17;
-
-
 ;	// frame buffer
 
 	bit_map		equ $c000
@@ -706,10 +681,12 @@ ENDM
 	attr_map	equ $e000
 	font		equ	$f800		
 
+
 ;	// keyboard buffer
 
 	k_buff		equ $5b00;
 	k_buff_sz	equ %01111111;		// 128 bytes
+
 
 ;	// system variables
 

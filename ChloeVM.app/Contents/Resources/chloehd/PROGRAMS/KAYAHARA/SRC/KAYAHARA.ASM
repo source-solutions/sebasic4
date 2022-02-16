@@ -75,8 +75,51 @@
 ;	// file handle
 	handle equ $7fff
 
+;	// constants
+	print_a equ $10;					// print a character
+	chan_open equ $1601;				// channel open
+
 ;	// app entry address
 	org $6000
+
+;	// print intro text
+pr_text:
+	ld a, 12;							// FF
+	rst print_a;						// clear screen
+	ld a, 2;							// select main screen
+	call chan_open;						// select channel
+	ld hl, text;						// point to text
+
+pr_loop:
+	ld a, (hl);							// get character
+	and a;								// terminating byte?
+	jr z, pr_lower;						// jump if so;
+	rst print_a;						// print character
+	inc hl;								// point to next character
+	jr pr_loop;							// loop until done
+
+pr_lower
+	inc hl;								// next position
+	push hl;							// stack pointer
+	ld a, 1;							// select lower screen
+	call chan_open;						// select channel
+	pop hl;								// unstack pointer
+
+pr_l_loop:
+	ld a, (hl);							// get character
+	and a;								// terminating byte?
+	jr z, pr_key;						// jump if so;
+	rst print_a;						// print character
+	inc hl;								// point to next character
+	jr pr_l_loop;						// loop until done
+
+pr_key:
+	ld a, $7f;							// high byte of I/O address
+	in a, ($fe);						// read byte
+	rra;								// set carry if space pressed
+	jp c, pr_key;						// loop until space pressed
+
+;	// original start
 	di;									// interrupts off
 
 	ld a, rom_1 + vid_1 + ram_7;		// top page of RAM to HOME-7
@@ -624,3 +667,29 @@ start:
 	out (scld), a;						// switch screen
 
 	jp start;
+
+text:
+	defb "Kayahara (Version 1.2)", 13;
+ 	defb "Copyright (C) 2003 Nobuyuki Kayahara", 13;
+	defb 13;
+	defb "The ", '"', "Spinning Dancer", '"', ", also known as the ", '"', "Silhouette Illusion", '"', ", is a kinetic,", 13;
+	defb "bistable, animated optical illusion originally distributed as a GIF animation.", 13;
+	defb "Created in 2003 by web designer Nobuyuki Kayahara, the illusion derives from the", 13;
+	defb "lack of visual clues for depth. The direction of spin depends on the observer.", 13;
+	defb 13;
+	defb "When facing left or right, the ponytail indicates the direction of travel, but", 13;
+	defb "it is not obvious which leg is which. However, when not facing left or right,", 13;
+	defb "the dancer can be seen as facing toward or away from the viewer. The dancer can", 13;
+	defb "be percieved to rotate clockwise, counter-clockwise, or to pivot back and forth.", 13;
+	defb 13;
+	defb "Curiously, if you place a mirror vertically next to the image, both the original", 13;
+	defb "and the reflection may be seen to spin in the same direction. From 2008 to 2009,", 13;
+	defb "the animation appeared in the popular internet ", '"', "right brain-left brain test", '"', " to", 13;
+	defb "determine the viewer's dominant hemisphere. The animation doesn't work this way.", 13;
+	defb 13;
+	defb "This demo was originally written as a memory test for an earlier version of the", 13;
+	defb "Chloe hardware. Each frame is stored as a 4K image in RAM, for 136K in total.", 13;
+	defb "All 128K of shadow RAM and part of the main RAM is used with paging between each", 13;
+	defb "image. In this version the anamtion is synced to the interrupt at 30 FPS.", 13;
+	defb 0;
+	defb "NOW PRESS SPACE TO START THE DEMO", 0;

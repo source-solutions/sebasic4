@@ -68,7 +68,52 @@
 				"panel": "new"
 			},
 			"problemMatcher": []
-		}
+		},
 
+		{
+			"label": "locales",
+			"type": "shell",
+			"linux": {
+				"command": "./scripts/locales.sh",
+			},
+			"osx": {
+				"command": "./scripts/locales.sh",
+			},
+			"windows": {
+				"command": ".\\scripts\\locales.cmd",
+			},
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"problemMatcher": []
+		},
+
+		{
+			"label": "fonts",
+			"type": "shell",
+			"linux": {
+				"command": "./scripts/fonts.sh",
+			},
+			"osx": {
+				"command": "./scripts/fonts.sh",
+			},
+			"windows": {
+				"command": ".\\scripts\\fonts.cmd",
+			},
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"problemMatcher": []
+		}
 	]
 }

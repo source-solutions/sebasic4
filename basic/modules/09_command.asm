@@ -1032,6 +1032,8 @@ c_return:
 	ld a, d;							// D to A
 	cp $3e;								// test for gosub end marker
 	jr z, report_ret_wo_gosub;			// error if so
+
+c_return_wend:
 	dec sp;								// three locations required
 	ex (sp), hl;						// swap statement number and error address
 	ex de, hl;							// statement number to DE

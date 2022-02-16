@@ -1,0 +1,2 @@
+prg:
+	pasmo SKYFALL.ASM ../PRG/SKYFALL.PRG

@@ -22,7 +22,7 @@
 
 	slam equ 1;							// uncomment to build SLAM+128/divMMC version
 
-	messages equ $58c0;					// check against symbol table before building
+	messages equ $58a0;					// check against symbol table before building
 
 ;	// restarts
 	divmmc equ $08;
@@ -907,7 +907,7 @@ ln_load:
 
 	ret c;								// return if error
 	ld ix, messages;					// file destination
-	ld bc, 576;							// 576 bytes of data to load
+	ld bc, 608;							// 608 bytes of data to load
 	jr any_load;						// continue to common code
 
 kb_found:
@@ -1039,7 +1039,7 @@ eof:
 	ret;			                	// return
 
 cf_path:
-	defb "/SYSTEM/CONFIG.SYS", 0;		// null terminated path to config.sys file
+	defb "/SYSTEM/PREFEREN.CES/SYSTEM.PRF", 0; // null terminated path to SYSTEM.PRF file
 
 cp_path:
 	defb "/SYSTEM/FONTS/";				// path for language files

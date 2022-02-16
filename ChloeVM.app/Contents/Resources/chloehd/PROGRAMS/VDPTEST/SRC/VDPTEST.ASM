@@ -65,9 +65,52 @@
 	rom_0 equ %00000;
 	rom_1 equ %10000;
 
+;	// constants
+	print_a equ $10;					// print a character
+	chan_open equ $1601;				// channel open
 
 ;	// program
 	org $6000
+
+;	// print intro text
+
+pr_text:
+	ld a, 12;							// FF
+	rst print_a;						// clear screen
+	ld a, 2;							// select main screen
+	call chan_open;						// select channel
+	ld hl, text;						// point to text
+
+pr_loop:
+	ld a, (hl);							// get character
+	and a;								// terminating byte?
+	jr z, pr_lower;						// jump if so;
+	rst print_a;						// print character
+	inc hl;								// point to next character
+	jr pr_loop;							// loop until done
+
+pr_lower
+	inc hl;								// next position
+	push hl;							// stack pointer
+	ld a, 1;							// select lower screen
+	call chan_open;						// select channel
+	pop hl;								// unstack pointer
+
+pr_l_loop:
+	ld a, (hl);							// get character
+	and a;								// terminating byte?
+	jr z, pr_key;						// jump if so;
+	rst print_a;						// print character
+	inc hl;								// point to next character
+	jr pr_l_loop;						// loop until done
+
+pr_key:
+	ld a, $7f;							// high byte of I/O address
+	in a, ($fe);						// read byte
+	rra;								// set carry if space pressed
+	jp c, pr_key;						// loop until space pressed
+
+;	// original start
 	xor a;								// LD A, 0
 	out (ula), a;						// border 0
 
@@ -362,3 +405,28 @@ fn_h1:
 fn_h2:
     defb "HI-RES_2.SCR", 0
 
+text:
+	defb "VDP Test (Version 1.1)", 13;
+ 	defb "Copyright (C) 1963 Wayne Hill, (C) 1967 George Hersee.", 13;
+	defb 13;
+	defb '"', "Test Card F", '"', " was originally created at the BBC by George Hersee. The image", 13;
+	defb "features his daughter Carole and her doll Bubbles the Clown, surrounded by color", 13;
+	defb "and grayscale test signals to check the quality of the transmitted picture.", 13;
+	defb "Carloe and Bubbles have now appeared in over 70,000 hours of television.", 13;
+	defb 13;
+	defb '"', "Left Bank Two", '"', " is a jazz piece composed by Wayne Hill for the De Wolfe music", 13;
+	defb "library. Arranged for vibraphone, double bass, accoustic guitar and brushed", 13;
+	defb "drums, it was performed by Dutch session group The Noveltones. In the UK, it was", 13;
+	defb "used during the gallery sequence of children's art in Tony Hart's ", '"', "Vision On", '"', ".", 13;
+	defb 13;
+	defb "This demo was originally written as a video test for an earlier version of the", 13;
+	defb "Chloe hardware. In that machine there were a total of four banks of video RAM", 13;
+	defb "These could be used to store four 256x192 pixel images with 8x8 attributes, two", 13;
+	defb "256x192 pixel images with 8x1 attributes or two mono 512x192 pixel images.", 13;
+	defb 13;
+	defb "The uncompressed images take up about 48K. They were originally stored in RAM,", 13;
+	defb "but now they are loaded from disk. The older hardware only had eight primary", 13;
+	defb "colors and a further eight bright colors. Therefore, the images have been", 13;
+	defb "slightly recolored to take advanteage of the larger palette of the Chloe.", 13;
+	defb 0;
+	defb "NOW PRESS SPACE TO START THE DEMO", 0;

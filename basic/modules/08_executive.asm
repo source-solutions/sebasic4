@@ -198,15 +198,14 @@ initial:
 	ld de, bytes_free;					// bytes free message
 	call po_asciiz_0;					// print it
 
+	set 3, (iy + _flags2);				// enable CAPS LOCK
+
 	xor a;								// LD A, 0; channel K
 	call chan_open;						// open it
-	ld de, ready;						// ready message
-
-	call po_asciiz_0;					// print it
-
+;	ld de, ready;						// ready message
+;	call po_asciiz_0;					// print it
+	call out_curs_ready;				// display cursor
 	call msg_pause;						// pause in case of NEW
-
-	set 3, (iy + _flags2);				// enable CAPS LOCK
 
 	jp main_1;							// immediate jump
 
@@ -1153,6 +1152,8 @@ out_curs:
 	and a;								// correct
 	sbc hl, de;							// position?
 	ret nz;								// return if not
+
+out_curs_ready:
 	ld a, '_';							// use underline as cursor (for ncurses)
 	exx;								// alternate register set
 	ld hl, p_flag;						// address sysvar

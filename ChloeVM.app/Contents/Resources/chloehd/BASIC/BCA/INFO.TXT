@@ -1,0 +1,8 @@
+David Ahl's BASIC Computer Adventures
+(https://www.atariarchives.org/bca/)
+
+The book itself remains copyright (c) 1986 by David Ahl, but the programs are now freeware.
+The programs have been converted to run on SE Basic IV.
+
+An updated version of the book is available for Small BASIC:
+https://www.kidwaresoftware.com/DavidAhlsBasicComputerAdventures/

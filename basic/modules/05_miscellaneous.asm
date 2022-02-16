@@ -520,3 +520,105 @@ msg_loop:
 	ret z;								// return when done
 	jr msg_loop;						// loop until done
 
+;;
+; <code>WHILE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#WHILE" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_while:
+	fwait;								// 
+	fdel;								// 
+	fce;								// 
+	ex de, hl;							// 
+	call test_zero;						// 
+	jr c, skip_while;					// 
+	pop de;								// fetch return address
+	ld h, (iy + _subppc);				// statement number
+	ex (sp), hl;						// put on the stack, HL = error handler
+	inc sp;								// but only 1 byte
+	ld bc, (ppc);						// line number
+	push bc;							// put on the stack
+	push hl;							// stack error handler
+	ld (err_sp), sp;					// update ERR_SP
+	push de;							// stack return address
+	jp test_20_bytes;					// continue like GO SUB
+
+skip_while:
+	ld bc, 0;							// nesting depth
+	rst get_char;						// 
+	cp ':';								// 
+	jr z, skip_while_1;					// 
+
+skip_while_0:
+	inc hl;								// 
+	ld a, (hl);							// 
+	cp $40;								// 
+	jr nc, report_missing_wend;			// 
+	ld d, a;							// 
+	inc hl;								// 
+	ld e, (hl);							// DE = line number
+	ld (ppc), de;						// 
+	ld (iy + _subppc), 0;				// 
+	inc hl;								// 
+	ld e, (hl);							// 
+	inc hl;								// 
+	ld d, (hl);							// DE = line length
+	ex de, hl;							// HL = line length
+	add hl, de;							// 
+	inc hl;								// HL = next line pointer
+	ld (nxtlin), hl;					// 
+	ex hl, de;							// HL = pointer before the first character in the line
+	ld (ch_add), hl;					// 
+
+skip_while_1:
+	inc (iy + _subppc);					// increase statement counter
+	rst next_char;						// 
+	cp tk_while;						// WHILE ?
+	jr nz, skip_while_2;				// jump, if not
+	inc bc;								// increase nesting depth
+
+skip_while_2:
+	cp tk_wend;							// WEND ?
+	jr nz, skip_while_3;				// jump, if not
+	ld a, c;							// 
+	or b;								// 
+	jr nz, skip_wend;					// 
+	rst next_char;						// skip WEND token
+	ret;								// continue with execution
+
+skip_wend:
+	dec bc;								// decrease nesting depth
+
+skip_while_3:
+	inc hl;								// 
+	ld a, (hl);							// 
+	call number;						// 
+	cp ':';								// 
+	jr z, skip_while_4;					// 
+	cp $0d;								// 
+	jr z, skip_while_0;					// 
+	cp tk_then;							// 
+	jr nz, skip_while_3;				// 
+
+skip_while_4:
+	ld (ch_add), hl;					// 
+	jr skip_while_1;					// 
+
+report_missing_wend:
+	rst error;							// throw
+	defb while_without_wend;			// error
+
+;;
+; <code>WEND</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#WEND" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_wend:
+	pop bc;								// stmt-ret address to BC
+	pop hl;								// error address to HL
+	pop de;								// last entry on gosub stack to DE
+	ld a, d;							// D to A
+	cp $3e;								// test for gosub end marker
+	jp nz, c_return_wend;				// jump if not
+	push de;							// stack end marker
+	push hl;							// stack error address
+	rst error;							// throw
+	defb wend_without_while;			// error

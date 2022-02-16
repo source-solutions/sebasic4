@@ -1,0 +1,2 @@
+prg:
+	pasmo SCRSHOW.ASM ../PRG/SCRSHOW.PRG
