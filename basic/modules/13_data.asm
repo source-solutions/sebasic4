@@ -347,36 +347,36 @@ ed_f_keys_t:
 ;	// macro definitions
 ;	// each definition is 16 bytes. The last byte is always zero.
 s_f1:
-	defb "LIST ", 0
-	defs 10, 0;							// LIST
+	defb "LIST "
+	defs 11, 0;							// LIST
 
 s_f2:
-	defb "RUN", ctrl_cr, 0;
-	defs 11, 0;							// RUN <RETURN> (overridden by tab in ZX core but still works)
+	defb "RUN", ctrl_cr;
+	defs 12, 0;							// RUN <RETURN> (overridden by tab in ZX core but still works)
 
 s_f3:
-	defb "LOAD",'"', ".BAS", '"', ctrl_bs, ctrl_bs, ctrl_bs, ctrl_bs, ctrl_bs, 0;";
-;										// LOAD"[].BAS"
+	defb "LOAD",'"', ".BAS", '"', ctrl_bs, ctrl_bs, ctrl_bs, ctrl_bs, ctrl_bs;
+	defs 1, 0;							// LOAD"[].BAS"
 
 s_f4:
-	defb "SAVE",'"', ".BAS", '"', ctrl_bs, ctrl_bs, ctrl_bs, ctrl_bs, ctrl_bs, 0;";
-;										// SAVE"[].BAS"
+	defb "SAVE",'"', ".BAS", '"', ctrl_bs, ctrl_bs, ctrl_bs, ctrl_bs, ctrl_bs;
+	defs 1, 0;							// SAVE"[].BAS"
 
 s_f5:
-	defb "CONT", ctrl_cr, 0;
-	defs 10, 0;							// CONT (overriden by NMI in ZX core)
+	defb "CONT", ctrl_cr;
+	defs 11, 0;							// CONT (overriden by NMI in ZX core)
 
 s_f6:
-	defb "TRACE O", 0;
-	defs 8, 0;							// TRACE O[n|ff]
+	defb "TRACE ";
+	defs 10, 0;							// TRACE O[n|ff]
 
 s_f7:
-	defb "BLOAD ",'"', '"', ctrl_bs, 0;";
-	defs 6, 0;							// BLOAD "[]"
+	defb "BLOAD ",'"', '"', ",", ctrl_bs, ctrl_bs, 0;";
+	defs 4, 0;							// BLOAD "[]"
 
 s_f8:
-	defb "BSAVE ",'"', '"', ctrl_bs, 0;";
-	defs 6, 0;							// BSAVE "[]"
+	defb "BSAVE ",'"', '"', ",,", ctrl_bs, ctrl_bs, ctrl_bs, 0;";
+	defs 2, 0;							// BSAVE "[]"
 
 s_f9:
 	defb "KEY ", 0;
@@ -387,7 +387,7 @@ s_f10:
 	defs 8, 0;							// SCREEN n
 
 s_f11:
-	defb "FILES",  ctrl_bs, 0;";
+	defb "FILES",  ctrl_cr, 0;";
 	defs 9, 0;							// FILES <RETURN>
 
 s_f12:
@@ -396,7 +396,7 @@ s_f12:
 
 s_f13:
 	defb "FI.", '"', "/PROGRAMS", '"', ctrl_cr, 0;";
-;										// FILES "/PROGRAMS" <RETURN>
+;										// FILES "/PROGRAMS" <RETURN> (overriden but works with SHIFT held)
 
 s_f14:
 	defb "COLOR 7,1", ctrl_cr, 0;
@@ -405,6 +405,7 @@ s_f14:
 s_f15:
 	defb "KEY LIST", ctrl_cr, 0;
 	defs 6, 0;							// KEY LIST <RETURN> (overriden by ZX core but can be composed with F9 + F1 + <RETURN>)
+
 
 ;	// used in 03_keyboard
 kt_main:
