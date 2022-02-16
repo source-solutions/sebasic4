@@ -375,7 +375,7 @@ s_f7:
 	defs 6, 0;							// BLOAD "[]"
 
 s_f8:
-	defb "BSAVE ",'"', '"', , ctrl_bs, 0;";
+	defb "BSAVE ",'"', '"', ctrl_bs, 0;";
 	defs 6, 0;							// BSAVE "[]"
 
 s_f9:
