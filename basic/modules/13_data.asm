@@ -355,11 +355,11 @@ s_f2:
 	defs 11, 0;							// RUN <RETURN> (overridden by tab in ZX core but still works)
 
 s_f3:
-	defb "LOAD",'"', ".BAS", '"', ctrl_bs, ctrl_bs ctrl_bs, ctrl_bs, ctrl_bs, 0;";
+	defb "LOAD",'"', ".BAS", '"', ctrl_bs, ctrl_bs, ctrl_bs, ctrl_bs, ctrl_bs, 0;";
 ;										// LOAD"[].BAS"
 
 s_f4:
-	defb "SAVE",'"', ".BAS", '"', ctrl_bs, ctrl_bs ctrl_bs, ctrl_bs, ctrl_bs, 0;";
+	defb "SAVE",'"', ".BAS", '"', ctrl_bs, ctrl_bs, ctrl_bs, ctrl_bs, ctrl_bs, 0;";
 ;										// SAVE"[].BAS"
 
 s_f5:
