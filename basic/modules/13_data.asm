@@ -347,64 +347,64 @@ ed_f_keys_t:
 ;	// macro definitions
 ;	// each definition is 16 bytes. The last byte is always zero.
 s_f1:
-	defb "LIST", 0
-	defs 11, 0
+	defb "LIST ", 0
+	defs 10, 0;							// LIST
 
 s_f2:
 	defb "RUN", ctrl_cr, 0;
-	defs 11, 0
+	defs 11, 0;							// RUN <RETURN> (overridden by tab in ZX core but still works)
 
 s_f3:
-	defb "LOAD ",'"', 0;";
-	defs 9, 0
+	defb "LOAD",'"', ".BAS", '"', ctrl_bs, ctrl_bs ctrl_bs, ctrl_bs, ctrl_bs, 0;";
+;										// LOAD"[].BAS"
 
 s_f4:
-	defb "SAVE ",'"', 0;";
-	defs 9, 0
+	defb "SAVE",'"', ".BAS", '"', ctrl_bs, ctrl_bs ctrl_bs, ctrl_bs, ctrl_bs, 0;";
+;										// SAVE"[].BAS"
 
 s_f5:
 	defb "CONT", ctrl_cr, 0;
-	defs 10, 0
+	defs 10, 0;							// CONT (overriden by NMI in ZX core)
 
 s_f6:
-	defb "COLOR 7,1", ctrl_cr, 0;
-	defs 5, 0
+	defb "TRACE O", 0;
+	defs 8, 0;							// TRACE O[n|ff]
 
 s_f7:
-	defb "TRON", ctrl_cr, 0;
-	defs 10, 0
+	defb "BLOAD ",'"', '"', ctrl_bs, 0;";
+	defs 6, 0;							// BLOAD "[]"
 
 s_f8:
-	defb "TROFF", ctrl_cr, 0;
-	defs 9, 0
+	defb "BSAVE ",'"', '"', , ctrl_bs, 0;";
+	defs 6, 0;							// BSAVE "[]"
 
 s_f9:
-	defb "EDIT ", 0;
-	defs 10, 0
+	defb "KEY ", 0;
+	defs 11, 0;							// KEY [n,a$|LIST]
 
 s_f10:
 	defb "SCREEN ", 0;
-	defs 8, 0
+	defs 8, 0;							// SCREEN n
 
 s_f11:
-	defb "BLOAD ",'"', 0;";
-	defs 8, 0
+	defb "FILES",  ctrl_bs, 0;";
+	defs 9, 0;							// FILES <RETURN>
 
 s_f12:
-	defb "BSAVE ",'"', 0;";
-	defs 8, 0
+	defb "CHDIR ",'"', '"', ctrl_bs, 0;";
+	defs 6, 0;							// CHDIR "[]"
 
 s_f13:
-	defb "GOSUB ", 0;
-	defs 9, 0
+	defb "FI.", '"', "/PROGRAMS", '"', ctrl_cr, 0;";
+;										// FILES "/PROGRAMS" <RETURN>
 
 s_f14:
-	defb "GOTO ", 0;
-	defs 10, 0
+	defb "COLOR 7,1", ctrl_cr, 0;
+	defs 5, 0;							// COLOR 7,1 <RETURN>
 
 s_f15:
-	defb "KEY ", 0;
-	defs 11, 0
+	defb "KEY LIST", ctrl_cr, 0;
+	defs 6, 0;							// KEY LIST <RETURN> (overriden by ZX core but can be composed with F9 + F1 + <RETURN>)
 
 ;	// used in 03_keyboard
 kt_main:
