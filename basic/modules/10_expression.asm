@@ -38,7 +38,7 @@ s_loop_1:
 	ld c, a;							// table code to C
 	call indexer;						// find offset from table
 	ld a, c;							// code to A
-	jp nc, s_alphnum;					// jump if code not in table
+	jp nc, s_multi;						// jump if code not in table
 	ld c, (hl);							// code
 	ld b, 0;							// to BC
 	add hl, bc;							// address to HL
@@ -147,19 +147,14 @@ scan_func:
 	defb '(', s_bracket - 1 - $;				// (
 	defb '.', s_decimal - 1 - $;				// ,
 	defb '+', s_u_plus - 1 - $;					// +
+	defb '{', s_brace - 1 - $;					// {
+	defb op_bin, s_decimal - 1 - $;				// %
+	defb op_oct, s_decimal - 1 - $;				// @
+	defb op_hex, s_decimal - 1 - $;				// $
 	defb tk_fn, s_fn - 1 - $;					// FN
 	defb tk_rnd, s_rnd - 1 - $;					// RND
 	defb tk_pi, s_pi - 1 - $;					// PI
 	defb tk_inkey_str, s_inkey_str - 1 - $;		// INKEY$
-	defb op_bin, s_decimal - 1 - $;				// %
-	defb op_oct, s_decimal - 1 - $;				// @
-	defb op_hex, s_decimal - 1 - $;				// $
-	defb tk_left_str, s_left - 1 - $;			// LEFT$
-	defb tk_right_str, s_right - 1 - $;			// RIGHT$
-	defb tk_mid_str, s_mid - 1 - $;				// MID$
-	defb tk_string_str, s_string_str - 1 - $;	// STRING$
-	defb tk_str_str, s_str_j - 1 - $;			// STR$
-	defb '{', s_brace - 1 - $;					// {
 	defb 0;										// null terminator
 
 s_brace:
@@ -270,6 +265,24 @@ s_right:
 	ld (hl), d;							// commit new start address
 	jr s_cont_2r;						// immediate jump
 
+s_multi:
+	cp tk_spc;
+	jr nc, s_alphnum;
+	sub tk_left_str;
+	jr c, s_alphnum0;
+	add a, a;
+	ld c, a;
+	ld b, 0;
+	ld hl, tab_func;
+	add hl, bc;
+	ld a, (hl);
+	inc hl;
+	ld h, (hl);
+	ld l, a;
+	jp (hl);
+
+s_alphnum0:
+	ld a, c;
 s_alphnum:
 	call alphanum;						// alphanumeric character?
 	jp nc, s_negate;					// jump if not
@@ -318,9 +331,6 @@ s_pi:
 s_pi_end:
 	rst next_char;						// next character
 	jr s_numeric;						// immediate jump
-
-s_str_j:
-	jp s_str;							// immediate jump
 
 ;	// fast RND function
 s_rnd:
@@ -2210,3 +2220,104 @@ str_p:
 	pop de;								// 
 	pop bc;								// 
 	jp s_string;						// 
+
+s_instr:
+	rst next_char;
+	call syntax_z;
+	jr z, s_instr_s;
+d_instr:
+	rst next_char;			// skip '('
+	call scanning_1;
+	bit 6, (iy+ _flags;
+	jr nz, d_instr_num;
+	fwait;
+	fstk1;
+	fxch;
+	fce;
+	jr d_instr_2;
+d_instr_num:
+	rst next_char;			// skip comma
+	call scanning_1;
+d_instr_2:
+	rst next_char;
+	call scanning_1;
+	rst next_char;
+	fwait;
+	fst 1;
+	fdel;
+	fst 0;
+	fdel;
+	fce;
+	ld hl, (mem_1_3);		// HL = length of needle
+	ld a, l;
+	or h;
+	jr z, s_numeric_j;		// jump, if empty
+	push hl;			// stack needle length
+	call find_int2;			// BC = search index
+	ld a, c;
+	or b;
+	jr z, d_instr_next;		// 0 also searches from beginning
+	dec bc;				// BC = search offset
+d_instr_next:
+	ld hl, (mem_0_3);		// HL = length of haystack
+	and a;
+	sbc hl, bc;			// HL = length of rest of haystack
+	pop de;				// DE = length of needle
+	jr c, d_instr_0;		// jump, if negative
+	sbc hl, de;
+	jr c, d_instr_0;		// jump, if longer than haystack
+	ld hl, (mem_0_1);		// HL = start of haystack
+	add hl, bc;			// HL = start of comparison
+	push bc;			// stack offset
+	ld bc, (mem_1_1);		// BC = start of needle
+d_instr_loop:
+	ld a, (bc);
+	cp (hl);
+	jr nz, d_instr_ne;
+	inc bc;
+	inc hl;
+	dec de;
+	ld a, e;
+	or d;
+	jr nz, d_instr_loop;
+d_instr_ne:
+	pop bc;
+	inc bc;
+	ld hl, (mem_1_3);		// HL = length of needle
+	push hl;			// stack it
+	jr nz,d_instr_next;
+	pop hl;
+	call stack_bc;
+	jr s_numeric_j;
+
+d_instr_0:
+	fwait;
+	fstk0;
+	fce;
+s_numeric_j:
+	jp s_numeric;
+
+s_instr_s:
+	cp '('
+	jr nz, report_syntax_err_nz;
+	rst next_char;
+	call scanning_1;
+	bit 6, (iy + _flags);
+	jr z, s_instr_str
+	rst get_char;
+	cp ',';
+	jr nz, report_syntax_err_nz;
+	rst next_char;
+	call expt_exp;
+s_instr_str:
+	rst get_char;
+	cp ',';
+	jr nz, report_syntax_err_nz;
+	rst next_char;
+	call expt_exp;
+	rst get_char;
+	cp ')'
+report_syntax_err_nz:
+	jp nz, report_syntax_err;
+	rst next_char;
+	jr s_numeric_j;
