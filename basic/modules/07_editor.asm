@@ -263,7 +263,7 @@ ed_list:
 ; insert editing
 ;;
 ed_ins:
-	ret;								// FIXME - stub for INSERT key
+	jp edit_1;							// insert current line into edit buffer
 
 ;;
 ; help editing
