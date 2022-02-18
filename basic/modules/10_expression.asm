@@ -38,7 +38,7 @@ s_loop_1:
 	ld c, a;							// table code to C
 	call indexer;						// find offset from table
 	ld a, c;							// code to A
-	jp nc, s_alphnum;					// jump if code not in table
+	jp nc, s_multi;						// jump if code not in table
 	ld c, (hl);							// code
 	ld b, 0;							// to BC
 	add hl, bc;							// address to HL
@@ -147,19 +147,14 @@ scan_func:
 	defb '(', s_bracket - 1 - $;				// (
 	defb '.', s_decimal - 1 - $;				// ,
 	defb '+', s_u_plus - 1 - $;					// +
+	defb '{', s_brace - 1 - $;					// {
+	defb op_bin, s_decimal - 1 - $;				// %
+	defb op_oct, s_decimal - 1 - $;				// @
+	defb op_hex, s_decimal - 1 - $;				// $
 	defb tk_fn, s_fn - 1 - $;					// FN
 	defb tk_rnd, s_rnd - 1 - $;					// RND
 	defb tk_pi, s_pi - 1 - $;					// PI
 	defb tk_inkey_str, s_inkey_str - 1 - $;		// INKEY$
-	defb op_bin, s_decimal - 1 - $;				// %
-	defb op_oct, s_decimal - 1 - $;				// @
-	defb op_hex, s_decimal - 1 - $;				// $
-	defb tk_left_str, s_left - 1 - $;			// LEFT$
-	defb tk_right_str, s_right - 1 - $;			// RIGHT$
-	defb tk_mid_str, s_mid - 1 - $;				// MID$
-	defb tk_string_str, s_string_str - 1 - $;	// STRING$
-	defb tk_str_str, s_str_j - 1 - $;			// STR$
-	defb '{', s_brace - 1 - $;					// {
 	defb 0;										// null terminator
 
 s_brace:
@@ -270,6 +265,24 @@ s_right:
 	ld (hl), d;							// commit new start address
 	jr s_cont_2r;						// immediate jump
 
+s_multi:
+	cp tk_spc;
+	jr nc, s_alphnum;
+	sub tk_left_str;
+	jr c, s_alphnum0;
+	add a, a;
+	ld c, a;
+	ld b, 0;
+	ld hl, tab_func;
+	add hl, bc;
+	ld a, (hl);
+	inc hl;
+	ld h, (hl);
+	ld l, a;
+	jp (hl);
+
+s_alphnum0:
+	ld a, c;
 s_alphnum:
 	call alphanum;						// alphanumeric character?
 	jp nc, s_negate;					// jump if not
@@ -318,9 +331,6 @@ s_pi:
 s_pi_end:
 	rst next_char;						// next character
 	jr s_numeric;						// immediate jump
-
-s_str_j:
-	jp s_str;							// immediate jump
 
 ;	// fast RND function
 s_rnd:
@@ -2210,3 +2220,6 @@ str_p:
 	pop de;								// 
 	pop bc;								// 
 	jp s_string;						// 
+
+s_instr:
+	jp report_syntax_err;
