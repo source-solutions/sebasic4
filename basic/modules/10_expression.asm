@@ -2222,4 +2222,102 @@ str_p:
 	jp s_string;						// 
 
 s_instr:
-	jp report_syntax_err;
+	rst next_char;
+	call syntax_z;
+	jr z, s_instr_s;
+d_instr:
+	rst next_char;			// skip '('
+	call scanning_1;
+	bit 6, (iy+ _flags;
+	jr nz, d_instr_num;
+	fwait;
+	fstk1;
+	fxch;
+	fce;
+	jr d_instr_2;
+d_instr_num:
+	rst next_char;			// skip comma
+	call scanning_1;
+d_instr_2:
+	rst next_char;
+	call scanning_1;
+	rst next_char;
+	fwait;
+	fst 1;
+	fdel;
+	fst 0;
+	fdel;
+	fce;
+	ld hl, (mem_1_3);		// HL = length of needle
+	ld a, l;
+	or h;
+	jr z, s_numeric_j;		// jump, if empty
+	push hl;			// stack needle length
+	call find_int2;			// BC = search index
+	ld a, c;
+	or b;
+	jr z, d_instr_next;		// 0 also searches from beginning
+	dec bc;				// BC = search offset
+d_instr_next:
+	ld hl, (mem_0_3);		// HL = length of haystack
+	and a;
+	sbc hl, bc;			// HL = length of rest of haystack
+	pop de;				// DE = length of needle
+	jr c, d_instr_0;		// jump, if negative
+	sbc hl, de;
+	jr c, d_instr_0;		// jump, if longer than haystack
+	ld hl, (mem_0_1);		// HL = start of haystack
+	add hl, bc;			// HL = start of comparison
+	push bc;			// stack offset
+	ld bc, (mem_1_1);		// BC = start of needle
+d_instr_loop:
+	ld a, (bc);
+	cp (hl);
+	jr nz, d_instr_ne;
+	inc bc;
+	inc hl;
+	dec de;
+	ld a, e;
+	or d;
+	jr nz, d_instr_loop;
+d_instr_ne:
+	pop bc;
+	inc bc;
+	ld hl, (mem_1_3);		// HL = length of needle
+	push hl;			// stack it
+	jr nz,d_instr_next;
+	pop hl;
+	call stack_bc;
+	jr s_numeric_j;
+
+d_instr_0:
+	fwait;
+	fstk0;
+	fce;
+s_numeric_j:
+	jp s_numeric;
+
+s_instr_s:
+	cp '('
+	jr nz, report_syntax_err_nz;
+	rst next_char;
+	call scanning_1;
+	bit 6, (iy + _flags);
+	jr z, s_instr_str
+	rst get_char;
+	cp ',';
+	jr nz, report_syntax_err_nz;
+	rst next_char;
+	call expt_exp;
+s_instr_str:
+	rst get_char;
+	cp ',';
+	jr nz, report_syntax_err_nz;
+	rst next_char;
+	call expt_exp;
+	rst get_char;
+	cp ')'
+report_syntax_err_nz:
+	jp nz, report_syntax_err;
+	rst next_char;
+	jr s_numeric_j;
