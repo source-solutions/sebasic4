@@ -362,7 +362,7 @@ po_space:
 	call po_sv_sp;						// space recursively
 	dec d;								// print
 	jr nz, po_space;					// until
-	ret;								// done
+	ret;								// end of subroutine
 
 ;;
 ; print home
@@ -755,15 +755,15 @@ po_scr:
 	ld e, (iy + _breg);					// get line counter
 	dec e;								// reduce it
 	jr z, po_scr_3;						// jump if listing scroll required
-	xor a;								// LD A, 0;
-	call chan_open;						// open channel K
+	xor a;								// LD A, 0; channel K
+	call chan_open;						// select channel
 	ld sp, (list_sp);					// restore stack pointer
 	res 4, (iy + _vdu_flag);			// flag automatic listing finished
 	ret;								// return via cl_set
 
 report_oo_scr:
-	rst error;							// 
-	defb out_of_screen;					// 
+	rst error;							// throw
+	defb out_of_screen;					// error
 
 po_scr_2:
 	dec (iy + _scr_ct);					// reduce scroll count
@@ -771,8 +771,8 @@ po_scr_2:
 	ld a, 24;							// reset
 	sub b;								// counter
 	ld (scr_ct), a;						// store scroll count
-	ld a, 253;							// open
-	call chan_open;						// channel K
+	ld a, 253;							// channel K
+	call chan_open;						// select channel
 	ld de, scrl_mssg;					// message address
 	call po_asciiz_0;					// print it
 wait_msg_loop:
@@ -792,13 +792,13 @@ po_scr_3:
 	ld b, (iy + _df_sz);				// get line number
 	inc b;								// for start of line
 	ld c, 81;							// first column
-	ret;
+	ret;								// end of subroutine
 
 report_break:
 	call flush_kb;						// clear keyboard buffer
 
-	rst error;							// 
-	defb msg_break;						// 
+	rst error;							// throw
+	defb msg_break;						// error
 
 po_scr_4:
 	cp 2;								// lower part fits?
@@ -859,7 +859,7 @@ cls_lower:
 
 cl_chan:
 	ld a, 253;							// channel K
-	call chan_open;						// open it
+	call chan_open;						// select channel
 	ld hl, (curchl);					// current channel address
 	ld de, print_out;					// output address
 	and a;								// clear carry flag

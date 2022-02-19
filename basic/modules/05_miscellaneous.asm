@@ -237,16 +237,16 @@ edit_1:
 	ex (sp), hl;						// swap with address of line
 	push hl;							// stack it
 	ld a, $ff;							// channel W
-	call chan_open;						// open it
+	call chan_open;						// select channel
 	pop hl;								// address of line
 	dec hl;								// suppress cursor
 	dec (iy + _e_ppc);					// FIXME - remove after autolist removed
 	call out_line;						// print the line
 	inc (iy + _e_ppc);					// FIXME - remove after autolist removed
 	ld hl, (e_line);					// start of line to HL
-	ld (k_cur), hl;						// store it in k_kur
+	ld (k_cur), hl;						// set cursor position
 	pop hl;								// unstack former channel address
-	call chan_flag;						// set flags
+	call chan_flag;						// restore flags
 	ld sp, (err_sp);					// move stack
 	pop af;								// drop address
 	jp main_2;							// immediate jump
@@ -270,8 +270,8 @@ c_locate:
 	fxch;								// swap values
 	fce;								// exit calculator
 
-	ld a, 2;							// select upper screen
-	call chan_open;						// open channel
+	ld a, 2;							// channel S (upper screen)
+	call chan_open;						// select channel
 
 	call stk_to_bc;						// column to C, row to B
 
@@ -317,8 +317,8 @@ loc_40:
 	jp cl_set;							// exit via cl_set
 
 loc_err:
-	rst error;							// 
-	defb out_of_screen;					// 
+	rst error;							// throw
+	defb out_of_screen;					// error
 
 ;;
 ; <code>PALETTE</code> command
@@ -398,7 +398,7 @@ set_pal:
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#TRACE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_trace:
-	rst get_char;						// first character
+	rst get_char;						// get first character
 	cp tk_on;							// ON token?
 	jr z, tron;							// jump if so
 	cp tk_off;							// OFF token?
@@ -425,19 +425,19 @@ troff:
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#ON" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_on:
-	rst get_char;						// first character
+	rst get_char;						// get first character
 	cp tk_error;						// ERROR token?
 	jr z, on_error;						// jump if so
 	rst error;							// else error
 	defb syntax_error;					// FIXME: add ON n handler
 
 on_error:
-	rst next_char;						// first character
-	cp tk_goto;							// GOTO?
+	rst next_char;						// next character
+	cp tk_goto;							// GOTO token?
 	jr z, onerr_goto;					// jump if so
-	cp tk_cont;							// CONTINUE?
+	cp tk_cont;							// CONTINUE token?
 	jr z, onerr_cont;					// jump if so
-	cp tk_stop;							// STOP?
+	cp tk_stop;							// STOP token?
 	jr z, onerr_stop;					// jump if so
 	rst error;							// else
 	defb syntax_error;					// error
@@ -449,7 +449,7 @@ onerr_goto:
 	call find_line;						// get line number
 	call unstack_z;						// return if checking syntax
 	ld (onerr), bc;						// set on error address
-	ret;								// done
+	ret;								// end of routine
 
 onerr_cont:
 	rst next_char;						// next character
@@ -535,12 +535,12 @@ msg_loop:
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#WHILE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_while:
-	fwait;								// 
-	fdel;								// 
-	fce;								// 
-	ex de, hl;							// 
-	call test_zero;						// 
-	jr c, skip_while;					// 
+	fwait;								// enter calculator
+	fdel;								// remove last item
+	fce;								// exit calculator
+	ex de, hl;							// swap pointers
+	call test_zero;						// zero?
+	jr c, skip_while;					// jump if so
 	pop de;								// fetch return address
 	ld h, (iy + _subppc);				// statement number
 	ex (sp), hl;						// put on the stack, HL = error handler
@@ -554,20 +554,20 @@ c_while:
 
 skip_while:
 	ld bc, 0;							// nesting depth
-	rst get_char;						// 
-	cp ':';								// 
-	jr z, skip_while_1;					// 
+	rst get_char;						// get character
+	cp ':';								// colon?
+	jr z, skip_while_1;					// jump if so
 
 skip_while_0:
 	inc hl;								// 
 	ld a, (hl);							// 
-	cp $40;								// 
-	jr nc, report_missing_wend;			// 
+	cp $40;								// WEND found?
+	jr nc, report_missing_wend;			// jump if not
 	ld d, a;							// 
 	inc hl;								// 
 	ld e, (hl);							// DE = line number
-	ld (ppc), de;						// 
-	ld (iy + _subppc), 0;				// 
+	ld (ppc), de;						// store line number
+	ld (iy + _subppc), 0;				// store zero in subppc
 	inc hl;								// 
 	ld e, (hl);							// 
 	inc hl;								// 
@@ -575,23 +575,23 @@ skip_while_0:
 	ex de, hl;							// HL = line length
 	add hl, de;							// 
 	inc hl;								// HL = next line pointer
-	ld (nxtlin), hl;					// 
+	ld (nxtlin), hl;					// set next line
 	ex hl, de;							// HL = pointer before the first character in the line
-	ld (ch_add), hl;					// 
+	ld (ch_add), hl;					// set character address
 
 skip_while_1:
 	inc (iy + _subppc);					// increase statement counter
-	rst next_char;						// 
-	cp tk_while;						// WHILE ?
-	jr nz, skip_while_2;				// jump, if not
+	rst next_char;						// next character
+	cp tk_while;						// WHILE token?
+	jr nz, skip_while_2;				// jump if not
 	inc bc;								// increase nesting depth
 
 skip_while_2:
-	cp tk_wend;							// WEND ?
-	jr nz, skip_while_3;				// jump, if not
-	ld a, c;							// 
-	or b;								// 
-	jr nz, skip_wend;					// 
+	cp tk_wend;							// WEND token?
+	jr nz, skip_while_3;				// jump if not
+	ld a, c;							// test for
+	or b;								// zero
+	jr nz, skip_wend;					// jump if not
 	rst next_char;						// skip WEND token
 	ret;								// continue with execution
 
@@ -601,17 +601,17 @@ skip_wend:
 skip_while_3:
 	inc hl;								// 
 	ld a, (hl);							// 
-	call number;						// 
-	cp ':';								// 
-	jr z, skip_while_4;					// 
-	cp $0d;								// 
-	jr z, skip_while_0;					// 
-	cp tk_then;							// 
-	jr nz, skip_while_3;				// 
+	call number;						// skip floating point representation
+	cp ':';								// colon?
+	jr z, skip_while_4;					// jump if so
+	cp ctrl_cr;							// carraige return?
+	jr z, skip_while_0;					// jump if so
+	cp tk_then;							// THEN token?
+	jr nz, skip_while_3;				// jump if not
 
 skip_while_4:
-	ld (ch_add), hl;					// 
-	jr skip_while_1;					// 
+	ld (ch_add), hl;					// set character address
+	jr skip_while_1;					// immediate jump
 
 report_missing_wend:
 	rst error;							// throw

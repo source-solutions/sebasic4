@@ -35,7 +35,7 @@ line_scan:
 ; statement loop
 ;;
 stmt_loop:
-	rst next_char;						// get next character
+	rst next_char;						// next character
 
 stmt_l_1:
 	call test_trace;					// handle trace and clear workspace
@@ -58,7 +58,7 @@ stmt_l_1a:
 	jr nc, stmt_l_2;					// jump with valid commands
 	ld hl, (ch_add);					// get character address
 	dec hl;								// previous character
-	ld (ch_add), hl;					// set it
+	ld (ch_add), hl;					// set character address
 	ld a, (hl);							// get first character again
 	cp "'";								// is it a single quote?
 	ld a, tk_rem - first_cmd;			// make the token REM
@@ -109,7 +109,7 @@ separator:
 	rst get_char;						// get current character
 	cp c;								// compare with entry
 	jp nz, report_syntax_err;			// error if no match
-	rst next_char;						// get next character
+	rst next_char;						// next character
 	ret;								// end of subroutine
 
 ;;
@@ -170,7 +170,7 @@ c_end:
 ;;
 c_else:
 	pop bc;								// discard statement return address
-	call syntax_z;						// 
+	call syntax_z;						// checking syntax?
 	jp z, stmt_l_1a;					// check the statement after ELSE
 	push bc;							// put it temporarily back
 
@@ -216,7 +216,7 @@ line_use:
 next_line:
 	ld (nxtlin), hl;					// set next line
 	ex de, hl;							// swap pointers
-	ld (ch_add), hl;					// sysvar to location before first character
+	ld (ch_add), hl;					// CH-ADD to location before first character
 	ld e, 0;							// clear in case of each_stmt
 	ld d, a;							// statement number to D
 	ld (iy + _nsppc), 255;				// signal no jump
@@ -338,8 +338,8 @@ report_undef_var:
 
 var_a_2:
 	call z, stk_var;					// parameters and variables to calculator
-	bit 6, (iy + _flags);				// numeric variable?
-	jr nz, var_a_3;						// jump if so
+	bit 6, (iy + _flags);				// numeric or string variable?
+	jr nz, var_a_3;						// jump if numeric
 	xor a;								// LD A, 0
 	call syntax_z;						// checking syntax?
 	call nz, stk_fetch;					// get paramaters of string if not
@@ -427,11 +427,11 @@ class_06:
 ;;
 expt_1num:
 	call scanning;						// evaluate expression
-	bit 6, (iy + _flags);				// numeric result
-	ret nz;								// return if so
+	bit 6, (iy + _flags);				// numeric or string variable?
+	ret nz;								// return if numeric
 
 report_syntax_err:
-	rst error;							// ekse
+	rst error;							// else
 	defb syntax_error;					// error
 
 
@@ -447,8 +447,8 @@ class_0a:
 ;;
 expt_exp:
 	call scanning;						// evaluate expression
-	bit 6, (iy + _flags);				// string result?
-	ret z;								// return if so
+	bit 6, (iy + _flags);				// numeric or string variable?
+	ret z;								// return if string
 	jr report_syntax_err;				// else error
 
 ;;
@@ -485,24 +485,24 @@ c_if:
 	call test_zero;						// zero?
 	jr nc, if_1;						// jump if not
 
-	rst get_char;						// 
+	rst get_char;						// get character
 	ld b, 1;							//
 
 if_2:
 	call get_next;						// 
-	cp $0d;								// end-of-line
-	jp z, line_end;						// 
+	cp ctrl_cr;							// carraige return? (end of line)
+	jp z, line_end;						// jump if so
 
-	cp tk_else;							// 
-	jr z, if_3;							// 
-	cp tk_if;							// 
-	jr nz, if_2;						// 
+	cp tk_else;							// ELSE token
+	jr z, if_3;							// jump if so
+	cp tk_if;							// IF token
+	jr nz, if_2;						// jump if not
 	inc b;								// 
-	jr if_2;							// 
+	jr if_2;							// immedaite jump
 
 if_3:
-	djnz if_2;							// 
-	ld (ch_add), hl;					// 
+	djnz if_2;							// loop until done
+	ld (ch_add), hl;					// set character address
 
 if_1:
 	jp stmt_l_1;						// next statement
@@ -512,9 +512,9 @@ if_1:
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#FOR" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_for:
-	cp tk_step;							// step token?
+	cp tk_step;							// STEP token?
 	jr nz, f_use_1;						// jump if not
-	rst next_char;						// advance ch_add
+	rst next_char;						// advance CH-ADD
 	call expt_1num;						// get step
 	call check_end;						// next statement if checking syntax
 	jr f_reorder;						// immediate jump
@@ -913,7 +913,7 @@ c_run:
 ;	// FIXME: replace this with call to expt_exp?
 
 	call scanning;						// evaluate expression
-	bit 6, (iy + _flags);				// string or numeric?
+	bit 6, (iy + _flags);				// numeric or string variable?
 	call nz, unstack_z;					// return now if checking syntax
 	jp z, run_app;						// jump if string
 
@@ -1162,7 +1162,7 @@ def_fn_7:
 
 ;	exit when checking syntax subroutine
 unstack_z:
-	call syntax_z;						// checking syntax
+	call syntax_z;						// checking syntax?
 	pop hl;								// return address to HL
 	ret z;								// return if not in runtime
 	jp (hl);							// else immediate jump
@@ -1175,7 +1175,7 @@ c_print:
 	ld a, 2;							// channel S
 
 print_1:
-	call syntax_z;						// checking syntax
+	call syntax_z;						// checking syntax?
 	call nz, chan_open;					// open channel if not
 	call print_2;						// print control
 	call check_end;						// next statement if checking syntax
@@ -1211,7 +1211,7 @@ print_cr:
 ;;
 pr_item_1:
 	rst get_char;						// get current character
-	cp tk_spc;							// is it SPC?
+	cp tk_spc;							// SPC token?
 	jr nz, pr_item_2;					// jump if not
 	rst next_char;						// next character
 	call expt_1num;						// expect one number
@@ -1221,7 +1221,7 @@ pr_item_1:
 	jp po_space;						// immediate jump
 
 pr_item_2:
-	cp tk_tab;							// is it TAB?
+	cp tk_tab;							// TAB token?
 	jr nz, pr_item_3;					// jump if not
 	rst next_char;						// next character
 	call expt_1num;						// expect one number
@@ -1239,7 +1239,7 @@ pr_item_3:
 	ret nc;								// return if so
 	call scanning;						// evaluate expression
 	call unstack_z;						// return if checking syntax
-	bit 6, (iy + _flags);				// test type
+	bit 6, (iy + _flags);				// numeric or string variable?
 	call z, stk_fetch;					// call if string
 	jp nz, print_fp;					// immediate jump if numeric
 
@@ -1315,7 +1315,7 @@ str_alter_1:
 	call find_int1;						// parameter to A
 	cp 16;								// in range (0 to 15)?
 	jp nc, report_undef_strm;			// error if not
-	call chan_open;						// open channel
+	call chan_open;						// select channel
 	and a;								// clear carry flag
 	ret;								// end of subroutine
 
@@ -1327,7 +1327,7 @@ c_input:
 	call syntax_z;						// checking syntax?
 	jr z, input_1;						// jump if so
 	ld a, 1;							// channel K
-	call chan_open;						// open channel
+	call chan_open;						// select channel
 	call cls_lower;						// clear lower display
 
 input_1:
@@ -1370,13 +1370,13 @@ in_item_1:
 	jp in_next_2;						// immediate jump
 
 in_item_2:
-	cp tk_line;							// line token?
+	cp tk_line;							// LINE token?
 	jr nz, in_item_3;					// jump if not
 	rst next_char;						// jump if not
 	call class_01;						// get value
 	set 7, (iy + _flagx);				// signal input line
-	bit 6, (iy + _flags);				// string variable?
-	jp nz, report_syntax_err;			// error if not
+	bit 6, (iy + _flags);				// numeric or string variable?
+	jp nz, report_syntax_err;			// error if not string
 	jr in_prompt;						// immediate jump
 
 in_item_3:
@@ -1390,7 +1390,7 @@ in_prompt:
 	jp z, in_next_2;					// jump if so
 	call set_work;						// clear workspace	
 	ld hl, flagx;						// point to flagx
-	res 6, (hl);						// signal string result
+	res 6, (hl);						// indicate string
 	set 5, (hl);						// signal input mode 
 	ld bc, 1;							// one location for prompt
 	bit 7, (hl);						// line?
@@ -1494,9 +1494,9 @@ in_next_2:
 ;;
 in_assign:
 	ld hl, (worksp);					// first location of workspace
-	ld (ch_add), hl;					// set ch_add to point to it
+	ld (ch_add), hl;					// set CH-ADD to point to it
 	rst get_char;						// get current character
-	cp tk_stop;							// stop token?
+	cp tk_stop;							// STOP token?
 	jr z, in_stop;						// jump if so
 	ld a, (flagx);						// sysvar to A
 	call val_fet_2;						// get value
@@ -1587,8 +1587,8 @@ renum_1:
 	jr renum_2;							// immediate jump
 
 renum_error:
-	rst error;							// 
-	defb syntax_error;					// 
+	rst error;							// throw
+	defb syntax_error;					// error
 
 line_10:
 	fwait;								// stack
@@ -1639,7 +1639,7 @@ renum_3:
 
 renum_4:
 	ld a, (hl);							// get character
-	call number;						// skip floating point if required
+	call number;						// skip floating point representation
 	cp ctrl_cr;							// carriage return?
 	jr z, renum_5;						// jump if so
 	call renum_line;					// parse line
@@ -1705,7 +1705,7 @@ renum_line_1:
 	jr nc, renum_line_3;				// jump if so
 	cp '.';								// decimal point?
 	jr z, renum_line_3;					// jump if so
-	cp number_mark;						// hidden number?
+	cp number_mark;						// hidden number marker?
 	jr z, renum_line_4;					// jump if so
 	or %00100000;						// make lower case
 	cp 'e';								// exponent?
@@ -1732,7 +1732,7 @@ renum_line_4:
 	pop hl;								// unstack current character address
 	cp ':';								// next statement?
 	jr z, renum_line_5;					// jump if so
-	cp ctrl_cr;							// end of line?
+	cp ctrl_cr;							// carraige return? (end of line)
 	ret nz;								// return if not
 
 renum_line_5:
@@ -1827,7 +1827,7 @@ renum_line_10:
 	ret;								// end of subroutine
 
 lines_to_de:
-	ld hl, (vars);						// get variables address
+	ld hl, (vars);						// start of variables to HL
 	ld (mem_3_4), hl;					// store it
 	jr lines_to_de_1;					// immediate jump
 
@@ -1925,14 +1925,14 @@ lv_nstr:
 
 lv2:
 	pop hl;								// restore location
-	ret;								// done
+	ret;								// end of subroutine
 
 ;;
 ; <code>KEY</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#KEY" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_key:
-	rst get_char;						// first character
+	rst get_char;						// get first character
 	cp tk_list;							// LIST token?
 	jr z, key_list;						// jump if so
 	call expt_1num;						// get parameter
@@ -1990,10 +1990,10 @@ copy_mcr:
 	pop hl;								// unstack macro address
 	ex de, hl;							// make macro address destination
 	ldir;								// copy up to first 15 bytes of string to macro address
-	ret;								// done
+	ret;								// end of subroutine
 
 report_syntax_err3:
-	rst error;							// ekse
+	rst error;							// throw
 	defb syntax_error;					// error
 
 key_list:
@@ -2002,7 +2002,7 @@ key_list:
 	call unstack_z;						// return if checking syntax
 	ld a, 2;							// use stream #2
 	ld (iy + _vdu_flag), 0;				// signal normal listing
-	call chan_open;						// open channel if not
+	call chan_open;						// select channel if not
 
 	ld bc, 1;							// zero B and count to C
 	ld de, s_f1;						// address of first macro definition
@@ -2037,34 +2037,34 @@ pr_mcr_loop:
 	ld a, (de);							// get character
 	and a;								// null terminator?
 	jp z, print_cr;						// return if so via print_cr
-	cp ctrl_cr;							// carriage return
+	cp ctrl_cr;							// carraige return?
 	jr nz, not_cr;						// not a CR
 	ld a, $1b;							// <- in IBM 437
 
 not_cr:
-	rst print_a;						// print the character
+	rst print_a;						// print character
 	inc de;								// next character
 	jr pr_mcr_loop;						// loop until done
 
 get_next:
-	ld a, (hl);							// 
-	call number;						// 
-	inc hl;								// 
-	cp ':';								// 
-	jr z, count_stmt;					// 
-	cp tk_then;							// 
-	jr z, count_stmt;					// 
-	cp '"';								// 
-	ret nz;								// 
+	ld a, (hl);							// get character
+	call number;						// skip floating point representation
+	inc hl;								// next character
+	cp ':';								// colon?
+	jr z, count_stmt;					// jump if not
+	cp tk_then;							// THEN token?
+	jr z, count_stmt;					// jump if not
+	cp '"';								// quote?
+	ret nz;								// return if so
 
 skip_quot:
-	ld a, (hl);							// 
-	inc hl;								// 
-	cp '"';								// 
-	jr nz, skip_quot;					// 
-	jr get_next;						// 
+	ld a, (hl);							// get character
+	inc hl;								// next character
+	cp '"';								// quote?
+	jr nz, skip_quot;					// jump if not
+	jr get_next;						// immedaite jump
 
 count_stmt:
-	inc (iy + _subppc);					// 
-	ret;								// 
+	inc (iy + _subppc);					// increment subppc
+	ret;								// end of subroutine
 

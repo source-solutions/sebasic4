@@ -62,7 +62,7 @@ tokenizer_3:
 ;
 ;trim_spaces_1:
 ;	inc hl;								// next character
-;	cp ctrl_cr;							// end of line
+;	cp ctrl_cr;							// carraige return?
 ;	jr z, trim_done;					// jump if so
 ;	cp ' ';								// space?
 ;	jr nz, trim_spaces;					// jump if not
@@ -130,10 +130,10 @@ tokenizer_4:
 ;	inc hl;								// advance one character
 ;	ld a, '<';							// less than
 ;	cp (hl);							// test for it
-;	jr z, sbst_sym_eq;					// jump if so;
+;	jr z, sbst_sym_eq;					// jump if so
 ;	ld a, '>';							// greater than
 ;	cp (hl);							// test for it
-;	jr z, sbst_sym_eq;					// jump if so;
+;	jr z, sbst_sym_eq;					// jump if so
 ;	dec hl;								// restore pointer
 ;	ld a, (hl);							// restore value
 ;	jr sbst_neql;						// jump for next test

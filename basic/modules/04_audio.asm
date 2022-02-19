@@ -73,7 +73,7 @@ be_again:
 
 be_end:
 	ei;									// restore interrupts
-	ret;								// end of beeper subroutine
+	ret;								// end of subroutine
 
 ;	// SOUND <pitch integer>, <duration in seconds>
 ;;
@@ -93,7 +93,7 @@ c_sound:
 	fmul;								// d, pk
 	fstk1;								// d, pk, 1
 	fadd;								// d, pk + 1
-	fce;								// exit calc
+	fce;								// exit calculator
 	ld hl, membot;						// mem_0 1st
 	ld a, (hl);							// get exponent
 	and a;								// error if not in 
@@ -129,15 +129,15 @@ be_octave:
 	call stack_num;						// at (A) to calculator stack
 	fwait;								// d, pk + 1, C
 	fmul;								// d, C(pk + 1)
-	fce;								// exit calc
+	fce;								// exit calculator
 	pop af;								// unstack octave
 	add a, (hl);						// multiply last value by 2^A
 	ld (hl), a;							// d, f
 	fwait;								// store frequency
 	fst 0;								// in mem_0
-	fdel;								// delete
+	fdel;								// remove last item
 	fmove;								// d, d
-	fce;								// exit calc
+	fce;								// exit calculator
 	call find_int1;						// value 'INT d' must be
 	cp 11;								// 0 to 11
 	jr nc, report_overflow_0;			// jump if not
@@ -155,7 +155,7 @@ be_octave:
 	defb $35;							// exponent
 	defb $6c;							// mantissa
 	fsub;								// subtract
-	fce;								// exit calc
+	fce;								// exit calculator
 	call find_int2;						// timing loop compressed into BC
 	push bc;							// stack loop
 	call find_int2;						// f*d value compressed into BC

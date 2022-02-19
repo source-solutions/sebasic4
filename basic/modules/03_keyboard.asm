@@ -21,8 +21,8 @@
 ;	//
 ;	// dec	hex		ascii	key press	print action
 ;	// ----------------------------------------------------
-;	// 000	$00		NUL		insert		
-;	// 001	$01		SOH		clr			
+;	// 000	$00		NUL		insert
+;	// 001	$01		SOH		clr
 ;	// 002	$02		STX		home
 ;	// 003	$03		ETX		end
 ;	// 004	$04		EOT		pg-up
@@ -35,25 +35,25 @@
 ;	// 011	$0b		VT		up			cursor up
 ;	// 012	$0c		FF		backspace	CLS
 ;	// 013	$0d		CR		enter		carriage return
-;	// 014	$0e		SO		alternate	
-;	// 015	$0f		SI		control		
-;	// 016	$10		DLE		help			
-;	// 017	$11		DC1		F1			
-;	// 018	$12		DC2		F2			
-;	// 019	$13		DC3		F3			
-;	// 020	$14		DC4		F4			
-;	// 021	$15		NAK		F5			
-;	// 022	$16		SYN		F6			
-;	// 023	$17		ETB		F7			
-;	// 024	$18		CAN		F8			
-;	// 025	$19		EM		F9			
-;	// 026	$1a		SUB		F10			
-;	// 027	$1b		ESC		F11			
-;	// 028	$1c		FS		F12			
-;	// 029	$1d		GS		F13			
-;	// 030	$1e		RS		F14			
-;	// 031	$1f		US		F15			
-;	// 127	$7f		DEL		delete		
+;	// 014	$0e		SO		alternate
+;	// 015	$0f		SI		control
+;	// 016	$10		DLE		help
+;	// 017	$11		DC1		F1
+;	// 018	$12		DC2		F2
+;	// 019	$13		DC3		F3
+;	// 020	$14		DC4		F4
+;	// 021	$15		NAK		F5
+;	// 022	$16		SYN		F6
+;	// 023	$17		ETB		F7
+;	// 024	$18		CAN		F8
+;	// 025	$19		EM		F9
+;	// 026	$1a		SUB		F10
+;	// 027	$1b		ESC		F11
+;	// 028	$1c		FS		F12
+;	// 029	$1d		GS		F13
+;	// 030	$1e		RS		F14
+;	// 031	$1f		US		F15
+;	// 127	$7f		DEL		delete
 
 ;	// scan codes
 ;	//
@@ -88,7 +88,7 @@ key_scan:
 
 key_line:
 	in a, (c);							// read ULA
-	cpl;								// complement A
+	cpl;								// one's complement
 	and %00011111;						// test for key press
 	jr z, key_done;						// jump if not
 	ld h, a;							// key bits to H
@@ -141,7 +141,7 @@ f_key_scan:
 	out (c), a;							// select port
 	inc b;								// Uno data port
 	in a, (c);							// read last scancode
-	cp $0d;								// less than $0D
+	cp ctrl_cr;							// less than carriage return?
 	jr c, f_key_found;					// possible F key found
 
 test_f7:
@@ -176,7 +176,7 @@ test_f15:
 f_key_found:
 	add a, 39;							// original matrix has 40 keys. 
 	ld e, a;							// key value to E
-	ret;								// return;
+	ret;								// end of subroutine
 
 ;;
 ; keyboard
@@ -329,7 +329,7 @@ k_enter:
 	bit 5, b;							// shift?
 	ret nz;								// return if so
 	ld a, key_clr;						// make it CLR key
-	ret;								// done
+	ret;								// end of subroutine
 
 k_space:
 	inc b;								// shift or alternate?
@@ -337,7 +337,7 @@ k_space:
 	bit 5, b;							// shift?
 	ret nz;								// return if so
 	ld a, key_help;						// make it HELP key
-	ret;								// done
+	ret;								// end of subroutine
 
 k_digit:
 	cp '0';								// digit, return, space, shift, alt?

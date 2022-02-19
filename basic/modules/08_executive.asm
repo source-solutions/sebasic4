@@ -181,14 +181,14 @@ initial:
 	out (c),a;							// set it
 
 	call c_cls;							// clear screen
-	call set_min;						// set up workspace
+	call set_min;						// clear all work areas and calculator stack
 	ld a, 2;							// channel S
-	call chan_open;						// open it
+	call chan_open;						// select channel
 	ld de, copyright;					// copyright message
 	call po_asciiz_0;					// print it
 
 	ld hl, (ramtop);					// get top of BASIC RAM
-	ld de, (prog);						// get bottom of BASIC RAM
+	ld de, (prog);						// start of program to DE
 	sbc hl, de;							// subtract bottom from top
 	ld b, h;							// copy result
 	ld c, l;							// to BC
@@ -201,7 +201,7 @@ initial:
 	set 3, (iy + _flags2);				// enable CAPS LOCK
 
 	xor a;								// LD A, 0; channel K
-	call chan_open;						// open it
+	call chan_open;						// select channel
 ;	ld de, ready;						// ready message
 ;	call po_asciiz_0;					// print it
 	call out_curs_ready;				// display cursor
@@ -217,11 +217,11 @@ main_exec:
 	call auto_list;						// auto list
 
 main_1:
-	call set_min;						// set minimum
+	call set_min;						// clear all work areas and calculator stack
 
 main_2:
-	xor a;								// LD A, 0;
-	call chan_open;						// open channel K
+	xor a;								// LD A, 0; channel K
+	call chan_open;						// select channel
 	call tokenizer;						// tokenize input
 	call line_scan;						// check syntax
 	bit 7, (iy + _err_nr);				// correct?
@@ -341,7 +341,7 @@ main_add1:
 	inc bc;								// for number
 	inc bc;								// and length
 	dec hl;								// location before destination to HL
-	ld de, (prog);						// prog to DE
+	ld de, (prog);						// start of program to DE
 	push de;							// stack it
 	call make_room;						// make space
 	pop hl;								// unstack prog to HL
@@ -375,8 +375,8 @@ main_add:
 	jp main_exec;						// immediate jump
 
 report_bad_io_dev:
-	rst error;							// 
-	defb bad_io_device;					// 
+	rst error;							// throw
+	defb bad_io_device;					// error
 
 ;;
 ; wait key
@@ -772,7 +772,7 @@ reserve:
 ;;
 set_min:
 	ld hl, (e_line);					// sysvar to HL
-	ld (k_cur), hl;						// store it in k_cur
+	ld (k_cur), hl;						// set cursor position
 	ld (hl), ctrl_cr;					// store a carriage return
 	inc hl;								// next
 	ld (hl), end_marker;				// store the end marker
@@ -807,10 +807,10 @@ test_trace:
 	ld hl, vdu_flag;					// address VDU flag
 	ld d, (hl);							// get a copy in D
 	res 0, (hl);						// clear bit 0 of VDU flag
-	ld a, '[';
+	ld a, '[';							// open square bracket
 	rst print_a;						// print it
 	call out_num_1;						// the line number
-	ld a, ']';
+	ld a, ']';							// close square bracket
 	rst print_a;						// print it
 	pop af;								// restore A
 	ld (iy + _vdu_flag), d;				// restore VDU flag
@@ -1078,12 +1078,12 @@ list_cursor:
 	ret z;								// return if not
 	ld d, '>';							// set cursor
 	scf;								// set carry flag
-	ret;								// done
+	ret;								// end of subroutine
 
 out_line:
 	ld bc, (e_ppc);						// line number
 	call cp_lines;						// match or line after
-	ld de, $2000;							// no line cursor
+	ld de, $2000;						// no line cursor
 	call z, list_cursor;				// call with match
 	rl e;								// carry in E if line before current else zero
 
@@ -1117,7 +1117,7 @@ out_line4:
 	call out_curs;						// cursor reached?
 	ex de, hl;							// swap pointers
 	ld a, (hl);							// character to A
-	call number;						// test for hidden number marker
+	call number;						// skip floating point representation
 	inc hl;								// next
 	cp ctrl_cr;							// carriage return?
 	jr z, out_line5;					// jump if so
@@ -1148,7 +1148,7 @@ number:
 ; print the cursor
 ;;
 out_curs:
-	ld hl, (k_cur);						// address cursor
+	ld hl, (k_cur);						// cursor position to HL
 	and a;								// correct
 	sbc hl, de;							// position?
 	ret nz;								// return if not
@@ -1220,9 +1220,9 @@ out_char:
 
 out_ch_1:
 	cp $80;								// token?
-	jr c, out_ch_2;						// jump, if not
+	jr c, out_ch_2;						// jump if not
 	bit 2, (iy + _flags2);				// in quotes?
-	jp nz, out_ch_2;					// jump, if so
+	jp nz, out_ch_2;					// jump if so
 	push de;							// stack DE
 	call po_token;						// print the token
 	pop de;								// unstack DE
@@ -1279,7 +1279,7 @@ cp_lines:
 ; @see: UnoDOS 3 entry points
 ;;
 each_stmt:
-	ld (ch_add), hl;					// set sysvar
+	ld (ch_add), hl;					// set character address
 	ld c, 0;							// signal quotes off
 
 each_s_1:
@@ -1296,8 +1296,8 @@ each_s_2:
 	ld a, (hl);							// next code to A
 
 each_s_3:
-	call number;						// skip numbers
-	ld (ch_add), hl;					// update sysvar
+	call number;						// skip floating point representation
+	ld (ch_add), hl;					// set character address
 	cp '"';";							// quote?
 	jr nz, each_s_4;					// jump if not
 	dec c;								// signal quotes on
@@ -1305,7 +1305,7 @@ each_s_3:
 each_s_4:
 	cp ':';								// colon?
 	jr z, each_s_5;						// jump if so
-	cp tk_then;							// THEN?
+	cp tk_then;							// THEN token?
 	jr nz, each_s_6;					// jump if not
 
 each_s_5:
@@ -1500,4 +1500,4 @@ strm_skip:
 
 	pop hl;								// unstack HL
 	pop bc;								// unstack BC
-	ret;								// done
+	ret;								// end of subroutine

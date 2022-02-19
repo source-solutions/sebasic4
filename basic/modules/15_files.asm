@@ -53,7 +53,7 @@ run_app:
 	ld hl, basepath;					// base path
 	ld de, $5800;						// point to first buffer
 	ld bc, 10;							// byte count
-	ldir;								// copy basepath
+	ldir;								// copy base path
 
 	ld hl, $5700;						// source
 	ld bc, 11;							// maximum name length
@@ -122,11 +122,11 @@ endskp8:
 	ld ix, $6000;						// get address
 
 	rst divmmc;							// issue a hookcode
-	defb f_read;						// 
+	defb f_read;						// read a byte
 	jr c, app_not_found;				// jump if error
 	ld a, (handle);						// 
 	rst divmmc;							// issue a hookcode
-	defb f_close;						// 
+	defb f_close;						// close file
 	jr c, app_not_found;				// jump if error
 
 	ld a, '*';							// use current drive
@@ -173,18 +173,18 @@ f_write_out:
 	jr c, report_file_not_found;		// jump if error
 	ld a, (handle);						// restore handle from sysvar
 	rst divmmc;							// issue a hookcode
-	defb f_close;						// change folder
+	defb f_close;						// close file
 	jr c, report_file_not_found;		// jump if error
 	or a;								// clear flags
 	ret;								// done
 
 f_read_in:
 	rst divmmc;							// issue a hookcode
-	defb f_read;						// 
+	defb f_read;						// read a byte
 	jp c, report_file_not_found;		// jump if error
 	ld a, (handle);						// 
 	rst divmmc;							// issue a hookcode
-	defb f_close;						// 
+	defb f_close;						// close file
 	jr c, report_file_not_found;		// jump if error
   	or a;								// else return
  	ret;								// to BASIC
@@ -322,13 +322,13 @@ copy_close:
 ;	// close source
 	ld a, (handle);						// restore handle from sysvar
 	rst divmmc;							// issue a hookcode
-	defb f_close;						// change folder
+	defb f_close;						// close file
 	jp c, report_file_not_found;		// jump if error
 
 ;	// close destination
 	ld a, (handle_1);					// restore handle from sysvar
 	rst divmmc;							// issue a hookcode
-	defb f_close;						// change folder
+	defb f_close;						// close file
 	jp c, report_file_not_found;		// jump if error
 
  ;	// return to BASIC
@@ -367,7 +367,7 @@ endif
 	call f_get_stats;					// get program length
 
 ;	// remove garbage
-	ld de, (prog);						// PROG to DE
+	ld de, (prog);						// start of program to DE
 	call var_end_hl;					// varaibles end marker location to HL
 	call reclaim_1;						// reclaim varibales area
 
@@ -412,7 +412,7 @@ c_name:
 
 f_save_old:
 ifdef no_fs
-	ret;
+	ret;								// return if no file system
 endif
 	call unstack_z;						// return if checking syntax
 
@@ -451,7 +451,7 @@ endif
 
 ;	// get program length
 	ld hl, (vars);						// end of BASIC to HL
-	ld de, (prog);						// start of BASIC to DE
+	ld de, (prog);						// start of program to DE
 	sbc hl, de;							// get program length
 	ld ixh, d;							// start of BASIC to
 	ld ixl, e;							// IX
@@ -489,8 +489,8 @@ open_folder:
 ;	defb f_umount;						// unmount drive
 ;	rst divmmc;							// issue a hookcode
 ;	defb f_mount;						// remount drive
-	ld a, 2;							// select main screen
-	call chan_open;						// open channel
+	ld a, 2;							// channel S (upper screen)
+	call chan_open;						// select channel
 	ld b, 0;							// folder access mode (read only?)
 	ld a, '*';							// use current drive
 	ld ix, $5800;						// folder path buffer
@@ -584,7 +584,7 @@ pr_asciiz:
 read_files:
 	ld a, (handle);						// get folder handle
 	rst divmmc;							// issue a hookcode
-	defb f_close;						// close it
+	defb f_close;						// close file
 	ld b, 0;							// folder access mode (read only?)
 	ld a, '*';							// use current drive
 	ld ix, $5800;						// folder path buffer
@@ -652,7 +652,7 @@ last_entry:
 
 do_f_close:
 	rst divmmc;							// issue a hookcode
-	defb f_close;						// close it
+	defb f_close;						// close file
 	ret;								// end of subroutine
 
 print_f:
@@ -733,8 +733,8 @@ chk_path_error:
 	ret;								// done
 
 report_path_not_found:
-	rst error;							// 
-	defb path_not_found;				// 
+	rst error;							// throw
+	defb path_not_found;				// error
 
 ;	// copy path to workspace
 ;paths_to_de_ix:
@@ -745,42 +745,42 @@ report_path_not_found:
 ;	ret;								// done
 
 path_to_ix:
-	ld hl, (ch_add);					// get current value of ch-add
+	ld hl, (ch_add);					// get current value of CH-ADD
 	push hl;							// stack it
 	call stk_fetch;						// get parameters
 	push de;							// stack start address
 	inc bc;								// increase length by one
 	rst bc_spaces;						// make space
 	pop hl;								// unstack start address
-	ld (ch_add), de;					// pointer to ch_add
+	ld (ch_add), de;					// pointer to CH-ADD
 	push de;							// stack it
 	call ldir_space;					// copy the string to the workspace (converting spaces to underscores)
 	ex de, hl;							// swap pointers
 	dec hl;								// last byte of string
 	ld (hl), 0;							// replace with zero
-	pop ix;								// pointer to ch_add
+	pop ix;								// pointer to CH-ADD
 	pop hl;								// get last value
-	ld (ch_add), hl;					// and restore ch_add
+	ld (ch_add), hl;					// and restore CH-ADD
 	ld a, '*';							// use current drive
 	ret;								// done
 
 path_to_de:
-	ld hl, (ch_add);					// get current value of ch-add
+	ld hl, (ch_add);					// get current value of CH-ADD
 	push hl;							// stack it
 	call stk_fetch;						// get parameters
 	push de;							// stack start address
 	inc bc;								// increase length by one
 	rst bc_spaces;						// make space
 	pop hl;								// unstack start address
-	ld (ch_add), de;					// pointer to ch_add
+	ld (ch_add), de;					// pointer to CH-ADD
 	push de;							// stack it
 	call ldir_space;					// copy the string to the workspace (converting spaces to underscores)
 	ex de, hl;							// swap pointers
 	dec hl;								// last byte of string
 	ld (hl), 0;							// replace with zero
-	pop de;								// pointer to ch_add
+	pop de;								// pointer to CH-ADD
 	pop hl;								// get last value
-	ld (ch_add), hl;					// and restore ch_add
+	ld (ch_add), hl;					// and restore CH-ADD
 	ret;								// done
 
 ldir_space:
@@ -797,7 +797,7 @@ no_space:
 	ld a, c;							// test count
 	or b;								// for zero
 	jr nz, ldir_space;					// loop until done
-	ret;
+	ret;								// done
 
 ;	// file channels
 get_handle:
@@ -829,10 +829,11 @@ file_out:
 ;	or a;								// clear flags
 	ret;								// done
 
+;	// file service routine
 file_sr:
-	defw	file_out;					// 
-	defw	file_in;					// 
-	defb	'F';						// 
+	defw file_out;						// output
+	defw file_in;						// input
+	defb 'F';							// channel identifier
 
 open_file:
 	push bc;							// stack mode
@@ -849,7 +850,7 @@ open_file:
 	jr c, open_file_err;				// jump if error
 	pop de;								// unstack end of channel descriptor
 	ld (de), a;							// file descriptor
-	dec de;								// 
+	dec de;								// decrement DE
 	ld hl, file_sr + 4;					// HL = service routines' end
 	ld bc, 5;							// copy 5 bytes
 	lddr;								// do the copying
@@ -870,8 +871,8 @@ open_file_err:
 	call reclaim_1;						// free up the unsuccessful channel descriptor
 
 report_bad_io_dev2:
-	rst error;							// 
-	defb bad_io_device;					// report error
+	rst error;							// throw
+	defb bad_io_device;					// error
 
 f_length:
 	ld ix, f_stats;						// buffer for file stats
@@ -890,9 +891,9 @@ seek_f:
 ; @throws File not found; Path not found.
 ;;
 c_merge:
-	call unstack_z;						// 
-	call open_load_merge;				// 
-	jr nextln;							// 
+	call unstack_z;						// checking syntax?
+	call open_load_merge;				// call common code
+	jr nextln;							// immedaite jump
 
 ;;
 ; <code>LOAD</code> command
@@ -900,87 +901,87 @@ c_merge:
 ; @throws File not found; Path not found.
 ;;
 c_load:
-	call unstack_z;						// 
-	call open_load_merge;				// 
+	call unstack_z;						// checking syntax?
+	call open_load_merge;				// call common code
 
-	ld de, (prog);						// 
-	ld hl, (vars);						// 
+	ld hl, (vars);						// end of BASIC to HL
+	ld de, (prog);						// start of program to DE
 	call reclaim_1;						// reclaim BASIC program
 
 nextln:
-	call set_min;						// 
-	ld a, $ff;							// 
-	call chan_open;						// 
+	call set_min;						// clear all work areas and calculator stack
+	ld a, $ff;							// channel W
+	call chan_open;						// select channel
 
 copyln:
 	call f_getc;						// 
-	jr nz, aload_end;					// 
-	cp $0a;								// 
-	jr z, readyln;						// 
-	cp $0d;								// 
-	jr z, readyln;						// 
-	rst print_a;						// 
-	jr copyln;							// 
+	jr nz, aload_end;					// jump if not
+	cp ctrl_lf;							// line feed
+	jr z, readyln;						// jump if so
+	cp ctrl_cr;							// carraige return?
+	jr z, readyln;						// jump if so
+	rst print_a;						// print character
+	jr copyln;							// immedaite jump
 
 open_load_merge:
-	call path_to_ix;					// 
-	ld b, fa_read;						// 
-	rst divmmc;							// 
-	defb f_open;						// 
+	call path_to_ix;					// get path in IX
+	ld b, fa_read;						// B = open mode
+	rst divmmc;							// issue a hookcode
+	defb f_open;						// open file
 
 report_bad_io_dev3:
-	jr c, report_bad_io_dev2;			// 
-	ld (membot + 1), a;					// 
-	ret;								// 
+	jr c, report_bad_io_dev2;			// jump with error
+	ld (membot + 1), a;					// store file handle in membot
+	ret;								// done
 
 readyln:
-	ld hl, (membot);					// 
-	push hl;							// 
-	call tokenizer_0;					// 
-	ld hl, (err_sp);					// 
-	push hl;							// 
-	ld hl, scan_err;					// 
-	push hl;							// 
-	ld (err_sp), sp;					// 
-	call line_scan;						// 
-	pop hl;								// 
+	ld hl, (membot);					// address of membot to HL
+	push hl;							// stack HL
+	call tokenizer_0;					// tokenize line
+	ld hl, (err_sp);					// error stack pointer to HL
+	push hl;							// stack HL
+	ld hl, scan_err;					// scan error pointer to HL
+	push hl;							// stack HL
+	ld (err_sp), sp;					// stack pointer to error stack
+	call line_scan;						// scan line
+	pop hl;								// unstack HL
 
 scan_err:
-	pop hl;								// 
-	ld (err_sp), hl;					// 
-	ld hl, (e_line);					// 
-	ld (ch_add), hl;					// 
-	call e_line_no;						// 
-	ld a, c;							// 
-	or b;								// 
-	call nz, add_line;					// 
-	pop hl;								// 
-	ld (membot), hl;					// 
-	jr nextln;							// 
+	pop hl;								// unstack HL
+	ld (err_sp), hl;					// scan error to error stack
+	ld hl, (e_line);					// edit line to HL
+	ld (ch_add), hl;					// set character address
+	call e_line_no;						// convert line number
+	ld a, c;							// test for
+	or b;								// zero
+	call nz, add_line;					// add line if not
+	pop hl;								// unstack HL
+	ld (membot), hl;					// restore MEMBOT
+	jr nextln;							// immedaite jump
 
 aload_end:
-	ld a, (membot + 1);					// 
-	rst divmmc;							// 
-	defb f_close;						// 
-	jr c, report_bad_io_dev3;			// 
-	rst error;							// 
-	defb ok;							// 
+	ld a, (membot + 1);					// get file handle
+	rst divmmc;							// issue a hookcode
+	defb f_close;						// close file
+	jr c, report_bad_io_dev3;			// jump with error
+	rst error;							// else
+	defb ok;							// clear error
 
 f_getc:
-	ld a, (membot + 1);					// 
-	ld ix, membot;						// 
-	ld bc, 1;							// 
-	rst divmmc;							// 
-	defb f_read;						// 
+	ld a, (membot + 1);					// get file handle
+	ld ix, membot;						// MEMBOT to IX
+	ld bc, 1;							// one byte
+	rst divmmc;							// issue a hookcode
+	defb f_read;						// read a byte
 
 f_getc_err:
-	jr c, report_bad_io_dev3;			// 
-	dec bc;								// 
-	ld a, c;							// 
-	or b;								// 
-	ret nz;								// 
-	ld a, (membot);						// 
-	ret;								// 
+	jr c, report_bad_io_dev3;			// jump with error
+	dec bc;								// reduce count
+	ld a, c;							// test for
+	or b;								// zero
+	ret nz;								// return if not
+	ld a, (membot);						// store value in MEMBOT
+	ret;								// done
 
 ;;
 ; <code>SAVE</code> command
@@ -989,13 +990,13 @@ f_getc_err:
 ;;
 c_save:
 	call unstack_z;						// return if checking syntax
-	call path_to_ix;					// 
-	ld b, fa_write | fa_open_al;		// 
-	call open_file;						// 
-	ld hl, (chans);						// 
-	add hl, de;							// 
-	dec hl;								// 
-	ld (curchl), hl;					// 
-	call list_10;						// 
-	ld ix,(curchl);						// 
+	call path_to_ix;					// get path in IX
+	ld b, fa_write | fa_open_al;		// B = mode
+	call open_file;						// open the file
+	ld hl, (chans);						// base address of channel to HL
+	add hl, de;							// new channel address
+	dec hl;								// last byte of channel
+	ld (curchl), hl;					// make it the current channel
+	call list_10;						// LIST program to file
+	ld ix, (curchl);					// current channel to IX
 	call close_file;					// it is, in fact, a jump, as the return address will be popped
