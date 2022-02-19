@@ -461,104 +461,105 @@ token_table:
 	str "RND";
 
 ;	// multi-argument functions
-	tk_left_str		equ $87
-	str "LEFT$";
-	tk_mid_str		equ $88
-	str "MID$";
-	tk_right_str	equ $89
-	str "RIGHT$";
-	tk_str_str		equ $8a;
-	str "STR$";
-	tk_string_str	equ $8b;
-	str "STRING$";
-	tk_instr		equ $8c;
+	tk_instr		equ $87;
 	str "INSTR";
+	tk_left_str		equ $88
+	str "LEFT$";
+	tk_mid_str		equ $89;
+	str "MID$";
+	tk_right_str	equ $8a;
+	str "RIGHT$";
+	tk_str_str		equ $8b;
+	str "STR$";
+	tk_string_str	equ $8c;
+	str "STRING$";
+
 
 ;	// PRINT arguments
 	tk_spc			equ $8d;
 	str "SPC";
 	tk_tab			equ $8e;
 	str "TAB";
+	tk_using		equ $8f
+	str "USING";
 
 ;	// prefix operators (single-argument functions)
-	tk_abs			equ $8f;
+	tk_abs			equ $90;
 	str "ABS";
-	tk_acos			equ $90;
+	tk_acos			equ $91;
 	str "ACOS";
-	tk_asc			equ $91;
+	tk_asc			equ $92;
 	str "ASC";
-	tk_asin			equ $92;
+	tk_asin			equ $93;
 	str "ASIN";
-	tk_atan			equ $93;
+	tk_atan			equ $94;
 	str "ATAN";
-	tk_chr_str		equ $94;
+	tk_chr_str		equ $95;
 	str "CHR$";
-	tk_cos			equ $95;
+	tk_cos			equ $96;
 	str "COS";
-	tk_deek			equ $96;
+	tk_deek			equ $97;
 	str "DEEK";
-	tk_exp			equ $97;
+	tk_exp			equ $98;
 	str "EXP";
-	tk_fix			equ $98;
+	tk_fix			equ $99;
 	str "FIX";
-	tk_inp			equ $99;
+	tk_inp			equ $9a;
 	str "INP";
-	tk_int			equ $9a;
+	tk_int			equ $9b;
 	str "INT";
-	tk_len			equ $9b;
+	tk_len			equ $9c;
 	str "LEN";
-	tk_log			equ $9c;
+	tk_log			equ $9d;
 	str "LOG";
-	tk_not			equ $9d;
+	tk_not			equ $9e;
 	str "NOT";
-	tk_peek			equ $9e;
+	tk_peek			equ $9f;
 	str "PEEK";
-	tk_sin			equ $9f;
+	tk_sin			equ $a0;
 	str "SIN";
-	tk_sgn			equ $a0;
+	tk_sgn			equ $a1;
 	str "SGN";
-	tk_sqr			equ $a1;
+	tk_sqr			equ $a2;
 	str "SQR";
-	tk_tan			equ $a2;
+	tk_tan			equ $a3;
 	str "TAN";
-	tk_usr			equ $a3;
+	tk_usr			equ $a4;
 	str "USR";
-	tk_val			equ $a4;
+	tk_val			equ $a5;
 	str "VAL";
-	tk_val_str		equ $a5;
+	tk_val_str		equ $a6;
 	str "VAL$";
 
 ;	// infix operators
-	tk_mod			equ $a6;
+	tk_mod			equ $a7;
 	str "MOD";
-	tk_neql			equ $a7;
+	tk_neql			equ $a8;
 	str "<>";
-	tk_l_eql		equ $a8;
+	tk_l_eql		equ $a9;
 	str "<=";
-	tk_gr_eq		equ $a9;
+	tk_gr_eq		equ $aa;
 	str ">=";
-	tk_and			equ $aa;
+	tk_and			equ $ab;
 	str "AND";
-	tk_or			equ $ab;
+	tk_or			equ $ac;
 	str "OR";
-	tk_xor			equ $ac;
+	tk_xor			equ $ad;
 	str "XOR";
 
 ;	// other keywords
-	tk_line			equ $ad;
+	tk_line			equ $ae;
 	str "LINE";
-	tk_step			equ $ae;
+	tk_off			equ $af;
+	str "OFF";
+	tk_step			equ $b0;
 	str "STEP";
-	tk_then			equ $af;
+	tk_then			equ $b1;
 	str "THEN";
-	tk_to			equ $b0;
+	tk_to			equ $b2;
 	str "TO";
 
 ;	// unassigned tokens
-	tk__b1			equ $b1;
-	str "_B1";
-	tk__b2			equ $b2;
-	str "_B2";
 	tk__b3			equ $b3;
 	str "_B3";
 	tk__b4			equ $b4;
@@ -593,11 +594,11 @@ token_table:
 	str "_C2";
 	tk__c3			equ $c3;
 	str "_C3";
+	tk__c4			equ $c4;
+	str "_C4";
 
 ;	// commands
-	first_cmd		equ $c4;
-	tk_else			equ $c4;
-	str "ELSE";
+	first_cmd		equ $c5;
 	tk_bload		equ $c5;
 	str "BLOAD";
 	tk_bsave		equ $c6;
@@ -630,88 +631,88 @@ token_table:
 	str "DOKE";
 	tk_edit			equ $d4;
 	str "EDIT";
-	tk_end			equ $d5;
+	tk_else			equ $d5;
+	str "ELSE";
+	tk_end			equ $d6;
 	str "END";
-	tk_error		equ $d6;
+	tk_error		equ $d7;
 	str "ERROR";
-	tk_files		equ $d7;
+	tk_files		equ $d8;
 	str "FILES";
-	tk_for			equ $d8;
+	tk_for			equ $d9;
 	str "FOR";
-	tk_gosub		equ $d9;
+	tk_gosub		equ $da;
 	str "GOSUB";
-	tk_goto			equ $da;
+	tk_goto			equ $db;
 	str "GOTO";
-	tk_if			equ $db;
+	tk_if			equ $dc;
 	str "IF";
-	tk_input		equ $dc;
+	tk_input		equ $dd;
 	str "INPUT";
-	tk_key			equ $dd;
+	tk_key			equ $de;
 	str "KEY";
-	tk_kill			equ $de;
+	tk_kill			equ $df;
 	str "KILL";
-	tk_let			equ $df;
+	tk_let			equ $e0;
 	str "LET";
-	tk_list			equ $e0;
+	tk_list			equ $e1;
 	str "LIST";
-	tk_load			equ $e1;
+	tk_load			equ $e2;
 	str "LOAD";
-	tk_locate		equ $e2;
+	tk_locate		equ $e3;
 	str "LOCATE";
-	tk_merge		equ $e3;
+	tk_merge		equ $e4;
 	str "MERGE";
-	tk_mkdir		equ $e4;
+	tk_mkdir		equ $e5;
 	str "MKDIR";
-	tk_name			equ $e5;
+	tk_name			equ $e6;
 	str "NAME";
-	tk_next			equ $e6;
+	tk_next			equ $e7;
 	str "NEXT";
-	tk_new			equ $e7;
+	tk_new			equ $e8;
 	str "NEW";
-	tk_old			equ $e8;
+	tk_old			equ $e9;
 	str "OLD";
-	tk_on			equ $e9;
+	tk_on			equ $ea;
 	str "ON";
-	tk_open			equ $ea;
+	tk_open			equ $eb;
 	str "OPEN #";
-	tk_out			equ $eb;
+	tk_out			equ $ec;
 	str "OUT";
-	tk_palette		equ $ec;
+	tk_palette		equ $ed;
 	str "PALETTE";
-	tk_poke			equ $ed;
+	tk_poke			equ $ee;
 	str "POKE";
-	tk_print		equ $ee;
+	tk_print		equ $ef;
 	str "PRINT";
-	tk_randomize	equ $ef;
+	tk_randomize	equ $f0;
 	str "RANDOMIZE";
-	tk_read			equ $f0;
+	tk_read			equ $f1;
 	str "READ";
 
 tk_ptr_rem:
-	tk_rem			equ $f1;
+	tk_rem			equ $f2;
 	str "REM";
-	tk_renum		equ $f2;
+	tk_renum		equ $f3;
 	str "RENUM";
-	tk_restore		equ $f3;
+	tk_restore		equ $f4;
 	str "RESTORE";
-	tk_return		equ $f4;
+	tk_return		equ $f5;
 	str "RETURN";
-	tk_rmdir		equ $f5;
+	tk_rmdir		equ $f6;
 	str "RMDIR";
-	tk_run			equ $f6;
+	tk_run			equ $f7;
 	str "RUN";
-	tk_save			equ $f7;
+	tk_save			equ $f8;
 	str "SAVE";
-	tk_screen		equ $f8;
+	tk_screen		equ $f9;
 	str "SCREEN";
-	tk_sound		equ $f9;
+	tk_sound		equ $fa;
 	str "SOUND";
-	tk_stop			equ $fa;
+	tk_stop			equ $fb;
 	str "STOP";
-	tk_troff		equ $fb;
-	str "TROFF";
-	tk_tron			equ $fc;
-	str "TRON";
+	tk_trace		equ $fc;
+	str "TRACE";
 	tk_wait			equ $fd;
 	str "WAIT";
 	tk_wend			equ $fe;
@@ -723,7 +724,6 @@ tk_ptr_last:
 
 ;	// used in 09_command
 offst_tbl:
-	defw p_else;
 	defw p_bload;
 	defw p_bsave;
 	defw p_call;
@@ -740,6 +740,7 @@ offst_tbl:
 	defw p_dim;
 	defw p_doke;
 	defw p_edit;
+	defw p_else;
 	defw p_end;
 	defw p_error;
 	defw p_files;
@@ -778,17 +779,12 @@ offst_tbl:
 	defw p_screen;
 	defw p_sound;
 	defw p_stop;
-	defw p_troff;
-	defw p_tron;
+	defw p_trace;
 	defw p_wait;
 	defw p_wend;
 	defw p_while;
 
 ;	// parameter table
-p_else:
-	defb var_syn;
-	defw c_else;
-
 p_bload:
 	defb str_exp, ',', num_exp_no_f_ops;
 	defw c_bload;
@@ -852,6 +848,10 @@ p_doke:
 p_edit:
 	defb num_exp_0;
 	defw c_edit;
+
+p_else:
+	defb var_syn;
+	defw c_else;
 
 p_end:
 	defb no_f_ops;
@@ -1004,13 +1004,9 @@ p_stop:
 	defb no_f_ops;
 	defw c_stop;
 
-p_troff:
-	defb no_f_ops;
-	defw c_troff;
-
-p_tron:
-	defb no_f_ops;
-	defw c_tron;
+p_trace:
+	defb var_syn;
+	defw c_trace;
 
 p_wait:
 	defb num_exp_no_f_ops;

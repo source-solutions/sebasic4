@@ -392,21 +392,31 @@ set_pal:
 	out (c), e;							// write it
 	ret;								// end of routine
 
-;	// trace on
+;	// trace
 ;;
-; <code>TRON</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#TRON" target="_blank" rel="noopener noreferrer">Language reference</a>
+; <code>TRACE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#TRACE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
-c_tron:
+c_trace:
+	rst get_char;						// first character
+	cp tk_on;							// ON token?
+	jr z, tron;							// jump if so
+	cp tk_off;							// OFF token?
+	jr z, troff;						// jump if so
+	rst error;							// else error
+	defb syntax_error;					// FIXME: add ON n handler
+
+tron:
+	rst next_char;						// next character
+	call check_end;						// expect end of line
+	call unstack_z;						// return if checking syntax
 	set 7, (iy + _flags2);				// switch trace on
 	ret;								// end of routine
 
-;	// trace off
-;;
-; <code>TROFF</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#TROFF" target="_blank" rel="noopener noreferrer">Language reference</a>
-;;
-c_troff:
+troff:
+	rst next_char;						// next character
+	call check_end;						// expect end of line
+	call unstack_z;						// return if checking syntax
 	res 7, (iy + _flags2);				// switch trace off
 	ret;								// end of routine
 
