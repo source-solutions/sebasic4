@@ -1,1 +1,10 @@
-{}
+{
+    "NEXT": "FOR sen NEXT",
+    "ICONV": "IBM437",
+    "FOR": "NEXT sen FOR",
+    "GOSUB": "RETURN sen GOSUB",
+    "NAME": "Esperanto",
+    "WHILE": "WEND sen WHILE",
+    "WEND": "WHILE sen WEND",
+    "FILENAME": "EO.LN"
+}
