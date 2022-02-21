@@ -1,7 +1,7 @@
 {
     "NAME": "Korean",
-    "FILENAME": "KO.LN",
-    "ICONV": "IBM437",
+    "FILENAME": "KO-5601.LN",
+    "ICONV": "KSC_5601",
     "SCROLL": "스크롤?_______",
     "ERROR": " 입력 ",
     "READY": "준비가 된_______",
