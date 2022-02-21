@@ -1,7 +1,7 @@
 {
     "NAME": "Chinese (Pinyin)",
-    "FILENAME": "ZH-PY.LN",
-    "ICONV": "IBM437",
+    "FILENAME": "ZHPY1252.LN",
+    "ICONV": "CP1252",
     "SCROLL": "Gǔn dòng?__",
     "ERROR": " : _",
     "READY": "Zhǔn bèi hǎo",
