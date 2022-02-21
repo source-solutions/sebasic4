@@ -9,6 +9,9 @@
 ## Bosnian (Latin)
 # ln=BS-1250
 
+## Catalan
+# ln=CA-1252
+
 ## Czech
 # ln=CS-1250
 
@@ -26,6 +29,9 @@
 
 ## English
 # ln=EN
+
+## Esperanto
+# ln=EO-IR109.LN
 
 ## Spanish
 ln=ES-1252
@@ -65,6 +71,9 @@ ln=ESLA1252
 
 ## Japanese
 # ln=JA-0932
+
+## Korean (not currently supported)
+# ln=KO-5601
 
 ## Lithuanian
 # ln=LT-1257
@@ -129,6 +138,9 @@ ln=ESLA1252
 ## Vietnamese (not currently supported)
 # ln=VI-1258
 
+## Chinese (Pinyin)
+# ln=ZH-PY
+
 
 ### code page (8-bit system font)
 
@@ -146,6 +158,9 @@ ln=ESLA1252
 
 ## Latin 1 / Western European
 cp=1252-EUW
+
+## Chinese / Pinyin (a modified version of CP1252 to display five tones) 
+# cp=1252-PY
 
 ## Greek
 # cp=1253-GRE
