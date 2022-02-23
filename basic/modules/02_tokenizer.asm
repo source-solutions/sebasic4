@@ -18,6 +18,35 @@
 ;	// --- TOKENIZER -----------------------------------------------------------
 ;;
 
+;	// called if a line begins with '!' - shortcut for loading apps
+bang:
+	ld (hl), tk_run;					// change '!' to RUN
+	call inc_hl_make_1;					// make one space
+	inc hl;								// next character
+	ld (hl), '"';						// insert a quote mark
+	ld a, ctrl_cr;						// carriage return
+
+bang_loop:
+	inc hl;								// next character
+	cp (hl);							// end of line?
+	jr nz, bang_loop;					// jump until found
+	call inc_hl_make_1;					// insert quote
+	ld (hl), '"';						// insert a quote mark
+	inc hl;								// next
+	ld (hl), ctrl_cr;					// store a carriage return
+	inc hl;								// next
+	ld (hl), end_marker;				// store the end marker
+	inc hl;								// next
+	ld (worksp), hl;					// update worksp
+	ret;								// nothing else to do
+
+;	// increment HL then make one space
+inc_hl_make_1:
+	inc hl;								// next character
+	ld bc, 1;							// one character
+	call make_room;						// make space
+	ret;								// done
+
 ;;
 ; tokenizer
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
@@ -28,9 +57,17 @@ tokenizer:
 	call editor;						// prepare line
 	call var_end_hl;					// varaibles end marker location to HL
 
+;	// enable !<filename> as shortcut for RUN "<filename>"
+quick_launch:
+	ld hl, (e_line);					// fetch line start
+	ld a, (hl);							// get first character
+	cp '!';								// is it !
+	jr z, bang;							// jump if so
+
 tokenizer_0:
 	ld hl, (e_line);					// fetch line start
 
+;	// remove excess leading spaces
 rm_extra_ld_sp:
 	ld a, (hl);							// get chacater;
 	inc hl;								// advance character;
@@ -55,112 +92,40 @@ tokenizer_3:
 	push ix;							// restore token
 	pop de;								// position to DE
 
-;	push hl;							// stack pointer
-;
-;trim_spaces:
-;	ld a, (hl);							// get character
-;
-;trim_spaces_1:
-;	inc hl;								// next character
-;	cp ctrl_cr;							// carraige return?
-;	jr z, trim_done;					// jump if so
-;	cp ' ';								// space?
-;	jr nz, trim_spaces;					// jump if not
-;	ld a, (hl);							// get next character
-;	cp ' ';								// space?
-;	jr nz, trim_spaces_1;				// loop if not
-;	call ed_backspace;					// remove second space;
-;	dec hl;								// previous character
-;	jr trim_spaces;						// loop
-;
-;trim_done:
-;	pop hl;								// restore pointer
+;	// trim spaces
+	push hl;							// stack pointer
+
+trim_spaces:
+	ld a, (hl);							// get character
+
+trim_spaces_1:
+	inc hl;								// next character
+	cp ctrl_cr;							// carraige return?
+	jr z, trim_done;					// jump if so
+	cp ' ';								// space?
+	jr nz, trim_spaces;					// jump if not
+	ld a, (hl);							// get next character
+	cp ' ';								// space?
+	jr nz, trim_spaces_1;				// loop if not
+	call ed_backspace;					// remove second space;
+	dec hl;								// previous character
+	jr trim_spaces;						// loop
+
+trim_done:
+	pop hl;								// restore pointer
 
 tokenizer_4:
 	ld a, (hl);							// get character
-
 	bit 0, c;							// in quotes?
 	jp nz, in_q;						// jump if so
 
-;colon_else:
-;	cp ' ';								// is it space?
-;	jr nz, sbst_eq;						// jump if not
-;
-;	dec hl;								// previous character
-;	ld a, (hl);							// get it
-;
-;	cp ':';								// colon?
-;	inc hl;								// current character
-;	ld a, (hl);							// restore current character
-;	jr z, sbst_eq;						// jump if there is already a colon
-;
-;	ld (mem_5_1), hl;					// store position
-;	inc hl;								//
-;	ld a, (hl);							//
-;	or %00100000;						// make lowercase
-;	cp 'e';								// is it E;
-;	jr nz, not_else;					// jump if not
-;	inc hl;								//
-;	ld a, (hl);							//
-;	or %00100000;						// make lowercase
-;	cp 'l';								// is it E;
-;	jr nz, not_else;					// jump if not
-;	inc hl;								//
-;	ld a, (hl);							//
-;	or %00100000;						// make lowercase
-;	cp 's';								// is it E;
-;	jr nz, not_else;					// jump if not
-;	inc hl;								//
-;	ld a, (hl);							//
-;	or %00100000;						// make lowercase
-;	cp 'e';								// is it E;
-;	jr nz, not_else;					// jump if not
-;	ld hl, (mem_5_1);					// restore position
-;	ld (hl), ':';						// insert colon
-;	inc hl;								// next character
-;	jr tokenizer_4;						// immediate jump
-
-;not_else:
-;	ld hl, (mem_5_1);					// restore position
-;	ld a, (hl);							// restore character
-
-;sbst_eq:
-;	cp '=';								// test for equals
-;	jr nz, sbst_neql;					// jump if not
-;	inc hl;								// advance one character
-;	ld a, '<';							// less than
-;	cp (hl);							// test for it
-;	jr z, sbst_sym_eq;					// jump if so
-;	ld a, '>';							// greater than
-;	cp (hl);							// test for it
-;	jr z, sbst_sym_eq;					// jump if so
-;	dec hl;								// restore pointer
-;	ld a, (hl);							// restore value
-;	jr sbst_neql;						// jump for next test
-
-;sbst_sym_eq:
-;	ld (hl), '=';						// swap
-;	dec hl;								// symbols
-;	jr do_sbst;							// do substitution
-
-;sbst_neql:
-;	cp '>';								// test for greater than
-;	jr nz, sbst_lookup;					// jump if not
-;	inc hl;								// advance one character
-;	ld a, '<';							// less than
-;	cp (hl);							// test for it
-;	jr z, sbst_gt;						// jump if so
-;	dec hl;								// restore pointer
-;	ld a, (hl);							// restore value
-;	jr sbst_lookup;						// jump for next test
-
-;sbst_gt:
-;	ld (hl), '>';						// greater than
-;	dec hl;								// back one character
-;	jr do_sbst;							// do substitution
-
 sbst_lookup:
 	ld (mem_5_1), hl;					// store position
+
+;	// pre-process ampersand
+	call hex;							// check for &H
+	call oct;							// check for &O
+
 	ld b, a;							// store code point
 	ld hl, sbst_chr_tbl;				// address table
 
@@ -177,14 +142,26 @@ sbst_lk_loop:
 	ld hl, (mem_5_1);					// restore HL
 	ld (hl), a;							// substitute value
 	inc hl;								// next character
-	jp tokenizer_4;						// immediate jump
+	jr tokenizer_4;						// immediate jump
 
 sbst_not_found:
 	ld hl, (mem_5_1);					// restore HL
 	ld a, (hl);							// restore character
 
-;do_sbst:
-;	ld (hl), a;							// write character back (for subs)
+;	pre-processor tasks
+	call colon_else;					// check for ELSE without leading colon
+	call colour;						// check for British spelling
+	call fn_alpha;						// check for FN without trailing space
+	call hex_str;						// check for HEX$()
+	call oct_str;						// check for OCT$()
+	call rnd_param;						// check for RND with trailing parameter
+	call space_str;						// check for SPACE$(n)
+	call then_number;					// check for THEN followed by a number
+	call troff;							// check for TROFF
+	call tron;							// check for TRON
+	call sbst_ne;						// check for ><
+	call sbst_le;						// check for =<
+	call sbst_ge;						// check for =>
 
 in_q:
 	cp "'";								// substitute REM token?

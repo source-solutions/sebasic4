@@ -151,12 +151,12 @@ tbl_ops_priors:
 	defb '*', op_fmul + %11000000, 11;	// *
 	defb '/', op_fdiv + %11000000, 11;	// /
 	defb '^', op_ftop + %11000000, 12;	// ^
-	defb '=', $0e + %11000000, 7;		// =  fcp(_eq)
-	defb '>', $0c + %11000000, 7;		// >  fcp(_gt)
-	defb '<', $0d + %11000000, 7;		// <  fcp(_lt)
-	defb tk_l_eql, $09 + %11000000, 7;	// <= fcp(_le)
-	defb tk_gr_eq, $0a + %11000000, 7;	// >= fcp(_ge)
-	defb tk_neql, $0b + %11000000, 7;	// <> fcp(ne)
+	defb '=', $0e + %11000000, 7;		// =  fcp(eq)
+	defb '>', $0c + %11000000, 7;		// >  fcp(gt)
+	defb '<', $0d + %11000000, 7;		// <  fcp(lt)
+	defb tk_le, $09 + %11000000, 7;		// <= fcp(le)
+	defb tk_ge, $0a + %11000000, 7;		// >= fcp(ge)
+	defb tk_ne, $0b + %11000000, 7;		// <> fcp(ne)
 	defb tk_or, op_fbor + %11000000, 4;	// OR
 	defb tk_and, op_fband + $c0, 5;		// AND
 	defb tk_xor, op_fxor + %11000000, 3;// XOR
@@ -448,6 +448,7 @@ token_table:
 	tk_eof			equ $80;
 	str "EOF #";
 	tk_fn			equ $81;
+tk_ptr_fn:
 	str "FN";
 	tk_inkey_str	equ $82;
 	str "INKEY$";
@@ -458,6 +459,7 @@ token_table:
 	tk_pi			equ $85;
 	str "PI";
 	tk_rnd			equ $86;
+tk_ptr_rnd:
 	str "RND";
 
 ;	// multi-argument functions
@@ -534,11 +536,11 @@ token_table:
 ;	// infix operators
 	tk_mod			equ $a7;
 	str "MOD";
-	tk_neql			equ $a8;
+	tk_ne			equ $a8;
 	str "<>";
-	tk_l_eql		equ $a9;
+	tk_le			equ $a9;
 	str "<=";
-	tk_gr_eq		equ $aa;
+	tk_ge			equ $aa;
 	str ">=";
 	tk_and			equ $ab;
 	str "AND";
@@ -551,10 +553,12 @@ token_table:
 	tk_line			equ $ae;
 	str "LINE";
 	tk_off			equ $af;
+tk_ptr_off:
 	str "OFF";
 	tk_step			equ $b0;
 	str "STEP";
 	tk_then			equ $b1;
+tk_ptr_then:
 	str "THEN";
 	tk_to			equ $b2;
 	str "TO";
@@ -632,6 +636,7 @@ token_table:
 	tk_edit			equ $d4;
 	str "EDIT";
 	tk_else			equ $d5;
+tk_ptr_else:
 	str "ELSE";
 	tk_end			equ $d6;
 	str "END";
@@ -689,9 +694,8 @@ token_table:
 	str "RANDOMIZE";
 	tk_read			equ $f1;
 	str "READ";
-
-tk_ptr_rem:
 	tk_rem			equ $f2;
+tk_ptr_rem:
 	str "REM";
 	tk_renum		equ $f3;
 	str "RENUM";
@@ -717,10 +721,34 @@ tk_ptr_rem:
 	str "WAIT";
 	tk_wend			equ $fe;
 	str "WEND";
-	
-tk_ptr_last:
 	tk_while		equ $ff;
+tk_ptr_last:
 	str "WHILE";
+
+;	// pseudo tokens
+tk_ptr_colour:
+	str "COLOUR"
+tk_ptr_hex_str:
+	str "HEX$("
+tk_ptr_oct_str:
+	str "OCT$("
+tk_ptr_space_str:
+	str "SPACE$("
+tk_ptr_tron:
+	str "TRON"
+tk_ptr_troff:
+	str "TROFF"
+tk_ptr_ne:
+	str "><"
+tk_ptr_le:
+	str "=<"
+tk_ptr_ge:
+	str "=>"
+tk_ptr_hex:
+	str "&H"
+tk_ptr_oct:
+	str "&O"
+
 
 ;	// used in 09_command
 offst_tbl:

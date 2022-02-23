@@ -400,20 +400,20 @@ set_pal:
 c_trace:
 	rst get_char;						// get first character
 	cp tk_on;							// ON token?
-	jr z, tron;							// jump if so
+	jr z, trace_on;						// jump if so
 	cp tk_off;							// OFF token?
-	jr z, troff;						// jump if so
+	jr z, trace_off;					// jump if so
 	rst error;							// else error
 	defb syntax_error;					// FIXME: add ON n handler
 
-tron:
+trace_on:
 	rst next_char;						// next character
 	call check_end;						// expect end of line
 	call unstack_z;						// return if checking syntax
 	set 7, (iy + _flags2);				// switch trace on
 	ret;								// end of routine
 
-troff:
+trace_off:
 	rst next_char;						// next character
 	call check_end;						// expect end of line
 	call unstack_z;						// return if checking syntax
@@ -632,3 +632,4 @@ c_wend:
 	push hl;							// stack error address
 	rst error;							// throw
 	defb wend_without_while;			// error
+
