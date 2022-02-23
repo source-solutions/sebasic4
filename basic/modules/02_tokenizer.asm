@@ -149,6 +149,7 @@ sbst_not_found:
 	ld a, (hl);							// restore character
 
 ;	pre-processor tasks
+	call atn;							// check for ATN()
 	call colon_else;					// check for ELSE without leading colon
 	call colour;						// check for British spelling
 	call fn_alpha;						// check for FN without trailing space

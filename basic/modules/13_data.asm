@@ -726,6 +726,8 @@ tk_ptr_last:
 	str "WHILE";
 
 ;	// pseudo tokens
+tk_ptr_atn:
+	str "ATN("
 tk_ptr_colour:
 	str "COLOUR"
 tk_ptr_hex_str:

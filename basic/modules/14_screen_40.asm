@@ -344,3 +344,15 @@ oct:
 	jp nz, exit_pp;						// jump if not
 	ld (hl), '@';						// replace with '@'
 	jp ed_backspace;					// remove previous character and exit
+
+;	// check for ATN()
+atn:
+	push de;							// stack DE
+	ld de, tk_ptr_atn;					// point to token
+	call match_token;					// check for match
+	pop de;								// restore DE
+	jp nz, exit_pp;						// jump if not
+	dec hl;								// back one place						
+	call make_1_inc_hl;					// make one space
+	ld (hl), 'A';						// insert 'A'
+	jp exit_pp;							// done
