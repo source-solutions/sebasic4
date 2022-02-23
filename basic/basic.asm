@@ -42,9 +42,10 @@
 	include "modules/11_arithmentic.asm"
 	include "modules/12_calculator.asm"
 	include "modules/13_data.asm"
-	include "modules/14_screen_40.asm"
-	include "modules/15_files.asm"
-	include "modules/16_messages.asm"
+	include "modules/14_preprocessor.asm"
+	include "modules/15_screen_40.asm"
+	include "modules/16_files.asm"
+	include "modules/17_messages.asm"
 
 ;	// last byte
 	org $5bb9
