@@ -690,8 +690,8 @@ po_each:
 	add a, a;							// inverted bit to carry flag
 	jr nc, po_each;						// loop until done
 	pop de;								// D = 0 to 127 for tokens, 0 for messages
-	cp 72;								// last character a $?
-	jr z, po_tr_sp;						// jump if so
+;	cp 72;								// last character a $?
+;	jr z, po_tr_sp;						// jump if so
 	cp 130;								// last character less than A?
 	ret c;								// return if so
 
