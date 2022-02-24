@@ -428,8 +428,41 @@ c_on:
 	rst get_char;						// get first character
 	cp tk_error;						// ERROR token?
 	jr z, on_error;						// jump if so
-	rst error;							// else error
-	defb syntax_error;					// FIXME: add ON n handler
+	call expt_1num;						// get expression
+	call syntax_z;						// checking syntax?
+	call nz, find_int1;					// get number if not
+	ld (membot), a;						// store entry in membot
+	rst get_char;						// next character
+	ld bc, $0100;						// set count to zero, flag to one
+	cp tk_gosub;						// GOSUB token?
+	jr z, on_number;					// jump if so
+	inc b;								// GOSUB =1, GOTO =2
+	cp tk_goto;							// GOTO token?
+	jr z, on_number;					// jump if so
+	rst error;							// else
+	defb syntax_error;					// error
+
+on_number:
+	rst next_char;						// next character
+	push bc;							// stack BC
+	call expt_1num;						// get expression
+	pop bc;								// unstack BC
+	inc c;								// increment count
+	ld a, (membot);						// get entry
+	cp c;								// match?
+	jr z, on_match;						// jump if so
+	rst get_char;						// next character
+	cp ',';								// comma
+	jr z, on_number;					// check for another number if so
+	call check_end;						// expect end of line
+	call unstack_z;						// return if checking syntax
+	ret;								// done
+
+on_match:
+	call unstack_z;						// exit if validating line
+	dec b;								// GOSUB or GOTO?
+	jp nz, c_goto;						// jump with GOTO
+	jp c_gosub;							// jump with GOSUB
 
 on_error:
 	rst next_char;						// next character
