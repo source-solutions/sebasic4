@@ -14,7 +14,7 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
-	org $1ae9;
+;	org $1ae9;
 ;;
 ;	// --- BASIC LINE AND COMMAND INTERPRETATINO -------------------------------
 ;;
@@ -1222,7 +1222,7 @@ pr_item_1:
 
 pr_item_2:
 	cp tk_tab;							// TAB token?
-	jr nz, pr_item_3;					// jump if not
+	jr nz, pr_item_u;					// jump if not
 	rst next_char;						// next character
 	call expt_1num;						// expect one number
 	call unstack_z;						// return if checking syntax
@@ -1233,6 +1233,14 @@ pr_item_2:
 	sub c;								// calculate new position
 	ld c, a;							// store it in C
 	jp cl_set;							// update screen position
+
+pr_item_u:
+	cp tk_using;						// USING token?
+	jr nz, pr_item_3;					// jump if not
+	rst next_char;						// next character
+	call expt_exp;						// expect string expression
+	call unstack_z;						// return if checking syntax
+	ret;								// FIXME - finish implementing
 
 pr_item_3:
 	call str_alter;						// stream change?
@@ -1261,7 +1269,7 @@ pr_end_z:
 	ret z;								// return if so
 
 ;	// UnoDOS 3 entry point
-	org $2048;
+;	org $2048;
 pr_st_end:
 	cp ctrl_cr;							// carriage return?
 	ret z;								// return if so
@@ -1916,7 +1924,7 @@ look_vars1:
 	res 6, (iy + _flags);				// indicate string
 	call syntax_z;						// checking syntax?
 	scf;								// set carry
-	jr nz, lv2;		org					// in runtime, not found CF=1, ZF=0
+	jr nz, lv2;							// in runtime, not found CF=1, ZF=0
 	and a;								// in syntax check, found CF=0, ZF=0
 	defb $3E;							// LD A, skip next byte
 

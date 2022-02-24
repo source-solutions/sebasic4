@@ -92,7 +92,8 @@ tokenizer_3:
 	push ix;							// restore token
 	pop de;								// position to DE
 
-;	// trim spaces
+;	// trim spaces (should only be used with a fast CPU)
+ifndef slam
 	push hl;							// stack pointer
 
 trim_spaces:
@@ -113,6 +114,7 @@ trim_spaces_1:
 
 trim_done:
 	pop hl;								// restore pointer
+endif
 
 tokenizer_4:
 	ld a, (hl);							// get character
@@ -122,9 +124,11 @@ tokenizer_4:
 sbst_lookup:
 	ld (mem_5_1), hl;					// store position
 
-;	// pre-process ampersand
+;	// pre-process ampersand (should only be used with fast CPU)
+ifndef slam
 	call hex;							// check for &H
 	call oct;							// check for &O
+endif
 
 	ld b, a;							// store code point
 	ld hl, sbst_chr_tbl;				// address table
@@ -148,7 +152,8 @@ sbst_not_found:
 	ld hl, (mem_5_1);					// restore HL
 	ld a, (hl);							// restore character
 
-;	pre-processor tasks
+;	//pre-processor tasks (should only be used with a fast CPU)
+ifndef slam
 	call atn;							// check for ATN()
 	call colon_else;					// check for ELSE without leading colon
 	call colour;						// check for British spelling
@@ -163,6 +168,7 @@ sbst_not_found:
 	call sbst_ne;						// check for ><
 	call sbst_le;						// check for =<
 	call sbst_ge;						// check for =>
+endif
 
 in_q:
 	cp "'";								// substitute REM token?
