@@ -1000,3 +1000,7 @@ c_save:
 	call list_10;						// LIST program to file
 	ld ix, (curchl);					// current channel to IX
 	call close_file;					// it is, in fact, a jump, as the return address will be popped
+
+;	// FIXME - SEEK takes a stream number and a floating point value to set the pointer in a currently open file
+c_seek:
+	ret;
