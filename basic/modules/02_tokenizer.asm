@@ -103,6 +103,19 @@ trim_spaces_1:
 	inc hl;								// next character
 	cp ctrl_cr;							// carraige return?
 	jr z, trim_done;					// jump if so
+	cp '"';								// opening quote?
+	jr nz, not_quote;					// jump if not
+	dec hl;								// current character
+
+loop_quote:
+	inc hl;								// next character
+	ld a, (hl);							// get next character
+	cp ctrl_cr;							// carraige return?
+	jr z, trim_done;					// jump if so
+	cp '"';								// closing quote?
+	jr nz, loop_quote;					// loop until done
+
+not_quote:
 	cp ' ';								// space?
 	jr nz, trim_spaces;					// jump if not
 	ld a, (hl);							// get next character
