@@ -15,7 +15,7 @@
     "SUBSCRIPT": "Subíndex fora de l'interval",
     "ADDRESS": "L'adreça està fora de l'interval",
     "SYNTAX": "Error de sintaxi",
-    "MEMORY": "S'ha quedat sense memòria",
+    "MEMORY": "Sense memòria",
     "FOR": "NEXT sense FOR",
     "DATA": "Fora de DATA",
     "CALL": "Trucada de funció no és legal",
@@ -29,7 +29,7 @@
     "NEXT": "FOR sense NEXT",
     "WHILE": "WEND sense WHILE",
     "INPUT": "Final d'entrada passat",
-    "PATH": "No s'ha trobat el camí",
+    "PATH": "No s'ha trobat la pàgina",
     "WEND": "WHILE sense WEND",
-    "FILE": "No s'ha trobat el fitxer"
+    "FILE": "Fitxer no trobat"
 }
