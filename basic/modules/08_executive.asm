@@ -98,8 +98,8 @@ start_new:
 	ex af, af';							// restore A
 	inc a;								// NEW command?
 	jr z, ram_set;						// jump if sp
-	ld bc, $0040;						// set RASP to $40
-	ld (rasp), bc;						// set PIP to 0
+	ld bc, $ff40;						// set RASP to $40
+	ld (rasp), bc;						// set PIP to $ff
 	ld (p_ramt), iy;					// set top of RAM
 	ld hl, (p_ramt);					// p-ramt to HL
 
@@ -110,8 +110,6 @@ ram_set:
 ; default NMI routine
 ;;
 initial:
-	call flush_kb;						// flush the keyboard buffer
-
 	ld hl, (ramtop);					// ramtop to HL
 	ld (hl), $3e;						// set it to the GOSUB end marker
 	dec hl;
@@ -198,8 +196,6 @@ initial:
 	ld de, bytes_free;					// bytes free message
 	call po_asciiz_0;					// print it
 
-	set 3, (iy + _flags2);				// enable CAPS LOCK
-
 	xor a;								// LD A, 0; channel K
 	call chan_open;						// select channel
 ;	ld de, ready;						// ready message
@@ -207,7 +203,17 @@ initial:
 	call out_curs_ready;				// display cursor
 	call msg_pause;						// pause in case of NEW
 
-	jp main_1;							// immediate jump
+	set 3, (iy + _flags2);				// enable CAPS LOCK
+	call flush_kb;						// flush the keyboard buffer
+
+	ld hl, pip;							// address PIP
+	ld a, (hl);							// get PIP ($ff on cold start)
+	ld (hl), 0;							// zero PIP
+	inc a;								// test PIP ($00 on cold start)
+	jr nz, main_1;						// immediate jump with warm start
+	call autoexec;						// test for AUTOEXEC.BAS
+
+	jr main_1;							// immediate jump
 
 ;;
 ; main execution loop

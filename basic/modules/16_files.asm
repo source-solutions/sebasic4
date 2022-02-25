@@ -226,11 +226,6 @@ get_dest:
 
 ;	// file commands
 
-;run_auto:
-;	call load;							// load BASIC program
-;	call use_zero;						// use line zero
-;	jp run;								// run
-
 ;;
 ; <code>BLOAD</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#BLOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
@@ -888,6 +883,16 @@ seek_f:
 	defb f_seek;						// seek to position in BCDE
 	ret;								// done
 
+;	// handle AUTOEXEC.BAS ($543D)
+autoexec:
+	ld ix, autoexec_bas;				// path to AUTOEXEC.BAS
+	call open_r_exists;					// 
+	ret c;								// return if file not found
+	ld (membot + 1), a;					// store file handle in membot
+	ld hl, auto_run;					// pointer to macro 'RUN <RETURN>'
+	call loop_f_keys;					// insert it
+	jr load_4;							// do LOAD "AUTOEXEC.BAS","R"
+
 ;;
 ; <code>MERGE</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#MERGE" target="_blank" rel="noopener noreferrer">Language reference</a>
@@ -931,8 +936,8 @@ load_2:
 	jr nz, load_error;					// jump if not
 	call check_end;						// end of syntax checking
 	call unstack_z;						// checking syntax?
-	ld hl, auto_run;					// pointer to macro
-	call loop_f_keys;					// insert it;
+	ld hl, auto_run;					// pointer to macro 'RUN <RETURN>'
+	call loop_f_keys;					// insert it
 	jr load_3;							// immediate jump
 
 load_1:
@@ -941,6 +946,8 @@ load_1:
 
 load_3:
 	call open_load_merge;				// call common code
+
+load_4:
 	ld hl, (vars);						// end of BASIC to HL
 	ld de, (prog);						// start of program to DE
 	call reclaim_1;						// reclaim BASIC program
@@ -967,7 +974,7 @@ open_load_merge:
 	defb f_open;						// open file
 
 report_bad_io_dev3:
-	jr c, report_bad_io_dev2;			// jump with error
+	jp c, report_bad_io_dev2;			// jump with error
 	ld (membot + 1), a;					// store file handle in membot
 	ret;								// done
 

@@ -1089,3 +1089,6 @@ tmp_folder:
 
 auto_run:
 	defb tk_run, ctrl_cr, 0;			// inserted into keyboard buffer
+
+autoexec_bas:
+	defb "AUTOEXEC.BAS", 0;				// filepath for AUTOEXEC.BAS
