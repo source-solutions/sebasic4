@@ -269,7 +269,9 @@ ed_ins:
 ; help editing
 ;;
 ed_help:
-	ret;								// FIXME - stub for HELP key
+	call f_save_old;					// save current program
+	ld hl, help;						// pointer to macro '!HELP<RETURN>'
+	jp loop_f_keys;						// write it to keyboard buffer
 
 ;;
 ; clr editing

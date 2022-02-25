@@ -406,6 +406,9 @@ s_f15:
 	defb "KEY LIST", ctrl_cr, 0;
 	defs 6, 0;							// KEY LIST <RETURN> (overriden by ZX core but can be composed with F9 + F1 + <RETURN>)
 
+help:
+	defb "!HELP", ctrl_cr, 0;			// invoke HELP app
+
 
 ;	// used in 03_keyboard
 kt_main:
@@ -1091,4 +1094,4 @@ auto_run:
 	defb tk_run, ctrl_cr, 0;			// inserted into keyboard buffer
 
 autoexec_bas:
-	defb "AUTOEXEC.BAS", 0;				// filepath for AUTOEXEC.BAS
+	defb "autoexec.bas", 0;				// filepath for AUTOEXEC.BAS

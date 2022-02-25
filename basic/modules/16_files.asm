@@ -384,8 +384,8 @@ endif
 	ld (vars), hl;						// set up varaibles
 	dec hl;								// 
 	ld (datadd), hl;					// set up data add pointer
-	or a;								// clear flags
-	ret;								// done	
+	rst error;							// clear error
+	defb ok;							// done
 
 ;;
 ; <code>NAME</code> command
@@ -409,8 +409,6 @@ f_save_old:
 ifdef no_fs
 	ret;								// return if no file system
 endif
-	call unstack_z;						// return if checking syntax
-
 	ld ix, old_bas_path;				// path to old.bas
 	ld a, '*';							// use current drive
 	rst divmmc;							// issue a hookcode
