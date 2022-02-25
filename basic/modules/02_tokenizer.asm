@@ -292,6 +292,6 @@ tokenizer_17:
 	ld b, c;							// previous result to B
 	ld c, 0;							// clear C
 	ret nc;								// return if non-alpha
-	res 5,a;							// make upper case
+	res 5,a;							// make upper case (do not substitutite AND %11011111)
 	set 7, c;							// set flag if alpha
 	ret;								// end of subroutine

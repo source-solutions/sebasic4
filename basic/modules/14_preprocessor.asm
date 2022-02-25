@@ -26,7 +26,8 @@ match_loop:
 	ld a, (de);							// next character to A
 	call alpha;							// alpha?
 	jr nc, match_non_alpha;				// jump if not
-	res 5, a;							// make upper case
+;	res 5, a;							// make upper case
+	and %11011111;						// make upper case
 
 match_non_alpha:
 	bit 7, (hl);						// final character of a token?
@@ -38,7 +39,8 @@ match_non_alpha:
 	jr match_loop;						// loop until done
 
 match_last:
-	set 7, a;							// set bit 7
+;	set 7, a;							// set bit 7
+	or %10000000;						// set bit 7
 	cp (hl);							// set zero flag if matched
 
 match_exit:

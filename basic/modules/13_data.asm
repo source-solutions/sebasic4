@@ -932,7 +932,7 @@ p_list:
 	defw c_list;
 
 p_load:
-	defb str_exp_no_f_ops;
+	defb str_exp, var_syn;
 	defw c_load;
 
 p_locate:
@@ -1086,3 +1086,6 @@ sys_folder:
 
 tmp_folder:
 	defb "temporar.y", 0;				// temporary folder name
+
+auto_run:
+	defb tk_run, ctrl_cr, 0;			// inserted into keyboard buffer

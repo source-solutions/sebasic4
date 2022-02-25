@@ -511,7 +511,8 @@ pr_asciiz_uc:
 
 	call alpha;							// test alpha
 	jr nc, pr_asciiz_any;				// jump if non-alpha
-	res 5,a;							// make upper case
+;	res 5,a;							// make upper case
+	and %11011111;						// make upper case
 
 pr_asciiz_any:
 	rst print_a;						// else print it
@@ -558,7 +559,8 @@ ignore_dot:
 printable_chr:
 	call alpha;							// test alpha
 	jr nc, pr_ch_na;					// jump if non-alpha
-	res 5,a;							// make upper case
+;	res 5,a;							// make upper case
+	and %11011111;						// make upper case
 
 pr_ch_na:
 	inc hl;								// next location
@@ -626,7 +628,8 @@ pr_filename:
 printable_chr_2:
 	call alpha;							// test alpha
 	jr nc, pr_ch_na2;					// jump if non-alpha
-	res 5,a;							// make upper case
+;	res 5,a;							// make upper case
+	and %11011111;						// make upper case
 
 pr_ch_na2:
 	inc hl;								// next location
@@ -901,9 +904,43 @@ c_merge:
 ; @throws File not found; Path not found.
 ;;
 c_load:
+	rst get_char;						// get character
+	cp ',';								// test for comma
+	jr nz, load_1;						// end of syntax checking if not
+	rst next_char;						// next character
+	call expt_exp;						// expect string expression
+	call check_end;						// end of syntax checking
 	call unstack_z;						// checking syntax?
-	call open_load_merge;				// call common code
+	call stk_fetch;						// get parameters
+	ld a, c;							// letter
+	or b;								// provided?
+	jr nz, load_2;						// jump if so
 
+load_error:
+	rst error;							// else
+	defb syntax_error;					// error
+
+load_2:
+	dec bc;								// reduce length
+	ld a, c;							// single
+	or b;								// character?
+	jr nz, load_error;					// error if not
+	ld a, (de);							// get first character
+	and %11011111;						// make upper case
+	cp 'R';								// test for 'R'
+	jr nz, load_error;					// jump if not
+	call check_end;						// end of syntax checking
+	call unstack_z;						// checking syntax?
+	ld hl, auto_run;					// pointer to macro
+	call loop_f_keys;					// insert it;
+	jr load_3;							// immediate jump
+
+load_1:
+	call check_end;						// end of syntax checking
+	call unstack_z;						// checking syntax?
+
+load_3:
+	call open_load_merge;				// call common code
 	ld hl, (vars);						// end of BASIC to HL
 	ld de, (prog);						// start of program to DE
 	call reclaim_1;						// reclaim BASIC program

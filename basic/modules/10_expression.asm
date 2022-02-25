@@ -856,6 +856,7 @@ v_run_syn:
 	ld a, c;							// flags to A
 	and %11100000;						// drop character code
 	set 7, a;							// set bit 7
+;	or %10000000;						// set bit 7 FIXME - safe to use this version?
 	ld c, a;							// flags to C
 	jr v_syntax;						// immediate jump
 
