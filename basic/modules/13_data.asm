@@ -1064,10 +1064,10 @@ dir_msg:
 
 ;	// the following data cannot be moved to the ROM area
 basepath:
-	defb "/programs";					// "/programs/" (continues into progpath)
+	defb "/PROGRAMS";					// "/programs/" (continues into progpath)
 
 prgpath:
-	defb "/prg";						// "/prg/", 0 (continues into rootpath)
+	defb "/PRG";						// "/prg/", 0 (continues into rootpath)
 	
 rootpath:
 	defb '/', 0;						// root	
@@ -1076,22 +1076,22 @@ rootpath:
 ;	defb '.', 0;						// current path
 
 appname:
-	defb ".prg", 0;						// application extension
+	defb ".PRG", 0;						// application extension
 
 resources:
-	defb "../rsc", 0;					// resource folder
+	defb "../RSC", 0;					// resource folder
 
 old_bas_path:
-	defb "/system/temporar.y/old.bas",0;// path to OLD.BAS
+	defb "/SYSTEM/TEMPORAR.Y/OLD.BAS",0;// path to OLD.BAS
 
 sys_folder:
-	defb "system", 0;					// system folder name
+	defb "SYSTEM", 0;					// system folder name
 
 tmp_folder:
-	defb "temporar.y", 0;				// temporary folder name
+	defb "TEMPORAR.Y", 0;				// temporary folder name
 
 auto_run:
 	defb tk_run, ctrl_cr, 0;			// inserted into keyboard buffer
 
 autoexec_bas:
-	defb "autoexec.bas", 0;				// filepath for AUTOEXEC.BAS
+	defb "AUTOEXEC.BAS", 0;				// filepath for AUTOEXEC.BAS
