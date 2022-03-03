@@ -402,11 +402,8 @@ endif
 	ld (vars), hl;						// set up varaibles
 	dec hl;								// 
 	ld (datadd), hl;					// set up data add pointer
-;	rst error;							// clear error
-;	defb ok;							// done
-	or a
-	ret
-
+	rst error;							// clear error
+	defb ok;							// done
 
 ;;
 ; <code>NAME</code> command
@@ -437,7 +434,7 @@ endif
 	defb f_unlink;						// delete file if it exists
 
 	ld ix, rootpath;					// go to root
-	ld a, '*';							// use current drive
+ld a, '*';							// use current drive
 	rst divmmc;							// issue a hookcode
 	defb f_chdir;						// change folder
 
