@@ -654,7 +654,14 @@ ENDM
 	tk_then			equ $a6;
 	tk_to			equ $a7;
 	tk_step			equ $a8;
+
 	tk_def_fn		equ $a9;
+	tk_def			equ $a9;
+	first_cmd		equ $a9;
+	tk_using		equ $a9;
+	tk_else			equ $a9;
+	tk_off			equ $a9;
+
 	tk_bload		equ $aa;
 	tk_bsave		equ $ab;
 	tk_chdir		equ $ac;
@@ -793,6 +800,8 @@ ENDM
 	msg_break				equ $00;
 	next_without_for		equ $01;
 	syntax_error			equ $02;
+	while_without_wend		equ $02;
+	wend_without_while		equ $02;
 	return_without_gosub	equ $03;
 	out_of_data				equ $04;
 	illegal_function_call	equ $05;

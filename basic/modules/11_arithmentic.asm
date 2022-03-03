@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2020 Source Solutions, Inc.
+;	// Copyright (c) 1999-2022 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -197,21 +197,21 @@ print_fp:
 	fmove;								// x, x
 	fcp gz;								// x, (1/0)
 	fjpt pf_postve;						// x
-	fdel;								// 
+	fdel;								// remove last item
 	fce;								// exit calculator
-	ld a, '0';							// ASCII
+	ld a, '0';							// ASCII zero
 	rst print_a;						// print it
 	ret;								// end of subroutine
 
 pf_negtve:
 	fabs;								// x' = abs x
 	fce;								// x'
-	ld a, '-';							// minus
+	ld a, '-';							// minus sign
 	rst print_a;						// print it
-	fwait;								// exit calculator
+	fwait;								// enter calculator
 
 pf_postve:
-	fstk0;								// stack 0
+	fstk0;								// stack zero
 	fst 3;								// store it in mem_3
 	fst 4;								// mem_4
 	fst 5;								// and mem_5
@@ -370,7 +370,7 @@ pf_all_9:
 
 pf_more:
 	fwait;								// enter calculator
-	fdel;								// remove last item from stack
+	fdel;								// remove last item
 	fgt 2;								// f
 	fce;								// exit calculator
 
@@ -445,7 +445,7 @@ pf_r_back:
 pf_count:
 	ld (iy + _mem_5), b;				// number of digits to print to B
 	fwait;								// enter calculator
-	fdel;								// remove last item from stack
+	fdel;								// remove last item
 	fce;								// exit calculator
 	exx;								// alternate register set
 	pop hl;								// unstack offset to HL'
@@ -486,11 +486,11 @@ pf_dc_out:
 	and a;								// zero?
 	ret z;								// return if so
 	inc b;								// decimal
-	ld a, '.';							// include decimal
+	ld a, '.';							// include decimal point
 
 pf_dec_0s:
 	rst print_a;						// print decimal
-	ld a, '0';							// zero
+	ld a, '0';							// ASCII zero
 	djnz pf_dec_0s;						// loop until zeros printer
 	ld b, c;							// count to B for remaining digits
 	jr pf_out_lp;						// immediate jump
@@ -512,7 +512,7 @@ pf_e_frmt:
 	jr pf_e_sign;						// immediate jump
 
 pf_e_pos:
-	ld a, '+';							// plus
+	ld a, '+';							// plus sign
 
 pf_e_sign:
 	rst print_a;						// print sign
@@ -562,7 +562,7 @@ prep_add:
 neg_byte:
 	dec hl;								// each byte in turn
 	ld a, (hl);							// get it
-	cpl;								// complement carry flag
+	cpl;								// one's complement
 	adc a, 0;							// add in carry for negation
 	ld (hl), a;							// store it
 	djnz neg_byte;						// loop until done
@@ -670,7 +670,7 @@ all_added:
 fp_subtract:
 	ex de, hl;							// swap pointers
 	call fp_negate;						// negate number to be subtracted
-	ex de, hl;							// restore pointers
+	ex de, hl;							// swap pointers
 
 ;;
 ; addition
@@ -793,16 +793,16 @@ test_neg:
 	ccf;								// complement carry flag
 	ld e, a;							// store in E
 	ld a, d;							// next byte to A
-	cpl;								// ones complement
+	cpl;								// one's complement
 	adc a, 0;							// add carry
 	ld d, a;							// store in D
 	exx;								// swap register set
 	ld a, e;							// next byte to A
-	cpl;								// ones complement
+	cpl;								// one's complement
 	adc a, 0;							// add carry
 	ld e, a;							// store in E
 	ld a, d;							// next byte
-	cpl;								// ones complement
+	cpl;								// one's complement
 	adc a, 0;							// add carry
 	jr nc, end_compl;					// jump if no carry
 	rra;								// lse 0.5 to mantissa, e = e + 1
@@ -1062,8 +1062,8 @@ oflow_clr:
 	ret;								// end of subroutine
 
 report_overflow_2:
-	rst error;
-	defb overflow;
+	rst error;							// throw
+	defb overflow;						// error
 
 ;;
 ; division

@@ -816,7 +816,7 @@ po_scr_4a:
 	ld b, a;							// df_sz to b
 	inc a;								// increment df_sz
 	ld (hl), a;							// store it
-	ld l, s_posn_h;						// address sysvar
+	ld l, lo(s_posn_h);					// address sysvar
 	cp (hl);							// lower scrolling only required?
 	jr c, po_scr_4b;					// jump if so
 	inc (hl);							// increment s-posn-h

@@ -204,10 +204,10 @@ tbl_addrs:
 	defw fp_get_argt;
 	defw fp_truncate;
 	defw fp_calc_2;
-	defw fp_dpeek;
+	defw fp_deek;
 	defw fp_re_stack;
 	defw fp_xor;
-	defw fp_div;
+	defw fp_quot;
 
 tbl_offs equ $ - tbl_addrs
 	defw fp_series_xx;
@@ -750,7 +750,7 @@ p_poke:
 
 p_dpoke:
 	defb two_c_s_num_no_f_ops;
-	defw c_dpoke;
+	defw c_doke;
 
 p_print:
 	defb var_syn;
@@ -798,11 +798,11 @@ p_color:
 
 p_tron:
 	defb no_f_ops;
-	defw c_tron;
+	defw c_trace;
 
 p_troff:
 	defb no_f_ops;
-	defw c_troff;
+	defw c_trace;
 
 p_on:
 	defb var_syn;

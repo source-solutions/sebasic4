@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2020 Source Solutions, Inc.
+;	// Copyright (c) 1999-2022 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -33,10 +33,6 @@
 ;	// bit 39-32 | bit 31 | bit 30-0
 ;	// ----------+--------+--------------------------------
 ;	// xxxxxxxx  | s      | mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
-
-;;
-;
-;;
 
 ;;
 ; calculator
@@ -232,10 +228,10 @@ fp_st_mem_xx:
 	ex de, hl;							// source to DE
 	ld hl, (mem);						// pointer to memory area to HL
 	call loc_mem;						// get base address
-	ex de, hl;							// exchange pointers
+	ex de, hl;							// swap pointers
 	ld c, 5;							// five bytes
 	ldir;								// copy
-	ex de, hl;							// exchange pointers
+	ex de, hl;							// swap pointers
 	pop hl;								// unstack result pointer
 	ret;								// end of subroutine
 
@@ -369,18 +365,18 @@ in_pk_stk:
 	jp stack_a;							// indirect exit
 
 ;;
-; DPEEK function
+; DEEK function
 ;;
-fp_dpeek:
-	call find_int2
-	push hl
-	ld l, c
-	ld h, b
-	ld c, (hl)
-	inc hl
-	ld b, (hl)
-	pop hl
-	jp stack_bc;
+fp_deek:
+	call find_int2;						// get address in BC
+	push hl;							// stack HL
+	ld l, c;							// address
+	ld h, b;							// to HL
+	ld c, (hl);							// low byte in (HL) to C
+	inc hl;								// increment pointer
+	ld b, (hl);							// high byte in (HL) to B
+	pop hl;								// unstack HL
+	jp stack_bc;						// indirect exit
 
 ;	// FIXME - (should restore IY to err-nr on return)
 ;;
@@ -410,7 +406,7 @@ fp_mul_str:
 	call stack_bc;						// stack string length (calculator)
 	fwait;								// arg2, length
 	fmul;								// arg2 * length
-	fce;								// 
+	fce;								// exit calculator
 	call find_int2;						// BC = new string length
 	pop hl;								// HL = old string length
 	sbc hl, bc;							// HL = length difference
@@ -420,7 +416,7 @@ fp_mul_str:
 	dec hl;								// (HL) = string length LSB
 	ld (hl), c;							// update string length
 	dec hl;								// (HL) = string address MSB
-	jr c, d_slong;						// jump, if new length > old length
+	jr c, d_slong;						// jump if new length > old length
 	ld d, (hl);							// D = string address MSB
 	dec hl;								// (HL) = string address LSB
 	ld e, (hl);							// DE = string address
@@ -429,15 +425,15 @@ fp_mul_str:
 	push de;							// stack string address
 	rst bc_spaces;						// allocate space for mirrored string
 	pop hl;								// HL = string address
-	push de;							// 
-	push bc;							// 
-	ldir;								// 
-	pop bc;								// 
-	pop hl;								// 
-	push hl;							// 
-	call mirror;						// 
-	pop de;								// 
-	ld hl, (stkend);					// 
+	push de;							// stack DE
+	push bc;							// stack BC
+	ldir;								// copy bytes
+	pop bc;								// unstack BC
+	pop hl;								// unstack DE
+	push hl;							// stack HL
+	call mirror;						// perform mirror
+	pop de;								// unstack DE
+	ld hl, (stkend);					// stack end to HL
 	dec hl;								// 
 	dec hl;								// 
 	dec hl;								// 
@@ -446,8 +442,8 @@ fp_mul_str:
 	ld (hl), e;							// 
 
 fp_mul_str_e:
-	ld de, (stkend);					// 
-	ret;								// 
+	ld de, (stkend);					// stack end to DE
+	ret;								// done
 
 d_slong:
 	push hl;							// address pointer
@@ -465,24 +461,24 @@ d_slong:
 	ld (hl), e;							// 
 	ld l, c;							// 
 	ld h, b;							// 
-	pop bc;								// 
-	push de;							// 
-	ldir;								// 
-	pop hl;								// 
+	pop bc;								// unstack BC
+	push de;							// stack DE
+	ldir;								// copy bytes
+	pop hl;								// unstack HL
 	ld a, (membot + 28);				// 
-	cpl;								// 
+	cpl;								// one's complement
 	ld c, a;							// 
 	ld a, (membot + 29);				// 
-	cpl;								// 
+	cpl;								// one's complement
 	ld b, a;							// 
 	inc bc;								// 
-	ldir;								// 
-	pop af;								// 
-	jr z, fp_mul_str_e;					// 
+	ldir;								// copy bytes
+	pop af;								// unstack AF
+	jr z, fp_mul_str_e;					// jump if not
 	call str_fetch;						// 
-	ex de, hl;							// 
+	ex de, hl;							// swap pointers
 	call mirror;						// 
-	jr fp_mul_str_e;					// 
+	jr fp_mul_str_e;					// immedaite jump
 
 ;;
 ; Mirror a memory area
@@ -491,8 +487,8 @@ d_slong:
 mirror:
 	ld d, (hl);							// 
 	dec bc;								// 
-	ld a, c;							// 
-	or b;								// 
+	ld a, c;							// test for
+	or b;								// zero
 	ret z;								// 
 	add hl, bc;							// 
 	ld e, (hl);							// 
@@ -501,16 +497,16 @@ mirror:
 	ld (hl), e;							// 
 	inc hl;								// 
 	dec bc;								// 
-	ld a, c;							// 
-	or b;								// 
-	jr nz, mirror;						// 
-	ret;								// 
+	ld a, c;							// test for
+	or b;								// zero
+	jr nz, mirror;						// jump if not
+	ret;								// else return
 
 ;;
 ; Like stk_fetch, but fetches only BC and DE and leaves STKEND alone.
 ;;
 str_fetch:
-	ld hl, (stkend);					// 
+	ld hl, (stkend);					// stack end to HL
 	dec hl;								// 
 	ld b, (hl);							// 
 	dec hl;								// 
@@ -519,7 +515,7 @@ str_fetch:
 	ld d, (hl);							// 
 	dec hl;								// 
 	ld e, (hl);							// 
-	ret;								// 
+	ret;								// done
 
 report_bad_fn_call:
 	rst error;							// in this case
@@ -563,7 +559,7 @@ fp_not:
 	fneg;								// -x
 	fstk1;								// -x, 1
 	fsub;								// -x - 1
-	fce;								// end calculation
+	fce;								// exit calculator
 	ret									// return
 
 fp_l_not:
@@ -604,40 +600,40 @@ fp_0_div_1:
 fp_get_int:
 	ld a, (hl);							// 
 	or a;								// 
-	jr z, fp_get_int1;					// 
-	fwait;								// 
-	fstkhalf;							// 
-	fadd;								// 
-	fint;								// 
-	fce;								// 
+	jr z, fp_get_int1;					// jump if not
+	fwait;								// enter calculator
+	fstkhalf;							// stack half
+	fadd;								// add and convert
+	fint;								// to small integer
+	fce;								// exit calculator
 
 fp_get_int1:
-	fwait;								// 
-	fdel;								// 
-	fce;								// 
-	push de;							// 
-	ex de, hl;							// 
+	fwait;								// enter calculator
+	fdel;								// remove last item
+	fce;								// exit calculator
+	push de;							// stack DE
+	ex de, hl;							// swap pointers
 	xor a;								// 
 	cp (hl);							// 
-	jp nz, report_overflow;				// 
+	jp nz, report_overflow;				// error if not
 	inc hl;								// 
 	inc hl;								// 
 	ld c, (hl);							// 
 	inc hl;								// 
 	ld b, (hl);							// 
-	ex de, hl;							// 
-	pop de;								// 
-	ret;								// 
+	ex de, hl;							// swap pointers
+	pop de;								// unstack DE
+	ret;								// done
 
 fp_logic:
 	call fp_get_int;					//
 
 report_overflow_c:
-	push bc;							// 
+	push bc;							// stack BC
 	call fp_get_int;					// 
-	pop hl;								// 
+	pop hl;								// unstack HL
 	ld a, c;							// 
-	ret;								// 
+	ret;								// done
 
 ;;
 ; OR operation
@@ -656,8 +652,8 @@ fp_logic_end:
 	ld e, a;							// 
 	xor a;								// 
 	call stk_store_nocheck;				// 
-	ex de, hl;							// 
-	ret;								// 
+	ex de, hl;							// swap pointers
+	ret;								// and return
 
 ;;
 ; XOR operation
@@ -668,7 +664,7 @@ fp_xor:
 	ld d, a;							// 
 	ld a, b;							// 
 	xor h;								// 
-	jr fp_logic_end;					// 
+	jr fp_logic_end;					// immediate jump
 
 ;;
 ; number AND number operation
@@ -679,7 +675,7 @@ fp_no_and_no:
 	ld d, a;							// 
 	ld a, b;							// 
 	and h;								// 
-	jr fp_logic_end;					// 
+	jr fp_logic_end;					// immedaite jump
 
 ;;
 ; string AND number operation
@@ -727,7 +723,7 @@ nu_or_str:
 
 strings:
 	call stk_fetch;						// length and start address of second string
-	push de;							// stack
+	push de;							// stack DE
 	push bc;							// them
 	call stk_fetch;						// first string
 	pop hl;								// unstack second string length
@@ -779,7 +775,7 @@ str_test:
 end_tests:
 	pop af;								// unstack carry flag
 	push af;							// restack carry flag
-	call c, fp_l_not;						// jump if set
+	call c, fp_l_not;					// jump if set
 	pop af;								// unstack carry flag
 	push af;							// restack carry flag
 	call nc, fp_greater_0;				// jump if not set
@@ -856,7 +852,7 @@ fp_val:
 ; VAL$ function
 ;;
 fp_val_str:
-	rst get_char;						// get current value of ch-add
+	rst get_char;						// get current value of CH-ADD
 	push hl;							// stack it
 	ld a, b;							// offset to A
 	add a, 227;							// carry set for VAL, reset for VAL$
@@ -875,7 +871,7 @@ fp_val_str:
 	ld (hl), ctrl_cr;					// replace with carriage return
 	res 7, (iy + _flags);				// reset syntax flag
 	call scanning;						// check syntax
-	cp ctrl_cr;							// end of expression?
+	cp ctrl_cr;							// carriage return? (end of expression)
 	jr nz, v_rport_c;					// error if not
 	pop hl;								// unstack start address
 	pop af;								// unstack flag
@@ -884,11 +880,11 @@ fp_val_str:
 
 v_rport_c:
 	jp nz, report_syntax_err;			// error if no match
-	ld (ch_add), hl;					// start address to ch_add
+	ld (ch_add), hl;					// start address to CH-ADD
 	set 7, (iy + _flags);				// set line execution flag
 	call scanning;						// use string as next expression
 	pop hl;								// get last value
-	ld (ch_add), hl;					// and restore ch_add
+	ld (ch_add), hl;					// and restore CH-ADD
 	jr stk_pntrs;						// exit and reset pointers
 
 ;;
@@ -896,17 +892,17 @@ v_rport_c:
 ;;
 fp_str_str:
 	call bc_1_space;					// make one space
-	ld (k_cur), hl;						// set cursor address
+	ld (k_cur), hl;						// set cursor position
 	push hl;							// stack it
 	ld hl, (curchl);					// get current channel
 	push hl;							// stack it
 	ld a, $ff;							// channel W
-	call chan_open;						// open it
+	call chan_open;						// select channel
 	call print_fp;						// print last value
 	pop hl;								// unstack current channel
 	call chan_flag;						// restore flags
 	pop de;								// unstack start of string
-	ld hl, (k_cur);						// get cursor address
+	ld hl, (k_cur);						// cursor position to HL
 	and a;								// calculate
 	sbc hl, de;							// length
 	ld c, l;							// store in 
@@ -914,7 +910,7 @@ fp_str_str:
 
 fp_str_str_1:
 	call stk_sto_str;					// parameters to calculator stack
-	ex de, hl;							// reset pointers
+	ex de, hl;							// restore pointers
 	ret;								// end of subroutine
 
 ;;
@@ -933,7 +929,7 @@ fp_read_in_1:
 	ld bc, 0;							// default length zero
 	jr nc, r_i_store;					// jump if no signal
 	inc c;								// increase length
-	rst bc_spaces;						// make one space
+	rst bc_spaces;						// make space
 	ld (de), a;							// put string in space
 
 r_i_store:
@@ -1124,7 +1120,7 @@ result_ok:
 rslt_zero:
 	fwait;								// make
 	fdel;								// last value
-	fstk0;								// zero
+	fstk0;								// stack zero
 	fce;								// exit calculator
 	ret;								// end of subroutine
 
@@ -1464,12 +1460,12 @@ fp_sqr_1:
 ; exponentiation operation
 ;;
 fp_to_power:
-	ld a, (de);							//
-	or a;								//
-	jr nz, topwr1;						//
-	call fp_to_bc_delete;				//
-	push bc;							//
-	jr z, topwrp;						//
+	ld a, (de);							// 
+	or a;								// 
+	jr nz, topwr1;						// jump if not
+	call fp_to_bc_delete;				// 
+	push bc;							// stack BC
+	jr z, topwrp;						// jump if so
 	fwait;								// x
 
 topwrn:
@@ -1479,35 +1475,35 @@ topwrn:
 	fce;								// exit calculator
 
 topwrp:
-	pop hl;								//
-	ld a, l;							//
-	or h;								//
-	jr z, stkone;						//
-	ld b, $10;							//
-	dec a;								//
-	jr nz, topwsh;						//
-	ld a, h;							//
-	or a;								//
-	ret z;								//
+	pop hl;								// unstack HL
+	ld a, l;							// 
+	or h;								// 
+	jr z, stkone;						// jump if so
+	ld b, $10;							// 
+	dec a;								// 
+	jr nz, topwsh;						// jump if not
+	ld a, h;							// 
+	or a;								// 
+	ret z;								// 
 
 topwsh:
-	dec b;								//
-	add hl, hl;							//
-	jr nc, topwsh;						//
-	push hl;							//
-	fwait;								// x
+	dec b;								// 
+	add hl, hl;							// 
+	jr nc, topwsh;						// 
+	push hl;							// stack HL
+	fwait;								// enter calculator
 	fst 0;								// store in mem-0
 
 topwrl:
 	fmove;								// x, x
 	fmul;								// x, x * x
 	fce;								// exit calculator
-	pop hl;								//
-	add hl, hl;							//
-	push hl;							//
-	ld a, (breg);						//
-	ld b, a;							//
-	jr nc, topwre;						//
+	pop hl;								// unstack HL
+	add hl, hl;							// 
+	push hl;							// stack HL
+	ld a, (breg);						// 
+	ld b, a;							// 
+	jr nc, topwre;						// 
 	fwait;								// x
 	fgt 0;								// x, x
 	fmul;								// x, x * x
@@ -1517,10 +1513,10 @@ topwre:
 	fwait;								// x
 
 topwro:
-	fdjnz topwrl;						//
+	fdjnz topwrl;						// loop until done
 	fce;								// exit calculator
-	pop hl;								//
-	ret;								//
+	pop hl;								// unstack HL
+	ret;								// done
 
 topwr1:
 	fwait;								// x
@@ -1551,9 +1547,9 @@ last:
 	ret;								// end of subroutine
 
 
-fp_div:
-	fwait;
-	fdiv;
-	fint;
-	fce;
-	ret;
+fp_quot:
+	fwait;								// enter calculator
+	fdiv;								// divide and convert
+	fint;								// to small integer
+	fce;								// exit calculator
+	ret;								// done
