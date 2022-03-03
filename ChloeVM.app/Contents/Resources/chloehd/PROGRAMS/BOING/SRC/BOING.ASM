@@ -64,6 +64,7 @@ setup:
 	out ($ff), a;						// set it (SCLD)
 	ld hl, palette + 63;				// last entry in palette
 	call set_palette;					// set the palette
+	call mute_psg
 
 start_movie:
 	ld hl, frame_no;					// address frame number (ASCII)
@@ -71,38 +72,71 @@ start_movie:
 	ld (hl), a;							// to '00'
 	inc hl;
 	ld (hl), a;
-	call do_nine;						// display frame 01 to 09
+	call show_frame;					// display frame 01
 
-	call do_ten;						// display frame 10 to 19
+	call boink;							// key frame
+
+	call do_eight;						// display frame 02 to 09
+	call do_seven;						// display frame 10 to 16
+
+	call boink;							// key frame
+
+	call do_three;						// display frame 17 to 19
 	call do_ten;						// display frame 20 to 29
-	call do_ten;						// display frame 30 to 39
-	call do_ten;						// display frame 40 to 59
+	call do_ten;						// display frame 30 to 39 - key frame 31 does not require sound
+	call do_seven;						// display frame 40 to 46
+
+	call boink;							// key frame
+
+	call do_three;						// display frame 47 to 49
 	call do_ten;						// display frame 50 to 59
+	call do_two;						// display frame 60 to 61
 
-	call show_frame;					// display frame 60
-	call show_frame;					// display frame 61
+	call boink;							// key frame
+
 	call show_prev_frame;				// display frame 60
-
 	call do_prev_ten;					// dislpay frame 59 to 50
-	call do_prev_ten;					// dislpay frame 49 to 40
+	call do_prev_four;					// display frame 49 to 46
+
+	call boink;							// key frame
+
+	call do_pr_6;						// dislpay frame 45 to 40
 	call do_prev_ten;					// dislpay frame 39 to 30
 	call do_prev_ten;					// dislpay frame 29 to 20
-	call do_prev_ten;					// dislpay frame 19 to 10
+	call do_prev_four;					// display frame 19 to 16
 
+	call boink;							// key frame
+
+	call do_pr_6;						// dislpay frame 15 to 10
 	call do_prev_eight;					// dislpay frame 09 to 02
-
 	jr start_movie;						// loop
+
+do_seven:
+	call show_frame;					// display frame _0
+	call show_frame;					// display frame _1
+	call show_frame;					// display frame _2
+	call show_frame;					// display frame _3
+	call show_frame;					// display frame _4
+
+do_two:
+	call show_frame;					// display frame _5
+	call show_frame;					// display frame _6
+	ret;
 
 do_ten:
 	call show_frame;					// display frame _0
 
 do_nine:
 	call show_frame;					// display frame _1
+
+do_eight:
 	call show_frame;					// display frame _2
 	call show_frame;					// display frame _3
 	call show_frame;					// display frame _4
 	call show_frame;					// display frame _5
 	call show_frame;					// display frame _6
+
+do_three:
 	call show_frame;					// display frame _7
 	call show_frame;					// display frame _8
 	call show_frame;					// display frame _9
@@ -112,6 +146,14 @@ do_nine:
 	ld a, '0' - 1;						// will loop to '0'
 	ld (hl), a;							// set it
 	ret;								// done
+
+do_prev_four:
+	ld hl, frame_no;					// address frame number (ASCII)
+	dec (hl);							// decrement it
+	inc hl;								// address second ASCII digit
+	ld a, '9' + 1;						// will loop to '9'
+	ld (hl), a;							// set it
+	jr do_pr_4;							// display frame _9 to _6
 
 do_prev_ten:
 	ld hl, frame_no;					// address frame number (ASCII)
@@ -125,8 +167,12 @@ do_prev_ten:
 do_pr_8:
 	call show_prev_frame;				// display frame _7
 	call show_prev_frame;				// display frame _6
+
+do_pr_6:
 	call show_prev_frame;				// display frame _5
 	call show_prev_frame;				// display frame _4
+
+do_pr_4:
 	call show_prev_frame;				// display frame _3
 	call show_prev_frame;				// display frame _2
 	call show_prev_frame;				// display frame _1
@@ -212,6 +258,77 @@ open:
 	defb f_open;						// open file
 	ld (handle), a;						// store file handle
 	ret;								// end of subroutine
+
+mute_psg:
+	ld hl, $fe07;						// H = AY-0, L = Volume register (7)
+	ld de, $bfff;						// D = data port, E = register port / mute
+	ld c, $fd;							// low byte of AY port
+	call mute_ay;						// mute AY-0
+	inc h;								// AY-1
+
+mute_ay:
+	ld b, e;							// AY register port
+	out (c), h;							// select AY (255/254)
+	out (c), l;							// select register
+	ld b, d;							// AY data port
+	out (c), e;							// AY off;
+	ret;								// end of subroutine
+
+boink:
+	ld hl, $fe07;						// H = AY-0, L = Volume register (7)
+	ld de, $bfff;						// D = data port, E = register port / mute
+	ld c, $fd;							// low byte of AY port
+
+	ld b, e;							// AY register port
+	ld a, 6;							// noise period
+	out (c), a;							// select register
+	ld b, d;							// AY data port
+	ld a, %00000110;					// 5-bit period control
+	out (c), a;							// write data;
+
+	ld b, e;							// AY register port
+	ld a, 7;							// mixer
+	out (c), a;							// select register
+	ld b, d;							// AY data port
+	ld a, %00000111;					// enable noise on channel A to C					
+	out (c), a;							// write data;
+
+	ld b, e;							// AY register port
+	ld a, 8;							// A: envelope / volume
+	out (c), a;							// select register
+	ld b, d;							// AY data port
+	ld a, %00010110;					// envelope on, full volume
+	out (c), a;							// write data;
+
+	ld b, e;							// AY register port
+	ld a, 9;							// B: envelope / volume
+	out (c), a;							// select register
+	ld b, d;							// AY data port
+	ld a, %00010110;					// envelope on, full volume
+	out (c), a;							// write data;
+
+	ld b, e;							// AY register port
+	ld a, 10;							// C: envelope / volume
+	out (c), a;							// select register
+	ld b, d;							// AY data port
+	ld a, %00010110;					// envelope on, full volume
+	out (c), a;							// write data;
+
+	ld b, e;							// AY register port
+	ld a, 12;							// coarse
+	out (c), a;							// select register
+	ld b, d;							// AY data port
+	ld a, 56;							// envelope							
+	out (c), a;							// write data;
+
+	ld b, e;							// AY register port
+	ld a, 13;							// envelope shape / cycle
+	out (c), a;							// select register
+	ld b, d;							// AY data port
+	ld a, 8;							// \|\|\|\|\|\|\|\
+	out (c), a;							// write data;
+
+	ret;								// done
 
 ;	// data
 

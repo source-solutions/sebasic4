@@ -64,6 +64,7 @@ setup:
 	out ($ff), a;						// set it (SCLD)
 	ld hl, palette + 63;				// last entry in palette
 	call set_palette;					// set the palette
+	call mute_psg;						// sound off
 
 start_movie:
 	ld hl, frame_no;					// address frame number (ASCII)
@@ -72,7 +73,12 @@ start_movie:
 	inc hl;
 	ld (hl), a;
 
+	call boink
+
 	call show_frame;					// display frame 01
+
+	call mute_psg
+
 	call show_frame;					// display frame 02
 	call show_frame;					// display frame 03
 	call show_frame;					// display frame 04
@@ -157,6 +163,77 @@ palette_loop:
 	outd;								// dec b; out bc, (hl); dec hl
 	and a;								// was that the last register?
 	jr nz, palette_loop;				// set all 64 entries
+	ret;								// done
+
+mute_psg:
+	ld hl, $fe07;						// H = AY-0, L = Volume register (7)
+	ld de, $bfff;						// D = data port, E = register port / mute
+	ld c, $fd;							// low byte of AY port
+	call mute_ay;						// mute AY-0
+	inc h;								// AY-1
+
+mute_ay:
+	ld b, e;							// AY register port
+	out (c), h;							// select AY (255/254)
+	out (c), l;							// select register
+	ld b, d;							// AY data port
+	out (c), e;							// AY off;
+	ret;								// end of subroutine
+
+boink:
+	ld hl, $fe07;						// H = AY-0, L = Volume register (7)
+	ld de, $bfff;						// D = data port, E = register port / mute
+	ld c, $fd;							// low byte of AY port
+
+	ld b, e;							// AY register port
+	ld a, 7;							// mixer
+	out (c), a;							// select register
+	ld b, d;							// AY data port
+	ld a, %00011011;					// enable noise and tone on channel C					
+	out (c), a;							// write data;
+
+	ld b, e;							// AY register port
+	ld a, 10;							// C: envelope / volume
+	out (c), a;							// select register
+	ld b, d;							// AY data port
+	ld a, %00011111;					// envelope on, full volume
+	out (c), a;							// write data;
+
+	ld b, e;							// AY register port
+	ld a, 13;							// envelope shape / cycle
+	out (c), a;							// select register
+	ld b, d;							// AY data port
+	ld a, %00001001;					// \____
+	out (c), a;							// write data;
+
+	ld b, e;							// AY register port
+	ld a, 11;							// fine
+	out (c), a;							// select register
+	ld b, d;							// AY data port
+	ld a, 0;							// envelope						
+	out (c), a;							// write data;
+
+	ld b, e;							// AY register port
+	ld a, 12;							// coarse
+	out (c), a;							// select register
+	ld b, d;							// AY data port
+	ld a, 18;							// envelope							
+	out (c), a;							// write data;
+
+	ld b, e;							// AY register port
+	ld a, 1;							// coarse
+	out (c), a;							// select register
+	ld b, d;							// AY data port
+	ld a, 0;							// pitch
+	out (c), a;							// write data;
+
+	ld b, e;							// AY register port
+	ld a, 0;							// fine
+	out (c), a;							// select register
+	ld b, d;							// AY data port
+	ld a, 14;							// pitch
+	out (c), a;							// write data;
+
 	ret;								// done
 
 load:
