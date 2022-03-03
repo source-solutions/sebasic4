@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2020 Source Solutions, Inc.
+;	// Copyright (c) 1999-2022 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -15,11 +15,41 @@
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
 ;;
-;	// --- TOKENIZER AND DETOKENIZER ROUTINES ----------------------------------
+;	// --- TOKENIZER -----------------------------------------------------------
 ;;
+
+;	// called if a line begins with '!' - shortcut for loading apps
+bang:
+	ld (hl), tk_run;					// change '!' to RUN
+	call inc_hl_make_1;					// make one space
+	inc hl;								// next character
+	ld (hl), '"';						// insert a quote mark
+	ld a, ctrl_cr;						// carriage return
+
+bang_loop:
+	inc hl;								// next character
+	cp (hl);							// end of line?
+	jr nz, bang_loop;					// jump until found
+	call inc_hl_make_1;					// insert quote
+	ld (hl), '"';						// insert a quote mark
+	inc hl;								// next
+	ld (hl), ctrl_cr;					// store a carriage return
+	inc hl;								// next
+	ld (hl), end_marker;				// store the end marker
+	inc hl;								// next
+	ld (worksp), hl;					// update worksp
+	ret;								// nothing else to do
+
+;	// increment HL then make one space
+inc_hl_make_1:
+	inc hl;								// next character
+	ld bc, 1;							// one character
+	call make_room;						// make space
+	ret;								// done
 
 ;;
 ; tokenizer
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 tokenizer:
 	res 7, (iy + _flags);				// force edit mode
@@ -27,19 +57,25 @@ tokenizer:
 	call editor;						// prepare line
 	call var_end_hl;					// varaibles end marker location to HL
 
-dot_test:
-	inc hl;								// next character
-	ld a, (hl);							// get character
-	cp 'A';								// start of command
-	jr nc, tokenizer_0;					// jump if so
-	cp ctrl_cr;							// end of line?
-	jr z, tokenizer_0;					// jump if so
-;	cp '.';								// dot command?
-;	jr nz, dot_test;					// jump if not;
-;	ld (hl), ' ';						// else remove it
-	jr dot_test;						// loop until command or EOL found
+;	// enable !<filename> as shortcut for RUN "<filename>"
+quick_launch:
+	ld hl, (e_line);					// fetch line start
+	ld a, (hl);							// get first character
+	cp '!';								// is it !
+	jr z, bang;							// jump if so
 
 tokenizer_0:
+	ld hl, (e_line);					// fetch line start
+
+;	// remove excess leading spaces
+rm_extra_ld_sp:
+	ld a, (hl);							// get chacater;
+	inc hl;								// advance character;
+	call numeric;						// digit?
+	jr nc, rm_extra_ld_sp;				// loop if so
+	cp ' ';								// space?
+	call z, ed_backspace;				// if so remove it
+
 	xor a;								// first pass
 	ld de, tk_ptr_rem;					// check REM first
 
@@ -56,37 +92,96 @@ tokenizer_3:
 	push ix;							// restore token
 	pop de;								// position to DE
 
-tokenizer_4:
+;	// trim spaces (should only be used with a fast CPU)
+ifndef slam
+	push hl;							// stack pointer
+
+trim_spaces:
 	ld a, (hl);							// get character
 
+trim_spaces_1:
+	inc hl;								// next character
+	cp ctrl_cr;							// carraige return?
+	jr z, trim_done;					// jump if so
+	cp '"';								// opening quote?
+	jr nz, not_quote;					// jump if not
+	dec hl;								// current character
+
+loop_quote:
+	inc hl;								// next character
+	ld a, (hl);							// get next character
+	cp ctrl_cr;							// carraige return?
+	jr z, trim_done;					// jump if so
+	cp '"';								// closing quote?
+	jr nz, loop_quote;					// loop until done
+
+not_quote:
+	cp ' ';								// space?
+	jr nz, trim_spaces;					// jump if not
+	ld a, (hl);							// get next character
+	cp ' ';								// space?
+	jr nz, trim_spaces_1;				// loop if not
+	call ed_backspace;					// remove second space;
+	dec hl;								// previous character
+	jr trim_spaces;						// loop
+
+trim_done:
+	pop hl;								// restore pointer
+endif
+
+tokenizer_4:
+	ld a, (hl);							// get character
 	bit 0, c;							// in quotes?
-	jr nz, in_q;						// jump if so
+	jp nz, in_q;						// jump if so
 
-sbst_print
-	cp '?';								// question mark?
-	jr nz, sbst_and;					// jump if not
-	ld a, tk_print;						// PRINT token to A
-	jr do_sbst;							// immediate jump
+sbst_lookup:
+	ld (mem_5_1), hl;					// store position
 
-sbst_and:
-	cp '&';								// 
-	jr nz, sbst_not;					// jump if not
-	ld a, tk_and;						// 
-	jr do_sbst;							// immediate jump
+;	// pre-process ampersand (should only be used with fast CPU)
+ifndef slam
+	call hex;							// check for &H
+	call oct;							// check for &O
+endif
 
-sbst_not:
-	cp '~';								// 
-	jr nz, sbst_or;						// jump if not
-	ld a, tk_not;						// 
-	jr do_sbst;							// immediate jump
+	ld b, a;							// store code point
+	ld hl, sbst_chr_tbl;				// address table
 
-sbst_or:
-	cp '|';								// 
-	jr nz, in_q;						// jump if not
-	ld a, tk_or;						// 
+sbst_lk_loop:
+	ld a, (hl);							// code in table
+	and a;								// null terminator?
+	jr z, sbst_not_found;				// jump if so
+	inc hl;								// advance
+	inc hl;								// pointer
+	cp b;								// match?
+	jr nz, sbst_lk_loop;				// loop until done
+	dec hl;								// back one position
+	ld a, (hl);							// get substitute value;
+	ld hl, (mem_5_1);					// restore HL
+	ld (hl), a;							// substitute value
+	inc hl;								// next character
+	jr tokenizer_4;						// immediate jump
 
-do_sbst:
-	ld (hl), a;							// write character back (for subs)
+sbst_not_found:
+	ld hl, (mem_5_1);					// restore HL
+	ld a, (hl);							// restore character
+
+;	//pre-processor tasks (should only be used with a fast CPU)
+ifndef slam
+	call atn;							// check for ATN()
+	call colon_else;					// check for ELSE without leading colon
+	call colour;						// check for British spelling
+	call fn_alpha;						// check for FN without trailing space
+	call hex_str;						// check for HEX$()
+	call oct_str;						// check for OCT$()
+	call rnd_param;						// check for RND with trailing parameter
+	call space_str;						// check for SPACE$(n)
+	call then_number;					// check for THEN followed by a number
+	call troff;							// check for TROFF
+	call tron;							// check for TRON
+	call sbst_ne;						// check for ><
+	call sbst_le;						// check for =<
+	call sbst_ge;						// check for =>
+endif
 
 in_q:
 	cp "'";								// substitute REM token?
@@ -115,7 +210,7 @@ tokenizer_6:
 
 tokenizer_7:
 	inc hl;								// next character
-	jr tokenizer_4;						// repeat until end of line
+	jp tokenizer_4;						// repeat until end of line
 
 tokenizer_8:
 	ld (mem_5_1), hl;					// store position
@@ -144,7 +239,7 @@ tokenizer_10:
 	ex de, hl;							// token character address to HL
 	cp (hl);							// final character?
 	ex de, hl;							// token character address to DE
-	jr nz, tokenizer_3;					// start at next with no match
+	jp nz, tokenizer_3;					// start at next with no match
 	cp 128 + '@';						// non-alpha?
 	jr c, tokenizer_12;					// jump if so
 
@@ -155,7 +250,7 @@ tokenizer_11:
 	jr z, tokenizer_12;					// jump if so
 	dec hl;								// final character of token
 	cp '$';								// string?
-	jr z, tokenizer_3;					// jump if so
+	jp z, tokenizer_3;					// jump if so
 	call alpha;	'|'						// alpha?
 	jp c, tokenizer_3;					// jump if so
 
@@ -186,8 +281,8 @@ tokenizer_14:
 	pop af;								// restore token
 	sub 1;								// dec A and set carry if zero
 	jp c, tokenizer_1;					// jump if carry flag set.
-	cp tk_rnd - 1; 						// first token?
-;	cp tk_rnd - 7; 						// first token? (used with 0-5)
+	cp first_tk - 1; 					// first token?
+;	cp first_tk - 7; 					// first token? (used with 0-5)
 	ret z;								// return if so
 	push ix;							// IX to
 	pop hl;								// HL
@@ -210,7 +305,6 @@ tokenizer_17:
 	ld b, c;							// previous result to B
 	ld c, 0;							// clear C
 	ret nc;								// return if non-alpha
-	res 5,a;							// make upper case
+	res 5, a;							// make upper case (do not substitutite AND %11011111)
 	set 7, c;							// set flag if alpha
 	ret;								// end of subroutine
-

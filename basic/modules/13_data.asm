@@ -943,3 +943,17 @@ p__fe:
 p__ff:
 	defb str_exp_no_f_ops;
 	defw c_asave;
+
+;	// used in 02_tokenizer
+
+sbst_chr_tbl:
+	defb '[', '(';						// (
+	defb ']', ')';						// )
+	defb '?', tk_print;					// PRINT
+	defb '&', tk_and;					// AND
+	defb '~', tk_not;					// NOT
+	defb '|', tk_or;					// OR
+	defb 0;								// null end marker
+
+help:
+	defb "!HELP", ctrl_cr, 0

@@ -612,7 +612,7 @@ ENDM
 	sb_print		equ '?'
 
 ;	// tokens
-
+	first_tk		equ $80;
 	tk_rnd			equ $80;
 	tk_inkey_str	equ $81;
 	tk_pi			equ $82;

@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia - A classic BASIC interpreter for the Z80 architecture.
-;	// Copyright (c) 1999-2020 Source Solutions, Inc.
+;	// Copyright (c) 1999-2022 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -33,8 +33,8 @@
 	include "modules/01_restarts.asm"
 	include "modules/02_tokenizer.asm"
 	include "modules/03_keyboard.asm"
-;	include "modules/04_.asm"
-	include "modules/05_vectors.asm"
+	include "modules/04_vectors.asm"
+	include "modules/05_preprocessor.asm"
 	include "modules/06_screen_80.asm"
 	include "modules/07_editor.asm"
 	include "modules/08_executive.asm"
@@ -47,6 +47,7 @@
 	include "modules/15_files.asm"
 	include "modules/16_audio.asm"
 	include "modules/17_miscellaneous.asm"
+;	include "modules/18_messages.asm"
 
 ;	// last byte
 org $5bb9;

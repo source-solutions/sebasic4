@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2020 Source Solutions, Inc.
+;	// Copyright (c) 1999-2022 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -40,6 +40,6 @@
 ;	// There are eight separate routines called based on the first three bits of
 ;	// the column value.
 
-;	org 4800h;
+;	org $4800;
 ;	// HL points to the first byte of a character in FONT_1
 ;	// DE points to the first byte of the block of screen addresses

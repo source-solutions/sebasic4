@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2020 Source Solutions, Inc.
+;	// Copyright (c) 1999-2022 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@
 ;	// There are eight separate routines called based on the first three bits of
 ;	// the column value.
 
-	org $0894;
+	org $0880;
 ;	// HL points to the first byte of a character in FONT_1
 ;	// DE points to the first byte of the block of screen addresses
 
@@ -193,7 +193,7 @@ inverse_3:
 	inc d;								// point to next screen location
 	inc l;								// point to next font data
 	djnz pos_3a;						// loop 8 times
-	jp pr_all_f;
+	jp pr_all_f;						// immediate jump
 
 pos_5:
 	inc de;								// next column
@@ -305,7 +305,6 @@ print_out:
 ;	bit 1, (iy + _flags2);				// test for 40 column mode
 ;	jp nz, s40_print_out;				// jump if so
 	call po_fetch;						// current print position
-	and a;								// is it zero?
 	cp ' ';								// space or higher?
 	jp nc, po_able;						// jump if so
 	cp 7;								// character in the range 0 - 6?
@@ -341,7 +340,7 @@ ctlchrtab:
 
 ;	// sound bell subroutine
 po_bel:
-	jp bell;
+	jp bell;							// immediate jump
 
 ;;
 ; print tab
@@ -363,7 +362,7 @@ po_space:
 	call po_sv_sp;						// space recursively
 	dec d;								// print
 	jr nz, po_space;					// until
-	ret;								// done
+	ret;								// end of subroutine
 
 ;;
 ; print home
@@ -373,7 +372,7 @@ po_vt:
 
 ;	// print clr subroutine
 po_clr:
-	jp c_cls;
+	jp c_cls;							// immediate jump
 
 ;;
 ; print carriage return
@@ -509,14 +508,16 @@ add_columns:
 	bit 0, (iy + _vdu_flag);			// lower screen?
 	jr z, write_char;					// jump if not
 
-	ld b, (iy + _df_sz);				// number of rows in lower display
-	ld de, 80;							// 80 characters per row
-	ld hl, $df80 + 80;					// end of character map + 80 (line 0)
+	jr no_write_char;					// BUG PATCH - lower screen was not updating character map correctly
 
-sbc_lines:
-	sbc hl, de;							// subtract 80 characters for each row
-	djnz sbc_lines;						// B holds line count (zero on loop exit)
-	add hl, bc;							// add column offset
+;	ld b, (iy + _df_sz);				// number of rows in lower display
+;	ld de, 80;							// 80 characters per row
+;	ld hl, $df80 + 80;					// end of character map + 80 (line 0)
+
+;sbc_lines:
+;	sbc hl, de;							// subtract 80 characters for each row
+;	djnz sbc_lines;						// B holds line count (zero on loop exit)
+;	add hl, bc;							// add column offset
 	
 write_char:
 	ld bc, paging;						// paging address
@@ -526,6 +527,8 @@ write_char:
 	ld (hl), a;							// write character to map
 	out (c), d;							// page framebuffer out
 	ei;									// interrupts on
+
+no_write_char:
 	pop hl;								// restore screen address
 ;	// character map code ends
 
@@ -668,7 +671,8 @@ po_stp_asciiz:
 
 ;	// token printing subroutine
 po_token:
-	sub tk_rnd;						// modify token code
+	sub first_tk;						// modify token code
+
 po_tokens:
 	ld de, token_table;					// address token table
 	push af;							// stack code
@@ -685,17 +689,17 @@ po_each:
 	inc de;								// increment pointer
 	add a, a;							// inverted bit to carry flag
 	jr nc, po_each;						// loop until done
-	pop de;								// D = 0 to 96 for tokens, 0 for messages
-	cp 72;								// last character a $?
-	jr z, po_tr_sp;						// jump if so
+	pop de;								// D = 0 to 127 for tokens, 0 for messages
+;	cp 72;								// last character a $?
+;	jr z, po_tr_sp;						// jump if so
 	cp 130;								// last character less than A?
 	ret c;								// return if so
 
 po_tr_sp:
 	ld a, d;							// offset to A
-	cp 3;								// FN?
+	cp 1;								// FN?
 	jr z, po_sv_sp;						// jump if so
-	cp 7;								// RND, INKEY$, PI, FN, BIN$, OCT$, HEX$
+	cp 7;								// EOF #, INKEY$, LOC #, LOF#, PI, RND
 	ret c;								// return if so
 
 po_sv_sp:
@@ -707,7 +711,7 @@ po_sv_sp:
 po_save:
 	push de;							// stack DE
 	exx;								// preserve HL and BC
-	rst print_a;						// print one character
+	call out_ch_2;						// print one character with leading space suppression
 	exx;								// restore HL and BC
 	pop de;								// unstack DE
 	ret;								// end of subroutine
@@ -751,15 +755,15 @@ po_scr:
 	ld e, (iy + _breg);					// get line counter
 	dec e;								// reduce it
 	jr z, po_scr_3;						// jump if listing scroll required
-	xor a;								// LD A, 0;
-	call chan_open;						// open channel K
+	xor a;								// LD A, 0; channel K
+	call chan_open;						// select channel
 	ld sp, (list_sp);					// restore stack pointer
 	res 4, (iy + _vdu_flag);			// flag automatic listing finished
 	ret;								// return via cl_set
 
 report_oo_scr:
-	rst error;
-	defb out_of_screen;
+	rst error;							// throw
+	defb out_of_screen;					// error
 
 po_scr_2:
 	dec (iy + _scr_ct);					// reduce scroll count
@@ -767,8 +771,8 @@ po_scr_2:
 	ld a, 24;							// reset
 	sub b;								// counter
 	ld (scr_ct), a;						// store scroll count
-	ld a, 253;							// open
-	call chan_open;						// channel K
+	ld a, 253;							// channel K
+	call chan_open;						// select channel
 	ld de, scrl_mssg;					// message address
 	call po_asciiz_0;					// print it
 wait_msg_loop:
@@ -788,12 +792,13 @@ po_scr_3:
 	ld b, (iy + _df_sz);				// get line number
 	inc b;								// for start of line
 	ld c, 81;							// first column
-	ret;
+	ret;								// end of subroutine
 
 report_break:
 	call flush_kb;						// clear keyboard buffer
-	rst error;
-	defb msg_break;
+
+	rst error;							// throw
+	defb msg_break;						// error
 
 po_scr_4:
 	cp 2;								// lower part fits?
@@ -854,7 +859,7 @@ cls_lower:
 
 cl_chan:
 	ld a, 253;							// channel K
-	call chan_open;						// open it
+	call chan_open;						// select channel
 	ld hl, (curchl);					// current channel address
 	ld de, print_out;					// output address
 	and a;								// clear carry flag

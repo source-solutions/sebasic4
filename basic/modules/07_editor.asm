@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2020 Source Solutions, Inc.
+;	// Copyright (c) 1999-2022 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -57,7 +57,7 @@ add_ch_1:
 	ret;								// end of subroutine
 
 ed_delete:
-	ld hl, (k_cur);						// get current cursor
+	ld hl, (k_cur);						// cursor position to HL
 	call ed_right;						// move it right
 	ret z;								// return if no character
 	jp ed_backspace;					// delete it
@@ -91,7 +91,7 @@ ed_keys:
 	ld e, (hl);							// store in E
 	add hl, de;							// address of handling routine
 	push hl;							// stack it
-	ld hl, (k_cur);						// sysvar to HL
+	ld hl, (k_cur);						// cursor position to HL
 	ret;								// indirect Jump
 
 ;;
@@ -132,7 +132,7 @@ ed_left:
 	call ed_edge;						// move cursor
 
 ed_cur:
-	ld (k_cur), hl;						// set sysvar
+	ld (k_cur), hl;						// set cursor position
 	ret;								// end of subroutine
 
 ;;
@@ -140,7 +140,7 @@ ed_cur:
 ;;
 ed_right:
 	ld a, (hl);							// get current character
-	cp ctrl_cr;							// test for carriage return
+	cp ctrl_cr;							// carraige return?
 	ret z;								// return if so
 	inc hl;								// advance cursor position
 	jr ed_cur;							// immediate jump
@@ -220,7 +220,7 @@ ed_home:
 	bit 5, (iy + _flagx);				// test mode
 	jr nz, ed_up;						// jump with input
 	ld hl, (e_line);					// start of line to HL
-	ld (k_cur), hl;						// store it in k_kur
+	ld (k_cur), hl;						// set cursor position
 	ret;								// end of subroutine
 
 ;;
@@ -263,13 +263,15 @@ ed_list:
 ; insert editing
 ;;
 ed_ins:
-	ret;								// FIXME - stub for INSERT key
+	jp edit_1;							// insert current line into edit buffer
 
 ;;
 ; help editing
 ;;
 ed_help:
-	ret;								// FIXME - stub for INSERT key
+	call f_save_old;					// save current program
+	ld hl, help;						// pointer to macro '!HELP<RETURN>'
+	jp loop_f_keys;						// write it to keyboard buffer
 
 ;;
 ; clr editing
@@ -285,7 +287,7 @@ clear_sp:
 	call set_hl;						// DE to first character, HL to last
 	dec hl;								// adjust amount
 	call reclaim_1;						// reclaim
-	ld (k_cur), hl;						// set k_cur
+	ld (k_cur), hl;						// set cursor position
 	ld (iy + _mode), 0;					// signal 'K' mode
 	pop hl;								// unstack pointer
 	ret;								// end of subroutine
@@ -345,7 +347,7 @@ key_input_1:
 	push af;							// stack code
 	inc l;								// HL contains next addres in buffer
 	ld a, l;							// low byte to A
-	and %00111111;						// 32 bytes in circular buffer
+	and k_buff_sz;						// 128 bytes in circular buffer
 	ld (iy - _k_tail), a;				// new tail pointer to sysvar
 	bit 5, (iy + _vdu_flag);			// lower display requires clearing?
 	call nz, cls_lower;					// if so do it
@@ -463,7 +465,7 @@ get_cols:
 	bit 1, (iy + _flags2);				// test for 40 column mode
 	ret z;								// return if not
 	ld b, 40;							// 40 columns
-	ret;								// done
+	ret;								// end of subroutine
 
 	org $11a7
 ;;
@@ -472,7 +474,7 @@ get_cols:
 ;;
 remove_fp:
 	ld a, (hl);							// get character
-	cp number_mark;						// hidden number marker
+	cp number_mark;						// hidden number marker?
 	ld bc, 6;							// six locations 
 	call z, reclaim_2;					// recliam if so
 	ld a, (hl);							// get character
