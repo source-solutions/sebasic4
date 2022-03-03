@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2020 Source Solutions, Inc.
+;	// Copyright (c) 1999-2022 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 
 	slam equ 1;							// uncomment to build SLAM+128/divMMC version
 
-	scrl_mssg equ $4000;				// check against symbol table before building
+	messages equ $58a0;					// check against symbol table before building
 
 ;	// restarts
 	divmmc equ $08;
@@ -35,8 +35,8 @@
 	paging equ $7ffd;
 
 ;	// control codes
-	ctrl_cr			equ $0d;
-	ctrl_lf			equ $0a;
+	ctrl_cr equ $0d;
+	ctrl_lf equ $0a;
 
 	org $0000;
 	di;									// interrupts off
@@ -179,7 +179,7 @@ not_5:
 	ld hl, font;						// soruce
 	ld de, $f800;						// destination
 	ld bc, 2048;						// 2KiB of data
-	ldir;								// block copy
+	ldir;								// copy bytes
 
 ;	// set palette
 	ld c, $3b;							// ULAplus port
@@ -188,7 +188,7 @@ not_5:
 
 pal_1st:
 	ld hl, ega_pal;						// start of data
-	jr pal_loop;
+	jr pal_loop;						// immediate jump
 
 pal_2nd:
 	ld hl, ega_pal + 8;					// offset to bright colors
@@ -522,7 +522,7 @@ cold_reset:
 
 emu_loop:
 ;	jp power_off;						// for emulators that don't implement cold boot
-	jr emu_loop;
+	jr emu_loop;						// immediate jump
 
 ;	// Write to SPI flash
 ;	// A: number of pages (256 bytes) to write
@@ -586,18 +586,18 @@ wrfls3:
 	inc b;
 	outi;
 	dec a;
-	jr nz, wrfls3;
+	jr nz, wrfls3;						// jump if not
 	exx;
 	rst wreg
 	defb flash_cs, 1;					// SPI control, deactivate
 	ex af, af';
 	dec a;
-	jr z, waits5;
+	jr z, waits5;						// jump if so
 	ex af, af';
 	inc e;
 	ld a, e;
 	and $0f;
-	jr nz, wrfls2;
+	jr nz, wrfls2;						// jump if not
 	ld hl, wrfls1;
 	push hl;
 
@@ -611,10 +611,10 @@ waits5:
 waits6:
 	in a, (c);
 	and 1;
-	jr nz, waits6;
+	jr nz, waits6;						// jump if not
 	rst wreg;
 	defb flash_cs, 1;					// SPI control, deactivate
-	ret;
+	ret;								// done
 
 ;	// part two of BASIC
 	org $0400
@@ -641,7 +641,7 @@ wipe_8:
 	ld (hl), 0;							// clear it
 	ld de, 1;							// destination
 	ld bc, 8191;						// 8KiB less one byte
-	ldir;								// block copy
+	ldir;								// copy bytes
 	ret;								// done
 
 ;	// CONFIG.SYS RAM code
@@ -906,8 +906,8 @@ ln_load:
 	call (open_ex-cf_ram)+$c100;		// open file if it exits
 
 	ret c;								// return if error
-	ld ix, scrl_mssg;					// file destination
-	ld bc, 576;							// 576 bytes of data to load
+	ld ix, messages;					// file destination
+	ld bc, 608;							// 608 bytes of data to load
 	jr any_load;						// continue to common code
 
 kb_found:
@@ -1039,7 +1039,7 @@ eof:
 	ret;			                	// return
 
 cf_path:
-	defb "/SYSTEM/CONFIG.SYS", 0;		// null terminated path to config.sys file
+	defb "/SYSTEM/PREFEREN.CES/SYSTEM.PRF", 0; // null terminated path to SYSTEM.PRF file
 
 cp_path:
 	defb "/SYSTEM/FONTS/";				// path for language files
