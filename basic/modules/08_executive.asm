@@ -503,7 +503,6 @@ open_end:
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#OPEN" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_open:
-open:
 	rst get_char;						// get character
 	cp ',';								// test for comma
 	jr nz, open_syn;					// end of syntax checking if not
@@ -583,14 +582,14 @@ cl_str_lu:
 	defb 0;								// null termniator
 
 close_file:
-;	ld a, (ix+5);						// file handle
-;	push ix;							// stack channel descriptor base
-;	call do_f_close;					// cannot do rst divmmc below $4000
-;	jp c, report_bad_io_dev;			// jump on error
-;	pop hl;								// HL = channel descriptor base
-;	ld bc, 6;							// BC = channel descriptor length
-;	call adjust_strms;					// 
-;	call reclaim_2;						// reclaim closed channel
+	ld a, (ix + 5);						// file handle
+	push ix;							// stack channel descriptor base
+	call do_f_close;					// cannot do rst divmmc below $4000
+	jp c, report_bad_io_dev;			// jump on error
+	pop hl;								// HL = channel descriptor base
+	ld bc, 6;							// BC = channel descriptor length
+	call adjust_strms;					// 
+	call reclaim_2;						// reclaim closed channel
 
 close_str:
 	pop hl;								// unstack channel information pointer
@@ -847,28 +846,20 @@ indexer:
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CLOSE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_close:
-close:
 	call str_data;						// get stream data
 
-	ld d, a;							// stream to D
-	ld a, c;							// is stream
-	or b;								// open?
-	ld a, d;							// restore stream to A
-
-	jr nz, close_valid;					// continue if stream open
+	jr nz, close_valid;					// jump if stream open
 	rst error;							// else 
 	defb undefined_stream;				// error
 
 close_valid:
 	call close_2;						// perform channel specific actions
 	ld bc, 0;							// signal stream not in use
-;	ld de, -strms - 10;					// handle streams 0 to 2
-	ld de, $a4e2;						// handle streams 0 to 2
+	ld de, - strms - 10;				// handle streams 0 to 2
 	ex de, hl;							// swap pointers
 	add hl, de;							// set carry with streams 3 to 15
 	jr c, close_1;						// jump if carry set
-;	ld bc, init_strm + 10;				// address table
-	ld bc, init_strm + 12;				// address table
+	ld bc, init_strm + 10;				// address table
 	add hl, bc;							// find entry
 	ld c, (hl);							// address
 	inc hl;								// to
@@ -893,10 +884,11 @@ close_2:
 	pop ix;								// to IX
 	ld e, c;							// offset
 	ld d, b;							// to DE
-	ld a, (ix + 4);						// channel leter to A
 
-	ld hl, cl_str_lu - 1;				// address lookup table
+	ld a, (ix + 4);						// channel leter to A
+	ld hl, cl_str_lu -1;				// address lookup table
 	call indexer_0;						// get offset
+
 	jp (hl);							// immediate jump
 
 ;	// stream data subroutine
@@ -905,7 +897,7 @@ str_data:
 	cp 16;								// in range (0 to 15)?
 	jr c, str_data1;					// jump if so
 	rst error;							// else
-	defb undefined_stream;				// error
+	defb bad_io_device;					// error
 
 str_data1:
 	add a, 3;							// adjust (3 to 18)
@@ -918,6 +910,8 @@ str_data1:
 	inc hl;								// bytes
 	ld b, (hl);							// to BC
 	dec hl;								// point to first data byte
+	ld a, c;							// test for
+	or b;								// zero
 	ret;								// end of subroutine
 
 ;;
