@@ -38,7 +38,7 @@
 ;	// There are eight separate routines called based on the first three bits of
 ;	// the column value.
 
-	org $0800;
+	org $0894;
 ;	// HL points to the first byte of a character in FONT_1
 ;	// DE points to the first byte of the block of screen addresses
 
@@ -299,16 +299,13 @@ inverse_6a:
 	ret;								// immediate return
 
 ;;
-;
-;;
-
-;;
 ; print out
 ;;
 print_out:
 ;	bit 1, (iy + _flags2);				// test for 40 column mode
 ;	jp nz, s40_print_out;				// jump if so
 	call po_fetch;						// current print position
+	and a;								// is it zero?
 	cp ' ';								// space or higher?
 	jp nc, po_able;						// jump if so
 	cp 7;								// character in the range 0 - 6?

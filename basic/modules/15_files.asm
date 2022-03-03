@@ -40,7 +40,7 @@
 	include "../../boot/os.inc";		// label definitions
 	include "../../boot/uno.inc";		// label definitions
 
-	org $5000;
+;	org $5000;
 
 ;;
 ; <code>RUN</code> command with <i>string</i> parameter

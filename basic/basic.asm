@@ -33,8 +33,8 @@
 	include "modules/01_restarts.asm"
 	include "modules/02_tokenizer.asm"
 	include "modules/03_keyboard.asm"
-	include "modules/04_audio.asm"
-	include "modules/05_miscellaneous.asm"
+;	include "modules/04_.asm"
+	include "modules/05_vectors.asm"
 	include "modules/06_screen_80.asm"
 	include "modules/07_editor.asm"
 	include "modules/08_executive.asm"
@@ -45,6 +45,8 @@
 	include "modules/13_data.asm"
 	include "modules/14_screen_40.asm"
 	include "modules/15_files.asm"
+	include "modules/16_audio.asm"
+	include "modules/17_miscellaneous.asm"
 
 ;	// last byte
 org $5bb9;
