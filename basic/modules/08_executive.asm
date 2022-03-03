@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2020 Source Solutions, Inc.
+;	// Copyright (c) 1999-2022 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -98,8 +98,8 @@ start_new:
 	ex af, af';							// restore A
 	inc a;								// NEW command?
 	jr z, ram_set;						// jump if sp
-	ld bc, $0040;						// set RASP to $40
-	ld (rasp), bc;						// set PIP to 0
+	ld bc, $ff40;						// set RASP to $40
+	ld (rasp), bc;						// set PIP to $ff
 	ld (p_ramt), iy;					// set top of RAM
 	ld hl, (p_ramt);					// p-ramt to HL
 
@@ -110,8 +110,6 @@ ram_set:
 ; default NMI routine
 ;;
 initial:
-	call flush_kb;						// flush the keyboard buffer
-
 	ld hl, (ramtop);					// ramtop to HL
 	ld (hl), $3e;						// set it to the GOSUB end marker
 	dec hl;
@@ -181,14 +179,14 @@ initial:
 	out (c),a;							// set it
 
 	call c_cls;							// clear screen
-	call set_min;						// set up workspace
+	call set_min;						// clear all work areas and calculator stack
 	ld a, 2;							// channel S
-	call chan_open;						// open it
+	call chan_open;						// select channel
 	ld de, copyright;					// copyright message
 	call po_asciiz_0;					// print it
 
 	ld hl, (ramtop);					// get top of BASIC RAM
-	ld de, (prog);						// get bottom of BASIC RAM
+	ld de, (prog);						// start of program to DE
 	sbc hl, de;							// subtract bottom from top
 	ld b, h;							// copy result
 	ld c, l;							// to BC
@@ -199,16 +197,23 @@ initial:
 	call po_asciiz_0;					// print it
 
 	xor a;								// LD A, 0; channel K
-	call chan_open;						// open it
-	ld de, ready;						// ready message
-
-	call po_asciiz_0;					// print it
-
+	call chan_open;						// select channel
+;	ld de, ready;						// ready message
+;	call po_asciiz_0;					// print it
+	call out_curs_ready;				// display cursor
 	call msg_pause;						// pause in case of NEW
 
 	set 3, (iy + _flags2);				// enable CAPS LOCK
+	call flush_kb;						// flush the keyboard buffer
 
-	jp main_1;							// immediate jump
+	ld hl, pip;							// address PIP
+	ld a, (hl);							// get PIP ($ff on cold start)
+	ld (hl), 0;							// zero PIP
+	inc a;								// test PIP ($00 on cold start)
+	jr nz, main_1;						// immediate jump with warm start
+	call autoexec;						// test for AUTOEXEC.BAS
+
+	jr main_1;							// immediate jump
 
 ;;
 ; main execution loop
@@ -218,11 +223,11 @@ main_exec:
 	call auto_list;						// auto list
 
 main_1:
-	call set_min;						// set minimum
+	call set_min;						// clear all work areas and calculator stack
 
 main_2:
-	xor a;								// LD A, 0;
-	call chan_open;						// open channel K
+	xor a;								// LD A, 0; channel K
+	call chan_open;						// select channel
 	call tokenizer;						// tokenize input
 	call line_scan;						// check syntax
 	bit 7, (iy + _err_nr);				// correct?
@@ -315,12 +320,10 @@ report_ln_bf_overflow:
 ;;
 ; main add
 ;;
-main_add:
+add_line:
 	ld (e_ppc), bc;						// make new line current line
 	ld hl, (ch_add);					// sysvar to HL
 	ex de, hl;							// store it in DE
-	ld hl, report_ln_bf_overflow;		// set report
-	push hl;							// as return address
 	ld hl, (worksp);					// worksp to HL
 	scf;								// set carry flag
 	sbc hl, de;							// length from end of line number to end
@@ -344,7 +347,7 @@ main_add1:
 	inc bc;								// for number
 	inc bc;								// and length
 	dec hl;								// location before destination to HL
-	ld de, (prog);						// prog to DE
+	ld de, (prog);						// start of program to DE
 	push de;							// stack it
 	call make_room;						// make space
 	pop hl;								// unstack prog to HL
@@ -368,12 +371,18 @@ main_add1:
 	ld (hl), d;							// least significant byte of line number
 
 main_add2:
+	ret
+
+main_add:
+	ld hl, report_ln_bf_overflow;		// set report
+	push hl;							// as return address
+	call add_line
 	pop af;								// discard report return address
 	jp main_exec;						// immediate jump
 
 report_bad_io_dev:
-	rst error;
-	defb bad_io_device;
+	rst error;							// throw
+	defb bad_io_device;					// error
 
 ;;
 ; wait key
@@ -447,8 +456,6 @@ open_i:
 	call open_f;						// get parameters, copy to workspace and set IX to point to it
 	ld b, fa_read | fa_open_ex;			// open for reading if file exists
 	call open_file;						// open the file
-
-	ld de, 6;							// data bytes 6, 0
 	jr open_end;						// immediate jump
 
 ;	// open O subroutine
@@ -456,8 +463,6 @@ open_o:
 	call open_f;						// get parameters, copy to workspace and set IX to point to it
 	ld b, fa_write | fa_open_al;		// create or open for writing if file exists
 	call open_file;						// open the file
-
-	ld de, 6;							// data bytes 6, 0
 	jr open_end;						// immediate jump
 
 ;	// open A subroutine
@@ -470,17 +475,13 @@ open_a:
 	ld de, (f_size + 2);				// high word to DE
 	ld ixl, 0;							// seek from start of file
 	call seek_f;						// seek to end of file
-
-	ld de, 6;							// data bytes 6, 0
 	jr open_end;						// immediate jump
 
 ;	// open R subroutine
 open_r:
 	call open_f;						// get parameters, copy to workspace and set IX to point to it
-	ld b, fa_read | fa_write | fa_open_al;	// create or open for reading / writing if file exists
+	ld b, fa_read|fa_write|fa_open_al;	// create or open for reading / writing if file exists
 	call open_file;						// open the file
-
-	ld de, 6;							// data bytes 6, 0
 	jr open_end;						// immediate jump
 
 ;	// open K subroutine
@@ -582,6 +583,14 @@ cl_str_lu:
 	defb 0;								// null termniator
 
 close_file:
+;	ld a, (ix+5);						// file handle
+;	push ix;							// stack channel descriptor base
+;	call do_f_close;					// cannot do rst divmmc below $4000
+;	jp c, report_bad_io_dev;			// jump on error
+;	pop hl;								// HL = channel descriptor base
+;	ld bc, 6;							// BC = channel descriptor length
+;	call adjust_strms;					// 
+;	call reclaim_2;						// reclaim closed channel
 
 close_str:
 	pop hl;								// unstack channel information pointer
@@ -769,7 +778,7 @@ reserve:
 ;;
 set_min:
 	ld hl, (e_line);					// sysvar to HL
-	ld (k_cur), hl;						// store it in k_cur
+	ld (k_cur), hl;						// set cursor position
 	ld (hl), ctrl_cr;					// store a carriage return
 	inc hl;								// next
 	ld (hl), end_marker;				// store the end marker
@@ -804,10 +813,10 @@ test_trace:
 	ld hl, vdu_flag;					// address VDU flag
 	ld d, (hl);							// get a copy in D
 	res 0, (hl);						// clear bit 0 of VDU flag
-	ld a, '[';
+	ld a, '[';							// open square bracket
 	rst print_a;						// print it
 	call out_num_1;						// the line number
-	ld a, ']';
+	ld a, ']';							// close square bracket
 	rst print_a;						// print it
 	pop af;								// restore A
 	ld (iy + _vdu_flag), d;				// restore VDU flag
@@ -853,10 +862,12 @@ close:
 close_valid:
 	call close_2;						// perform channel specific actions
 	ld bc, 0;							// signal stream not in use
+;	ld de, -strms - 10;					// handle streams 0 to 2
 	ld de, $a4e2;						// handle streams 0 to 2
 	ex de, hl;							// swap pointers
 	add hl, de;							// set carry with streams 3 to 15
 	jr c, close_1;						// jump if carry set
+;	ld bc, init_strm + 10;				// address table
 	ld bc, init_strm + 12;				// address table
 	add hl, bc;							// find entry
 	ld c, (hl);							// address
@@ -1038,6 +1049,8 @@ list_8:
 
 list_9:
 	call check_end;						// check end of statement
+
+list_10:
 	ld bc, 16383;						// last possible line
 	ld (t_addr), bc;					// BC to temporary pointer to parameter table
 	ld bc, 0;							// cleasr BC
@@ -1074,12 +1087,12 @@ list_cursor:
 	ret z;								// return if not
 	ld d, '>';							// set cursor
 	scf;								// set carry flag
-	ret;								// done
+	ret;								// end of subroutine
 
 out_line:
 	ld bc, (e_ppc);						// line number
 	call cp_lines;						// match or line after
-	ld de, $2000;							// no line cursor
+	ld de, $2000;						// no line cursor
 	call z, list_cursor;				// call with match
 	rl e;								// carry in E if line before current else zero
 
@@ -1090,7 +1103,7 @@ out_line1:
 	pop bc;								// unstack BC
 	ret nc;								// return if listing finished
 	push bc;							// stack BC
-	call out_num_2;						// print line number with leading spaces
+	call out_num_2;						// print line number
 	inc hl;								// point to
 	inc hl;								// first
 	inc hl;								// command
@@ -1113,7 +1126,7 @@ out_line4:
 	call out_curs;						// cursor reached?
 	ex de, hl;							// swap pointers
 	ld a, (hl);							// character to A
-	call number;						// test for hidden number marker
+	call number;						// skip floating point representation
 	inc hl;								// next
 	cp ctrl_cr;							// carriage return?
 	jr z, out_line5;					// jump if so
@@ -1132,11 +1145,11 @@ number:
 	cp number_mark;						// hidden number marker?
 	ret nz;								// return if not
 	inc hl;								// advance pointer six times
-	inc hl;
-	inc hl;
-	inc hl;
-	inc hl;
-	inc hl;
+	inc hl;								// 
+	inc hl;								// 
+	inc hl;								// 
+	inc hl;								// 
+	inc hl;								// 
 	ld a, (hl);							// code to A
 	ret;								// end of subroutine
 
@@ -1144,10 +1157,12 @@ number:
 ; print the cursor
 ;;
 out_curs:
-	ld hl, (k_cur);						// address cursor
+	ld hl, (k_cur);						// cursor position to HL
 	and a;								// correct
 	sbc hl, de;							// position?
 	ret nz;								// return if not
+
+out_curs_ready:
 	ld a, '_';							// use underline as cursor (for ncurses)
 	exx;								// alternate register set
 	ld hl, p_flag;						// address sysvar
@@ -1213,29 +1228,27 @@ out_char:
 	pop af;								// unstack character
 
 out_ch_1:
-	cp $80;							// token?
-	jr c, out_ch_2;						// jump, if not
-	bit 2, (iy + _flags2);					// in quotes?
-	jp nz, out_ch_2;					// jump, if so
-	push de;
-	call po_token;
-	pop de;
-	ret;
+	cp $80;								// token?
+	jr c, out_ch_2;						// jump if not
+	bit 2, (iy + _flags2);				// in quotes?
+	jp nz, out_ch_2;					// jump if so
+	push de;							// stack DE
+	call po_token;						// print the token
+	pop de;								// unstack DE
+	ret;								// done
 
 out_ch_2:
-	push hl;
-	ld hl, flags;
-	res 0, (hl);
-	cp ' ';
-	jr nz, out_ch_3;
-	set 0, (hl);
+	push hl;							// stack HL
+	ld hl, flags;						// point to FLAGS
+	res 0, (hl);						// clear leading space
+	cp ' ';								// test for space
+	jr nz, out_ch_3;					// jump if not
+	set 0, (hl);						// else set leading space required
 
 out_ch_3:
-	pop hl;
+	pop hl;								// unstack HL
 	rst print_a;						// print character
 	ret;								// end of subroutine
-
-
 
 	org $196e;
 ;;
@@ -1275,7 +1288,7 @@ cp_lines:
 ; @see: UnoDOS 3 entry points
 ;;
 each_stmt:
-	ld (ch_add), hl;					// set sysvar
+	ld (ch_add), hl;					// set character address
 	ld c, 0;							// signal quotes off
 
 each_s_1:
@@ -1292,8 +1305,8 @@ each_s_2:
 	ld a, (hl);							// next code to A
 
 each_s_3:
-	call number;						// skip numbers
-	ld (ch_add), hl;					// update sysvar
+	call number;						// skip floating point representation
+	ld (ch_add), hl;					// set character address
 	cp '"';";							// quote?
 	jr nz, each_s_4;					// jump if not
 	dec c;								// signal quotes on
@@ -1301,7 +1314,7 @@ each_s_3:
 each_s_4:
 	cp ':';								// colon?
 	jr z, each_s_5;						// jump if so
-	cp tk_then;							// THEN?
+	cp tk_then;							// THEN token?
 	jr nz, each_s_6;					// jump if not
 
 each_s_5:
@@ -1451,4 +1464,49 @@ out_num_4:
 	call out_code;						// print it
 	pop hl;								// unstack HL
 	pop de;								// and DE
+	ret;								// end of subroutine
+
+adjust_strms:
+	push bc;							// stack BC
+	push hl;							// stack HL
+	ld de, (chans);						// current channel pointer to DE
+	and a;								// prepare for 16-bit substraction
+	sbc hl, de;							// HL = HL - DE
+	ex de, hl;							// result to DE
+	ld hl, strms + 6;					// start of non-system streams to HL
+
+strms_loop:
+	ld a, (hl);							// first stream record to A
+	inc l;								// next stream record
+	ex af, af';							// store first record in A''
+	ld a, (hl);							// second record to A
+	cp d;								// compare
+	jr c, strm_skip;					// jump if in range
+	jr nz, strm_adj;					// else adjust
+	ex af, af'							// first record to A
+	cp e;								// compare
+	jr c, strm_skip;					// jump if no adjustment required
+
+strm_adj:
+	push de;							// stack DE
+	ld d, (hl);							// second stream record to D
+	dec l								// previous stream record
+	ld e, (hl);							// fisrt stream record to E
+	ex de, hl;							// records to HL
+	and a;								// prepare for 16-bit subtraction
+	sbc hl, bc;							// HL = HL - BC
+	ex de, hl;							// result to DE
+	ld (hl), e;							// E to first record
+	inc l;								// next record
+	ld (hl), d;							// D to second record
+	pop de;								// unstack DE
+
+strm_skip:
+	inc l;								// next address
+	ld a, l;							// to A
+	cp strms+38 - $100 * (strms/$100);	// compare stream
+	jr nz, strms_loop;					// loop until match
+
+	pop hl;								// unstack HL
+	pop bc;								// unstack BC
 	ret;								// end of subroutine

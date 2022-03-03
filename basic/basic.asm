@@ -47,7 +47,7 @@
 	include "modules/15_files.asm"
 	include "modules/16_audio.asm"
 	include "modules/17_miscellaneous.asm"
-;	include "modules/18_messages.asm"
+	include "modules/18_messages.asm"
 
 ;	// last byte
 org $5bb9;

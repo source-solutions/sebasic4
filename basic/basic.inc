@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia - A classic BASIC interpreter for the Z80 architecture.
-;	// Copyright (c) 1999-2020 Source Solutions, Inc.
+;	// Copyright (c) 1999-2022 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -99,63 +99,63 @@ ENDM
 ; X80 op-code: jump if true
 ;;
 MACRO fjpt n;
-	defb 0, {n} - $ - 1;
+	defb op_fjpt, {n} - $ - 1;
 ENDM
 
 ;;
 ; X80 op-code: exchange
 ;;
 MACRO fxch;
-	defb 1;
+	defb op_fxch;
 ENDM
 
 ;;
 ; X80 op-code: delete
 ;;
 MACRO fdel;
-	defb 2;
+	defb op_fdel;
 ENDM
 
 ;;
 ; X80 op-code: subtract
 ;;
 MACRO fsub;
-	defb 3;
+	defb op_fsub;
 ENDM
 
 ;;
 ; X80 op-code: multiply
 ;;
 MACRO fmul;
-	defb 4;
+	defb op_fmul;
 ENDM
 
 ;;
 ; X80 op-code: divide
 ;;
 MACRO fdiv;
-	defb 5;
+	defb op_fdiv;
 ENDM
 
 ;;
 ; X80 op-code: to power
 ;;
 MACRO ftop;
-	defb 6;
+	defb op_ftop;
 ENDM
 
 ;;
 ; X80 op-code: binary OR
 ;;
 MACRO fbor;
-	defb 7;
+	defb op_fbor;
 ENDM
 
 ;;
 ; X80 op-code: binary AND
 ;;
 MACRO fband;
-	defb 8;
+	defb op_fband;
 ENDM
 
 ;;
@@ -163,21 +163,21 @@ ENDM
 ; @param eq, <code>ge</code>, <code>gt</code>, <code>gz</code>, <code>lt</code>, <code>lz</code>, <code>ne</code>
 ;;
 MACRO fcp n;
-	defb 9 + {n}
+	defb op_fcp + {n}
 ENDM
 
 ;;
 ; X80 op-code: add
 ;;
 MACRO fadd;
-	defb $0f;
+	defb op_fadd;
 ENDM
 
 ;;
 ; X80 op-code: binary and string
 ;;
 MACRO fbands;
-	defb $10;
+	defb op_bands;
 ENDM
 
 ;;
@@ -185,203 +185,203 @@ ENDM
 ; @param eq, <code>ge</code>, <code>gt</code>, <code>gz</code>, <code>lt</code>, <code>lz</code>, <code>ne</code>
 ;;
 MACRO fcps n;
-	defb $11 + {n};
+	defb op_fcps + {n};
 ENDM
 
 ;;
 ; X80 op-code: concatenate string
 ;;
 MACRO fcat;
-	defb $17;
+	defb op_fcat;
 ENDM
 
 ;;
 ; X80 op-code: value string
 ;;
 MACRO fvals;
-	defb $18;
+	defb op_fvals;
 ENDM
 
 ;;
 ; X80 op-code: string by number multiplication
 ;;
 MACRO fmuls;
-	defb $19;
+	defb op_fmuls;
 ENDM
 
 ;;
 ; X80 op-code: read in
 ;;
 MACRO fread;
-	defb $1a;
+	defb op_fread;
 ENDM
 
 ;;
 ; X80 op-code: negate
 ;;
 MACRO fneg;
-	defb $1b;
+	defb op_fneg;
 ENDM
 
 ;;
 ; X80 op-code: character to ASCII
 ;;
 MACRO fasc;
-	defb $1c;
+	defb op_fasc;
 ENDM
 
 ;;
 ; X80 op-code: value
 ;;
 MACRO fval;
-	defb $1d;
+	defb op_fval;
 ENDM
 
 ;;
 ; X80 op-code: length of string
 ;;
 MACRO flen;
-	defb $1e;
+	defb op_flen;
 ENDM
 
 ;;
 ; X80 op-code: sine
 ;;
 MACRO fsin;
-	defb $1f;
+	defb op_fsin;
 ENDM
 
 ;;
 ; X80 op-code: cosine
 ;;
 MACRO fcos;
-	defb $20;
+	defb op_fcos;
 ENDM
 
 ;;
 ; X80 op-code: tangent
 ;;
 MACRO ftan;
-	defb $21;
+	defb op_ftan;
 ENDM
 
 ;;
 ; X80 op-code: arcsine
 ;;
 MACRO fasin;
-	defb $22;
+	defb op_fasin;
 ENDM
 
 ;;
 ; X80 op-code: arc-cosine
 ;;
 MACRO facos;
-	defb $23;
+	defb op_facos;
 ENDM
 
 ;;
 ; X80 op-code: arctangent
 ;;
 MACRO fatan;
-	defb $24;
+	defb op_fatan;
 ENDM
 
 ;;
 ; X80 op-code: natural logarithm
 ;;
 MACRO flogn;
-	defb $25;
+	defb op_flogn;
 ENDM
 
 ;;
 ; X80 op-code: exponential
 ;;
 MACRO fexp;
-	defb $26;
+	defb op_fexp;
 ENDM
 
 ;;
 ; X80 op-code: integer (rounded down)
 ;;
 MACRO fint;
-	defb $27;
+	defb op_fint;
 ENDM
 
 ;;
 ; X80 op-code: square root
 ;;
 MACRO fsqrt;
-	defb $28;
+	defb op_fsqrt;
 ENDM
 
 ;;
 ; X80 op-code: signum
 ;;
 MACRO fsgn;
-	defb $29;
+	defb op_fsgn;
 ENDM
 
 ;;
 ; X80 op-code: absolute value
 ;;
 MACRO fabs;
-	defb $2a;
+	defb op_fabs;
 ENDM
 
 ;;
 ; X80 op-code: PEEK
 ;;
 MACRO fpeek;
-	defb $2b;
+	defb op_fpeek;
 ENDM
 
 ;;
 ; X80 op-code: IN
 ;;
-MACRO fin;
-	defb $2c;
+MACRO finp;
+	defb op_finp;
 ENDM
 
 ;;
 ; X80 op-code: user address
 ;;
 MACRO fusr;
-	defb $2d;
+	defb op_fusr;
 ENDM
 
 ;;
 ; X80 op-code: string
 ;;
 MACRO fstrs;
-	defb $2e;
+	defb op_fstrs;
 ENDM
 
 ;;
 ; X80 op-code: character
 ;;
 MACRO fchrs;
-	defb $2f;
+	defb op_fchrs;
 ENDM
 
 ;;
 ; X80 op-code: NOT
 ;;
 MACRO fnot;
-	defb $30;
+	defb op_fnot;
 ENDM
 
 ;;
 ; X80 op-code: move
 ;;
 MACRO fmove;
-	defb $31;
+	defb op_fmove;
 ENDM
 
 ;;
 ; X80 op-code: modulus
 ;;
 MACRO fmod;
-	defb $32;
+	defb op_fmod;
 ENDM
 
 ;;
@@ -389,14 +389,14 @@ ENDM
 ; @param address to jump to
 ;;
 MACRO fjp n;
-	defb $33, {n} - $ - 1;
+	defb op_fjp, {n} - $ - 1;
 ENDM
 
 ;;
 ; X80 op-code: stack data
 ;;
 MACRO fstk;
-	defb $34;
+	defb op_fstk;
 ENDM
 
 ;;
@@ -404,63 +404,77 @@ ENDM
 ; @param address to jump to
 ;;
 MACRO fdjnz n;							// djnz
-	defb $35, {n} - $ - 1;
+	defb op_fdjnz, {n} - $ - 1;
+ENDM
+
+;;
+; X80 op-code: less than zero
+;;
+MACRO fltz;
+	defb op_fltz;
+ENDM
+
+;;
+; X80 op-code: greater than zero
+;;
+MACRO fgtz;
+	defb op_fgtz;
 ENDM
 
 ;;
 ; X80 op-code: CPU enable
 ;;
 MACRO fce;
-	defb $38;
+	defb op_fce;
 ENDM
 
 ;;
 ; X80 op-code: get
 ;;
 MACRO fget;
-	defb $39;
+	defb op_fget;
 ENDM
 
 ;;
 ; X80 op-code: truncate
 ;;
 MACRO ftrn;
-	defb $3a;
+	defb op_ftrn;
 ENDM
 
 ;;
 ; X80 op-code: single operation
 ;;
 MACRO fsgl;
-	defb $3b;
+	defb op_fsgl;
 ENDM
 
 ;;
-; X80 op-code: DPEEK
+; X80 op-code: DEEK
 ;;
-MACRO fdpeek;
-	defb $3c;
+MACRO fdeek;
+	defb op_fdeek;
 ENDM
 
 ;;
 ; X80 op-code: restack
 ;;
 MACRO frstk;
-	defb $3d;
+	defb op_frstk;
 ENDM
 
 ;;
 ; X80 op-code: exclusive or
 ;;
 MACRO fxor;
-	defb $3e;
+	defb op_fxor;
 ENDM
 
 ;;
 ; X80 op-code: integer quotient
 ;;
 MACRO fquot;
-	defb $3f;
+	defb op_fquot;
 ENDM
 
 ;;
@@ -516,7 +530,6 @@ ENDM
 ;	// miscellaneous
 
 	end_marker		equ $80;
-	k_buff			equ $5b00;
 
 
 ;	// colors
@@ -604,6 +617,7 @@ ENDM
 	op_hex			equ '$';
 	op_oct			equ '@';
 
+
 ;	// substitutes
 
 	sb_and			equ '&'
@@ -611,143 +625,6 @@ ENDM
 	sb_or			equ '|'
 	sb_print		equ '?'
 
-;	// tokens
-	first_tk		equ $80;
-	tk_rnd			equ $80;
-	tk_inkey_str	equ $81;
-	tk_pi			equ $82;
-	tk_fn			equ $83;
-	tk_bin_str		equ $84;
-	tk_oct_str		equ $85;
-	tk_hex_str		equ $86;
-	tk_spc			equ $87;
-	tk_tab			equ $88;
-	tk_val_str		equ $89;
-	tk_asc			equ $8a;
-	tk_val			equ $8b;
-	tk_len			equ $8c;
-	tk_sin			equ $8d;
-	tk_cos			equ $8e;
-	tk_tan			equ $8f;
-	tk_asin			equ $90;
-	tk_acos			equ $91;
-	tk_atan			equ $92;
-	tk_log			equ $93;
-	tk_exp			equ $94;
-	tk_int			equ $95;
-	tk_sqr			equ $96;
-	tk_sgn			equ $97;
-	tk_abs			equ $98;
-	tk_peek			equ $99;
-	tk_in			equ $9a;
-	tk_usr			equ $9b;
-	tk_str_str		equ $9c;
-	tk_chr_str		equ $9d;
-	tk_not			equ $9e;
-	tk_mod			equ $9f;
-	tk_or			equ $a0;
-	tk_and			equ $a1;
-	tk_l_eql		equ $a2;
-	tk_gr_eq		equ $a3;
-	tk_neql			equ $a4;
-	tk_line			equ $a5;
-	tk_then			equ $a6;
-	tk_to			equ $a7;
-	tk_step			equ $a8;
-
-	tk_def_fn		equ $a9;
-	tk_def			equ $a9;
-	first_cmd		equ $a9;
-	tk_using		equ $a9;
-	tk_else			equ $a9;
-	tk_off			equ $a9;
-
-	tk_bload		equ $aa;
-	tk_bsave		equ $ab;
-	tk_chdir		equ $ac;
-	tk_copy			equ $ad;
-	tk_open			equ $ae;
-	tk_close		equ $af;
-	tk_while		equ $b0;
-	tk_wend			equ $b1;
-	tk_sound		equ $b2;
-	tkey_files		equ $b3;
-	tk_kill			equ $b4;
-	tk_load			equ $b5;
-	tk_mkdir		equ $b6;
-	tk_name			equ $b7;
-	tk_rmdir		equ $b8;
-	tk_save			equ $b9;
-	tk_out			equ $ba;
-	tk_locate		equ $bb;
-	tk_end			equ $bc;
-	tk_stop			equ $bd;
-	tk_read			equ $be;
-	tk_data			equ $bf;
-	tk_restore		equ $c0;
-	tk_new			equ $c1;
-	tk_error		equ $c2;
-	tk_cont			equ $c3;
-	tk_dim			equ $c4;
-	tk_rem			equ $c5;
-	tk_for			equ $c6;
-	tk_goto			equ $c7;
-	tk_gosub		equ $c8;
-	tk_input		equ $c9;
-	tk_palette		equ $ca;
-	tk_list			equ $cb;
-	tk_let			equ $cc;
-	tk_wait			equ $cd;
-	tk_next			equ $ce;
-	tk_poke			equ $cf;
-	tk_print		equ $d0;
-	tk_delete		equ $d1;
-	tk_run			equ $d2;
-	tk_edit			equ $d3;
-	tk_randomize	equ $d4;
-	tk_if			equ $d5;
-	tk_cls			equ $d6;
-	tk_call			equ $d7;
-	tk_clear		equ $d8;
-	tk_return		equ $d9;
-	tk_color		equ $da;
-	tk_tron			equ $db;
-	tk_troff		equ $dc;
-	tk_on			equ $dd;
-	tk_renum		equ $de;
-	tk_old			equ $df;
-	tk_screen		equ $e0;
-	tk_xor			equ $e1;
-	tk__e2			equ $e2;
-	tk__e3			equ $e3;
-	tk__e4			equ $e4;
-	tk_left_str		equ $e5;
-	tk_right_str	equ $e6;
-	tk_mid_str		equ $e7;
-	tk_string_str	equ $e8;
-	tk_fix			equ $e9;
-	tk_dpeek		equ $ea;
-	tk__eb			equ $eb;
-	tk__ec			equ $ec;
-	tk__ed			equ $ed;
-	tk__ee			equ $ee;
-	tk__ef			equ $ef;
-	tk__f0			equ $f0;
-	tk__f1			equ $f1;
-	tk__f2			equ $f2;
-	tk__f3			equ $f3;
-	tk__f4			equ $f4;
-	tk__f5			equ $f5;
-	tk__f6			equ $f6;
-	tk__f7			equ $f7;
-	tk__f8			equ $f8;
-	tk__f9			equ $f9;
-	tk__fa			equ $fa;
-	tk__fb			equ $fb;
-	tk__fc			equ $fc;
-	tk__fd			equ $fd;
-	tk__fe			equ $fe;
-	tk__ff			equ $ff;
 
 ;	// i/o ports
 
@@ -764,6 +641,7 @@ ENDM
 	ay_reg			equ	$c0f5
 	paging			equ	$7ffd
 	ay_128dat		equ	$bffd
+
 
 ;	// restarts
 
@@ -794,37 +672,6 @@ ENDM
 	str_exp_no_f_ops		equ $0b;
 
 
-;	// errors
-
-	ok						equ $ff;
-	msg_break				equ $00;
-	next_without_for		equ $01;
-	syntax_error			equ $02;
-	while_without_wend		equ $02;
-	wend_without_while		equ $02;
-	return_without_gosub	equ $03;
-	out_of_data				equ $04;
-	illegal_function_call	equ $05;
-	overflow				equ $06;
-	out_of_memory			equ $07;
-	undefined_line_number	equ $08;
-	subscript_out_of_range	equ $09;
-	undefined_variable		equ $0a;
-	address_out_of_range	equ $0b;
-	statement_missing		equ $0c;
-	type_mismatch			equ $0d;
-	out_of_screen			equ $0e;
-	bad_io_device			equ $0f;
-	undefined_stream		equ $10;
-	undefined_channel		equ $11;
-	undefined_user_function	equ $12;
-	line_buffer_overflow	equ $13;
-	for_without_next		equ $14;
-	file_not_found			equ $15;
-	input_past_end			equ $16;
-	path_not_found			equ $17;
-
-
 ;	// frame buffer
 
 	bit_map		equ $c000
@@ -833,6 +680,13 @@ ENDM
 	pal_map		equ $dfc0
 	attr_map	equ $e000
 	font		equ	$f800		
+
+
+;	// keyboard buffer
+
+	k_buff		equ $5b00;
+	k_buff_sz	equ %01111111;		// 128 bytes
+
 
 ;	// system variables
 

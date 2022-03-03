@@ -876,3 +876,12 @@ c_aload:
 	
 c_asave:
 	jp c_save;							// stub for ASCII BASIC saving
+
+c_merge:
+	ret;
+
+c_seek:
+	ret;
+
+autoexec:
+	ret;

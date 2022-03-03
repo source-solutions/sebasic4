@@ -77,7 +77,6 @@
 ;	// --- KEYBOARD ROUTINES ---------------------------------------------------
 ;;
 
-	k_buff_sz equ %01111111;            // 128 bytes
 
 ;;
 ; keyboard scanning

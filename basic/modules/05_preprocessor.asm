@@ -332,27 +332,3 @@ atn:
 	call make_1_inc_hl;					// make one space
 	ld (hl), 'A';						// insert 'A'
 	jp exit_pp;							// done
-
-tk_ptr_else equ 0
-tk_ptr_color equ 0
-tk_ptr_fn equ 0
-tk_ptr_hex_str equ 0
-tk_ptr_oct_str equ 0
-tk_ptr_rnd equ 0
-tk_ptr_space equ 0
-tk_ptr_then equ 0
-tk_ptr_troff equ 0
-tk_ptr_tron equ 0
-tk_ptr_trace equ 0
-tk_ptr_ne equ 0
-tk_ptr_le equ 0
-tk_ptr_ge equ 0
-tk_ptr_hex equ 0
-tk_ptr_oct equ 0
-tk_ptr_atn equ 0
-tk_ptr_colour equ 0
-tk_ptr_space_str equ 0
-tk_trace equ 0
-tk_ne equ 0
-tk_le equ 0
-tk_ge equ 0
