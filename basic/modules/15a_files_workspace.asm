@@ -40,8 +40,77 @@
 	include "../../boot/os.inc";		// label definitions
 	include "../../boot/uno.inc";		// label definitions
 
+;	// file channels
+
+get_handle:
+	ld ix, (curchl);					// get current channel
+	ld a, (ix + 5);						// get file handle
+	ld bc, 1;							// one byte to transfer
+	ret;								// done
+
+file_out:
+	ld (membot), a;						// store character to write in membot
+	call get_handle;					// get the file descriptor in A
+	ld ix, membot;						// get character from membot
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_write;						// write a byte
+	jr c, report_bad_io_dev;			// jump if error
+;	or a;								// clear flags
+	ret;								// done
+
+file_in:
+	call get_handle;					// get the file descriptor in A
+	ld ix, membot;						// store character in membot
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_read;						// read a byte
+	jr c, report_bad_io_dev;			// jump if error
+	dec c;								// decrement C (bytes read: should now be zero)
+	ld a, (membot);						// character to A
+	scf;								// set carry flag
+	ret z;								// return if zero flag set
+	and a;								// clear carry flag
+	ret;								// done
+
 
 ;	// service routines
+
+;	// open a file and attach it to a channel
+open_file:
+	push bc;							// stack mode
+	ld hl, (prog);						// HL = start of BASIC program
+	dec hl;								// HL = end of channel descriptor area
+	ld bc, 6							// file channel descriptor length
+	add ix, bc;							// the filename will get moved by 6 bytes
+	call make_room;						// reserve channel descriptor
+	pop bc;								// BC = mode
+	push de;							// stack end of channel descriptor
+   	ld a, '*';							// use current drive
+	rst divmmc;							// issue a hookcode
+	defb f_open;						// open file
+	jr c, open_file_err;				// jump if error
+	pop de;								// unstack end of channel descriptor
+	ld (de), a;							// file descriptor
+	dec de;								// decrement DE
+	ld hl, file_chan + 4;				// HL = service routines' end
+	ld bc, 5;							// copy 5 bytes
+	lddr;								// do the copying
+	ld hl,(chans);						// HL = channel descriptor area
+	ex de, hl;							// DE = chan. desc. area. HL = channel desc. beginning - 1
+	sbc hl, de;							// HL = offset - 2
+	inc hl;								// HL = offset - 1
+	inc hl;								// HL = offset
+	ex de, hl;							// DE = offset
+	ret;								// done
+
+open_file_err:
+	pop de;								// unstack end of channel descriptor
+	inc de;								// DE = one past end of channel desc.
+	ld hl, -6;							// reclaim 6 bytes
+	add hl, de;							// HL = beginning of channel desc.
+	ex de, hl;							// HL = one past end, DE = beginning
+	call reclaim_1;						// free up the unsuccessful channel descriptor
 
 report_bad_io_dev:
 	rst error;							// throw
