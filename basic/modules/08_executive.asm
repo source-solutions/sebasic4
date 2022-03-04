@@ -514,7 +514,7 @@ open_0:
 	fwait;								// enter calculator
 	fxch;								// swap stream number and channel code
 	fce;								// exit calculator
-	call str_data;						// get stream data, zero flag set if stream closed
+	call str_data2;						// get stream data, zero flag set if stream closed
 	ld a, c;							// stream
 	or b;								// closed?
 	jr z, open_1;						// jump if so
@@ -569,27 +569,6 @@ open_3:
 	ld b, 0;							// to BC
 	add hl, bc;							// real address to HL
 	jp (hl);							// immediate jump
-
-;	// close stream lookup table
-cl_str_lu:
-	defb 'K', close_str - 1 - $;		// keyboard
-	defb 'S', close_str - 1 - $;		// screen
-	defb 'F', close_file - 1 - $;		// file
-	defb 0;								// null termniator
-
-close_file:
-	ld a, (ix + 5);						// file handle
-	push ix;							// stack channel descriptor base
-	call do_f_close;					// cannot do rst divmmc below $4000
-	jp c, report_bad_io_dev;			// jump on error
-	pop hl;								// HL = channel descriptor base
-	ld bc, 6;							// BC = channel descriptor length
-	call adjust_strms;					// 
-	call reclaim_2;						// reclaim closed channel
-
-close_str:
-	pop hl;								// unstack channel information pointer
-	ret;								// end of routine
 
 ;	// channel code lookup table
 chn_cd_lu:
@@ -820,10 +799,6 @@ test_trace:
 ;;
 ; indexer
 ;;
-indexer_0:
-	ld c, a;							// A to
-	ld b, 0;							// BC
-
 indexer_1:
 	inc hl;								// next
 
@@ -842,8 +817,7 @@ indexer:
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CLOSE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_close:
-	call str_data;						// get stream data
-
+	call str_data2;						// get stream data
 	jr nz, close_valid;					// jump if stream open
 	rst error;							// else 
 	defb undefined_stream;				// error
@@ -873,35 +847,65 @@ close_2:
 	push hl;							// stack stream data address
 	ld hl, (chans);						// base address of channel to HL
 	add hl, bc;							// channel address
-
-	dec hl;								// point to first byte
-	ld (curchl), hl;					// update current channel
-	push hl;							// HL
-	pop ix;								// to IX
-	ld e, c;							// offset
-	ld d, b;							// to DE
-
-	ld a, (ix + 4);						// channel leter to A
-	ld hl, cl_str_lu -1;				// address lookup table
-	call indexer_0;						// get offset
-
+	inc hl;								// advance
+	inc hl;								// pointer to
+	inc hl;								// channel letter
+	ld c, (hl);							// letter to C
+	ex de, hl;							// swap pointers
+	ld hl, cl_str_lu;					// address close stream lookup table
+	call indexer;						// get offset
+	jr nc, close_3;						// jump if no match found (user-defined channel)
+	ld c, (hl);							// offset to C
+	ld b, 0;							// zero B
+	add hl, bc;							// address to jump to
 	jp (hl);							// immediate jump
+
+close_3;
+	ld hl, 5;							// offset to custom close routine in channel data
+	add hl, de;							// address pointer to close routine
+	ld a, (hl);							// low byte to A
+	inc hl;								// next byte
+	ld h, (hl);							// high byte to H
+	ld l, a;							// low byte to L
+	jp (hl);							// jump to custom service routine
+
+;	// close stream lookup table
+cl_str_lu:
+	defb 'K', close_str - 1 - $;		// keyboard
+	defb 'S', close_str - 1 - $;		// screen
+	defb 'F', close_file - 1 - $;		// file
+	defb 0;								// null termniator
+
+close_file:
+	ld a, (ix + 5);						// file handle
+	push ix;							// stack channel descriptor base
+	call do_f_close;					// cannot do rst divmmc below $4000
+	jp c, report_bad_io_dev;			// jump on error
+	pop hl;								// HL = channel descriptor base
+	ld bc, 6;							// BC = channel descriptor length
+	call adjust_strms;					// 
+	call reclaim_2;						// reclaim closed channel
+
+close_str:
+	pop hl;								// unstack channel information pointer
+	ret;								// end of routine
 
 ;	// stream data subroutine
 str_data:
 	call find_int1;						// get stream number
 	cp 16;								// in range (0 to 15)?
-	jr c, str_data1;					// jump if so
+	ret c;								// return if so
 	rst error;							// else
 	defb bad_io_device;					// error
 
+str_data2:
+	call str_data;						// valid stream?
+
 str_data1:
-	add a, 3;							// adjust (3 to 18)
-	rlca;								// range  (6 to 36)
-	ld hl, strms;						// base address of streams
-	ld c, a;							// offset
-	ld b, 0;							// to BC
-	add hl, bc;							// stream address to HL
+	add a, a;							// adjust (0 to 30)
+	add a, 22;							// range (22 to 55)
+	ld l, a;							// result to L
+	ld h, hi(strms);					// high byte of STRMS to H
 	ld c, (hl);							// data
 	inc hl;								// bytes
 	ld b, (hl);							// to BC
@@ -1456,6 +1460,7 @@ out_num_4:
 	pop de;								// and DE
 	ret;								// end of subroutine
 
+;	// FIXME - may be better to relocate this routine closer to the one that calls it
 adjust_strms:
 	push bc;							// stack BC
 	push hl;							// stack HL
@@ -1494,9 +1499,8 @@ strm_adj:
 strm_skip:
 	inc l;								// next address
 	ld a, l;							// to A
-	cp strms+38 - $100 * (strms/$100);	// compare stream
+	cp strms + 38 - $100 * (strms/$100);// compare stream
 	jr nz, strms_loop;					// loop until match
-
 	pop hl;								// unstack HL
 	pop bc;								// unstack BC
 	ret;								// end of subroutine
