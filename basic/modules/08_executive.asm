@@ -380,10 +380,6 @@ main_add:
 	pop af;								// discard report return address
 	jp main_exec;						// immediate jump
 
-report_bad_io_dev:
-	rst error;							// throw
-	defb bad_io_device;					// error
-
 ;;
 ; wait key
 ;;

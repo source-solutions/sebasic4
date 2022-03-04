@@ -43,6 +43,10 @@
 
 ;	// service routines
 
+report_bad_io_dev:
+	rst error;							// throw
+	defb bad_io_device;					// error
+
 ;	// get destination and source path and set pointer in DE and IX
 paths_to_de_ix:
 	call path_to_ix;					// destination to IX
