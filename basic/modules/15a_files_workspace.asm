@@ -40,6 +40,7 @@
 	include "../../boot/os.inc";		// label definitions
 	include "../../boot/uno.inc";		// label definitions
 
+
 ;	// service routines
 
 ;	// get destination and source path and set pointer in DE and IX
@@ -69,12 +70,10 @@ path_to_ix:
 	pop hl;								// get last value
 	ld (ch_add), hl;					// and restore CH-ADD
 
-;	// the next two instructions may not be necessary
+;	// the next two instructions may be unnecessary, but putting them here reduces duplication
 	ld a, '*';							// use current drive
 	and a;								// signal no error (clear carry flag)
-
 	ret;								// end of service routine
-
 
 ;	// block copy converting spaces to underscores
 ldir_space:
@@ -97,6 +96,39 @@ no_space:
 ;	// file commands
 
 ;;
+; <code>CHDIR</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CHDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws Path not found.
+;;
+c_chdir:
+	call unstack_z;						// return if checking syntax
+	call path_to_ix;					// path to buffer
+	rst divmmc;							// issue a hookcode
+	defb f_chdir;						// change folder
+
+;	// common service routine inlined
+chk_path_error:
+	jr c, report_path_not_found;		// jump if error
+	or a;								// clear flags
+	ret;								// done
+
+report_path_not_found:
+	rst error;							// throw
+	defb path_not_found;				// error
+
+;;
+; <code>MKDIR</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#MKDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws Path not found.
+;;
+c_mkdir:
+	call unstack_z;						// return if checking syntax
+	call path_to_ix;					// path to buffer
+	rst divmmc;							// issue a hookcode
+	defb f_mkdir;						// create folder
+	jr chk_path_error;					// test for error
+
+;;
 ; <code>NAME</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#NAME" target="_blank" rel="noopener noreferrer">Language reference</a>
 ; @throws File not found; Path not found.
@@ -109,3 +141,15 @@ c_name:
 	jp c, report_file_not_found;		// jump if error
 	or a;								// clear flags
 	ret;								// end of command
+
+;;
+; <code>RMDIR</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RMDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws Path not found.
+;;
+c_rmdir:
+	call unstack_z;						// return if checking syntax
+	call path_to_ix;					// path to buffer
+	rst divmmc;							// issue a hookcode
+	defb f_rmdir;						// change folder
+	jr chk_path_error;					// test for error

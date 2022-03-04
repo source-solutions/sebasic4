@@ -651,55 +651,11 @@ ifndef no_fs
 endif
 	ret;								// done
 
-;;
-; <code>CHDIR</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CHDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
-; @throws Path not found.
-;;
-c_chdir:
-	call unstack_z;						// return if checking syntax
-	call path_to_ix;					// path to buffer
-;	ld a, '*';							// use current drive
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_chdir;						// change folder
-	jr chk_path_error;					// test for error
 
-;;
-; <code>MKDIR</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#MKDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
-; @throws Path not found.
-;;
-c_mkdir:
-	call unstack_z;						// return if checking syntax
-	call path_to_ix;					// path to buffer
-;	ld a, '*';							// use current drive
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_mkdir;						// create folder
-	jr chk_path_error;					// test for error
 
-;;
-; <code>RMDIR</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RMDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
-; @throws Path not found.
-;;
-c_rmdir:
-	call unstack_z;						// return if checking syntax
-	call path_to_ix;					// path to buffer
-;	ld a, '*';							// use current drive
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_rmdir;						// change folder
 
-chk_path_error:
-	jr c, report_path_not_found;		// jump if error
-	or a;								// clear flags
-	ret;								// done
 
-report_path_not_found:
-	rst error;							// throw
-	defb path_not_found;				// error
+
 
 ;	// file channels
 get_handle:
