@@ -1942,6 +1942,10 @@ lv2:
 ;;
 c_key:
 	rst get_char;						// get first character
+	cp tk_on;							// ON token?
+	jp z, key_on;						// jump if so
+	cp tk_off;							// OFF token?
+	jp z, key_off;						// jump if so
 	cp tk_list;							// LIST token?
 	jr z, key_list;						// jump if so
 	call expt_1num;						// get parameter
@@ -2054,6 +2058,16 @@ not_cr:
 	rst print_a;						// print character
 	inc de;								// next character
 	jr pr_mcr_loop;						// loop until done
+
+key_on:
+	rst next_char;						// next character
+	call check_end;						// expect end of line
+	ret;								// FIXME - stub for action to switch off macros
+
+key_off:
+	rst next_char;						// next character
+	call check_end;						// expect end of line
+	ret;								// FIXME - stub for action to switch off macros
 
 get_next:
 	ld a, (hl);							// get character
