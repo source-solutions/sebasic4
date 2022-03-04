@@ -139,11 +139,6 @@ init_chan:
 	defb 'W';							// channel
 	defb end_marker;					// no more channels
 
-file_chan:
-	defw file_out, file_in;				// file
-	defb 'F';							// channel
-	defw 8;								// length of channel
-
 ;	// used in 10_expression
 tbl_ops_priors:
 	defb '+', op_fadd + %11000000, 8;	// +
@@ -1059,6 +1054,11 @@ p_while:
 	defw c_while;
 
 ;	// used in 15_files
+
+file_chan:
+	defw file_out, file_in;				// file channel
+	defb 'F';							// service routine
+
 dir_msg:
 	defb "<DIR>   ", 0;
 
@@ -1072,8 +1072,8 @@ prgpath:
 rootpath:
 	defb '/', 0;						// root	
 
-;cur_path:
-;	defb '.', 0;						// current path
+cur_path:
+	defb '.', 0;						// current path
 
 appname:
 	defb ".PRG", 0;						// application extension
@@ -1090,8 +1090,8 @@ sys_folder:
 tmp_folder:
 	defb "TEMPORAR.Y", 0;				// temporary folder name
 
-auto_run:
-	defb tk_run, ctrl_cr, 0;			// inserted into keyboard buffer
-
 autoexec_bas:
 	defb "AUTOEXEC.BAS", 0;				// filepath for AUTOEXEC.BAS
+
+auto_run:
+	defb tk_run, ctrl_cr, 0;			// inserted into keyboard buffer

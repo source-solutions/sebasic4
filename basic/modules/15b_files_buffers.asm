@@ -365,7 +365,7 @@ f_save_old:
 	defb f_unlink;						// delete file if it exists
 
 	ld ix, rootpath;					// go to root
-ld a, '*';							// use current drive
+	ld a, '*';							// use current drive
 	rst divmmc;							// issue a hookcode
 	defb f_chdir;						// change folder
 
@@ -648,12 +648,6 @@ file_out:
 ;	or a;								// clear flags
 	ret;								// done
 
-;	// file service routine
-file_sr:
-	defw file_out;						// output
-	defw file_in;						// input
-	defb 'F';							// channel identifier
-
 open_file:
 	push bc;							// stack mode
 	ld hl, (prog);						// HL = start of BASIC program
@@ -670,7 +664,7 @@ open_file:
 	pop de;								// unstack end of channel descriptor
 	ld (de), a;							// file descriptor
 	dec de;								// decrement DE
-	ld hl, file_sr + 4;					// HL = service routines' end
+	ld hl, file_chan + 4;				// HL = service routines' end
 	ld bc, 5;							// copy 5 bytes
 	lddr;								// do the copying
 	ld hl,(chans);						// HL = channel descriptor area
