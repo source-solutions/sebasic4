@@ -702,6 +702,7 @@ ENDM
 	f_addr		equ f_size + 4;		// (iy - $72)
 	handle_1	equ f_addr + 2;		// (iy - $70)
 
+	open_x		equ mstate - 2;		// (iy - $42)	address of custom OPEN routine
 	mstate		equ jstate - 4;		// (iy - $40)	mouse state
 	jstate		equ k_head - 1;		// (iy - $3d)	joystick state
 	k_head		equ k_tail - 1;		// (iy - $3c)	pointer to head of keyboard buffer

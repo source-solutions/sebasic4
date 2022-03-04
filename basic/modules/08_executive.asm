@@ -556,18 +556,23 @@ open_3:
 	ld a, c;							// single
 	or b;								// character?
 	jr nz, report_undef_chan;			// error if not
-
 	ld a, (de);							// get first character
 	and %11011111;						// make upper case
 	ld c, a;							// store in C
 	ld hl, op_str_lu;					// address look up table
 	call indexer;						// get offset
-
-;	// FIXME: add test for sysvar for user defined channels
-	jr nc, report_undef_chan;			// error if not found
+	jr nc, open_4;						// if no match, try custom user channel
 	ld c, (hl);							// offset
 	ld b, 0;							// to BC
 	add hl, bc;							// real address to HL
+	jp (hl);							// immediate jump
+
+open_4:
+	pop bc;								// unstack BC
+	ld hl, (open_x);					// is a custom open address set?
+	ld a, l;							// test for
+	or h;								// zero
+	jr z, report_undef_chan;			// error if system variable not set
 	jp (hl);							// immediate jump
 
 ;	// channel code lookup table
@@ -1275,6 +1280,8 @@ cp_lines:
 	dec hl;								// restore pointer
 	cp c;								// compare with C
 	ret;								// end of subroutine
+
+;	// three spare bytes before next routine
 
 	org $198b;
 ;;
