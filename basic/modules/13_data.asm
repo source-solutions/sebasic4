@@ -1023,7 +1023,7 @@ p_run:
 	defw c_run;
 
 p_save:
-	defb str_exp_no_f_ops;
+	defb str_exp, var_syn;
 	defw c_save;
 
 p_screen:
