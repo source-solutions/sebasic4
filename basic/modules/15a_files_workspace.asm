@@ -92,6 +92,11 @@ no_space:
 	jr nz, ldir_space;					// loop until done
 	ret;								// end of service routine
 
+;	// set path to root
+init_path:
+	ld a, '*';							// use current drive
+	ld ix, rootpath;					// default path
+	jr c_chdir_1;						// immediate jump
 
 ;	// file commands
 
@@ -103,6 +108,8 @@ no_space:
 c_chdir:
 	call unstack_z;						// return if checking syntax
 	call path_to_ix;					// path to buffer
+
+c_chdir_1:
 	rst divmmc;							// issue a hookcode
 	defb f_chdir;						// change folder
 
@@ -115,6 +122,20 @@ chk_path_error:
 report_path_not_found:
 	rst error;							// throw
 	defb path_not_found;				// error
+
+;;
+; <code>KILL</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#KILL" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
+;;
+c_kill:
+	call unstack_z;						// return if checking syntax
+	call path_to_ix;					// path to buffer
+	rst divmmc;							// issue a hookcode
+	defb f_unlink;						// release file
+	jp c, report_file_not_found;		// jump if error
+	or a;								// clear flags
+	ret;								// done
 
 ;;
 ; <code>MKDIR</code> command

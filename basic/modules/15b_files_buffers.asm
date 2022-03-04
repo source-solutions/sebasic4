@@ -321,9 +321,6 @@ write_chunk:
 ; @throws File not found; Path not found.
 ;;
 c_old:
-ifdef no_fs
-	ret;
-endif
 	call unstack_z;						// return if checking syntax
 	ld ix, old_bas_path;				// pointer to path
 
@@ -362,9 +359,6 @@ endif
 	defb ok;							// done
 
 f_save_old:
-ifdef no_fs
-	ret;								// return if no file system
-endif
 	ld ix, old_bas_path;				// path to old.bas
 	ld a, '*';							// use current drive
 	rst divmmc;							// issue a hookcode
@@ -620,41 +614,6 @@ print_f:
 no_:
 	rst print_a;						// print it
 	ret;								// return
-
-;	// updates disk commands
-
-;	// delete a file
-;;
-; <code>KILL</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#KILL" target="_blank" rel="noopener noreferrer">Language reference</a>
-; @throws File not found; Path not found.
-;;
-c_kill:
-	call unstack_z;						// return if checking syntax
-	call path_to_ix;					// path to buffer
-;	ld a, '*';							// use current drive
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_unlink;						// release file
-	jp c, report_file_not_found;		// jump if error
-	or a;								// clear flags
-	ret;								// done
-
-;	// folder commands
-init_path:
-ifndef no_fs
-	ld a, '*';							// use current drive
-	ld ix, rootpath;					// default path
-	rst divmmc;							// issue a hookcode
-	defb f_chdir;						// change folder
-	or a;								// clear flags
-endif
-	ret;								// done
-
-
-
-
-
 
 
 ;	// file channels
