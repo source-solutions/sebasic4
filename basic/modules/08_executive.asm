@@ -514,7 +514,7 @@ open_0:
 	fwait;								// enter calculator
 	fxch;								// swap stream number and channel code
 	fce;								// exit calculator
-	call str_data2;						// get stream data, zero flag set if stream closed
+	call str_data1;						// get stream data, zero flag set if stream closed
 	ld a, c;							// stream
 	or b;								// closed?
 	jr z, open_1;						// jump if so
@@ -822,7 +822,7 @@ indexer:
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CLOSE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_close:
-	call str_data2;						// get stream data
+	call str_data1;						// get stream data
 	jr nz, close_valid;					// jump if stream open
 	rst error;							// else 
 	defb undefined_stream;				// error
@@ -852,11 +852,10 @@ close_2:
 	push hl;							// stack stream data address
 	ld hl, (chans);						// base address of channel to HL
 	add hl, bc;							// channel address
-	inc hl;								// advance
-	inc hl;								// pointer to
-	inc hl;								// channel letter
-	ld c, (hl);							// letter to C
-	ex de, hl;							// swap pointers
+	dec hl;								// point to first byte
+	push hl;							// HL
+	pop ix;								// to IX
+	ld c, (ix + 4);						// channel leter to A
 	ld hl, cl_str_lu;					// address close stream lookup table
 	call indexer;						// get offset
 	jr nc, close_3;						// jump if no match found (user-defined channel)
@@ -903,10 +902,8 @@ str_data:
 	rst error;							// else
 	defb bad_io_device;					// error
 
-str_data2:
-	call str_data;						// valid stream?
-
 str_data1:
+	call str_data;						// valid stream?
 	add a, a;							// adjust (0 to 30)
 	add a, 22;							// range (22 to 55)
 	ld l, a;							// result to L
