@@ -146,6 +146,7 @@ path_to_ix:
 ;	// the next two instructions may be unnecessary, but putting them here reduces duplication
 	ld a, '*';							// use current drive
 	and a;								// signal no error (clear carry flag)
+
 	ret;								// end of service routine
 
 ;	// block copy converting spaces to underscores
