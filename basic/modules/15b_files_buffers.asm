@@ -63,7 +63,7 @@ endskp8:
 ; end of get shortname
 
 	ld ix, $5700;						// default program name
-	call open_r_exists;					// open file for reading if it exists
+	call f_open_r_exists;				// open file for reading if it exists
 
 	jr c, app_not_found;				// jump if error
 	ld (handle), a;						// store handle
@@ -99,69 +99,9 @@ app_not_found:
 	ld sp, (oldsp);						// restore stack pointer
 	jp report_file_not_found;			// and error
 
-open_w_create:
-	ld b, fa_write | fa_open_al;		// create or open for writing if file exists
-	jr open_f_common;					// immediate jump
 
-open_r_exists:
-	ld b, fa_read | fa_open_ex;			// open for reading if file exists
 
-open_f_common:
-   	ld a, '*';							// use current drive
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_open;						// open file
-    ret;                                // done
-
-;	// file subroutines (IX must point to an ASCIIZ path on entry)
-
-f_open_read_ex:
-	call open_r_exists;					// open file for reading if it exists
-	jr open_f_ret;						// immediate jump
-
-f_open_write_al:
-	call open_w_create;					// open file for writing if it exists
-
-open_f_ret:
-	jr c, report_file_not_found;		// jump if error
-	ld (handle), a;						// store handle in sysvar
-	ret;								// end of subroutine
-
-f_write_out:
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_write;						// change folder
-	jr c, report_file_not_found;		// jump if error
-	ld a, (handle);						// restore handle from sysvar
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_close;						// close file
-	jr c, report_file_not_found;		// jump if error
-	or a;								// clear flags
-	ret;								// done
-
-f_read_in:
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_read;						// read a byte
-	jp c, report_file_not_found;		// jump if error
-	ld a, (handle);						// 
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_close;						// close file
-	jr c, report_file_not_found;		// jump if error
-  	or a;								// else return
- 	ret;								// to BASIC
-
-f_get_stats:
-	ld ix, f_stats;						// buffer for file stats
-	rst divmmc;							// issue a hookcode
-	defb f_fstat;						// get file stats
-	ret nc;								// return if no error
-
-report_file_not_found:
-	rst error;							// else
-	defb file_not_found;				// error
+;;;
 
 get_path:
 	call stk_fetch;						// start to DE, length to BC
@@ -191,49 +131,6 @@ get_dest:
 ;	// file commands
 
 ;;
-; <code>BLOAD</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#BLOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
-; @throws File not found; Path not found.
-;;
-c_bload:
-	call unstack_z;						// return if checking syntax
-	call find_int2;						// get address
-	ld (f_addr), bc;					// store it
-	call path_to_ix;					// path to buffer
-
-bload_2:
-	call f_open_read_ex;				// open file for reading
-	call f_get_stats;					// get binary length
-
-;	// load binary
-	ld a, (handle);						// restore handle
-	ld bc, (f_size);					// get length
-	ld ix, (f_addr);					// get address
-
-	jp f_read_in;						// load binary
-
-;;
-; <code>BSAVE</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#BSAVE" target="_blank" rel="noopener noreferrer">Language reference</a>
-; @throws File not found; Path not found.
-;;
-c_bsave:
-	call unstack_z;						// return if checking syntax
-	call find_int2;						// get length
-	ld (f_size), bc;					// store it
-	call find_int2;						// get address
-	ld (f_addr), bc;					// store it
-	call path_to_ix;					// path to buffer
-
-	call f_open_write_al;				// open file for writing
-
-;	// get binary length
-	ld ix, (f_addr);					// start to IX
-	ld bc, (f_size);					// length to BC
-
-	jp f_write_out;						// save binary
-
-;;
 ; <code>COPY</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#COPY" target="_blank" rel="noopener noreferrer">Language reference</a>
 ; @throws File not found; Path not found.
@@ -247,7 +144,7 @@ c_copy:
 	call f_get_stats;					// get file length
 	ld ix, $5700;						// pointer to path
 
-	call open_w_create;					// open file for writing if it exists
+	call f_open_w_create;				// open file for writing if it exists
 
 	jp c, report_file_not_found;		// jump if error
 	ld (handle_1), a;					// store handle in sysvar
@@ -629,9 +526,9 @@ seek_f:
 ;	// handle AUTOEXEC.BAS ($543D)
 autoexec:
 	ld ix, autoexec_bas;				// path to AUTOEXEC.BAS
-	call open_r_exists;					// 
+	call f_open_r_exists;					// 
 	ret c;								// return if file not found
-	ld (membot + 1), a;					// store file handle in membot
+	ld (handle), a;						// store file handle in membot + 1
 	ld hl, auto_run;					// pointer to macro 'RUN <RETURN>'
 	call loop_f_keys;					// insert it
 	jr load_4;							// do LOAD "AUTOEXEC.BAS","R"
@@ -712,13 +609,11 @@ copyln:
 
 open_load_merge:
 	call path_to_ix;					// get path in IX
-	ld b, fa_read;						// B = open mode
-	rst divmmc;							// issue a hookcode
-	defb f_open;						// open file
+	call f_open_r_exists;				// open file
 
 report_bad_io_dev3:
 	jp c, report_bad_io_dev;			// jump with error
-	ld (membot + 1), a;					// store file handle in membot
+	ld (handle), a;						// store file handle in membot + 1
 	ret;								// done
 
 readyln:
@@ -747,7 +642,7 @@ scan_err:
 	jr nextln;							// immedaite jump
 
 aload_end:
-	ld a, (membot + 1);					// get file handle
+	ld a, (handle);						// get file handle (membot + 1)
 	rst divmmc;							// issue a hookcode
 	defb f_close;						// close file
 	jr c, report_bad_io_dev3;			// jump with error
@@ -755,7 +650,7 @@ aload_end:
 	defb ok;							// clear error
 
 f_getc:
-	ld a, (membot + 1);					// get file handle
+	ld a, (handle);						// get file handle (membot + 1)
 	ld ix, membot;						// MEMBOT to IX
 	ld bc, 1;							// one byte
 	rst divmmc;							// issue a hookcode

@@ -691,16 +691,6 @@ ENDM
 ;	// system variables
 
 	oldsp		equ $5bba;			// (iy - $80)
-	handle		equ oldsp + 2;		// (iy - $7e)
-	f_stats		equ handle + 1;		// (iy - $7d)
-	drive		equ f_stats;		// (iy - $7d)
-	device		equ drive + 1;		// (iy - $7c)
-	f_attr		equ device + 1;		// (iy - $7b)
-	f_time		equ f_attr + 1;		// (iy - $7a)
-	f_date		equ f_time + 2;		// (iy - $78)
-	f_size		equ f_date + 2;		// (iy - $76)
-	f_addr		equ f_size + 4;		// (iy - $72)
-	handle_1	equ f_addr + 2;		// (iy - $70)
 
 	open_x		equ mstate - 2;		// (iy - $42)	address of custom OPEN routine
 	mstate		equ jstate - 4;		// (iy - $40)	mouse state
