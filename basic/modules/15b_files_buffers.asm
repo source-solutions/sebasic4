@@ -512,21 +512,10 @@ no_:
 	rst print_a;						// print it
 	ret;								// return
 
-f_length:
-	ld ix, f_stats;						// buffer for file stats
-	rst divmmc;							// issue a hookcode
-	defb f_fstat;						// get file stats
-	ret;								// done
-
-seek_f:
-	rst divmmc;							// issue a hookcode
-	defb f_seek;						// seek to position in BCDE
-	ret;								// done
-
 ;	// handle AUTOEXEC.BAS ($543D)
 autoexec:
 	ld ix, autoexec_bas;				// path to AUTOEXEC.BAS
-	call f_open_r_exists;					// 
+	call f_open_r_exists;				// 
 	ret c;								// return if file not found
 	ld (handle), a;						// store file handle in membot + 1
 	ld hl, auto_run;					// pointer to macro 'RUN <RETURN>'

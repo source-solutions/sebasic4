@@ -109,7 +109,7 @@ open_file:
 	ld hl, file_chan + 4;				// HL = service routines' end
 	ld bc, 5;							// copy 5 bytes
 	lddr;								// do the copying
-	ld hl,(chans);						// HL = channel descriptor area
+	ld hl, (chans);						// HL = channel descriptor area
 	ex de, hl;							// DE = chan. desc. area. HL = channel desc. beginning - 1
 	sbc hl, de;							// HL = offset - 2
 	inc hl;								// HL = offset - 1
@@ -210,6 +210,25 @@ f_open_ret:
 	ret;								// end of subroutine
 
 ;	// file read / write subroutines (IX must point to an ASCIIZ path, BC is file size on entry)
+
+;	// FIXME append and random file access are currently not working
+;	//       try getting code working in an app first
+;f_append:
+;	ld (handle), a;						// store handle
+;	call f_get_stats;					// get stats
+;	ld a, (handle);						// restore handle
+;	ld bc, (f_size);					// low word to BC
+;	ld de, (f_size + 2);				// high word to DE
+;	ld ixl, 0;							// seek from start of file
+;	ld bc, 1;							// one byte
+;	ld ix, handle_1;					// currently spare
+;	rst divmmc;							// issue a hookcode
+;	defb f_read;						// read one byte to work around f_seek bug
+;	ld a, (handle);						// restore handle
+;	rst divmmc;							// issue a hookcode
+;	defb f_seek;						// seek to position in BCDE
+;	ret;								// end of subroutine
+
 f_write_out:
 	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
