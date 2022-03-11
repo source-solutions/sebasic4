@@ -1090,6 +1090,9 @@ sys_folder:
 tmp_folder:
 	defb "TEMPORAR.Y", 0;				// temporary folder name
 
+tmp_file:
+	defb "TMP.$$$",0;					// path to temporary file
+
 autoexec_bas:
 	defb "AUTOEXEC.BAS", 0;				// filepath for AUTOEXEC.BAS
 

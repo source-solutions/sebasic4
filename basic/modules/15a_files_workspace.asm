@@ -105,6 +105,7 @@ open_file:
 	jr c, open_file_err;				// jump if error
 	pop de;								// unstack end of channel descriptor
 	ld (de), a;							// file descriptor
+	ld (membot + 1), a;					// store a copy of the file handle for pseudo-append
 	dec de;								// decrement DE
 	ld hl, file_chan + 4;				// HL = service routines' end
 	ld bc, 5;							// copy 5 bytes
@@ -211,23 +212,47 @@ f_open_ret:
 
 ;	// file read / write subroutines (IX must point to an ASCIIZ path, BC is file size on entry)
 
-;	// FIXME append and random file access are currently not working
-;	//       try getting code working in an app first
-;f_append:
-;	ld (handle), a;						// store handle
-;	call f_get_stats;					// get stats
-;	ld a, (handle);						// restore handle
-;	ld bc, (f_size);					// low word to BC
-;	ld de, (f_size + 2);				// high word to DE
-;	ld ixl, 0;							// seek from start of file
-;	ld bc, 1;							// one byte
-;	ld ix, handle_1;					// currently spare
-;	rst divmmc;							// issue a hookcode
-;	defb f_read;						// read one byte to work around f_seek bug
-;	ld a, (handle);						// restore handle
-;	rst divmmc;							// issue a hookcode
-;	defb f_seek;						// seek to position in BCDE
-;	ret;								// end of subroutine
+;	// open a file for appending (path in IX)
+;	// append is not supported at the OS level - this is a workaround
+f_append:
+	push ix;							// save file path for later
+	ld de, tmp_file;					// path to temporary file
+	rst divmmc;							// issue a hookcode
+	defb f_rename;						// rename original file to TMP.$$
+	jr c, report_file_not_found;		// jump if source file not found
+	pop ix;								// retrieve file path
+	ld b, fa_write | fa_open_al;		// create replcement file for writing
+	call open_file;						// open the file
+	ld ix, tmp_file;					// open temporary file
+	call f_open_r_exists;				// open it for reading
+	ld (handle_1), a;					// store handle
+	call append_loop;					// copy original contents
+	ld a, (handle_1);					// get handle
+	rst divmmc;							// issue a hookcode
+	defb f_close;						// close file
+	ld ix, tmp_file;					// path to temporary file
+	rst divmmc;							// issue a hookcode
+	defb f_unlink;						// delete temporary file
+	pop hl;								// equivalent of open_end
+	ret;								// done
+
+append_loop:
+	ld a, (handle_1);					// get handle
+	ld ix, membot;						// write byte to membot
+	ld bc, 1;							// read one byte
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_read;						// read a byte
+	ld a, c;							// test for
+	or b;								// zero
+	ret z;								// return if no more bytes read
+	ld a, (membot + 1);					// get file handle
+	ld ix, membot;						// character is in membot
+	ld bc, 1;							// one byte to write
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_write;						// write a byte
+	jr append_loop;						// loop until done
 
 f_write_out:
 	and a;								// signal no error (clear carry flag)
@@ -360,7 +385,7 @@ c_name:
 	call unstack_z;						// return if checking syntax
 	call paths_to_de_ix;				// destination and source paths to buffer
 	rst divmmc;							// issue a hookcode
-	defb f_rename;						// change folder
+	defb f_rename;						// change filename
 	jr c, report_file_not_found;		// jump if error
 	or a;								// clear flags
 	ret;								// end of command

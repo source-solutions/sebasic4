@@ -435,8 +435,8 @@ call_sub:
 op_str_lu:
 	defb 'I', open_i - 1 - $;			// input file
 	defb 'O', open_o - 1 - $;			// output file
-;	defb 'A', open_a - 1 - $;			// append file
-;	defb 'R', open_r - 1 - $;			// random file
+	defb 'A', open_a - 1 - $;			// append file
+	defb 'R', open_r - 1 - $;			// random file
 	defb 'K', open_k - 1 - $;			// keyboard
 	defb 'S', open_s - 1 - $;			// screen
 	defb 0;								// null terminator
@@ -461,20 +461,17 @@ open_o:
 	call open_file;						// open the file
 	jr open_end;						// immediate jump
 
-;	// open A subroutine
-;open_a:
-;	call open_f;						// get parameters, copy to workspace and set IX to point to it
-;	ld b, fa_read | fa_write | fa_open_ex;	// open for writing if file exists (read required due to bug in f_seek code)
-;	call open_file;						// open the file
-;	call f_append;						// seek to end of file
-;	jr open_end;						// immediate jump
+	// open A subroutine
+open_a:
+	call open_f;						// get parameters, copy to workspace and set IX to point to it
+	jp f_append;						// jump to code to simulate append
 
 ;	// open R subroutine
-;open_r:
-;	call open_f;						// get parameters, copy to workspace and set IX to point to it
-;	ld b, fa_read | fa_write | fa_open_al;	// create or open for reading / writing if file exists
-;	call open_file;						// open the file
-;	jr open_end;						// immediate jump
+open_r:
+	call open_f;						// get parameters, copy to workspace and set IX to point to it
+	ld b, fa_read | fa_write | fa_open_al;	// create or open for reading / writing if file exists
+	call open_file;						// open the file
+	jr open_end;						// immediate jump
 
 ;	// open K subroutine
 open_k:
