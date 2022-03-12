@@ -91,6 +91,16 @@ file_in:
 
 ;	// file service routines
 
+;	// handle AUTOEXEC.BAS
+autoexec:
+	ld ix, autoexec_bas;				// path to AUTOEXEC.BAS
+	call f_open_r_exists;				// open file if it exists
+	ret c;								// return if file not found
+	ld (handle), a;						// store file handle in membot + 1
+	ld hl, auto_run;					// pointer to macro 'RUN <RETURN>'
+	call loop_f_keys;					// insert it
+	jp load_t2;							// do LOAD "AUTOEXEC.BAS","T":RUN
+
 ;	// open a file and attach it to a channel
 open_file:
 	push bc;							// stack mode
@@ -373,6 +383,18 @@ c_load:
 	rst get_char;						// get character
 	cp ',';								// test for comma
 	jr nz, load_1;						// end of syntax checking if not
+	call prog_mode;						// get program mode
+	cp 'T';								// test for 'T' (tokenized)
+	jr z, load_t;						// jump if so
+	cp 'R';								// test for 'R' (RUN)
+	call nz, mode_error;				// jump if not
+	call check_end;						// end of syntax checking
+	call unstack_z;						// checking syntax?
+	ld hl, auto_run;					// pointer to macro 'RUN <RETURN>'
+	call loop_f_keys;					// insert it
+	jr load_3;							// immediate jump
+
+prog_mode:
 	rst next_char;						// next character
 	call expt_exp;						// expect string expression
 	call check_end;						// end of syntax checking
@@ -380,28 +402,21 @@ c_load:
 	call stk_fetch;						// get parameters
 	ld a, c;							// letter
 	or b;								// provided?
-	jr nz, load_2;						// jump if so
+	jr nz, prog_mode_1;					// jump if so
 
-load_error:
+mode_error:
+	pop hl;								// drop return address (FIXME - is this actually necessary?)
 	rst error;							// else
 	defb syntax_error;					// error
 
-load_2:
+prog_mode_1:
 	dec bc;								// reduce length
 	ld a, c;							// single
 	or b;								// character?
-	jr nz, load_error;					// error if not
+	jr nz, mode_error;					// error if not
 	ld a, (de);							// get first character
 	and %11011111;						// make upper case
-	cp 'T';								// test for 'T' (tokenized)
-	jr z, load_t;						// jump if so
-	cp 'R';								// test for 'R' (RUN)
-	jr nz, load_error;					// jump if not
-	call check_end;						// end of syntax checking
-	call unstack_z;						// checking syntax?
-	ld hl, auto_run;					// pointer to macro 'RUN <RETURN>'
-	call loop_f_keys;					// insert it
-	jr load_3;							// immediate jump
+	ret;								// end of subroutine
 
 load_t:
 	call check_end;						// end of syntax checking
@@ -410,6 +425,8 @@ load_t:
 
 load_t1:
 	call f_open_read_ex;				// open file for reading
+
+load_t2:
 	call f_get_stats;					// get program length
 
 ;	// remove garbage
@@ -560,6 +577,50 @@ c_name:
 	ret;								// end of command
 
 ;;
+; <code>OLD</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#OLD" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
+;;
+c_old:
+	call unstack_z;						// return if checking syntax
+	ld ix, old_bas_path;				// pointer to path
+	jp load_t1;							// immedaite jump
+
+f_save_old:
+	ld ix, old_bas_path;				// path to old.bas
+	ld a, '*';							// use current drive
+	rst divmmc;							// issue a hookcode
+	defb f_unlink;						// delete file if it exists
+
+	ld ix, rootpath;					// go to root
+	ld a, '*';							// use current drive
+	rst divmmc;							// issue a hookcode
+	defb f_chdir;						// change folder
+
+	ld ix, sys_folder;					// ASCIIZ system
+	ld a, '*';							// use current drive
+	rst divmmc;							// issue a hookcode
+	defb f_mkdir;						// create folder
+
+	ld ix, sys_folder;					// ASCIIZ system
+	ld a, '*';							// use current drive
+	rst divmmc;							// issue a hookcode
+	defb f_chdir;						// change folder
+
+	ld ix, tmp_folder;					// ASCIIZ temp
+	ld a, '*';							// use current drive
+	rst divmmc;							// issue a hookcode
+	defb f_mkdir;						// create folder
+
+	ld ix, rootpath;					// go to root
+	ld a, '*';							// use current drive
+	rst divmmc;							// issue a hookcode
+	defb f_chdir;						// change folder
+
+	ld ix, old_bas_path;				// pointer to path
+	jp save_t1;							// immediate jump
+
+;;
 ; <code>RMDIR</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RMDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
 ; @throws Path not found.
@@ -570,3 +631,44 @@ c_rmdir:
 	rst divmmc;							// issue a hookcode
 	defb f_rmdir;						// change folder
 	jp chk_path_error;					// test for error
+
+;;
+; <code>SAVE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#SAVE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
+;;
+c_save:
+	rst get_char;						// get character
+	cp ',';								// test for comma
+	jr nz, save_1;						// end of syntax checking if not
+	call prog_mode;						// get program mode
+	cp 'T';								// test for 'T' (tokenized)
+	call nz, mode_error;				// jump if not
+
+save_t:
+	call unstack_z;						// return if checking syntax
+	call path_to_ix;					// get path in IX
+
+save_t1:
+	call f_open_write_al;				// open file for writing
+	ld hl, (vars);						// end of BASIC to HL
+	ld de, (prog);						// start of program to DE
+	sbc hl, de;							// get program length
+	ld ixh, d;							// start of BASIC to
+	ld ixl, e;							// IX
+	ld c, l;							// length of BASIC to
+	ld b, h;							// BC
+	jp f_write_out;						// save program
+
+save_1:
+	call unstack_z;						// return if checking syntax
+	call path_to_ix;					// get path in IX
+	ld b, fa_write | fa_open_al;		// B = mode
+	call open_file;						// open the file
+	ld hl, (chans);						// base address of channel to HL
+	add hl, de;							// new channel address
+	dec hl;								// last byte of channel
+	ld (curchl), hl;					// make it the current channel
+	call list_10;						// LIST program to file
+	ld ix, (curchl);					// current channel to IX
+	call close_file;					// it is, in fact, a jump, as the return address will be popped

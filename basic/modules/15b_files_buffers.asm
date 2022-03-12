@@ -212,60 +212,6 @@ write_chunk:
 	jp c, report_file_not_found;		// jump if error
 	ret;								// else done
 
-;;
-; <code>OLD</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#OLD" target="_blank" rel="noopener noreferrer">Language reference</a>
-; @throws File not found; Path not found.
-;;
-c_old:
-	call unstack_z;						// return if checking syntax
-	ld ix, old_bas_path;				// pointer to path
-	jp load_t1;							// immedaite jump
-
-f_save_old:
-	ld ix, old_bas_path;				// path to old.bas
-	ld a, '*';							// use current drive
-	rst divmmc;							// issue a hookcode
-	defb f_unlink;						// delete file if it exists
-
-	ld ix, rootpath;					// go to root
-	ld a, '*';							// use current drive
-	rst divmmc;							// issue a hookcode
-	defb f_chdir;						// change folder
-
-	ld ix, sys_folder;					// ASCIIZ system
-	ld a, '*';							// use current drive
-	rst divmmc;							// issue a hookcode
-	defb f_mkdir;						// create folder
-
-	ld ix, sys_folder;					// ASCIIZ system
-	ld a, '*';							// use current drive
-	rst divmmc;							// issue a hookcode
-	defb f_chdir;						// change folder
-
-	ld ix, tmp_folder;					// ASCIIZ temp
-	ld a, '*';							// use current drive
-	rst divmmc;							// issue a hookcode
-	defb f_mkdir;						// create folder
-
-	ld ix, rootpath;					// go to root
-	ld a, '*';							// use current drive
-	rst divmmc;							// issue a hookcode
-	defb f_chdir;						// change folder
-
-	ld ix, old_bas_path;				// pointer to path
-	call f_open_write_al;				// open file for writing
-
-;	// get program length
-	ld hl, (vars);						// end of BASIC to HL
-	ld de, (prog);						// start of program to DE
-	sbc hl, de;							// get program length
-	ld ixh, d;							// start of BASIC to
-	ld ixl, e;							// IX
-	ld c, l;							// length of BASIC to
-	ld b, h;							// BC
-	jp f_write_out;						// save program
-
 ;	// print a folder listing to the main screen
 ;;
 ; <code>FILES</code> command
@@ -479,41 +425,8 @@ no_:
 	rst print_a;						// print it
 	ret;								// return
 
-;	// handle AUTOEXEC.BAS ($543D)
-autoexec:
-	ld ix, autoexec_bas;				// path to AUTOEXEC.BAS
-	call f_open_r_exists;				// 
-	ret c;								// return if file not found
-	ld (handle), a;						// store file handle in membot + 1
-	ld hl, auto_run;					// pointer to macro 'RUN <RETURN>'
-	call loop_f_keys;					// insert it
-	jp load_4;							// do LOAD "AUTOEXEC.BAS","R"
-
-;;
-; <code>SAVE</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#SAVE" target="_blank" rel="noopener noreferrer">Language reference</a>
-; @throws File not found; Path not found.
-;;
-c_save:
-	rst get_char;						// get character
-	cp ',';								// test for comma
-	jr nz, save_1;						// end of syntax checking if not
-	rst error;							// FIXME - make save as ASCII optional
-	defb syntax_error;					// 
-
-save_1:
-	call unstack_z;						// return if checking syntax
-	call path_to_ix;					// get path in IX
-	ld b, fa_write | fa_open_al;		// B = mode
-	call open_file;						// open the file
-	ld hl, (chans);						// base address of channel to HL
-	add hl, de;							// new channel address
-	dec hl;								// last byte of channel
-	ld (curchl), hl;					// make it the current channel
-	call list_10;						// LIST program to file
-	ld ix, (curchl);					// current channel to IX
-	call close_file;					// it is, in fact, a jump, as the return address will be popped
-
 ;	// FIXME - SEEK takes a stream number and a floating point value to set the pointer in a currently open file
 c_seek:
 	ret;
+
+

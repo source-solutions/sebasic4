@@ -153,9 +153,6 @@ fp_to_bc_delete:
 ;;
 ; floating point to BCDE (32-bit integer) FIXME - work in progress
 ;;
-	max_exp equ 0
-	min_exp equ 0
-
 fp_to_bcde:
 	fwait;								// round to
 	fstkhalf;							// nearest integer
@@ -165,11 +162,13 @@ fp_to_bcde:
 	bit 7, b;							// 
 	jp nz, report_overflow_2;			// jump if out of range
 	set 7, b;							// 
-	cp max_exp;							// 
+	cp $a0;								// maximum exponent
 	jp nc, report_overflow_2;			// jump if out of range
-	sub min_exp;						// 
+	sub $80;							// minimum exponent
 	jr c, zero;							// jump if zero
 	jr z, zero;							// jump if zero
+	cpl;								// one's complement
+	add a, 33;							// adjust
 
 norm_loop:
 	srl b;								// shift B right logical
