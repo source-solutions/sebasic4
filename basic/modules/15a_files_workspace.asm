@@ -587,7 +587,9 @@ c_name:
 c_old:
 	call unstack_z;						// return if checking syntax
 	ld ix, old_bas_path;				// pointer to path
-	jp load_t1;							// immedaite jump
+	call load_t1;						// load old program
+	rst error;							// and clear
+	defb ok;							// error
 
 f_save_old:
 	ld ix, old_bas_path;				// path to old.bas
