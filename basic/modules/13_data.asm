@@ -863,7 +863,7 @@ p_def:
 	defw c_def;
 
 p_delete:
-	defb num_exp, ',', num_exp_no_f_ops;
+	defb two_c_s_num_no_f_ops;
 	defw c_delete;
 
 p_dim:
@@ -1026,7 +1026,7 @@ p_screen:
 	defw c_screen;
 
 p_seek:
-	defb num_exp, ',', num_exp_no_f_ops;
+	defb two_c_s_num_no_f_ops;
 	defw c_seek;
 
 p_sound:
