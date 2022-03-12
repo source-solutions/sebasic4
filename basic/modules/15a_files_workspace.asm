@@ -271,21 +271,28 @@ f_write_out:
 	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_write;						// change folder
-	jr c, report_file_not_found;		// jump if error
-	ld a, (handle);						// restore handle from sysvar
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_close;						// close file
-	jr c, report_file_not_found;		// jump if error
-	or a;								// clear flags
-	ret;								// done
+;	jr c, report_file_not_found;		// jump if error
+;	ld a, (handle);						// restore handle from sysvar
+;	and a;								// signal no error (clear carry flag)
+;	rst divmmc;							// issue a hookcode
+;	defb f_close;						// close file
+;	jr c, report_file_not_found;		// jump if error
+;	or a;								// clear flags
+;	ret;								// done
+	jr f_close_0;						// immediate jump
 
 f_read_in:
 	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_read;						// read a byte
+
+f_close_0:
 	jr c, report_file_not_found;		// jump if error
+
+f_close_1:
 	ld a, (handle);						// restore handle (membot + 1)
+
+f_close_any:
 	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_close;						// close file

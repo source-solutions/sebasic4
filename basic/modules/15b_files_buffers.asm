@@ -34,17 +34,26 @@ get_dest:
 ;;
 c_copy:
 	call unstack_z;						// return if checking syntax
-	call get_dest;						// path to buffer (dest)
-	call get_path;						// path to buffer (source)
-	ld ix, $5800;						// pointer to path
+;	call get_dest;						// path to buffer (dest)
+;	call get_path;						// path to buffer (source)
+;	ld ix, $5800;						// pointer to path
+
+	 call paths_to_de_ix;				// destination and source paths to buffer
+	 push de;							// stack destination
+
 	call f_open_read_ex;				// open file for reading
+
+	 ld (handle), a;						// store handle
+
 	call f_get_stats;					// get file length
-	ld ix, $5700;						// pointer to path
+;	ld ix, $5700;						// pointer to path
+
+	 pop ix;							// unstack pointer to destination
 
 	call f_open_w_create;				// open file for writing if it exists
 
 	jp c, report_file_not_found;		// jump if error
-	ld (handle_1), a;					// store handle in sysvar
+	ld (handle_1), a;					// store handle
 
 ;	// read a byte
 copy_bytes:
@@ -73,22 +82,24 @@ lt_256:
 
 copy_close:
 ;	// close source
-	ld a, (handle);						// restore handle from sysvar
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_close;						// close file
-	jp c, report_file_not_found;		// jump if error
+;	ld a, (handle);						// restore handle
+;	and a;								// signal no error (clear carry flag)
+;	rst divmmc;							// issue a hookcode
+;	defb f_close;						// close file
+;	jp c, report_file_not_found;		// jump if error
+	call f_close_1;						// close source
 
 ;	// close destination
 	ld a, (handle_1);					// restore handle from sysvar
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_close;						// close file
-	jp c, report_file_not_found;		// jump if error
+;	and a;								// signal no error (clear carry flag)
+;	rst divmmc;							// issue a hookcode
+;	defb f_close;						// close file
+;	jp c, report_file_not_found;		// jump if error
 
- ;	// return to BASIC
-	or a;								// clear flags
-	ret;								// done
+;	// return to BASIC
+;	or a;								// clear flags
+;	ret;								// done
+	jp f_close_any;						// close destination
 
 ;	// call with bytes to copy in C
 read_chunk:
