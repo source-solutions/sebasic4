@@ -2012,7 +2012,6 @@ report_syntax_err3:
 key_list:
 	rst next_char;						// next character
 	call check_end;						// expect end of line
-	call unstack_z;						// return if checking syntax
 	ld a, 2;							// use stream #2
 	ld (iy + _vdu_flag), 0;				// signal normal listing
 	call chan_open;						// select channel if not

@@ -331,14 +331,12 @@ c_trace:
 trace_on:
 	rst next_char;						// next character
 	call check_end;						// expect end of line
-	call unstack_z;						// return if checking syntax
 	set 7, (iy + _flags2);				// switch trace on
 	ret;								// end of routine
 
 trace_off:
 	rst next_char;						// next character
 	call check_end;						// expect end of line
-	call unstack_z;						// return if checking syntax
 	res 7, (iy + _flags2);				// switch trace off
 	ret;								// end of routine
 
@@ -377,7 +375,6 @@ on_number:
 	cp ',';								// comma
 	jr z, on_number;					// check for another number if so
 	call check_end;						// expect end of line
-	call unstack_z;						// return if checking syntax
 	ret;								// done
 
 on_match:
@@ -402,14 +399,12 @@ onerr_goto:
 	call expt_1num;						// expect number
 	call check_end;						// expect end of line
 	call find_line;						// get line number
-	call unstack_z;						// return if checking syntax
 	ld (onerr), bc;						// set on error address
 	ret;								// end of routine
 
 onerr_cont:
 	rst next_char;						// next character
 	call check_end;						// expect end of line
-	call unstack_z;						// return if checking syntax
 	ld a, $fe;							// signal on err continue
 
 onerr_exit:

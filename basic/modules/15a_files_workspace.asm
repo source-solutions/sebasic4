@@ -392,7 +392,6 @@ c_load:
 	cp 'R';								// test for 'R' (RUN)
 	call nz, mode_error;				// jump if not
 	call check_end;						// end of syntax checking
-	call unstack_z;						// checking syntax?
 	ld hl, auto_run;					// pointer to macro 'RUN <RETURN>'
 	call loop_f_keys;					// insert it
 	jr load_3;							// immediate jump
@@ -401,7 +400,6 @@ prog_mode:
 	rst next_char;						// next character
 	call expt_exp;						// expect string expression
 	call check_end;						// end of syntax checking
-	call unstack_z;						// checking syntax?
 	call stk_fetch;						// get parameters
 	ld a, c;							// letter
 	or b;								// provided?
@@ -423,7 +421,6 @@ prog_mode_1:
 
 load_t:
 	call check_end;						// end of syntax checking
-	call unstack_z;						// return if checking syntax
 	call path_to_ix;					// path to buffer
 
 load_t1:
@@ -460,7 +457,6 @@ load_t2:
 
 load_1:
 	call check_end;						// end of syntax checking
-	call unstack_z;						// checking syntax?
 
 load_3:
 	call open_load_merge;				// call common code
