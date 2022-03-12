@@ -272,7 +272,7 @@ f_read_in:
 	rst divmmc;							// issue a hookcode
 	defb f_read;						// read a byte
 	jr c, report_file_not_found;		// jump if error
-	ld a, (handle);						// 
+	ld a, (handle);						// restore handle (membot + 1)
 	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_close;						// close file
@@ -305,7 +305,7 @@ c_bload:
 	call path_to_ix;					// path to buffer
 	call f_open_read_ex;				// open file for reading
 	call f_get_stats;					// get binary length
-	ld a, (handle);						// restore handle
+	ld a, (handle);						// restore handle (membot + 1)
 	ld bc, (f_size);					// get length
 	ld ix, (f_addr);					// get address
 	jr f_read_in;						// load binary
@@ -365,6 +365,175 @@ c_kill:
 	ret;								// done
 
 ;;
+; <code>LOAD</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
+;;
+c_load:
+	rst get_char;						// get character
+	cp ',';								// test for comma
+	jr nz, load_1;						// end of syntax checking if not
+	rst next_char;						// next character
+	call expt_exp;						// expect string expression
+	call check_end;						// end of syntax checking
+	call unstack_z;						// checking syntax?
+	call stk_fetch;						// get parameters
+	ld a, c;							// letter
+	or b;								// provided?
+	jr nz, load_2;						// jump if so
+
+load_error:
+	rst error;							// else
+	defb syntax_error;					// error
+
+load_2:
+	dec bc;								// reduce length
+	ld a, c;							// single
+	or b;								// character?
+	jr nz, load_error;					// error if not
+	ld a, (de);							// get first character
+	and %11011111;						// make upper case
+	cp 'T';								// test for 'T' (tokenized)
+	jr z, load_t;						// jump if so
+	cp 'R';								// test for 'R' (RUN)
+	jr nz, load_error;					// jump if not
+	call check_end;						// end of syntax checking
+	call unstack_z;						// checking syntax?
+	ld hl, auto_run;					// pointer to macro 'RUN <RETURN>'
+	call loop_f_keys;					// insert it
+	jr load_3;							// immediate jump
+
+load_t:
+	call check_end;						// end of syntax checking
+	call unstack_z;						// return if checking syntax
+	call path_to_ix;					// path to buffer
+
+load_t1:
+	call f_open_read_ex;				// open file for reading
+	call f_get_stats;					// get program length
+
+;	// remove garbage
+	ld de, (prog);						// start of program to DE
+	call var_end_hl;					// varaibles end marker location to HL
+	call reclaim_1;						// reclaim varibales area
+
+;	// make space
+	ld bc, (f_size);					// length of data to BC
+	push hl;							// save PROG
+	push bc;							// save length
+	call make_room;						// make space for data
+
+;	// load program
+	ld a, (handle);						// restore handle
+	pop bc;								// restore length
+	pop ix;								// restore PROG
+
+	call f_read_in;						// load program
+
+;	// stabilize BASIC
+	call var_end_hl;					// varaibles end marker location to HL
+	ld (vars), hl;						// set up varaibles
+	dec hl;								// 
+	ld (datadd), hl;					// set up data add pointer
+	rst error;							// clear error
+	defb ok;							// done
+
+load_1:
+	call check_end;						// end of syntax checking
+	call unstack_z;						// checking syntax?
+
+load_3:
+	call open_load_merge;				// call common code
+
+load_4:
+	ld hl, (vars);						// end of BASIC to HL
+	ld de, (prog);						// start of program to DE
+	call reclaim_1;						// reclaim BASIC program
+
+nextln:
+	call set_min;						// clear all work areas and calculator stack
+	ld a, $ff;							// channel W
+	call chan_open;						// select channel
+
+copyln:
+	call f_getc;						// 
+	jr nz, load_end;					// jump if not
+	cp ctrl_lf;							// line feed
+	jr z, readyln;						// jump if so
+	cp ctrl_cr;							// carraige return?
+	jr z, readyln;						// jump if so
+	rst print_a;						// print character
+	jr copyln;							// immedaite jump
+
+open_load_merge:
+	call path_to_ix;					// get path in IX
+	call f_open_r_exists;				// open file
+
+report_bad_io_dev3:
+	jp c, report_bad_io_dev;			// jump with error
+	ld (handle), a;						// store file handle in membot + 1
+	ret;								// done
+
+readyln:
+	ld hl, (membot);					// address of membot to HL
+	push hl;							// stack HL
+	call tokenizer_0;					// tokenize line
+	ld hl, (err_sp);					// error stack pointer to HL
+	push hl;							// stack HL
+	ld hl, scan_err;					// scan error pointer to HL
+	push hl;							// stack HL
+	ld (err_sp), sp;					// stack pointer to error stack
+	call line_scan;						// scan line
+	pop hl;								// unstack HL
+
+scan_err:
+	pop hl;								// unstack HL
+	ld (err_sp), hl;					// scan error to error stack
+	ld hl, (e_line);					// edit line to HL
+	ld (ch_add), hl;					// set character address
+	call e_line_no;						// convert line number
+	ld a, c;							// test for
+	or b;								// zero
+	call nz, add_line;					// add line if not
+	pop hl;								// unstack HL
+	ld (membot), hl;					// restore MEMBOT
+	jr nextln;							// immedaite jump
+
+load_end:
+	ld a, (handle);						// get file handle (membot + 1)
+	rst divmmc;							// issue a hookcode
+	defb f_close;						// close file
+	jr c, report_bad_io_dev3;			// jump with error
+	rst error;							// else
+	defb ok;							// clear error
+
+f_getc:
+	ld a, (handle);						// get file handle (membot + 1)
+	ld ix, membot;						// MEMBOT to IX
+	ld bc, 1;							// one byte
+	rst divmmc;							// issue a hookcode
+	defb f_read;						// read a byte
+
+f_getc_err:
+	jr c, report_bad_io_dev3;			// jump with error
+	dec bc;								// reduce count
+	ld a, c;							// test for
+	or b;								// zero
+	ret nz;								// return if not
+	ld a, (membot);						// store value in MEMBOT
+	ret;								// done
+
+;;
+; <code>MERGE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#MERGE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
+;;
+c_merge:
+	call unstack_z;						// checking syntax?
+	call open_load_merge;				// call common code
+	jr nextln;							// immedaite jump
+
+;;
 ; <code>MKDIR</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#MKDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
 ; @throws Path not found.
@@ -374,7 +543,7 @@ c_mkdir:
 	call path_to_ix;					// path to buffer
 	rst divmmc;							// issue a hookcode
 	defb f_mkdir;						// create folder
-	jr chk_path_error;					// test for error
+	jp chk_path_error;					// test for error
 
 ;;
 ; <code>NAME</code> command
@@ -386,7 +555,7 @@ c_name:
 	call paths_to_de_ix;				// destination and source paths to buffer
 	rst divmmc;							// issue a hookcode
 	defb f_rename;						// change filename
-	jr c, report_file_not_found;		// jump if error
+	jp c, report_file_not_found;		// jump if error
 	or a;								// clear flags
 	ret;								// end of command
 
@@ -400,4 +569,4 @@ c_rmdir:
 	call path_to_ix;					// path to buffer
 	rst divmmc;							// issue a hookcode
 	defb f_rmdir;						// change folder
-	jr chk_path_error;					// test for error
+	jp chk_path_error;					// test for error
