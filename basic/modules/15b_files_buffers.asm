@@ -38,6 +38,10 @@ c_copy:
 ;	call get_path;						// path to buffer (source)
 ;	ld ix, $5800;						// pointer to path
 
+	 ld bc, 256;						// use a 256 byte buffer
+	 rst bc_spaces;						// make space in workspace
+	 ld (handle_1 + 1), de;				// store pointer to start
+
 	 call paths_to_de_ix;				// destination and source paths to buffer
 	 push de;							// stack destination
 
@@ -104,7 +108,8 @@ copy_close:
 ;	// call with bytes to copy in C
 read_chunk:
 	ld a, (handle);						// get file handle to source
-	ld ix, $5700;						// 256 byte buffer
+;	ld ix, $5700;						// 256 byte buffer
+	ld ix, (handle_1 + 1);				// 256 byte buffer
 	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_read;						// read a byte
@@ -113,7 +118,8 @@ read_chunk:
 
 write_chunk:
 	ld a, (handle_1);					// get file handle to destination
-	ld ix, $5700;						// 256 byte buffer
+;	ld ix, $5700;						// 256 byte buffer
+	ld ix, (handle_1 + 1);				// 256 byte buffer
 	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_write;						// write a byte
