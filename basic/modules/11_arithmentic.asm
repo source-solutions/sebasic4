@@ -169,6 +169,7 @@ fp_to_bcde:
 	jr z, zero;							// jump if zero
 	cpl;								// one's complement
 	add a, 33;							// adjust
+	ret z;								// 
 
 norm_loop:
 	srl b;								// shift B right logical
