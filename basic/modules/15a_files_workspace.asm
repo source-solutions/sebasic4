@@ -96,10 +96,13 @@ autoexec:
 	ld ix, autoexec_bas;				// path to AUTOEXEC.BAS
 	call f_open_r_exists;				// open file if it exists
 	ret c;								// return if file not found
+	pop hl;								// drop return address
+	call set_min;						// clear all work areas and calculator stack
 	ld (handle), a;						// store file handle in membot + 1
+	call load_t2;						// do LOAD "AUTOEXEC.BAS","T"
 	ld hl, auto_run;					// pointer to macro 'RUN <RETURN>'
 	call loop_f_keys;					// insert it
-	jp load_t2;							// do LOAD "AUTOEXEC.BAS","T":RUN
+	jp main_2;							// parse line
 
 ;	// open a file and attach it to a channel
 open_file:
@@ -452,8 +455,8 @@ load_t2:
 	ld (vars), hl;						// set up varaibles
 	dec hl;								// 
 	ld (datadd), hl;					// set up data add pointer
-	rst error;							// clear error
-	defb ok;							// done
+	or a;								// clear error
+	ret;								// done
 
 load_1:
 	call check_end;						// end of syntax checking
