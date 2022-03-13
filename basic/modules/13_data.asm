@@ -1080,8 +1080,8 @@ prgpath:
 rootpath:
 	defb '/', 0;						// root	
 
-;cur_path:
-;	defb '.', 0;						// current path
+cur_path:
+	defb '.', 0;						// current path
 
 appname:
 	defb ".PRG", 0;						// application extension
