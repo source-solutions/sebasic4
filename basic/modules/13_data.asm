@@ -819,7 +819,7 @@ p_bload:
 	defw c_bload;
 
 p_bsave:
-	defb str_exp, ',', num_exp, ',', num_exp_no_f_ops;
+	defb str_exp, ',', two_c_s_num_no_f_ops;
 	defw c_bsave;
 
 p_call:
