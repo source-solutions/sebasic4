@@ -28,6 +28,7 @@
 	save "../bin/23.bin", 0, 23552
 
 ;	// modules
+
 	include "modules/01_restarts.asm"
 	include "modules/02_tokenizer.asm"
 	include "modules/03_keyboard.asm"
@@ -48,10 +49,8 @@
 	include "modules/18_messages.asm"
 
 ;	// last byte
-	org $5bb9
-	defb $A0
+org $5bb9;
+	defb $A0;							// end marker
 
 ;	// this will be overwritten with system variables
 	defb "The supreme art of war is to subdue the enemy without fighting-Sun Tzu";
-
-;	// last byte is at $5bff

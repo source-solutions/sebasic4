@@ -1270,7 +1270,7 @@ pr_end_z:
 	ret z;								// return if so
 
 ;	// UnoDOS 3 entry point
-;	org $2048;
+	org $2048;
 pr_st_end:
 	cp ctrl_cr;							// carriage return?
 	ret z;								// return if so

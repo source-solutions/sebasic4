@@ -437,14 +437,6 @@ kt_alpha_sym:
 kt_dig_sym:
 	defb "_!@#$%&'()";
 
-tab_func:
-	defw s_left;
-	defw s_mid;
-	defw s_right;
-	defw s_str;
-	defw s_string_str;
-	defw s_instr;
-
 ;	// used in 02_tokenizer and 06_screen_80
 token_table:
 	defb end_marker;
@@ -1080,8 +1072,8 @@ prgpath:
 rootpath:
 	defb '/', 0;						// root	
 
-cur_path:
-	defb '.', 0;						// current path
+;cur_path:
+;	defb '.', 0;						// current path
 
 appname:
 	defb ".PRG", 0;						// application extension
