@@ -185,7 +185,7 @@ no_nmi:
 	retn;								// end of nmi
 
 ;;
-; increment ch-add
+; increment CH-ADD
 ;;
 ch_add_plus_1:
 	ld hl, (ch_add);					// get current character address
@@ -194,16 +194,16 @@ temp_ptr1:
 	inc hl;								// increment it
 
 temp_ptr2:
-	ld (ch_add), hl;					// store it
+	ld (ch_add), hl;					// set character address
 
 reentry:
 	ld a, (hl);							// copy character at current address to A
-	ret;								// end of ch_add_plus_1
+	ret;								// end of subroutine
 
 ;	// error routine continued
 error_4:
 	ld hl, (x_ptr);						// get error pointer
-	ld (k_cur), hl;						// move cursor to error
+	ld (k_cur), hl;						// set cursor position
 	jp set_stk;							// then jump
 
 ;;
@@ -215,7 +215,7 @@ skip_over:
 	ret z;								// and return if so
 	cp 16;								// test for characters 16-31
 	ret nc;								// and return if so with carry cleared
-	cp ctrl_cr;							// test for carraige return
+	cp ctrl_cr;							// carraige return?
 	ret z;								// and return if so
 	cp 6;								// test for characters 0-5 (tokens)
 	ccf;								// complement carry flag
@@ -224,8 +224,8 @@ skip_over:
 
 skips:
 	scf;								// set carry flag
-	ld (ch_add), hl;					// put new character address in ch_add
-	ret;								// end of skip_over
+	ld (ch_add), hl;					// put new character address in CH-ADD
+	ret;								// end of subroutine
 
 ;	// user IM1 subroutine
 user_im1:
@@ -245,7 +245,7 @@ key_int:
 	pop hl;								// unstack HL
 	pop af;								// unstack AF
 	ei;									// switch on interrupts
-	ret;								// end of maskamask_int
+	ret;								// end of subroutine
 
 joystick:
 	in a, (stick);						// read joystick

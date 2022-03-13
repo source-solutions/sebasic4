@@ -139,11 +139,6 @@ init_chan:
 	defb 'W';							// channel
 	defb end_marker;					// no more channels
 
-file_chan:
-	defw file_out, file_in;				// file
-	defb 'F';							// channel
-	defw 8;								// length of channel
-
 ;	// used in 10_expression
 tbl_ops_priors:
 	defb '+', op_fadd + %11000000, 8;	// +
@@ -151,12 +146,12 @@ tbl_ops_priors:
 	defb '*', op_fmul + %11000000, 11;	// *
 	defb '/', op_fdiv + %11000000, 11;	// /
 	defb '^', op_ftop + %11000000, 12;	// ^
-	defb '=', $0e + %11000000, 7;		// =  fcp(_eq)
-	defb '>', $0c + %11000000, 7;		// >  fcp(_gt)
-	defb '<', $0d + %11000000, 7;		// <  fcp(_lt)
-	defb tk_l_eql, $09 + %11000000, 7;	// <= fcp(_le)
-	defb tk_gr_eq, $0a + %11000000, 7;	// >= fcp(_ge)
-	defb tk_neql, $0b + %11000000, 7;	// <> fcp(ne)
+	defb '=', $0e + %11000000, 7;		// =  fcp(eq)
+	defb '>', $0c + %11000000, 7;		// >  fcp(gt)
+	defb '<', $0d + %11000000, 7;		// <  fcp(lt)
+	defb tk_le, $09 + %11000000, 7;		// <= fcp(le)
+	defb tk_ge, $0a + %11000000, 7;		// >= fcp(ge)
+	defb tk_ne, $0b + %11000000, 7;		// <> fcp(ne)
 	defb tk_or, op_fbor + %11000000, 4;	// OR
 	defb tk_and, op_fband + $c0, 5;		// AND
 	defb tk_xor, op_fxor + %11000000, 3;// XOR
@@ -191,6 +186,14 @@ tbl_prefix_ops:
 	defb op_fusr	+ %11000000;		// USR
 	defb op_fval	+ %10000000;		// VAL
 	defb op_fvals	+ %00000000;		// VAL$
+
+tab_func:
+	defw s_left;
+	defw s_mid;
+	defw s_right;
+	defw s_str;
+	defw s_string_str;
+	defw s_instr;
 
 ;	// used in 12_calculator
 constants:
@@ -347,64 +350,68 @@ ed_f_keys_t:
 ;	// macro definitions
 ;	// each definition is 16 bytes. The last byte is always zero.
 s_f1:
-	defb "LIST", 0
-	defs 11, 0
+	defb "LIST "
+	defs 11, 0;							// LIST
 
 s_f2:
-	defb "RUN", ctrl_cr, 0;
-	defs 11, 0
+	defb "RUN", ctrl_cr;
+	defs 12, 0;							// RUN <RETURN> (overridden by tab in ZX core but still works)
 
 s_f3:
-	defb "LOAD ",'"', 0;";
-	defs 9, 0
+	defb "LOAD",'"', ".BAS", '"', ctrl_bs, ctrl_bs, ctrl_bs, ctrl_bs, ctrl_bs;
+	defs 1, 0;							// LOAD"[].BAS"
 
 s_f4:
-	defb "SAVE ",'"', 0;";
-	defs 9, 0
+	defb "SAVE",'"', ".BAS", '"', ctrl_bs, ctrl_bs, ctrl_bs, ctrl_bs, ctrl_bs;
+	defs 1, 0;							// SAVE"[].BAS"
 
 s_f5:
-	defb "CONT", ctrl_cr, 0;
-	defs 10, 0
+	defb "CONT", ctrl_cr;
+	defs 11, 0;							// CONT (overriden by NMI in ZX core)
 
 s_f6:
-	defb "COLOR 7,1", ctrl_cr, 0;
-	defs 5, 0
+	defb "TRACE ";
+	defs 10, 0;							// TRACE O[n|ff]
 
 s_f7:
-	defb "TRON", ctrl_cr, 0;
-	defs 10, 0
+	defb "BLOAD ",'"', '"', ",", ctrl_bs, ctrl_bs, 0;";
+	defs 4, 0;							// BLOAD "[]"
 
 s_f8:
-	defb "TROFF", ctrl_cr, 0;
-	defs 9, 0
+	defb "BSAVE ",'"', '"', ",,", ctrl_bs, ctrl_bs, ctrl_bs, 0;";
+	defs 2, 0;							// BSAVE "[]"
 
 s_f9:
-	defb "EDIT ", 0;
-	defs 10, 0
+	defb "KEY ", 0;
+	defs 11, 0;							// KEY [n,a$|LIST]
 
 s_f10:
 	defb "SCREEN ", 0;
-	defs 8, 0
+	defs 8, 0;							// SCREEN n
 
 s_f11:
-	defb "BLOAD ",'"', 0;";
-	defs 8, 0
+	defb "FILES",  ctrl_cr, 0;";
+	defs 9, 0;							// FILES <RETURN>
 
 s_f12:
-	defb "BSAVE ",'"', 0;";
-	defs 8, 0
+	defb "CHDIR ",'"', '"', ctrl_bs, 0;";
+	defs 6, 0;							// CHDIR "[]"
 
 s_f13:
-	defb "GOSUB ", 0;
-	defs 9, 0
+	defb "FI.", '"', "/PROGRAMS", '"', ctrl_cr, 0;";
+;										// FILES "/PROGRAMS" <RETURN> (overriden but works with SHIFT held)
 
 s_f14:
-	defb "GOTO ", 0;
-	defs 10, 0
+	defb "COLOR 7,1", ctrl_cr, 0;
+	defs 5, 0;							// COLOR 7,1 <RETURN>
 
 s_f15:
-	defb "KEY ", 0;
-	defs 11, 0
+	defb "KEY LIST", ctrl_cr, 0;
+	defs 6, 0;							// KEY LIST <RETURN> (overriden by ZX core but can be composed with F9 + F1 + <RETURN>)
+
+help:
+	defb "!HELP", ctrl_cr, 0;			// invoke HELP app
+
 
 ;	// used in 03_keyboard
 kt_main:
@@ -430,14 +437,6 @@ kt_alpha_sym:
 kt_dig_sym:
 	defb "_!@#$%&'()";
 
-tab_func:
-	defw s_left;
-	defw s_mid;
-	defw s_right;
-	defw s_str;
-	defw s_string_str;
-	defw s_instr;
-
 ;	// used in 02_tokenizer and 06_screen_80
 token_table:
 	defb end_marker;
@@ -447,6 +446,7 @@ token_table:
 	tk_eof			equ $80;
 	str "EOF #";
 	tk_fn			equ $81;
+tk_ptr_fn:
 	str "FN";
 	tk_inkey_str	equ $82;
 	str "INKEY$";
@@ -457,107 +457,111 @@ token_table:
 	tk_pi			equ $85;
 	str "PI";
 	tk_rnd			equ $86;
+tk_ptr_rnd:
 	str "RND";
 
 ;	// multi-argument functions
-	tk_left_str		equ $87
-	str "LEFT$";
-	tk_mid_str		equ $88
-	str "MID$";
-	tk_right_str	equ $89
-	str "RIGHT$";
-	tk_str_str		equ $8a;
-	str "STR$";
-	tk_string_str	equ $8b;
-	str "STRING$";
-	tk_instr		equ $8c;
+	tk_instr		equ $87;
 	str "INSTR";
+	tk_left_str		equ $88
+	str "LEFT$";
+	tk_mid_str		equ $89;
+	str "MID$";
+	tk_right_str	equ $8a;
+	str "RIGHT$";
+	tk_str_str		equ $8b;
+	str "STR$";
+	tk_string_str	equ $8c;
+	str "STRING$";
+
 
 ;	// PRINT arguments
 	tk_spc			equ $8d;
 	str "SPC";
 	tk_tab			equ $8e;
 	str "TAB";
+	tk_using		equ $8f
+	str "USING";
 
 ;	// prefix operators (single-argument functions)
-	tk_abs			equ $8f;
+	tk_abs			equ $90;
 	str "ABS";
-	tk_acos			equ $90;
+	tk_acos			equ $91;
 	str "ACOS";
-	tk_asc			equ $91;
+	tk_asc			equ $92;
 	str "ASC";
-	tk_asin			equ $92;
+	tk_asin			equ $93;
 	str "ASIN";
-	tk_atan			equ $93;
+	tk_atan			equ $94;
 	str "ATAN";
-	tk_chr_str		equ $94;
+	tk_chr_str		equ $95;
 	str "CHR$";
-	tk_cos			equ $95;
+	tk_cos			equ $96;
 	str "COS";
-	tk_deek			equ $96;
+	tk_deek			equ $97;
 	str "DEEK";
-	tk_exp			equ $97;
+	tk_exp			equ $98;
 	str "EXP";
-	tk_fix			equ $98;
+	tk_fix			equ $99;
 	str "FIX";
-	tk_inp			equ $99;
+	tk_inp			equ $9a;
 	str "INP";
-	tk_int			equ $9a;
+	tk_int			equ $9b;
 	str "INT";
-	tk_len			equ $9b;
+	tk_len			equ $9c;
 	str "LEN";
-	tk_log			equ $9c;
+	tk_log			equ $9d;
 	str "LOG";
-	tk_not			equ $9d;
+	tk_not			equ $9e;
 	str "NOT";
-	tk_peek			equ $9e;
+	tk_peek			equ $9f;
 	str "PEEK";
-	tk_sin			equ $9f;
+	tk_sin			equ $a0;
 	str "SIN";
-	tk_sgn			equ $a0;
+	tk_sgn			equ $a1;
 	str "SGN";
-	tk_sqr			equ $a1;
+	tk_sqr			equ $a2;
 	str "SQR";
-	tk_tan			equ $a2;
+	tk_tan			equ $a3;
 	str "TAN";
-	tk_usr			equ $a3;
+	tk_usr			equ $a4;
 	str "USR";
-	tk_val			equ $a4;
+	tk_val			equ $a5;
 	str "VAL";
-	tk_val_str		equ $a5;
+	tk_val_str		equ $a6;
 	str "VAL$";
 
 ;	// infix operators
-	tk_mod			equ $a6;
+	tk_mod			equ $a7;
 	str "MOD";
-	tk_neql			equ $a7;
+	tk_ne			equ $a8;
 	str "<>";
-	tk_l_eql		equ $a8;
+	tk_le			equ $a9;
 	str "<=";
-	tk_gr_eq		equ $a9;
+	tk_ge			equ $aa;
 	str ">=";
-	tk_and			equ $aa;
+	tk_and			equ $ab;
 	str "AND";
-	tk_or			equ $ab;
+	tk_or			equ $ac;
 	str "OR";
-	tk_xor			equ $ac;
+	tk_xor			equ $ad;
 	str "XOR";
 
 ;	// other keywords
-	tk_line			equ $ad;
+	tk_line			equ $ae;
 	str "LINE";
-	tk_step			equ $ae;
+	tk_off			equ $af;
+tk_ptr_off:
+	str "OFF";
+	tk_step			equ $b0;
 	str "STEP";
-	tk_then			equ $af;
+	tk_then			equ $b1;
+tk_ptr_then:
 	str "THEN";
-	tk_to			equ $b0;
+	tk_to			equ $b2;
 	str "TO";
 
 ;	// unassigned tokens
-	tk__b1			equ $b1;
-	str "_B1";
-	tk__b2			equ $b2;
-	str "_B2";
 	tk__b3			equ $b3;
 	str "_B3";
 	tk__b4			equ $b4;
@@ -595,40 +599,41 @@ token_table:
 
 ;	// commands
 	first_cmd		equ $c4;
-	tk_else			equ $c4;
-	str "ELSE";
-	tk_bload		equ $c5;
+	tk_bload		equ $c4;
 	str "BLOAD";
-	tk_bsave		equ $c6;
+	tk_bsave		equ $c5;
 	str "BSAVE";
-	tk_call			equ $c7;
+	tk_call			equ $c6;
 	str "CALL";
-	tk_chdir		equ $c8;
+	tk_chdir		equ $c7;
 	str "CHDIR";
-	tk_clear		equ $c9;
+	tk_clear		equ $c8;
 	str "CLEAR";
-	tk_close		equ $ca;
+	tk_close		equ $c9;
 	str "CLOSE #";
-	tk_cls			equ $cb;
+	tk_cls			equ $ca;
 	str "CLS";
-	tk_color		equ $cc;
+	tk_color		equ $cb;
 	str "COLOR";
-	tk_cont			equ $cd;
+	tk_cont			equ $cc;
 	str "CONT";
-	tk_copy			equ $ce;
+	tk_copy			equ $cd;
 	str "COPY";
-	tk_data			equ $cf;
+	tk_data			equ $ce;
 	str "DATA";
-	tk_def			equ $d0;
+	tk_def			equ $cf;
 	str "DEF FN";
-	tk_delete		equ $d1;
+	tk_delete		equ $d0;
 	str "DELETE";
-	tk_dim			equ $d2;
+	tk_dim			equ $d1;
 	str "DIM";
-	tk_doke			equ $d3;
+	tk_doke			equ $d2;
 	str "DOKE";
-	tk_edit			equ $d4;
+	tk_edit			equ $d3;
 	str "EDIT";
+	tk_else			equ $d4;
+tk_ptr_else:
+	str "ELSE";
 	tk_end			equ $d5;
 	str "END";
 	tk_error		equ $d6;
@@ -685,9 +690,8 @@ token_table:
 	str "RANDOMIZE";
 	tk_read			equ $f0;
 	str "READ";
-
-tk_ptr_rem:
 	tk_rem			equ $f1;
+tk_ptr_rem:
 	str "REM";
 	tk_renum		equ $f2;
 	str "RENUM";
@@ -703,26 +707,51 @@ tk_ptr_rem:
 	str "SAVE";
 	tk_screen		equ $f8;
 	str "SCREEN";
-	tk_sound		equ $f9;
+	tk_seek			equ $f9
+	str "SEEK #";
+	tk_sound		equ $fa;
 	str "SOUND";
-	tk_stop			equ $fa;
+	tk_stop			equ $fb;
 	str "STOP";
-	tk_troff		equ $fb;
-	str "TROFF";
-	tk_tron			equ $fc;
-	str "TRON";
+	tk_trace		equ $fc;
+	str "TRACE";
 	tk_wait			equ $fd;
 	str "WAIT";
 	tk_wend			equ $fe;
 	str "WEND";
-	
-tk_ptr_last:
 	tk_while		equ $ff;
+tk_ptr_last:
 	str "WHILE";
+
+;	// pseudo tokens
+tk_ptr_atn:
+	str "ATN("
+tk_ptr_colour:
+	str "COLOUR"
+tk_ptr_hex_str:
+	str "HEX$("
+tk_ptr_oct_str:
+	str "OCT$("
+tk_ptr_space_str:
+	str "SPACE$("
+tk_ptr_tron:
+	str "TRON"
+tk_ptr_troff:
+	str "TROFF"
+tk_ptr_ne:
+	str "><"
+tk_ptr_le:
+	str "=<"
+tk_ptr_ge:
+	str "=>"
+tk_ptr_hex:
+	str "&H"
+tk_ptr_oct:
+	str "&O"
+
 
 ;	// used in 09_command
 offst_tbl:
-	defw p_else;
 	defw p_bload;
 	defw p_bsave;
 	defw p_call;
@@ -739,6 +768,7 @@ offst_tbl:
 	defw p_dim;
 	defw p_doke;
 	defw p_edit;
+	defw p_else;
 	defw p_end;
 	defw p_error;
 	defw p_files;
@@ -775,25 +805,21 @@ offst_tbl:
 	defw p_run
 	defw p_save;
 	defw p_screen;
+	defw p_seek;
 	defw p_sound;
 	defw p_stop;
-	defw p_troff;
-	defw p_tron;
+	defw p_trace;
 	defw p_wait;
 	defw p_wend;
 	defw p_while;
 
 ;	// parameter table
-p_else:
-	defb var_syn;
-	defw c_else;
-
 p_bload:
 	defb str_exp, ',', num_exp_no_f_ops;
 	defw c_bload;
 
 p_bsave:
-	defb str_exp, ',', num_exp, ',', num_exp_no_f_ops;
+	defb str_exp, ',', two_c_s_num_no_f_ops;
 	defw c_bsave;
 
 p_call:
@@ -837,7 +863,7 @@ p_def:
 	defw c_def;
 
 p_delete:
-	defb num_exp, ',', num_exp_no_f_ops;
+	defb two_c_s_num_no_f_ops;
 	defw c_delete;
 
 p_dim:
@@ -851,6 +877,10 @@ p_doke:
 p_edit:
 	defb num_exp_0;
 	defw c_edit;
+
+p_else:
+	defb var_syn;
+	defw c_else;
 
 p_end:
 	defb no_f_ops;
@@ -900,7 +930,7 @@ p_list:
 	defw c_list;
 
 p_load:
-	defb str_exp_no_f_ops;
+	defb str_exp, var_syn;
 	defw c_load;
 
 p_locate:
@@ -988,12 +1018,16 @@ p_run:
 	defw c_run;
 
 p_save:
-	defb str_exp_no_f_ops;
+	defb str_exp, var_syn;
 	defw c_save;
 
 p_screen:
 	defb num_exp_no_f_ops;
 	defw c_screen;
+
+p_seek:
+	defb two_c_s_num_no_f_ops;
+	defw c_seek;
 
 p_sound:
 	defb two_c_s_num_no_f_ops;
@@ -1003,13 +1037,9 @@ p_stop:
 	defb no_f_ops;
 	defw c_stop;
 
-p_troff:
-	defb no_f_ops;
-	defw c_troff;
-
-p_tron:
-	defb no_f_ops;
-	defw c_tron;
+p_trace:
+	defb var_syn;
+	defw c_trace;
 
 p_wait:
 	defb num_exp_no_f_ops;
@@ -1024,15 +1054,20 @@ p_while:
 	defw c_while;
 
 ;	// used in 15_files
+
+file_chan:
+	defw file_out, file_in;				// file channel
+	defb 'F';							// service routine
+
 dir_msg:
 	defb "<DIR>   ", 0;
 
 ;	// the following data cannot be moved to the ROM area
 basepath:
-	defb "/programs";					// "/programs/" (continues into progpath)
+	defb "/PROGRAMS";					// "/programs/" (continues into progpath)
 
 prgpath:
-	defb "/prg";						// "/prg/", 0 (continues into rootpath)
+	defb "/PRG";						// "/prg/", 0 (continues into rootpath)
 	
 rootpath:
 	defb '/', 0;						// root	
@@ -1041,16 +1076,25 @@ rootpath:
 ;	defb '.', 0;						// current path
 
 appname:
-	defb ".prg", 0;						// application extension
+	defb ".PRG", 0;						// application extension
 
 resources:
-	defb "../rsc", 0;					// resource folder
+	defb "../RSC", 0;					// resource folder
 
 old_bas_path:
-	defb "/system/temporar.y/old.bas",0;// path to OLD.BAS
+	defb "/SYSTEM/TEMPORAR.Y/OLD.BAS",0;// path to OLD.BAS
 
 sys_folder:
-	defb "system", 0;					// system folder name
+	defb "SYSTEM", 0;					// system folder name
 
 tmp_folder:
-	defb "temporar.y", 0;				// temporary folder name
+	defb "TEMPORAR.Y", 0;				// temporary folder name
+
+tmp_file:
+	defb "TMP.$$$",0;					// path to temporary file
+
+autoexec_bas:
+	defb "AUTOEXEC.BAS", 0;				// filepath for AUTOEXEC.BAS
+
+auto_run:
+	defb tk_run, ctrl_cr, 0;			// inserted into keyboard buffer

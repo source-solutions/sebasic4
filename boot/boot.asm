@@ -179,7 +179,7 @@ not_5:
 	ld hl, font;						// soruce
 	ld de, $f800;						// destination
 	ld bc, 2048;						// 2KiB of data
-	ldir;								// block copy
+	ldir;								// copy bytes
 
 ;	// set palette
 	ld c, $3b;							// ULAplus port
@@ -188,7 +188,7 @@ not_5:
 
 pal_1st:
 	ld hl, ega_pal;						// start of data
-	jr pal_loop;
+	jr pal_loop;						// immediate jump
 
 pal_2nd:
 	ld hl, ega_pal + 8;					// offset to bright colors
@@ -522,7 +522,7 @@ cold_reset:
 
 emu_loop:
 ;	jp power_off;						// for emulators that don't implement cold boot
-	jr emu_loop;
+	jr emu_loop;						// immediate jump
 
 ;	// Write to SPI flash
 ;	// A: number of pages (256 bytes) to write
@@ -586,18 +586,18 @@ wrfls3:
 	inc b;
 	outi;
 	dec a;
-	jr nz, wrfls3;
+	jr nz, wrfls3;						// jump if not
 	exx;
 	rst wreg
 	defb flash_cs, 1;					// SPI control, deactivate
 	ex af, af';
 	dec a;
-	jr z, waits5;
+	jr z, waits5;						// jump if so
 	ex af, af';
 	inc e;
 	ld a, e;
 	and $0f;
-	jr nz, wrfls2;
+	jr nz, wrfls2;						// jump if not
 	ld hl, wrfls1;
 	push hl;
 
@@ -611,10 +611,10 @@ waits5:
 waits6:
 	in a, (c);
 	and 1;
-	jr nz, waits6;
+	jr nz, waits6;						// jump if not
 	rst wreg;
 	defb flash_cs, 1;					// SPI control, deactivate
-	ret;
+	ret;								// done
 
 ;	// part two of BASIC
 	org $0400
@@ -641,7 +641,7 @@ wipe_8:
 	ld (hl), 0;							// clear it
 	ld de, 1;							// destination
 	ld bc, 8191;						// 8KiB less one byte
-	ldir;								// block copy
+	ldir;								// copy bytes
 	ret;								// done
 
 ;	// CONFIG.SYS RAM code

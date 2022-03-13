@@ -12,42 +12,7 @@
 
 	org $6000
 
-;	// print intro text
-pr_text:
-	ld a, 12;							// FF
-	rst print_a;						// clear screen
-	ld a, 2;							// select main screen
-	call chan_open;						// select channel
-	ld hl, text;						// point to text
-
-pr_loop:
-	ld a, (hl);							// get character
-	and a;								// terminating byte?
-	jr z, pr_lower;						// jump if so;
-	rst print_a;						// print character
-	inc hl;								// point to next character
-	jr pr_loop;							// loop until done
-
-pr_lower
-	inc hl;								// next position
-	push hl;							// stack pointer
-	ld a, 1;							// select lower screen
-	call chan_open;						// select channel
-	pop hl;								// unstack pointer
-
-pr_l_loop:
-	ld a, (hl);							// get character
-	and a;								// terminating byte?
-	jr z, pr_key;						// jump if so;
-	rst print_a;						// print character
-	inc hl;								// point to next character
-	jr pr_l_loop;						// loop until done
-
-pr_key:
-	ld a, $7f;							// high byte of I/O address
-	in a, ($fe);						// read byte
-	rra;								// set carry if space pressed
-	jp c, pr_key;						// loop until space pressed
+	call pr_text;						// print intro text
 
 ;	// original start
 
@@ -326,6 +291,44 @@ fade_4 equ fade_3 + 64
 fade_5 equ fade_4 + 64
 fade_6 equ fade_5 + 64
 fade_7 equ fade_6 + 64
+
+;	// print intro text
+pr_text:
+	ld a, 12;							// FF
+	rst print_a;						// clear screen
+	ld a, 2;							// select main screen
+	call chan_open;						// select channel
+	ld hl, text;						// point to text
+
+pr_loop:
+	ld a, (hl);							// get character
+	and a;								// terminating byte?
+	jr z, pr_lower;						// jump if so;
+	rst print_a;						// print character
+	inc hl;								// point to next character
+	jr pr_loop;							// loop until done
+
+pr_lower
+	inc hl;								// next position
+	push hl;							// stack pointer
+	ld a, 1;							// select lower screen
+	call chan_open;						// select channel
+	pop hl;								// unstack pointer
+
+pr_l_loop:
+	ld a, (hl);							// get character
+	and a;								// terminating byte?
+	jr z, pr_key;						// jump if so;
+	rst print_a;						// print character
+	inc hl;								// point to next character
+	jr pr_l_loop;						// loop until done
+
+pr_key:
+	ld a, $7f;							// high byte of I/O address
+	in a, ($fe);						// read byte
+	rra;								// set carry if space pressed
+	jp c, pr_key;						// loop until space pressed
+	ret;								// done
 
 text:
 	defb "Slideshow (Version 1.1)", 13;
