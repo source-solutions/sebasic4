@@ -20,6 +20,13 @@ get_path:
 ; @throws File not found; Path not found.
 ;;
 c_files:
+	call syntax_z;						// checking syntax?
+	jr z, c_files_1;					// jump if so
+	ld bc, 256;							// use a 256 byte buffer
+	rst bc_spaces;						// make space in workspace
+	ld (buffer), de;					// store pointer to start
+
+c_files_1:
 	rst get_char;						// get character
 	cp ctrl_cr;							// carriage return?
 	jr z, use_cwd;						// jump if so
@@ -80,7 +87,7 @@ pr_asciiz_uc_end:
 	rst print_a;						// print it
 
 read_folders:
-	ld ix, $5700;						// folder buffer
+	ld ix, f_stats;						// folder name buffer
 	ld a, (handle);						// get folder handle
 	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
@@ -88,7 +95,7 @@ read_folders:
 	jp c, report_file_not_found;		// jump if read failed
 	or a;								// last entry?
 	jr z, read_files;					// jump if so
-	ld hl, $5700;						// folder buffer
+	ld hl, f_stats;						// folder name buffer
 	ld a, (hl);							// attibutes to A
 	and %00010000;						// folder?
 	jr z, read_folders;					// skip files
@@ -154,7 +161,7 @@ read_files:
 	ld (handle), a;						// store folder handle
 
 read_files_2:
-	ld ix, $5700;						// folder buffer
+	ld ix, f_stats;						// file name buffer
 	ld a, (handle);						// get folder handle
 	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
@@ -162,7 +169,7 @@ read_files_2:
 	jp c, report_file_not_found;		// jump if read failed
 	or a;								// last entry?
 	jr z, last_entry;					// jump if so
-	ld hl, $5700;						// folder buffer
+	ld hl, f_stats;						// file name buffer
 	ld a, (hl);							// attibutes to A
 	and %00010000;						// folder?
 	jr nz, read_files_2;				// skip folders
