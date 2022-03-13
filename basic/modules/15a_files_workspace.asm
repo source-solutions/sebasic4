@@ -53,6 +53,7 @@
 	f_size		equ f_date + 2;			// (iy - $61)
 	f_addr		equ f_size + 4;			// (iy - $65)
 	handle_1	equ f_addr + 2;			// (iy - $67)
+	buffer		equ handle_1 + 1;		// (iy - $66)
 
 
 ;	// file channels
@@ -271,14 +272,6 @@ f_write_out:
 	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_write;						// change folder
-;	jr c, report_file_not_found;		// jump if error
-;	ld a, (handle);						// restore handle from sysvar
-;	and a;								// signal no error (clear carry flag)
-;	rst divmmc;							// issue a hookcode
-;	defb f_close;						// close file
-;	jr c, report_file_not_found;		// jump if error
-;	or a;								// clear flags
-;	ret;								// done
 	jr f_close_0;						// immediate jump
 
 f_read_in:
@@ -296,6 +289,8 @@ f_close_any:
 	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_close;						// close file
+
+f_return:
 	jr c, report_file_not_found;		// jump if error
   	or a;								// else return
  	ret;								// to BASIC
@@ -314,6 +309,74 @@ report_file_not_found:
 ;	// file commands
 
 ;;
+; <code>COPY</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#COPY" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
+;;
+c_copy:
+	call unstack_z;						// return if checking syntax
+	ld bc, 256;							// use a 256 byte buffer
+	rst bc_spaces;						// make space in workspace
+	ld (buffer), de;					// store pointer to start
+	call paths_to_de_ix;				// destination and source paths to buffer
+	push de;							// stack destination
+	call f_open_read_ex;				// open file for reading
+	ld (handle), a;						// store handle
+	call f_get_stats;					// get file length
+	pop ix;								// unstack pointer to destination
+	call f_open_w_create;				// open file for writing if it exists
+	jr c, report_file_not_found;		// jump if error
+	ld (handle_1), a;					// store handle
+
+copy_bytes:
+	ld hl, (f_size);					// byte count
+	ld a, h;							// high byte to A
+	and a;								// test for zero
+	jr z, lt_256;						// jump if less than 256 bytes to copy
+	dec h;								// reduce count by 256
+	ld (f_size), hl;					// write it back
+	ld bc, 256;							// one chunk to copy
+	call read_chunk;					// read it
+	ld bc, 256;							// one chunk to copy
+	call write_chunk;					// write it
+	jr copy_bytes;						// loop until done
+
+lt_256:
+	ld a, l;							// low byte to A
+	and a;								// test for zero
+	jr z, copy_close;					// jump if no more bytes to copy
+	ld b, 0;							// bytes to copy
+	ld c, l;							// to BC
+	push bc;							// store amount to copy
+	call read_chunk;					// read it
+	pop bc;								// restore amount to copy
+	call write_chunk;					// write it
+
+copy_close:
+	call f_close_1;						// close source
+	ld a, (handle_1);					// restore handle from sysvar
+	jp f_close_any;						// close destination
+
+;	// call with bytes to copy in C
+read_chunk:
+	ld a, (handle);						// get file handle to source
+	ld ix, (buffer);					// 256 byte buffer
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_read;						// read a byte
+	jp c, report_file_not_found;		// jump if error
+	ret;								// else done
+
+write_chunk:
+	ld a, (handle_1);					// get file handle to destination
+	ld ix, (buffer);					// 256 byte buffer
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_write;						// write a byte
+	jp c, report_file_not_found;		// jump if error
+	ret;								// else done
+
+;;
 ; <code>BLOAD</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#BLOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
 ; @throws File not found; Path not found.
@@ -328,7 +391,7 @@ c_bload:
 	ld a, (handle);						// restore handle (membot + 1)
 	ld bc, (f_size);					// get length
 	ld ix, (f_addr);					// get address
-	jr f_read_in;						// load binary
+	jp f_read_in;						// load binary
 
 ;;
 ; <code>BSAVE</code> command
@@ -345,7 +408,7 @@ c_bsave:
 	call f_open_write_al;				// open file for writing
 	ld ix, (f_addr);					// start to IX
 	ld bc, (f_size);					// length to BC
-	jr f_write_out;						// save binary
+	jp f_write_out;						// save binary
 
 ;;
 ; <code>CHDIR</code> command
@@ -380,9 +443,7 @@ c_kill:
 	call path_to_ix;					// path to buffer
 	rst divmmc;							// issue a hookcode
 	defb f_unlink;						// release file
-	jr c, report_file_not_found;		// jump if error
-	or a;								// clear flags
-	ret;								// done
+	jp f_return;						// report error or return
 
 ;;
 ; <code>LOAD</code> command
@@ -578,9 +639,7 @@ c_name:
 	call paths_to_de_ix;				// destination and source paths to buffer
 	rst divmmc;							// issue a hookcode
 	defb f_rename;						// change filename
-	jp c, report_file_not_found;		// jump if error
-	or a;								// clear flags
-	ret;								// end of command
+	jp f_return;						// report error or return
 
 ;;
 ; <code>OLD</code> command

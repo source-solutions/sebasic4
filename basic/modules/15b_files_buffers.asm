@@ -1,5 +1,3 @@
-
-
 get_path:
 	call stk_fetch;						// start to DE, length to BC
 	ld a, c;							// test for
@@ -12,119 +10,8 @@ get_path:
 	ld (hl), 0;							// set end marker
 	ret;								// done
 
-get_dest:
-	call stk_fetch;						// start to DE, length to BC
-	ld a, c;							// test for
-	or b;								// empty string
-	jp z, report_bad_fn_call;			// error if so
-	ex de, hl;							// start to HL
-	ld de, $5700;						// destination - FIXME use workspace
-	call ldir_space;					// copy it (converting spaces to underscores)
-	ex de, hl;							// end to HL
-	ld (hl), 0;							// set end marker
-	ret;								// done
-
-
 ;	// file commands
 
-;;
-; <code>COPY</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#COPY" target="_blank" rel="noopener noreferrer">Language reference</a>
-; @throws File not found; Path not found.
-;;
-c_copy:
-	call unstack_z;						// return if checking syntax
-;	call get_dest;						// path to buffer (dest)
-;	call get_path;						// path to buffer (source)
-;	ld ix, $5800;						// pointer to path
-
-	 ld bc, 256;						// use a 256 byte buffer
-	 rst bc_spaces;						// make space in workspace
-	 ld (handle_1 + 1), de;				// store pointer to start
-
-	 call paths_to_de_ix;				// destination and source paths to buffer
-	 push de;							// stack destination
-
-	call f_open_read_ex;				// open file for reading
-
-	 ld (handle), a;						// store handle
-
-	call f_get_stats;					// get file length
-;	ld ix, $5700;						// pointer to path
-
-	 pop ix;							// unstack pointer to destination
-
-	call f_open_w_create;				// open file for writing if it exists
-
-	jp c, report_file_not_found;		// jump if error
-	ld (handle_1), a;					// store handle
-
-;	// read a byte
-copy_bytes:
-	ld hl, (f_size);					// byte count
-	ld a, h;							// high byte to A
-	and a;								// test for zero
-	jr z, lt_256;						// jump if less than 256 bytes to copy
-	dec h;								// reduce count by 256
-	ld (f_size), hl;					// write it back
-	ld bc, 256;							// one chunk to copy
-	call read_chunk;					// read it
-	ld bc, 256;							// one chunk to copy
-	call write_chunk;					// write it
-	jr copy_bytes;						// loop until done
-
-lt_256:
-	ld a, l;							// low byte to A
-	and a;								// test for zero
-	jr z, copy_close;					// jump if no more bytes to copy
-	ld b, 0;							// bytes to copy
-	ld c, l;							// to BC
-	push bc;							// store amount to copy
-	call read_chunk;					// read it
-	pop bc;								// restore amount to copy
-	call write_chunk;					// write it
-
-copy_close:
-;	// close source
-;	ld a, (handle);						// restore handle
-;	and a;								// signal no error (clear carry flag)
-;	rst divmmc;							// issue a hookcode
-;	defb f_close;						// close file
-;	jp c, report_file_not_found;		// jump if error
-	call f_close_1;						// close source
-
-;	// close destination
-	ld a, (handle_1);					// restore handle from sysvar
-;	and a;								// signal no error (clear carry flag)
-;	rst divmmc;							// issue a hookcode
-;	defb f_close;						// close file
-;	jp c, report_file_not_found;		// jump if error
-
-;	// return to BASIC
-;	or a;								// clear flags
-;	ret;								// done
-	jp f_close_any;						// close destination
-
-;	// call with bytes to copy in C
-read_chunk:
-	ld a, (handle);						// get file handle to source
-;	ld ix, $5700;						// 256 byte buffer
-	ld ix, (handle_1 + 1);				// 256 byte buffer
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_read;						// read a byte
-	jp c, report_file_not_found;		// jump if error
-	ret;								// else done
-
-write_chunk:
-	ld a, (handle_1);					// get file handle to destination
-;	ld ix, $5700;						// 256 byte buffer
-	ld ix, (handle_1 + 1);				// 256 byte buffer
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_write;						// write a byte
-	jp c, report_file_not_found;		// jump if error
-	ret;								// else done
 
 ;	// print a folder listing to the main screen
 ;;
