@@ -276,7 +276,6 @@ f_write_out:
 	jr f_close_0;						// immediate jump
 
 f_read_in:
-	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_read;						// read a byte
 
@@ -516,7 +515,6 @@ pr_asciiz_uc_end:
 read_folders:
 	ld ix, (buffer);					// folder item buffer
 	ld a, (handle);						// get folder handle
-	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_readdir;						// read a folder entry
 	jp c, report_file_not_found;		// jump if read failed
@@ -585,7 +583,6 @@ read_files:
 read_files_2:
 	ld ix, (buffer);					// file item buffer
 	ld a, (handle);						// get folder handle
-	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
 	defb f_readdir;						// read a folder entry
 	jp c, report_file_not_found;		// jump if read failed

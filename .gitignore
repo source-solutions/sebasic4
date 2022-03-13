@@ -1,4 +1,4 @@
-/asmdoc/perl
+/api/perl
 .DS_Store
 23.bin
 basic.rom
@@ -12,9 +12,6 @@ ba????.bmp
 symbols.txt
 
 # exclude generated docs
-/asmdoc/*asm.html
-/asmdoc/*classes*.html
-/asmdoc/*inc.html
-/asmdoc/index*.html
-/asmdoc/constant*.html
-/asmdoc/deprecated*.html
+/api/*.html
+/api/*.css
+
