@@ -29,4 +29,4 @@ loop_f_keys:
 	jr loop_f_keys;						// loop until done
 
 string:
-    defb "LOAD ", '"', "/PROGRAMS/HELP/RSC/HELP.BAS", '"', ",",  '"',"R", '"', 13, 0;
+    defb "LOAD", '"', "/PROGRAMS/HELP/RSC/HELP.BAS", '"', ",", '"', 'T', '"', ":RUN", 13, 0;

@@ -20,7 +20,6 @@
 	include "basic.inc";				// label definitions and X80 instruction set
 
 	slam equ 1;							// uncomment to build SLAM+128/divMMC version
-;	no_fs equ 1;						// uncomment both to build without filesystem support
 
 ;	// export program in separate ROM and RAM segments
 
@@ -32,8 +31,8 @@
 	include "modules/01_restarts.asm"
 	include "modules/02_tokenizer.asm"
 	include "modules/03_keyboard.asm"
-	include "modules/04_audio.asm"
-	include "modules/05_miscellaneous.asm"
+	include "modules/04_vectors.asm"
+	include "modules/05_preprocessor.asm"
 	include "modules/06_screen_80.asm"
 	include "modules/07_editor.asm"
 	include "modules/08_executive.asm"
@@ -42,10 +41,11 @@
 	include "modules/11_arithmentic.asm"
 	include "modules/12_calculator.asm"
 	include "modules/13_data.asm"
-	include "modules/14_preprocessor.asm"
-	include "modules/15_screen_40.asm"
-	include "modules/16_files.asm"
-	include "modules/17_messages.asm"
+	include "modules/14_screen_40.asm"
+	include "modules/15_files.asm"
+	include "modules/16_audio.asm"
+	include "modules/17_miscellaneous.asm"
+	include "modules/18_messages.asm"
 
 ;	// last byte
 	org $5bb9

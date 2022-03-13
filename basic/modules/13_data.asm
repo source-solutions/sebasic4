@@ -139,11 +139,6 @@ init_chan:
 	defb 'W';							// channel
 	defb end_marker;					// no more channels
 
-file_chan:
-	defw file_out, file_in;				// file
-	defb 'F';							// channel
-	defw 8;								// length of channel
-
 ;	// used in 10_expression
 tbl_ops_priors:
 	defb '+', op_fadd + %11000000, 8;	// +
@@ -191,6 +186,14 @@ tbl_prefix_ops:
 	defb op_fusr	+ %11000000;		// USR
 	defb op_fval	+ %10000000;		// VAL
 	defb op_fvals	+ %00000000;		// VAL$
+
+tab_func:
+	defw s_left;
+	defw s_mid;
+	defw s_right;
+	defw s_str;
+	defw s_string_str;
+	defw s_instr;
 
 ;	// used in 12_calculator
 constants:
@@ -824,7 +827,7 @@ p_bload:
 	defw c_bload;
 
 p_bsave:
-	defb str_exp, ',', num_exp, ',', num_exp_no_f_ops;
+	defb str_exp, ',', two_c_s_num_no_f_ops;
 	defw c_bsave;
 
 p_call:
@@ -868,7 +871,7 @@ p_def:
 	defw c_def;
 
 p_delete:
-	defb num_exp, ',', num_exp_no_f_ops;
+	defb two_c_s_num_no_f_ops;
 	defw c_delete;
 
 p_dim:
@@ -1023,7 +1026,7 @@ p_run:
 	defw c_run;
 
 p_save:
-	defb str_exp_no_f_ops;
+	defb str_exp, var_syn;
 	defw c_save;
 
 p_screen:
@@ -1031,7 +1034,7 @@ p_screen:
 	defw c_screen;
 
 p_seek:
-	defb num_exp, ',', num_exp_no_f_ops;
+	defb two_c_s_num_no_f_ops;
 	defw c_seek;
 
 p_sound:
@@ -1059,6 +1062,11 @@ p_while:
 	defw c_while;
 
 ;	// used in 15_files
+
+file_chan:
+	defw file_out, file_in;				// file channel
+	defb 'F';							// service routine
+
 dir_msg:
 	defb "<DIR>   ", 0;
 
@@ -1090,8 +1098,11 @@ sys_folder:
 tmp_folder:
 	defb "TEMPORAR.Y", 0;				// temporary folder name
 
-auto_run:
-	defb tk_run, ctrl_cr, 0;			// inserted into keyboard buffer
+tmp_file:
+	defb "TMP.$$$",0;					// path to temporary file
 
 autoexec_bas:
 	defb "AUTOEXEC.BAS", 0;				// filepath for AUTOEXEC.BAS
+
+auto_run:
+	defb tk_run, ctrl_cr, 0;			// inserted into keyboard buffer

@@ -148,6 +148,47 @@ fp_to_bc_delete:
 	pop de;								// pointers
 	ret;								// end of subroutine
 
+; ------------------------------------------------------------------------------
+
+;;
+; floating point to BCDE (32-bit integer) FIXME - work in progress
+;;
+fp_to_bcde:
+	fwait;								// round to
+	fstkhalf;							// nearest integer
+	fadd;								// and then
+	fce;								// exit calculator
+	call stk_fetch;						// 40-bit floating point value to AEDCB
+	bit 7, b;							// 
+	jp nz, report_overflow_2;			// jump if out of range
+	set 7, b;							// 
+	cp $a0;								// maximum exponent
+	jp nc, report_overflow_2;			// jump if out of range
+	sub $80;							// minimum exponent
+	jr c, zero;							// jump if zero
+	jr z, zero;							// jump if zero
+	cpl;								// one's complement
+	add a, 33;							// adjust
+	ret z;								// 
+
+norm_loop:
+	srl b;								// shift B right logical
+	rr c;								// shift C right
+	rr d;								// shift D right
+	rr e;								// shift E right
+	dec a;								// decrement A
+	jr nz, norm_loop;					// loop until normalized
+	ret;								// done
+
+zero:
+	ld b, 0;							// set
+	ld c, b;							// 32-bit
+	ld d, b;							// value
+	ld e, b;							// to zero
+	ret;								// and return
+
+; ------------------------------------------------------------------------------
+
 ;;
 ; log (2^A)
 ;;

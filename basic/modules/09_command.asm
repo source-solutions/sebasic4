@@ -993,6 +993,7 @@ c_gosub:
 	ld (err_sp), sp;					// point sysvar to it
 	push de;							// stack stmt_ret address
 	call c_goto;						// set newppc and nsppc
+
 test_20_bytes:
 	ld bc, 20;							// 20 bytes required
 
@@ -1941,6 +1942,10 @@ lv2:
 ;;
 c_key:
 	rst get_char;						// get first character
+	cp tk_on;							// ON token?
+	jp z, key_on;						// jump if so
+	cp tk_off;							// OFF token?
+	jp z, key_off;						// jump if so
 	cp tk_list;							// LIST token?
 	jr z, key_list;						// jump if so
 	call expt_1num;						// get parameter
@@ -2007,7 +2012,6 @@ report_syntax_err3:
 key_list:
 	rst next_char;						// next character
 	call check_end;						// expect end of line
-	call unstack_z;						// return if checking syntax
 	ld a, 2;							// use stream #2
 	ld (iy + _vdu_flag), 0;				// signal normal listing
 	call chan_open;						// select channel if not
@@ -2054,6 +2058,16 @@ not_cr:
 	inc de;								// next character
 	jr pr_mcr_loop;						// loop until done
 
+key_on:
+	rst next_char;						// next character
+	call check_end;						// expect end of line
+	ret;								// FIXME - stub for action to switch off macros
+
+key_off:
+	rst next_char;						// next character
+	call check_end;						// expect end of line
+	ret;								// FIXME - stub for action to switch off macros
+
 get_next:
 	ld a, (hl);							// get character
 	call number;						// skip floating point representation
@@ -2075,4 +2089,3 @@ skip_quot:
 count_stmt:
 	inc (iy + _subppc);					// increment subppc
 	ret;								// end of subroutine
-

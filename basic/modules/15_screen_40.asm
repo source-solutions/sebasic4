@@ -40,6 +40,6 @@
 ;	// There are eight separate routines called based on the first three bits of
 ;	// the column value.
 
-	org $4800;
+;	org $4800;
 ;	// HL points to the first byte of a character in FONT_1
 ;	// DE points to the first byte of the block of screen addresses
