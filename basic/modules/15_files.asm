@@ -43,17 +43,18 @@
 
 ;	// file system variables
 
-	handle		equ mem_0_1;			// (iy - $59)
-	f_stats		equ handle + 1;			// (iy - $5a)
-	drive		equ f_stats;			// (iy - $5a)
-	device		equ drive + 1;			// (iy - $5b)
-	f_attr		equ device + 1;			// (iy - $5c)
-	f_time		equ f_attr + 1;			// (iy - $5d)
-	f_date		equ f_time + 2;			// (iy - $5f)
-	f_size		equ f_date + 2;			// (iy - $61)
-	f_addr		equ f_size + 4;			// (iy - $65)
-	handle_1	equ f_addr + 2;			// (iy - $67)
-	buffer		equ handle_1 + 1;		// (iy - $66)
+	handle		equ mem_0_1;			// (iy + $59)
+	f_stats		equ handle + 1;			// (iy + $5a)
+	drive		equ f_stats;			// (iy + $5a)
+	device		equ drive + 1;			// (iy + $5b)
+	f_attr		equ device + 1;			// (iy + $5c)
+	f_time		equ f_attr + 1;			// (iy + $5d)
+	f_date		equ f_time + 2;			// (iy + $5f)
+	f_size		equ f_date + 2;			// (iy + $61)
+	f_addr		equ f_size + 4;			// (iy + $65)
+	handle_1	equ f_addr + 2;			// (iy + $67)
+	buffer		equ handle_1 + 1;		// (iy + $68)
+	buffer_1	equ buffer + 2;			// (iy + $6a)
 
 
 ;	// file channels
@@ -309,6 +310,63 @@ report_file_not_found:
 ;	// file commands
 
 ;;
+; <code>BLOAD</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#BLOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
+;;
+c_bload:
+	call unstack_z;						// return if checking syntax
+	call find_int2;						// get address
+	ld (f_addr), bc;					// store it
+	call path_to_ix;					// path to buffer
+	call f_open_read_ex;				// open file for reading
+	call f_get_stats;					// get binary length
+	ld a, (handle);						// restore handle (membot + 1)
+	ld bc, (f_size);					// get length
+	ld ix, (f_addr);					// get address
+	jr f_read_in;						// load binary
+
+;;
+; <code>BSAVE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#BSAVE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws File not found; Path not found.
+;;
+c_bsave:
+	call unstack_z;						// return if checking syntax
+	call find_int2;						// get length
+	ld (f_size), bc;					// store it
+	call find_int2;						// get address
+	ld (f_addr), bc;					// store it
+	call path_to_ix;					// path to buffer
+	call f_open_write_al;				// open file for writing
+	ld ix, (f_addr);					// start to IX
+	ld bc, (f_size);					// length to BC
+	jr f_write_out;						// save binary
+
+;;
+; <code>CHDIR</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CHDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws Path not found.
+;;
+c_chdir:
+	call unstack_z;						// return if checking syntax
+	call path_to_ix;					// path to buffer
+
+c_chdir_1:
+	rst divmmc;							// issue a hookcode
+	defb f_chdir;						// change folder
+
+;	// common service routine inlined
+chk_path_error:
+	jr c, report_path_not_found;		// jump if error
+	or a;								// clear flags
+	ret;								// done
+
+report_path_not_found:
+	rst error;							// throw
+	defb path_not_found;				// error
+
+;;
 ; <code>COPY</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#COPY" target="_blank" rel="noopener noreferrer">Language reference</a>
 ; @throws File not found; Path not found.
@@ -377,61 +435,218 @@ write_chunk:
 	ret;								// else done
 
 ;;
-; <code>BLOAD</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#BLOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
+; <code>FILES</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#FILES" target="_blank" rel="noopener noreferrer">Language reference</a>
 ; @throws File not found; Path not found.
 ;;
-c_bload:
-	call unstack_z;						// return if checking syntax
-	call find_int2;						// get address
-	ld (f_addr), bc;					// store it
-	call path_to_ix;					// path to buffer
-	call f_open_read_ex;				// open file for reading
-	call f_get_stats;					// get binary length
-	ld a, (handle);						// restore handle (membot + 1)
-	ld bc, (f_size);					// get length
-	ld ix, (f_addr);					// get address
-	jp f_read_in;						// load binary
+c_files:
+	call syntax_z;						// checking syntax?
+	jr z, c_files_1;					// jump if so
+	ld bc, 256;							// 22 bytes per entry, 234 bytes for the path
+	rst bc_spaces;						// make space in workspace
+	ld (buffer), de;					// store pointer to folder entry
+	ld hl, 22;							// offset to file path
+	add hl, de;							// create it
+	ld (buffer_1), hl;					// store pointer to folder path
 
-;;
-; <code>BSAVE</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#BSAVE" target="_blank" rel="noopener noreferrer">Language reference</a>
-; @throws File not found; Path not found.
-;;
-c_bsave:
-	call unstack_z;						// return if checking syntax
-	call find_int2;						// get length
-	ld (f_size), bc;					// store it
-	call find_int2;						// get address
-	ld (f_addr), bc;					// store it
-	call path_to_ix;					// path to buffer
-	call f_open_write_al;				// open file for writing
-	ld ix, (f_addr);					// start to IX
-	ld bc, (f_size);					// length to BC
-	jp f_write_out;						// save binary
+c_files_1:
+	rst get_char;						// get character
+	cp ctrl_cr;							// carriage return?
+	jr z, use_cwd;						// jump if so
+	cp ':';								// test for next statement
+	jr z, use_cwd;						// jump if so
+	call expt_exp;						// expect string expression
+	call check_end;						// no further operands
 
-;;
-; <code>CHDIR</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CHDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
-; @throws Path not found.
-;;
-c_chdir:
-	call unstack_z;						// return if checking syntax
-	call path_to_ix;					// path to buffer
+get_path:
+	call stk_fetch;						// start to DE, length to BC
+	ld a, c;							// test for
+	or b;								// empty string
+	jp z, report_bad_fn_call;			// error if so
+	ex de, hl;							// start to HL
+	ld de, (buffer_1);					// folder path buffer
+	call ldir_space;					// copy it (converting spaces to underscores)
+	ex de, hl;							// end to HL
+	ld (hl), 0;							// set end marker
+	jr open_folder;						// immedaite jump
 
-c_chdir_1:
+use_cwd:
+	call unstack_z;						// return if checking syntax
+	ld a, '*';							// use current drive
+	ld ix, (buffer_1);					// folder path buffer
+	and a;								// signal no error (clear carry flag)
 	rst divmmc;							// issue a hookcode
-	defb f_chdir;						// change folder
+	defb f_getcwd;						// get current working folder
+	jp c, report_path_not_found;		// jump if error
 
-;	// common service routine inlined
-chk_path_error:
-	jr c, report_path_not_found;		// jump if error
-	or a;								// clear flags
-	ret;								// done
+open_folder:
+	ld a, 2;							// channel S (upper screen)
+	call chan_open;						// select channel
+	ld b, 0;							// folder access mode (read only?)
+	ld a, '*';							// use current drive
+	ld ix, (buffer_1);					// folder path buffer
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_opendir;						// open folder
+	jp c, report_file_not_found;		// jump if error
+	ld (handle), a;						// store folder handle
+	ld hl, (buffer_1);					// folder path buffer
 
-report_path_not_found:
-	rst error;							// throw
-	defb path_not_found;				// error
+pr_asciiz_uc:
+	ld a, (hl);							// get character
+	or a;								// null terminator?
+	jr z, pr_asciiz_uc_end;				// jump if so
+	cp '_';								// underscore?
+	ld a, ' ';							// substitute space
+	jr z, pr_asciiz_any;				// jump if so
+	ld a, (hl);							// restore character
+	call alpha;							// test alpha
+	jr nc, pr_asciiz_any;				// jump if non-alpha
+	and %11011111;						// make upper case
+
+pr_asciiz_any:
+	rst print_a;						// else print it
+	inc hl;								// next location
+	jr pr_asciiz_uc;					// loop until done
+
+pr_asciiz_uc_end:
+	ld a, ctrl_cr;						// carriage return
+	rst print_a;						// print it
+
+read_folders:
+	ld ix, (buffer);					// folder item buffer
+	ld a, (handle);						// get folder handle
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_readdir;						// read a folder entry
+	jp c, report_file_not_found;		// jump if read failed
+	or a;								// last entry?
+	jr z, read_files;					// jump if so
+	ld hl, (buffer);					// folder item buffer
+	ld a, (hl);							// attibutes to A
+	and %00010000;						// folder?
+	jr z, read_folders;					// skip files
+	inc hl;								// next location
+	ld b, 12;							// count (12 characters)
+
+pr_foldername:
+	ld a, (hl);							// get character
+	or a;								// null terminator?
+	jr nz, printable_chr;				// jump if not
+	ld a, ' ';							// else print a space
+	jr pr_fn_chr;						// immediate jump
+
+ignore_dot:
+	ld a, b;							// test count
+	cp 4;								// at the separator?
+	ld a, '.';							// restore dot just in case
+	jr nz, pr_fn_chr;					// jump if not at the separator
+	ld a, (hl);							// get next character
+
+printable_chr:
+	call alpha;							// test alpha
+	jr nc, pr_ch_na;					// jump if non-alpha
+	and %11011111;						// make upper case
+
+pr_ch_na:
+	inc hl;								// next location
+	cp '.';								// dot?
+	jr z, ignore_dot;					// ignore it if so
+	cp ' ';								// printable character?
+	jr nc, pr_fn_chr;					// jump if so
+	ld a, '?';							// else substitute a question mark
+
+pr_fn_chr:
+	call print_f;						// print character substituting ' ' for '_'
+	djnz pr_foldername;					// loop until all 12 are done
+	ld hl, dir_msg;						// else point to "<DIR>   " message
+
+pr_asciiz:
+	ld a, (hl);							// get character
+	or a;								// null terminator?
+	jr z, read_folders;					// jump to do next entry if so
+	rst print_a;						// else print it
+	inc hl;								// next location
+	jr pr_asciiz;						// loop until done
+
+read_files:
+	ld a, (handle);						// get folder handle
+	rst divmmc;							// issue a hookcode
+	defb f_close;						// close file
+	ld b, 0;							// folder access mode (read only?)
+	ld a, '*';							// use current drive
+	ld ix, (buffer_1);					// folder path buffer
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_opendir;						// open folder
+	jp c, report_file_not_found;		// jump if error
+	ld (handle), a;						// store folder handle
+
+read_files_2:
+	ld ix, (buffer);					// file item buffer
+	ld a, (handle);						// get folder handle
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_readdir;						// read a folder entry
+	jp c, report_file_not_found;		// jump if read failed
+	or a;								// last entry?
+	jr z, last_entry;					// jump if so
+	ld hl, (buffer);					// file item buffer
+	ld a, (hl);							// attibutes to A
+	and %00010000;						// folder?
+	jr nz, read_files_2;				// skip folders
+	inc hl;								// next location
+	ld b, 12;							// count (12 characters)
+
+pr_filename:
+	ld a, (hl);							// get character
+	or a;								// null terminator?
+	jr nz, printable_chr_2;				// jump if not
+	ld a, ' ';							// else print a space
+	jr pr_fn_chr_2;						// immediate jump
+
+printable_chr_2:
+	call alpha;							// test alpha
+	jr nc, pr_ch_na2;					// jump if non-alpha
+	and %11011111;						// make upper case
+
+pr_ch_na2:
+	inc hl;								// next location
+	cp ' ';								// printable character?
+	jr nc, pr_fn_chr_2;					// jump if so
+	ld a, '?';							// else substitute a question mark
+
+pr_fn_chr_2:
+	call print_f;						// print character substituting ' ' for '_'
+	djnz pr_filename;					// loop until all 12 are done
+	ld b, 8;							// count
+
+pr_spaces:
+	ld a, ' ';							// space
+	rst print_a;						// print it
+	djnz pr_spaces;						// loop until done
+	jr read_files_2;					// do next entry
+
+last_entry:
+	ld a, ctrl_cr;						// carriage return
+	rst print_a;						// print it
+	ld a, (handle);						// get folder handle
+
+do_f_close:
+	rst divmmc;							// issue a hookcode
+	defb f_close;						// close file
+	ld a, ctrl_cr;						// carriage return
+	rst print_a;						// print it
+	ret;								// end of subroutine
+
+print_f:
+	cp '_';								// test for underscore
+	jr nz, no_;							// jump if not
+	ld a, ' ';							// substitute space
+
+no_:
+	rst print_a;						// print it
+	ret;								// return
 
 ;;
 ; <code>KILL</code> command
@@ -825,3 +1040,7 @@ save_1:
 	call list_10;						// LIST program to file
 	ld ix, (curchl);					// current channel to IX
 	call close_file;					// it is, in fact, a jump, as the return address will be popped
+
+;	// FIXME - SEEK takes a stream number and a floating point value to set the pointer in a currently open file
+c_seek:
+	ret;
