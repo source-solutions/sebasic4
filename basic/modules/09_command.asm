@@ -154,12 +154,12 @@ line_new:
 	and %11000000;						// end of program?
 	jr z, line_use;						// jump if not
 
-;	// FIXME - END should close all files and streams
 ;;
 ; <code>END</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#END" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_end:
+	call close_all;						// close all files
 	ld bc, -2;							// line zero
 	ld (ppc), bc;						// set line number
 	ld l, ok;							// error to A
