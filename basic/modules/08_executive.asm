@@ -1005,7 +1005,7 @@ list_4:
 	call find_line;						// also performs LD A, B
 	or c;								// both zero?
 	jr nz, list_5;						// jump if not
-	ld bc, $4000;						// else BC = 16384
+	ld bc, 16384;						// else BC = 16384
 
 list_5:
 	ld (t_addr), bc;					// BC to temporary pointer to parameter table
@@ -1026,11 +1026,9 @@ list_7:
 
 list_8:
 	ld de, 0;							// clear DE
-	res 7, (iy + _flags);				// force edit mode
 	call out_line;						// print a BASIC line
 	rst print_a;						// print carriage return
-	set 7, (iy + _flags);				// force runtime mode
-	ld bc, (t_addr);					// emporary pointer to parameter table to BC
+	ld bc, (t_addr);					// temporary pointer to parameter table to BC
 	call cp_lines;						// match or line after
 	jr c, list_8;						// jump
 	jr z, list_8;						// if so

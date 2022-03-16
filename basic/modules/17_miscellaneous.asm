@@ -99,7 +99,7 @@ col_lookup:
 	ei;									// interrupts back on
 	ret;								// end of subroutine
 
-; 	// FIXME - delete should accept:    x   x,y   ,y   x,   
+; 	// FIXME - delete should accept:    [X]       [X]x      [X]x,y    [X],y     [ ]x,   
 
 ;;
 ; <code>DELETE</code> command
@@ -116,12 +116,64 @@ c_delete:
 	jp nc, report_bad_fn_call;			// error if not valid
 	add hl, de;							// restore line number
 	ex de, hl;							// swap pointers
-	jp reclaim_1;						// delete lines
+	jp reclaim_1;	
+
+;  	rst get_char;						// get character
+;  	cp ':';								// colon?
+;  	jr z, delete_all;					// jump if so
+;  	cp ctrl_cr;							// carraige return?
+;  	jr z, delete_all;					// jump if so
+;  	cp ',';								// comma?
+;  	jr z, delete_zero;					// jump if so
+;  	call expt_1num;						// get number
+;  	jr delete_two_param;				// immediate jump
+
+; delete_zero:
+;  	call use_zero;						// default start at zero
+;  	rst get_char;						// get character
+
+; delete_two_param:
+;  	cp ',';								// comma?
+;  	jr nz, delete_one_param;			// jump if not
+;  	rst next_char;						// next character
+;  	call fetch_num;						// get number
+;  	call check_end;						// check end of statement
+;  	call find_line;						// also performs LD A, B
+;  	or c;								// both zero?
+;  	jr nz, delete_lines;				// jump if not
+;  	ld hl, 16384;						// else HL = 16384
+
+; delete_lines:
+; 	call line_addr;						// get line address
+; 	call next_one;						// find address
+; 	push de;							// stack it
+; 	call get_line;						// get next line number
+; 	pop de;								// unstack address
+; 	and a;								// clear carry flag
+; 	sbc hl, de;							// check line range
+; 	jp nc, report_bad_fn_call;			// error if not valid
+; 	add hl, de;							// restore line number
+; 	ex de, hl;							// swap pointers
+; 	jp reclaim_1;						// delete lines
+
+; delete_all:
+;  	call check_end;						// check end of statement
+; 	ld hl, (vars);						// end of BASIC to HL
+; 	ld de, (prog);						// start of program to DE
+; 	jp reclaim_1;						// reclaim BASIC program
+
+; delete_one_param:
+; 	call check_end;						// check end of statement
+; 	call find_line;						// get value from calculator stack
+; 	push hl;							// stack it
+; 	call stack_bc;						// put it back on the calculator stack
+; 	pop hl;								// restore it
+; 	jr delete_lines;					// delete one line
 
 get_line:
-	call find_line;						// get valid line
-	call line_addr;						// get line address
-	ret;								// end of subroutine
+ 	call find_line;						// get valid line
+ 	call line_addr;						// get line address
+	ret;								// return
 
 ;;
 ; <code>EDIT</code> command

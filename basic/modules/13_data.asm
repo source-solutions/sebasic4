@@ -863,6 +863,7 @@ p_def:
 	defw c_def;
 
 p_delete:
+;	defb var_syn;
 	defb two_c_s_num_no_f_ops;
 	defw c_delete;
 
