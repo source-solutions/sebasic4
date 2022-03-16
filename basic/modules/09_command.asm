@@ -934,11 +934,6 @@ run_zero:
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CLEAR" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_clear:
-	call mute_psg;						// switch off sound chip
-	call close_all;						// close all streams
-	xor a;								// LD A, $ff
-	dec a;								// sets
-	ld (onerr_h), a;					// ON ERROR STOP
 	call find_int2;						// get operand
 
 clear_run:
@@ -949,6 +944,11 @@ clear_run:
 
 clear_1:
 	push bc;							// stack value
+	call mute_psg;						// switch off sound chip
+	call close_all;						// close all streams
+	xor a;								// LD A, $ff
+	dec a;								// sets
+	ld (onerr_h), a;					// ON ERROR STOP
 	ld de, (vars);						// start of variables to DE
 	call var_end_hl;					// location before varaibles end marker location to HL
 	call reclaim_1;						// reclaim all bytes of current variables area
