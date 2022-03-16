@@ -631,12 +631,13 @@ last_entry:
 	ld a, ctrl_cr;						// carriage return
 	rst print_a;						// print it
 	ld a, (handle);						// get folder handle
-
-do_f_close:
-	rst divmmc;							// issue a hookcode
-	defb f_close;						// close file
 	ld a, ctrl_cr;						// carriage return
 	rst print_a;						// print it
+
+do_f_close:
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_close;						// close file
 	ret;								// end of subroutine
 
 print_f:
@@ -1014,7 +1015,6 @@ c_save:
 	call nz, mode_error;				// jump if not
 
 save_t:
-	call unstack_z;						// return if checking syntax
 	call path_to_ix;					// get path in IX
 
 save_t1:
@@ -1029,7 +1029,7 @@ save_t1:
 	jp f_write_out;						// save program
 
 save_1:
-	call unstack_z;						// return if checking syntax
+	call check_end;						// return if checking syntax
 	call path_to_ix;					// get path in IX
 	ld b, fa_write | fa_open_al;		// B = mode
 	call open_file;						// open the file
