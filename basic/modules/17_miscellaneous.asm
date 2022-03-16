@@ -634,4 +634,3 @@ c_wend:
 	push hl;							// stack error address
 	rst error;							// throw
 	defb wend_without_while;			// error
-

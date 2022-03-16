@@ -429,7 +429,148 @@ call_sub:
 	ret;								// end of subroutine
 
 ;	// channels routines
-	org $1500;							// FIXME: temporary address until routines complete
+	org $149d;							// FIXME: temporary address until routines complete
+
+;	// close stream lookup table
+cl_str_lu:
+	defb 'K', close_str - 1 - $;		// keyboard
+	defb 'S', close_str - 1 - $;		// screen
+	defb 'F', close_file - 1 - $;		// file
+	defb 0;								// null termniator
+
+;;
+; <code>CLOSE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CLOSE" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_close:
+	rst get_char;						// get character
+	cp ctrl_cr;							// carriage return?
+	jr z, close_all;					// jump if so
+	cp ':';								// test for next statement
+	jr z, close_all;					// jump if so
+
+close_lp:
+	cp '#';								// channel number
+	jr nz, c_close_1;					// jump if not
+	rst next_char;						// advance ch_add
+
+c_close_1:
+	call expt_1num;						// get value
+	rst get_char;						// get character
+	cp ',';								// comma
+	jr nz, close_syn;					// jump if not;
+	call syntax_z;						// checking syntax?
+	call nz, c_close_2;					// close stream
+	rst next_char;						// advance ch_add
+	jr close_lp;						// loop until done
+
+close_syn:
+	call check_end;						// return if checking syntax
+
+c_close_2:
+	call str_data1;						// get stream data
+	jr nz, close_valid;					// jump if stream open
+	rst error;							// else 
+	defb undefined_stream;				// error
+
+close_all:
+	call check_end;						// return if checking syntax
+	ld a, 15;							// last stream
+
+close_all_lp:
+	push af;							// stack stream
+	call str_data2;						// get stream address
+	call nz, close_valid;				// close if open
+	pop af;								// get stream
+	dec a;								// reduce it
+	cp 2;								// channels 3 to 15 closed?
+	ret z;								// return if so
+	jr close_all_lp;					// else loop until done
+
+close_valid:
+	call close_2;						// perform channel specific actions
+	ld bc, 0;							// signal stream not in use
+	ld de, - strms - 10;				// handle streams 0 to 2
+	ex de, hl;							// swap pointers
+	add hl, de;							// set carry with streams 3 to 15
+	jr c, close_1;						// jump if carry set
+	ld bc, init_strm + 10;				// address table
+	add hl, bc;							// find entry
+	ld c, (hl);							// address
+	inc hl;								// to
+	ld b, (hl);							// BC
+
+close_1:
+	ex de, hl;							// swap pointers
+	ld (hl), c;							// close streams 3 to 15
+	inc hl;								// or set initial values
+	ld (hl), b;							// for streams 0 to 2
+	ret;								// end of subroutine
+
+;	// close 2 subroutine
+close_2:
+	push hl;							// stack stream data address
+	ld hl, (chans);						// base address of channel to HL
+	add hl, bc;							// channel address
+	dec hl;								// point to first byte
+	push hl;							// HL
+	pop ix;								// to IX
+	ld c, (ix + 4);						// channel leter to A
+	ld hl, cl_str_lu;					// address close stream lookup table
+	call indexer;						// get offset
+	jr nc, close_3;						// jump if no match found (user-defined channel)
+	ld c, (hl);							// offset to C
+	ld b, 0;							// zero B
+	add hl, bc;							// address to jump to
+	jp (hl);							// immediate jump
+
+close_3;
+	ld hl, 5;							// offset to custom close routine in channel data
+	add hl, de;							// address pointer to close routine
+	ld a, (hl);							// low byte to A
+	inc hl;								// next byte
+	ld h, (hl);							// high byte to H
+	ld l, a;							// low byte to L
+	jp (hl);							// jump to custom service routine
+
+close_file:
+	ld a, (ix + 5);						// file handle
+	push ix;							// stack channel descriptor base
+	call do_f_close;					// cannot do rst divmmc below $4000
+	jp c, report_bad_io_dev;			// jump on error
+	pop hl;								// HL = channel descriptor base
+	ld bc, 6;							// BC = channel descriptor length
+	call adjust_strms;					// 
+	call reclaim_2;						// reclaim closed channel
+
+close_str:
+	pop hl;								// unstack channel information pointer
+	ret;								// end of routine
+
+;	// stream data subroutine
+str_data:
+	call find_int1;						// get stream number
+	cp 16;								// in range (0 to 15)?
+	ret c;								// return if so
+	rst error;							// else
+	defb bad_io_device;					// error
+
+str_data1:
+	call str_data;						// valid stream?
+
+str_data2:
+	add a, a;							// adjust (0 to 30)
+	add a, 22;							// range (22 to 55)
+	ld l, a;							// result to L
+	ld h, hi(strms);					// high byte of STRMS to H
+	ld c, (hl);							// data
+	inc hl;								// bytes
+	ld b, (hl);							// to BC
+	dec hl;								// point to first data byte
+	ld a, c;							// test for
+	or b;								// zero
+	ret;								// end of subroutine
+
 
 ;	// open stream lookup table
 op_str_lu:
@@ -808,105 +949,6 @@ indexer:
 	inc hl;								// next
 	jr nz, indexer_1;					// jump with incorrect code
 	scf;								// set carry flag
-	ret;								// end of subroutine
-
-;;
-; <code>CLOSE</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CLOSE" target="_blank" rel="noopener noreferrer">Language reference</a>
-;;
-c_close:
-	call str_data1;						// get stream data
-	jr nz, close_valid;					// jump if stream open
-	rst error;							// else 
-	defb undefined_stream;				// error
-
-close_valid:
-	call close_2;						// perform channel specific actions
-	ld bc, 0;							// signal stream not in use
-	ld de, - strms - 10;				// handle streams 0 to 2
-	ex de, hl;							// swap pointers
-	add hl, de;							// set carry with streams 3 to 15
-	jr c, close_1;						// jump if carry set
-	ld bc, init_strm + 10;				// address table
-	add hl, bc;							// find entry
-	ld c, (hl);							// address
-	inc hl;								// to
-	ld b, (hl);							// BC
-
-close_1:
-	ex de, hl;							// swap pointers
-	ld (hl), c;							// close streams 3 to 15
-	inc hl;								// or set initial values
-	ld (hl), b;							// for streams 0 to 2
-	ret;								// end of subroutine
-
-;	// close 2 subroutine
-close_2:
-	push hl;							// stack stream data address
-	ld hl, (chans);						// base address of channel to HL
-	add hl, bc;							// channel address
-	dec hl;								// point to first byte
-	push hl;							// HL
-	pop ix;								// to IX
-	ld c, (ix + 4);						// channel leter to A
-	ld hl, cl_str_lu;					// address close stream lookup table
-	call indexer;						// get offset
-	jr nc, close_3;						// jump if no match found (user-defined channel)
-	ld c, (hl);							// offset to C
-	ld b, 0;							// zero B
-	add hl, bc;							// address to jump to
-	jp (hl);							// immediate jump
-
-close_3;
-	ld hl, 5;							// offset to custom close routine in channel data
-	add hl, de;							// address pointer to close routine
-	ld a, (hl);							// low byte to A
-	inc hl;								// next byte
-	ld h, (hl);							// high byte to H
-	ld l, a;							// low byte to L
-	jp (hl);							// jump to custom service routine
-
-;	// close stream lookup table
-cl_str_lu:
-	defb 'K', close_str - 1 - $;		// keyboard
-	defb 'S', close_str - 1 - $;		// screen
-	defb 'F', close_file - 1 - $;		// file
-	defb 0;								// null termniator
-
-close_file:
-	ld a, (ix + 5);						// file handle
-	push ix;							// stack channel descriptor base
-	call do_f_close;					// cannot do rst divmmc below $4000
-	jp c, report_bad_io_dev;			// jump on error
-	pop hl;								// HL = channel descriptor base
-	ld bc, 6;							// BC = channel descriptor length
-	call adjust_strms;					// 
-	call reclaim_2;						// reclaim closed channel
-
-close_str:
-	pop hl;								// unstack channel information pointer
-	ret;								// end of routine
-
-;	// stream data subroutine
-str_data:
-	call find_int1;						// get stream number
-	cp 16;								// in range (0 to 15)?
-	ret c;								// return if so
-	rst error;							// else
-	defb bad_io_device;					// error
-
-str_data1:
-	call str_data;						// valid stream?
-	add a, a;							// adjust (0 to 30)
-	add a, 22;							// range (22 to 55)
-	ld l, a;							// result to L
-	ld h, hi(strms);					// high byte of STRMS to H
-	ld c, (hl);							// data
-	inc hl;								// bytes
-	ld b, (hl);							// to BC
-	dec hl;								// point to first data byte
-	ld a, c;							// test for
-	or b;								// zero
 	ret;								// end of subroutine
 
 ;;
