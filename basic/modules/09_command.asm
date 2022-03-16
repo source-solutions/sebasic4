@@ -934,6 +934,11 @@ run_zero:
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CLEAR" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_clear:
+	call mute_psg;						// switch off sound chip
+	call close_all;						// close all streams
+	xor a;								// LD A, $ff
+	dec a;								// sets
+	ld (onerr_h), a;					// ON ERROR STOP
 	call find_int2;						// get operand
 
 clear_run:
@@ -954,15 +959,15 @@ clear_1:
 	add hl, de;							// to stasck end
 	pop de;								// unstack value in DE
 	sbc hl, de;							// subtract it from ramptop
-	jr nc, report_addr_oo_range;		// jump if ramtop too low
+	jr nc, report_out_of_memory;		// jump if ramtop too low
 	and a;								// prepare for subtraction
 	ld hl, (p_ramt);					// upper value to HL
 	sbc hl, de;							// subtract from upper value
 	jr nc, clear_2;						// jump if valid
 
-report_addr_oo_range:
+report_out_of_memory:
 	rst error;							// else
-	defb address_out_of_range;			// error
+	defb out_of_memory;					// error
 
 clear_2:
 	ex de, hl;							// value to HL

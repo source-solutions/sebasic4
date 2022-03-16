@@ -65,7 +65,7 @@ rpt_mesgs:
 	undefined_variable equ $0a;
 	defb "Undefined variable", 0;		// no equivalent
 	address_out_of_range equ $0b;
-	defb "Address out of range", 0;		// no equivalent
+	defb "Address out of range", 0;		// FIXME - NOT USED
 	statement_missing equ $0c;
 	defb "Statement missing", 0;		// no equivalent
 	type_mismatch equ $0d;
