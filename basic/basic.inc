@@ -736,7 +736,7 @@ ENDM
 ;	// 2: RESERVED (1='L' mode, 0='K' mode. temporary value)
 ;	// 3: RESERVED (1='L' mode, 0='K' mode)
 ;	// 4: RESERVED (1=128 BASIC, 0=48 BASIC)
-;	// 5: RESERVED (set if a new key has been pressed)
+;	// 5: Reset if macros enabled
 ;	// 6: Set if scanning result is numeric
 ;	// 7: Reset if checking syntax
 

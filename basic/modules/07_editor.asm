@@ -63,6 +63,8 @@ ed_delete:
 	jp ed_backspace;					// delete it
 
 ed_f_keys;
+	bit 5, (iy + _flags);				// macros enabled?
+	jp nz, k_end;						// jump if not to insert code point
 	sub $11;							// reduce range (0 to 14)
 	ld e, a;							// code
 	ld d, 0;							// to DE

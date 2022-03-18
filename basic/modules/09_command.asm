@@ -2066,12 +2066,14 @@ not_cr:
 key_on:
 	rst next_char;						// next character
 	call check_end;						// expect end of line
-	ret;								// FIXME - stub for action to switch off macros
+	res 5, (iy + _flags);				// switch macros on
+	ret;								// done
 
 key_off:
 	rst next_char;						// next character
 	call check_end;						// expect end of line
-	ret;								// FIXME - stub for action to switch off macros
+	set 5, (iy + _flags);				// switch macros off
+	ret;								// done
 
 get_next:
 	ld a, (hl);							// get character
