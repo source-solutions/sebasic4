@@ -21,9 +21,23 @@
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CODE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_call:
+	call syntax_z;						// checking syntax?
+	jr nz, call_1;						// jump if not
+	rst get_char;						// get character
+	cp ',';								// test for comma
+	ret nz;								// return if not
+
+call_param:
+	rst next_char;						// next character
+	call scanning;						// next expression
+	cp ',';								// comma?
+	jr z, call_param;					// loop until all passed
+	call check_end;						// return if checking syntax
+
+call_1:
 	call find_int2;						// get address
-	ld l, c;							// address
-	ld h, b;							// to HL
+	ld l, c;							// address to
+	ld h, b;							// HL
 	call call_jump;						// call address
 	exx;								// alternate register set
 	ld hl, $2758;						// restore value of HL'

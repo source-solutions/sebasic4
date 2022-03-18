@@ -823,7 +823,7 @@ p_bsave:
 	defw c_bsave;
 
 p_call:
-	defb num_exp_no_f_ops;
+	defb num_exp, var_syn;
 	defw c_call;
 
 p_chdir:
