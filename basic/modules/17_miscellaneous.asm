@@ -32,7 +32,7 @@ call_param:
 	call scanning;						// next expression
 	cp ',';								// comma?
 	jr z, call_param;					// loop until all passed
-	call check_end;						// return if checking syntax
+	call check_end;						// return if checking syntax (always true)
 
 call_1:
 	call find_int2;						// get address

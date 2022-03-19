@@ -926,13 +926,7 @@ run_app:
 	rst get_char;						// get character
 	cp ',';								// test for comma
 	ret nz;								// return if not
-
-run_param:
-	rst next_char;						// next character
-	call scanning;						// next expression
-	cp ',';								// comma?
-	jr z, run_param;					// loop until all passed
-	call check_end;						// return if checking syntax
+	jp call_param;						// parse parameters
 
 run_app_1:
 	call path_to_ix;					// app name pointer to IX
