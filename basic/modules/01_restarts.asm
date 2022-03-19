@@ -127,18 +127,18 @@ rst_30:
 rst_38:
 	push af;							// stack AF (intercepted by divMMC hardware)
 	push hl;							// stack HL (return from divMMC ROM)
+	ld hl, (maskadd);					// put value of maskadd in HL
+	ld a, l;							// test for
+	or h;								// zero
+	call nz, call_jump;					// call routine if not
 	ld hl, frame;						// get current frame
 	inc (hl);							// increment it
 	ld a, 60;							// has one second elapsed? (change to 50 for 50Hz machines)
 	cp (hl);							// test it
-	jr nz, user_im1;					// jump if no rollover
+	jr nz, key_int;						// jump if no rollover
 	ld (hl), 0;							// restart frame counter
 	call rollover;						// update first byte of time_t
-	call rollover;						// update second byte of time_t
-	call rollover;						// update third byte of time_t
-	inc l;								// update fourth byte of time_t
-	inc (hl);							// increment fourth byte
-	jp user_im1;						// test for user IM1 routine
+	jp mask_int_1;						// immedaite jump
 
 ;	// error routine
 	org $0053;
@@ -162,7 +162,7 @@ rollover:
 	inc (hl);							// increment first byte
 	ret z;								// return with rollover
 	pop af;								// drop return address
-	jp user_im1;						// immedaite jump
+	jp key_int;							// immedaite jump
 
 	org $0066;
 ;;
@@ -227,12 +227,12 @@ skips:
 	ld (ch_add), hl;					// put new character address in CH-ADD
 	ret;								// end of subroutine
 
-;	// user IM1 subroutine
-user_im1:
-	ld hl, (maskadd);					// put value of maskadd in HL
-	ld a, l;							// test for
-	or h;								// zero
-	call nz, call_jump;					// call routine if not
+;	// continuation of maskable interrupt routine
+mask_int_1:
+	call rollover;						// update second byte of time_t
+	call rollover;						// update third byte of time_t
+	inc l;								// update fourth byte of time_t
+	inc (hl);							// increment fourth byte
 
 key_int:
 	push de;							// stack DE
