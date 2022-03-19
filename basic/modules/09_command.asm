@@ -909,9 +909,6 @@ c_run:
 	jr z, run_zero;						// jump if so
 	cp ':';								// test for next statement
 	jr z, run_zero;						// jump if so
-
-;	// FIXME: replace this with call to expt_exp?
-
 	call scanning;						// evaluate expression
 	bit 6, (iy + _flags);				// numeric or string variable?
 	call nz, unstack_z;					// return now if checking syntax
