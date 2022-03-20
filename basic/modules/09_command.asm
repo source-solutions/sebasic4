@@ -154,12 +154,12 @@ line_new:
 	and %11000000;						// end of program?
 	jr z, line_use;						// jump if not
 
-;	// FIXME - END should close all files and streams
 ;;
 ; <code>END</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#END" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_end:
+	call close_all;						// close all files
 	ld bc, -2;							// line zero
 	ld (ppc), bc;						// set line number
 	ld l, ok;							// error to A
@@ -909,9 +909,6 @@ c_run:
 	jr z, run_zero;						// jump if so
 	cp ':';								// test for next statement
 	jr z, run_zero;						// jump if so
-
-;	// FIXME: replace this with call to expt_exp?
-
 	call scanning;						// evaluate expression
 	bit 6, (iy + _flags);				// numeric or string variable?
 	call nz, unstack_z;					// return now if checking syntax
@@ -944,6 +941,11 @@ clear_run:
 
 clear_1:
 	push bc;							// stack value
+	call mute_psg;						// switch off sound chip
+	call close_all;						// close all streams
+	xor a;								// LD A, $ff
+	dec a;								// sets
+	ld (onerr_h), a;					// ON ERROR STOP
 	ld de, (vars);						// start of variables to DE
 	call var_end_hl;					// location before varaibles end marker location to HL
 	call reclaim_1;						// reclaim all bytes of current variables area
@@ -954,15 +956,15 @@ clear_1:
 	add hl, de;							// to stasck end
 	pop de;								// unstack value in DE
 	sbc hl, de;							// subtract it from ramptop
-	jr nc, report_addr_oo_range;		// jump if ramtop too low
+	jr nc, report_out_of_memory;		// jump if ramtop too low
 	and a;								// prepare for subtraction
 	ld hl, (p_ramt);					// upper value to HL
 	sbc hl, de;							// subtract from upper value
 	jr nc, clear_2;						// jump if valid
 
-report_addr_oo_range:
+report_out_of_memory:
 	rst error;							// else
-	defb address_out_of_range;			// error
+	defb out_of_memory;					// error
 
 clear_2:
 	ex de, hl;							// value to HL
@@ -2061,12 +2063,14 @@ not_cr:
 key_on:
 	rst next_char;						// next character
 	call check_end;						// expect end of line
-	ret;								// FIXME - stub for action to switch off macros
+	res 5, (iy + _flags);				// switch macros on
+	ret;								// done
 
 key_off:
 	rst next_char;						// next character
 	call check_end;						// expect end of line
-	ret;								// FIXME - stub for action to switch off macros
+	set 5, (iy + _flags);				// switch macros off
+	ret;								// done
 
 get_next:
 	ld a, (hl);							// get character

@@ -18,40 +18,36 @@
 ;	// (http://www.desdes.com/products/oldfiles)
 
 
-;	// VERSION
-;	version equ "UnoDOS 3 [Version 3.0.90625]"
-
-
 ;	// divIDE / divMMC trap addresses
 ;	//
-;	// $0000			: initialization
-;	// $0008			: hook codes
-;	// $0038			: maskable interrupt
-;	// $0066			: non-maskable interrupt
-;	// $04C6			: LOAD routine
-;	// $0562			: SAVE routine
-;	// $1FF8 - $1FFF	: map off area
-;	// $3D00 - $3FFF	: TR-DOS traps
+;	// $0000		: initialization
+;	// $0008		: hook codes
+;	// $0038		: maskable interrupt
+;	// $0066		: non-maskable interrupt
+;	// $04C6		: LOAD routine
+;	// $0562		: SAVE routine
+;	// $1FF8 - $1FFF: map off area
+;	// $3D00 - $3FFF: TR-DOS traps
 
 
-;	// EXTERNAL COMMANDS
+;	// EXTERNAL COMMANDS (T/S 2000 series only)
 ;	// Execute at $2000. Maximum size 7168 bytes.
 ;	// ON ENTRY: HL is a pointer to the arguments or zero if no arguments.
-;	//           Typically entry is using a BASIC line so valid end markers
-;	//           include $0d, ':' and zero.
-;	// ON EXIT:  SCF and A=error number - Print BASIC error.
-;	//           SCF, A=0, HL=pointer   - Print custom message.
-;	//									  Set bit 7 of last character as
-;	//									  terminator.
-;	//           CCF                    - Return cleanly to BASIC.
-;	//           RET C                  - Use UnoDOS error handler.
-;	// Note:     You should avoid leaving handles open when returning to BASIC.
-;	//           Known bug: custom message handling can cause crashes.       
+;	//			 Typically entry is using a BASIC line so valid end markers
+;	//			 include $0d, ':' and zero.
+;	// ON EXIT:	 SCF and A = error number	- Print BASIC error.
+;	//			 SCF, A = 0, HL = pointer	- Print custom message.
+;	//										  Set bit 7 of last character as
+;	//										  terminator.
+;	//			 CCF						- Return cleanly to BASIC.
+;	//			 RET C						- Use UnoDOS error handler.
+;	// Note:	 You should avoid leaving handles open when returning to BASIC.
+;	//			 Known bug: custom message handling can cause crashes.       
 
 
 ;	// RESTARTS
-;	// RST $08:	 Syscall entry point. When running in main RAM (instead of 
-;	//			 divMMC RAM), parameters use IX in place of HL.
+;	// RST $08:	 Syscall entry point. When running in divMMC RAM (instead of 
+;	//			 main RAM), parameters use HL in place of IX.
 ;	// RST $10:	 Print character in A at current cursor position.
 ;	// RST $18:	 Call routine in BASIC ROM. Followed by DEFW addr.
 ;	// RST $30:	 Internal UnoDOS call.
@@ -61,7 +57,6 @@
 	mmcram equ $e3;						// divMMC RAM page (write only?)
 	mmcdev equ $e7;						// divMMC device (write only?)	
 	mmcspi equ $eb;						// divMMC SPI (read/write)
-
 
 ;	// UNODOS3 ROM ROUTINES
 	v_rst10 equ $0010;					// vector to RST $10
@@ -111,16 +106,16 @@
 
 	disk_read equ hook_base + 1;		// $81	add a,c
 ;										// Read one block of data from device A,
-;										// at position BCDE at address HL
+;										// at position BCDE at address IX
 
 	disk_write equ hook_base + 2;		// $82	add a,d
 ;										// Write one block of data from device
-;										//  A, at position BCDE at address HL
+;										// A, at position BCDE at address IX
 
 	disk_ioctl equ hook_base + 3;		// $83	add a,e
 
 	disk_info equ hook_base + 4;		// $84	add a,h
-;										// If A = 0 get a buffer at address HL
+;										// If A = 0 get a buffer at address IX
 ;										// filled with a list of available block
 ;										// devices. If A <> 0 get info for a
 ;										// specific device.
@@ -166,8 +161,8 @@
 ;										//  1 : SECONDARY
 ;										//
 ;										// D:
-;										//  0 : MASTER
-;										//  1 : SLAVE
+;										//  0 : PRIMARY
+;										//  1 : SECONDARYf
 ;										//
 ;										// E:
 ;										//  0 : ATA
@@ -217,7 +212,7 @@
 	f_umount equ fsys_base + 1;			// $99	sbc a,c
 
 	f_open equ fsys_base + 2;			// $9a	sbc a,d
-;										// Open file. A = drive. HL = Pointer to
+;										// Open file. A = drive. IX = Pointer to
 ;										// null-terminated string containing
 ;										// path and/or filename. B = file access
 ;										// mode. DE = Pointer to BASIC header
@@ -239,26 +234,26 @@
 ;										// A = handle
 
 	f_read equ fsys_base + 5;			// $9d	sbc a,l
-; 										// Read BC bytes at HL from file handle
+; 										// Read BC bytes at IX from file handle
 ;										// A. On return BC = number of bytes
 ;										// successfully read. File pointer is
 ;										// updated.
 
 	f_write equ fsys_base + 6;			// $9e	sbc a,(hl)
-;										// Write BC bytes from HL to file handle
+;										// Write BC bytes from IX to file handle
 ;										// A. On return BC = number of bytes
 ;										// successfully written. File pointer is
 ;										// updated.
 
 	f_seek equ fsys_base + 7;			// $9f	sbc a,a
-;										// Seek BCDE bytes. A=handle. L = mode:
+;										// Seek BCDE bytes. A=handle. IXl = mode:
 ;										//	0: From start of file.
 ;										//	1: Forward from current position.
 ; 										//	2: Back from current position.
 ;										// On return BCDE=current file pointer.
 ;										// Does not currently return bytes
 ;										// successfully sought.
-;										// NOTE: bug report - you must read/write
+;										// NOTE: Bug report. You must read/write
 ;										//       at least one byte after opening
 ;										//       a file before you do a seek.
 
@@ -266,7 +261,7 @@
 ;										// Get current file pointer. A = handle.
 
 	f_fstat equ fsys_base + 9;			// $a1	and c
-;										// Get file info/status to buffer at HL.
+;										// Get file info/status to buffer at IX.
 ;										// A=handle. Buffer format:
 ;										// <byte>  drive
 ;										// <byte>  device
@@ -277,7 +272,7 @@
 	f_ftruncate equ fsys_base + 10;		// $a2	and d
 
 	f_opendir equ fsys_base + 11;		// $a3	and e
-;										// Open folder. A = drive. HL = Pointer
+;										// Open folder. A = drive. IX = Pointer
 ;										// to zero-terminated string with path
 ;										// to folder. B = folder access mode.
 ;										// Only the BASIC header bit matters,
@@ -287,7 +282,7 @@
 
 	f_readdir equ fsys_base + 12;		// $a4	and h
 ;										// Read a folder entry to a buffer
-;										// pointed to by HL. A = handle.
+;										// pointed to by IX. A = handle.
 ;										// Buffer format:
 ;										//   <byte>   attributes (MS-DOS format)
 ;										//   <ASCIZ>  file/dirname
@@ -311,11 +306,11 @@
 	f_getcwd equ fsys_base + 16;		// $a8	xor b
 ;										// Get current folder path (null-
 ;										// terminated) to buffer.
-;										// A = drive. HL = pointer to buffer.
+;										// A = drive. IX = pointer to buffer.
 
 	f_chdir equ fsys_base + 17;			// $a9	xor c
 ;										// Change current directory path
-;										// A = drive. HL = pointer to ASCIZ
+;										// A = drive. IX = pointer to ASCIZ
 ;										// folder/path.
 
 	f_mkdir equ fsys_base + 18;			// $aa	xor d
@@ -325,8 +320,8 @@
 	f_stat equ fsys_base + 20;			// $ac	xor h
 
 	f_unlink equ fsys_base + 21;		// $ad	xor l
-;										// Delete a file. A=drive. HL=pointer to
-;										// ASCIZ file/path.
+;										// Delete a file. A = drive.
+;										// IX = pointer to ASCIZ file/path.
 
 	f_truncate equ fsys_base + 22;		// $ae	xor (hl)
 
@@ -354,7 +349,7 @@
 ;										//					and truncate
 
 	fa_use_header equ %01000000;		// $40	ld b, b		use plus3dos header
-;										//					(passed in de)
+;										//					(passed in DE)
 
 
 ;	// UNODOS ERRORS

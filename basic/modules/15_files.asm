@@ -631,12 +631,13 @@ last_entry:
 	ld a, ctrl_cr;						// carriage return
 	rst print_a;						// print it
 	ld a, (handle);						// get folder handle
-
-do_f_close:
-	rst divmmc;							// issue a hookcode
-	defb f_close;						// close file
 	ld a, ctrl_cr;						// carriage return
 	rst print_a;						// print it
+
+do_f_close:
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_close;						// close file
 	ret;								// end of subroutine
 
 print_f:
@@ -920,7 +921,14 @@ c_rmdir:
 ; @throws File not found; Path not found.
 ;;
 run_app:
-	call unstack_z;						// return if checking syntax
+	call syntax_z;						// checking syntax?
+	jr nz, run_app_1:					// jump if not
+	rst get_char;						// get character
+	cp ',';								// test for comma
+	ret nz;								// return if not
+	jp call_param;						// parse parameters
+
+run_app_1:
 	call path_to_ix;					// app name pointer to IX
 	ld hl, basepath;					// pointer to "/PROGRAMS/"
 	ld de, membot;						// prefix app name
@@ -1014,7 +1022,6 @@ c_save:
 	call nz, mode_error;				// jump if not
 
 save_t:
-	call unstack_z;						// return if checking syntax
 	call path_to_ix;					// get path in IX
 
 save_t1:
@@ -1029,7 +1036,7 @@ save_t1:
 	jp f_write_out;						// save program
 
 save_1:
-	call unstack_z;						// return if checking syntax
+	call check_end;						// return if checking syntax
 	call path_to_ix;					// get path in IX
 	ld b, fa_write | fa_open_al;		// B = mode
 	call open_file;						// open the file

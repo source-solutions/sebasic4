@@ -610,7 +610,7 @@ tk_ptr_then:
 	tk_clear		equ $c8;
 	str "CLEAR";
 	tk_close		equ $c9;
-	str "CLOSE #";
+	str "CLOSE";
 	tk_cls			equ $ca;
 	str "CLS";
 	tk_color		equ $cb;
@@ -823,7 +823,7 @@ p_bsave:
 	defw c_bsave;
 
 p_call:
-	defb num_exp_no_f_ops;
+	defb num_exp, var_syn;
 	defw c_call;
 
 p_chdir:
@@ -835,7 +835,7 @@ p_clear:
 	defw c_clear;
 
 p_close:
-	defb num_exp_no_f_ops;
+	defb var_syn;
 	defw c_close;
 
 p_cls:
@@ -863,6 +863,7 @@ p_def:
 	defw c_def;
 
 p_delete:
+;	defb var_syn;
 	defb two_c_s_num_no_f_ops;
 	defw c_delete;
 
