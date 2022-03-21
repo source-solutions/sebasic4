@@ -33,9 +33,13 @@
 rst_00:
 	di;									// interrupts off
 	xor a;								// LD A, 0
-	ld bc, paging;						// HOME bank paging
+;	ld bc, paging;						// HOME bank paging
 	out (c), a;							// ROM 0, RAM 0, VIDEO 0, paging enabled
 	nop;								// enter ROM 0 beofer hitting RST 8 trap
+
+	org $0005;							// BDOS
+cpm:
+	jp bdos;							// immediate jump
 
 	org $0008;
 ;;

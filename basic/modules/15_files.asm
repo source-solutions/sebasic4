@@ -57,6 +57,11 @@
 	buffer_1	equ buffer + 2;			// (iy + $6a)
 
 
+;	// CP/M emulation
+bdos:
+	ret;
+
+
 ;	// file channels
 
 get_handle:
