@@ -1,6 +1,9 @@
 name: build localized message bundles
 
 on:
+  push:
+    paths:
+    - 'locales/**'
   workflow_dispatch:
 
 jobs:
