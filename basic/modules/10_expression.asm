@@ -308,9 +308,6 @@ s_decimal:
 	call temp_ptr1;						// set ch_add
 	jr s_numeric;						// immediate jump
 
-s_mid:
-	jp s_mid_cont;						// immediate jump
-
 s_string_str:
 	call s_2_coord;						// expect two variables
 	call nz, s_strng_s;					// jump if not
@@ -2035,7 +2032,7 @@ s_leftright:
 	ld (hl), b;							// 
 	ret;								// done
 
-s_mid_cont:
+s_mid:
 	call s_str_num;						// 
 	cp ')';								// closing parenthesis?
 	jr z, s_mid2;						// two-argument MID$
