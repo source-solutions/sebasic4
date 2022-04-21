@@ -20,7 +20,7 @@
 	include "uno.inc";					// label definitions
 	include "os.inc";					// label definitions
 
-	slam equ 1;							// uncomment to build SLAM+128/divMMC version
+;	slam equ 1;							// uncomment to build SLAM+128/divMMC version
 
 	messages equ $58a0;					// check against symbol table before building
 
@@ -42,7 +42,7 @@
 	di;									// interrupts off
 	rst $18;							// quick jump if DOS has been patched to enable ROM0
 
-	org $0007;
+	org $0004;
 	rst $18;							// quick jump avoids triggering error detect
 
 	org $0008;

@@ -14,10 +14,12 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
-;	org $1ae9;
 ;;
 ;	// --- BASIC LINE AND COMMAND INTERPRETATINO -------------------------------
 ;;
+:
+
+;	org $1ae9
 
 ;;
 ; BASIC main parser
@@ -166,7 +168,8 @@ c_end:
 	jp error_3;							// generate error message
 
 ;;
-; ELSE
+; <code>ELSE</code> command
+; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#ELSE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_else:
 	pop bc;								// discard statement return address

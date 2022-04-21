@@ -73,18 +73,13 @@ pr_key:
 
 ;	// load ROM file
 	ld ix, filename;					// /rsc/48.rom
-	ld a, '*';							// use current drive
-	ld b, fa_read | fa_open_ex;			// open for reading if file exists
-	rst divmmc;							// issue a hookcode
-	defb f_open;						// open file
+	call SEFileOpenExists;				// open file
 	ld (handle), a;						// store file handle
 	ld bc, 16384;						// file size
 	ld ix, $8000;						// load in fast RAM.
-	rst divmmc;							// issue a hookcode
-	defb f_read;						// read file
+	call SEFileRead;					// read file
 	ld a, (handle);						// restore handle
-	rst divmmc;							// issue a hookcode
-	defb f_close;						// close file
+	call SEFileClose;					// close file
 
 ;	// initial setup
 	di;									// interrupts off
@@ -186,7 +181,7 @@ pr_key:
 	ld a, %10011111;					// ACB stereo
 	out ($f7), a;						// set it
 
-;	// change to `SNAPS` folder
+;	// change to `SNAPS` folder (SE Basic IV DOS API is not avilable at this point)
 	ld a, '*';							// use current drive
 	ld ix, path;						// pointer to path
 	rst divmmc;							// issue a hookcode

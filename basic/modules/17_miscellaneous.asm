@@ -14,7 +14,10 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
+;;
 ;	// --- MISCELLANEOUS ROUTINES ----------------------------------------------
+;;
+:
 
 ;;
 ; <code>CALL</code> command
@@ -648,3 +651,61 @@ c_wend:
 	push hl;							// stack error address
 	rst error;							// throw
 	defb wend_without_while;			// error
+
+; ;	// vector calls to print an ASCIIZ string
+; v_pr_string_lo:
+; 	ld a, 1;							// select lower screen
+; 	jr v_pr_all;						// immediate jump
+
+; v_pr_string:
+; 	ld a, 2;							// select main screen
+
+; v_pr_all:
+; 	call chan_open;						// select channel
+
+; v_pr_loop:
+; 	ld a, (ix);							// get character
+; 	and a;								// terminating byte?
+; 	ret z;								// return if so;
+; 	rst print_a;						// print character
+; 	inc ix;								// point to next character
+; 	jr v_pr_loop;						// loop until done
+
+; ;	// vector call to set memory bank
+; v_mem:
+; 	cp 8;								// page 8?
+; 	jr z, page_8;						// jump if so;
+; 	add a, %00011000;					// ROM 1, VRAM 1
+; 	ld bc, paging;						// select paging register
+; 	out (c), a;							// set RAM page
+; 	ld a, %00111100;					// page dock out of top 16K
+; 	out (mmu), a;						// set it;
+; 	ret;								// and return
+
+; page_8:
+; 	ld a, %00011000;					// ROM 1, VRAM 1, HOME RAM 0
+; 	ld bc, paging;						// select paging register
+; 	out (c), a;							// set RAM page
+; 	ld a, %00111111;					// page dock into top 16K
+; 	out (mmu), a;						// set it;
+; 	ret;								// and return
+
+; ;	// vector set palette
+; v_pal_set:
+; 	ld c, $3b;							// palette port
+; 	ld de, $00bf;						// d = data, e = register
+; 	xor a;								// LD A, 0; register
+
+; palette_loop:
+; 	ld b, e;							// register port
+; 	out (c), a;							// select register
+; 	ld b, d;							// data port
+; 	outi;								// dec b; out bc, (hl); inc hl
+; 	cp 63;								// last register?
+; 	ret z;								// return if so
+; 	inc a;								// next register
+; 	jr palette_loop;					// set all 64 entries
+
+; ;	// vector set screen mode
+; v_scr_mode:
+; 	ret;

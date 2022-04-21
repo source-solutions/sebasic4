@@ -14,13 +14,10 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
-	org $0000;
-;;
-;	// --- RESTART ROUTINES ----------------------------------------------------
-;;
+;	// asmdoc comments should be added before the label as follows:
 
 ;;
-; Short description of module.
+; Short description.
 ; @author Name of contributing author.
 ; @deprecated Version deprecated in and replacement module.
 ; @param HL - Register contents.
@@ -30,12 +27,22 @@
 ; @throws Error number and description handled by RST 8 routine.
 ; @version Version in which the module was last udpated. 
 ;;
+
+;;
+;	// --- RESTART ROUTINES ----------------------------------------------------
+;;
+:
+
+	org $0000;
 rst_00:
 	di;									// interrupts off
 	xor a;								// LD A, 0
-	ld bc, paging;						// HOME bank paging
+;	ld bc, paging;						// HOME bank paging (already set by UnoDOS 3)
 	out (c), a;							// ROM 0, RAM 0, VIDEO 0, paging enabled
-	nop;								// enter ROM 0 beofer hitting RST 8 trap
+
+	org $0005;							// BDOS
+cpm:
+	jp bdos;							// immediate jump
 
 	org $0008;
 ;;
