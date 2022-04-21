@@ -13,7 +13,6 @@
 <TABLE BORDER="0" CELLPADDING="0" CELLSPACING="3" SUMMARY="">
 <TR ALIGN="center" VALIGN="top">
 <TD BGCOLOR="#FFFFFF" CLASS="NavBarCell1Rev"> &nbsp;<FONT CLASS="NavBarFont1Rev"><B>File</B></FONT>&nbsp;</TD>
-<TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="deprecated-list.html"><FONT CLASS="NavBarFont1"><B>Deprecated</B></FONT></A>&nbsp;</TD>
 <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="index-all.html"><FONT CLASS="NavBarFont1"><B>Index</B></FONT></A>&nbsp;</TD>
 <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="constant-values.html"><FONT CLASS="NavBarFont1"><B>Constants</B></FONT></A>&nbsp;</TD>
 <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="help-doc.html"><FONT CLASS="NavBarFont1"><B>Help</B></FONT></A>&nbsp;</TD>
@@ -35,6 +34,368 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <A NAME="skip_navbar_top" ID="skip_navbar_top"></A>
 
 <HR><H2>File 04_vectors.asm</H2>
+
+<HR>
+<A NAME="function_summary" ID="function_summary"><!-- --></A>
+<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
+<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
+<TH ALIGN="left" COLSPAN="2">
+<B>Function summary</B></TH></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="04_vectors-asm.html#SEFileAppend">SEFileAppend</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ open a file for appending if it exists
+ 
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="04_vectors-asm.html#SEFileClose">SEFileClose</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ close a file
+ 
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="04_vectors-asm.html#SEFileCreate">SEFileCreate</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ create a file for writing or open a file for writing if it exists
+ 
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="04_vectors-asm.html#SEFileLoad">SEFileLoad</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ load a file from disk to memory
+ 
+ 
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="04_vectors-asm.html#SEFileOpen">SEFileOpen</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ open a file from disk
+ 
+ 
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="04_vectors-asm.html#SEFileOpenExists">SEFileOpenExists</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ open a file from disk for reading if it exists
+ 
+ 
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="04_vectors-asm.html#SEFileRead">SEFileRead</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ read bytes from a file to memory
+ 
+ 
+ 
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="04_vectors-asm.html#SEFileReadOne">SEFileReadOne</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ read one byte from a file to memory
+ 
+ 
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="04_vectors-asm.html#SEFileRemove">SEFileRemove</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ remove a file
+ 
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="04_vectors-asm.html#SEFileRename">SEFileRename</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ rename a file or folder
+ 
+ 
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="04_vectors-asm.html#SEFileSave">SEFileSave</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ save a file from memory to disk
+ 
+ 
+ 
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="04_vectors-asm.html#SEFileWrite">SEFileWrite</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ write bytes from memory to a file
+ 
+ 
+ 
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="04_vectors-asm.html#SEFileWriteOne">SEFileWriteOne</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ write one byte from memory to a file
+ 
+ 
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="04_vectors-asm.html#SEFolderCreate">SEFolderCreate</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ create a folder
+ 
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="04_vectors-asm.html#SEFolderOpen">SEFolderOpen</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ open a folder for reading
+ 
+ 
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="04_vectors-asm.html#SEFolderRead">SEFolderRead</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ read a folder entry
+ 
+ 
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="04_vectors-asm.html#SEFolderRemove">SEFolderRemove</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ remove a folder
+ 
+ 
+</TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="04_vectors-asm.html#SEFolderSet">SEFolderSet</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ set current working folder
+ 
+ 
+</TD></TR>
+</TABLE><BR>
+
+<A NAME="function_detail" ID="function_detail"><!-- --></A>
+<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
+<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
+<TH ALIGN="left" COLSPAN="1">
+<B>Function detail</B></TH></TR></TABLE>
+<A NAME="SEFileAppend" ID="SEFileAppend"><!-- --></A><H3>SEFileAppend</H3>
+<DL><DD>
+ open a file for appending if it exists
+ 
+<DT><B>Parameter: </B><DD> <code>IX</code> - pointer to ASCIIZ file path
+ 
+<DT><B>Throws: </B><DD> sets carry flag on error
+
+</DD></DL><HR>
+
+<A NAME="SEFileClose" ID="SEFileClose"><!-- --></A><H3>SEFileClose</H3>
+<DL><DD>
+ close a file
+ 
+<DT><B>Parameter: </B><DD> <code>A</code> - file handle
+ 
+<DT><B>Throws: </B><DD> sets carry flag on error
+
+</DD></DL><HR>
+
+<A NAME="SEFileCreate" ID="SEFileCreate"><!-- --></A><H3>SEFileCreate</H3>
+<DL><DD>
+ create a file for writing or open a file for writing if it exists
+ 
+<DT><B>Parameter: </B><DD> <code>IX</code> - pointer to ASCIIZ file path
+ 
+<DT><B>Throws: </B><DD> sets carry flag on error
+
+</DD></DL><HR>
+
+<A NAME="SEFileLoad" ID="SEFileLoad"><!-- --></A><H3>SEFileLoad</H3>
+<DL><DD>
+ load a file from disk to memory
+ 
+<DT><B>Parameter: </B><DD> <code>HL</code> - destination address
+ 
+<DT><B>Parameter: </B><DD> <code>IX</code> - pointer to ASCIIZ file path
+ 
+<DT><B>Throws: </B><DD> sets carry flag on error
+
+</DD></DL><HR>
+
+<A NAME="SEFileOpen" ID="SEFileOpen"><!-- --></A><H3>SEFileOpen</H3>
+<DL><DD>
+ open a file from disk
+ 
+<DT><B>Parameter: </B><DD> <code>IX</code> - pointer to ASCIIZ file path
+ 
+<DT><B>Returns: </B><DD> file handle in <code>A</code>
+ 
+<DT><B>Throws: </B><DD> sets carry flag on error
+
+</DD></DL><HR>
+
+<A NAME="SEFileOpenExists" ID="SEFileOpenExists"><!-- --></A><H3>SEFileOpenExists</H3>
+<DL><DD>
+ open a file from disk for reading if it exists
+ 
+<DT><B>Parameter: </B><DD> <code>IX</code> - pointer to ASCIIZ file path
+ 
+<DT><B>Returns: </B><DD> file handle in <code>A</code>
+ 
+<DT><B>Throws: </B><DD> sets carry flag on error
+
+</DD></DL><HR>
+
+<A NAME="SEFileRead" ID="SEFileRead"><!-- --></A><H3>SEFileRead</H3>
+<DL><DD>
+ read bytes from a file to memory
+ 
+<DT><B>Parameter: </B><DD> <code>A</code> - file handle
+ 
+<DT><B>Parameter: </B><DD> <code>BC</code> - byte count
+ 
+<DT><B>Parameter: </B><DD> <code>IX</code> - destination in memory
+ 
+<DT><B>Throws: </B><DD> sets carry flag on error
+
+</DD></DL><HR>
+
+<A NAME="SEFileReadOne" ID="SEFileReadOne"><!-- --></A><H3>SEFileReadOne</H3>
+<DL><DD>
+ read one byte from a file to memory
+ 
+<DT><B>Parameter: </B><DD> <code>A</code> - file handle
+ 
+<DT><B>Parameter: </B><DD> <code>IX</code> - destination in memory
+ 
+<DT><B>Throws: </B><DD> sets carry flag on error
+
+</DD></DL><HR>
+
+<A NAME="SEFileRemove" ID="SEFileRemove"><!-- --></A><H3>SEFileRemove</H3>
+<DL><DD>
+ remove a file
+ 
+<DT><B>Parameter: </B><DD> <code>IX</code> - pointer to ASCIIZ file path
+ 
+<DT><B>Throws: </B><DD> sets carry flag on error
+
+</DD></DL><HR>
+
+<A NAME="SEFileRename" ID="SEFileRename"><!-- --></A><H3>SEFileRename</H3>
+<DL><DD>
+ rename a file or folder
+ 
+<DT><B>Parameter: </B><DD> <code>DE</code> - pointer to new ASCIIZ path
+ 
+<DT><B>Parameter: </B><DD> <code>IX</code> - pointer to old ASCIIZ path
+ 
+<DT><B>Throws: </B><DD> sets carry flag on error
+
+</DD></DL><HR>
+
+<A NAME="SEFileSave" ID="SEFileSave"><!-- --></A><H3>SEFileSave</H3>
+<DL><DD>
+ save a file from memory to disk
+ 
+<DT><B>Parameter: </B><DD> <code>BC</code> - byte count
+ 
+<DT><B>Parameter: </B><DD> <code>HL</code> - source address
+ 
+<DT><B>Parameter: </B><DD> <code>IX</code> - pointer to ASCIIZ file path
+ 
+<DT><B>Throws: </B><DD> sets carry flag on error
+
+</DD></DL><HR>
+
+<A NAME="SEFileWrite" ID="SEFileWrite"><!-- --></A><H3>SEFileWrite</H3>
+<DL><DD>
+ write bytes from memory to a file
+ 
+<DT><B>Parameter: </B><DD> <code>A</code> - file handle
+ 
+<DT><B>Parameter: </B><DD> <code>BC</code> - byte count
+ 
+<DT><B>Parameter: </B><DD> <code>IX</code> - source in memory
+ 
+<DT><B>Throws: </B><DD> sets carry flag on error
+
+</DD></DL><HR>
+
+<A NAME="SEFileWriteOne" ID="SEFileWriteOne"><!-- --></A><H3>SEFileWriteOne</H3>
+<DL><DD>
+ write one byte from memory to a file
+ 
+<DT><B>Parameter: </B><DD> <code>A</code> - file handle
+ 
+<DT><B>Parameter: </B><DD> <code>IX</code> - source in memory
+ 
+<DT><B>Throws: </B><DD> sets carry flag on error
+
+</DD></DL><HR>
+
+<A NAME="SEFolderCreate" ID="SEFolderCreate"><!-- --></A><H3>SEFolderCreate</H3>
+<DL><DD>
+ create a folder
+ 
+<DT><B>Parameter: </B><DD> <code>IX</code> - pointer to ASCIIZ folder path
+ 
+<DT><B>Throws: </B><DD> sets carry flag on error
+
+</DD></DL><HR>
+
+<A NAME="SEFolderOpen" ID="SEFolderOpen"><!-- --></A><H3>SEFolderOpen</H3>
+<DL><DD>
+ open a folder for reading
+ 
+<DT><B>Parameter: </B><DD> <code>IX</code> - pointer to ASCIIZ folder path
+ 
+<DT><B>Returns: </B><DD> folder handle in <code>A</code>
+ 
+<DT><B>Throws: </B><DD> sets carry flag on error
+
+</DD></DL><HR>
+
+<A NAME="SEFolderRead" ID="SEFolderRead"><!-- --></A><H3>SEFolderRead</H3>
+<DL><DD>
+ read a folder entry
+ 
+<DT><B>Parameter: </B><DD> <code>A</code> - folder handle
+ 
+<DT><B>Parameter: </B><DD> <code>IX</code> - destination memory address
+ 
+<DT><B>Throws: </B><DD> sets carry flag on error
+
+</DD></DL><HR>
+
+<A NAME="SEFolderRemove" ID="SEFolderRemove"><!-- --></A><H3>SEFolderRemove</H3>
+<DL><DD>
+ remove a folder
+ 
+<DT><B>Parameter: </B><DD> <code>IX</code> - pointer to ASCIIZ folder path
+ 
+<DT><B>Throws: </B><DD> sets carry flag on error
+
+</DD></DL><HR>
+
+<A NAME="SEFolderSet" ID="SEFolderSet"><!-- --></A><H3>SEFolderSet</H3>
+<DL><DD>
+ set current working folder
+ 
+<DT><B>Parameter: </B><DD> <code>IX</code> - pointer to ASCIIZ folder path
+ 
+<DT><B>Throws: </B><DD> sets carry flag on error
+
+</DD></DL><HR>
+
 <HR>
 <A HREF="#skip_navbar_bottom" TITLE="Skip navigation links">Skip navbar</A>
 <TABLE BORDER="0" WIDTH="100%" CELLPADDING="1" CELLSPACING="0" SUMMARY="">
@@ -42,7 +403,6 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <TABLE BORDER="0" CELLPADDING="0" CELLSPACING="3" SUMMARY="">
 <TR ALIGN="center" VALIGN="top">
 <TD BGCOLOR="#FFFFFF" CLASS="NavBarCell1Rev"> &nbsp;<FONT CLASS="NavBarFont1Rev"><B>File</B></FONT>&nbsp;</TD>
-<TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="deprecated-list.html"><FONT CLASS="NavBarFont1"><B>Deprecated</B></FONT></A>&nbsp;</TD>
 <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="index-all.html"><FONT CLASS="NavBarFont1"><B>Index</B></FONT></A>&nbsp;</TD>
 <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="constant-values.html"><FONT CLASS="NavBarFont1"><B>Constants</B></FONT></A>&nbsp;</TD>
 <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1"> <A HREF="help-doc.html"><FONT CLASS="NavBarFont1"><B>Help</B></FONT></A>&nbsp;</TD>
