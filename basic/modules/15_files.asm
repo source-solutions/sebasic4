@@ -17,6 +17,7 @@
 ;;
 ;	// --- FILE HANDLING ROUTINES ----------------------------------------------
 ;;
+:
 
 ; 	// MS-DOS records file dates and times as packed 16-bit values.
 ;	// An MS-DOS date has the following format:
@@ -57,21 +58,154 @@
 	buffer_1	equ buffer + 2;			// (iy + $6a)
 
 
+;	// CP/M emulation layer:
+bdos:
+	ret
+
+;	// vectored file system routines
+
+;	// load a file - (IX) = ASCIIZ filepath, HL = address
+v_load:
+	ld (f_addr), hl;					// store it
+	call v_open_r_exists;				// open file for reading
+	ld (handle), a;						// store handle (membot + 1)
+	ld ix, f_stats;						// buffer for file stats
+	rst divmmc;							// issue a hookcode
+	defb f_fstat;						// get file stats
+	ld a, (handle);						// restore handle (membot + 1)
+	ld bc, (f_size);					// get length
+	ld ix, (f_addr);					// get address
+	call v_read;						// read bytes
+	ld a, (handle);						// restore handle (membot + 1)
+	jr v_close;							// close file
+
+;	// save a file - (IX) = ASCIIZ filepath, HL = address, BC = byte count
+v_save:
+	ld (f_size), bc;					// store it
+	ld (f_addr), hl;					// store it
+	call v_open_w_create;				// open file for writing
+	ld (handle), a;						// store handle (membot + 1)
+	ld ix, (f_addr);					// start to IX
+	ld bc, (f_size);					// length to BC
+	call v_write;						// write out
+	ld a, (handle);						// restore handle (membot + 1)
+	jr v_close;							// close file
+
+v_open_r_exists:
+	ld b, fa_read | fa_open_ex;			// open for reading if file exists
+	jr v_open;							// immediate jump
+
+v_open_w_append:
+	push ix;							// save file path for later
+	ld de, tmp_file;					// path to temporary file
+	call v_rename;						// rename original file to TMP.$$
+	pop ix;								// retrieve file path
+	call v_open_w_create;				// open the file
+	ld (handle), a;						// store handle
+	ld ix, tmp_file;					// open temporary file
+	call v_open_r_exists;				// open it for reading
+	ld (handle_1), a;					// store handle
+	call append_loop;					// copy original contents
+	ld a, (handle_1);					// get handle
+	call v_close;						// close file
+	ld ix, tmp_file;					// path to temporary file
+	jr v_delete;						// exit via delete file vector routine
+
+v_open_w_create:
+	ld b, fa_write | fa_open_al;		// create or open for writing if file exists
+
+v_open:
+  	ld a, '*';							// use current drive
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_open;						// open file
+	ret;								// return without error checking
+
+v_close:
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_close;						// close file
+	ret;								// return without error checking
+
+v_read_one:
+	ld bc, 1;							// byte count to 1
+
+v_read:
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_read;						// read a byte
+	ret;								// return without error checking
+
+v_write_one:
+	ld bc, 1;							// one byte to write
+
+v_write:
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_write;						// write a byte
+	ret;								// return without error checking
+
+v_opendir:
+	ld a, '*';							// use current drive
+	and a;								// signal no error (clear carry flag)
+	ld b, 0;							// folder access mode (read only?)
+	rst divmmc;							// issue a hookcode
+	defb f_opendir;						// open folder
+	ret;								// return without error checking
+
+v_readdir:
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_readdir;						// read a folder entry
+	ret;								// return without error checking
+
+v_chdir:
+	ld a, '*';							// use current drive
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_chdir;						// change folder
+	ret;								// return without error checking
+
+v_mkdir:
+	ld a, '*';							// use current drive
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_mkdir;						// create folder
+	ret;								// return without error checking
+
+v_delete:
+	ld a, '*';							// use current drive
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_unlink;						// delete file if it exists
+	ret;								// return without error checking
+
+v_rename:
+	ld a, '*';							// use current drive
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_rename;						// change filename
+	ret;								// return without error checking
+
+v_rmdir:
+	ld a, '*';							// use current drive
+	and a;								// signal no error (clear carry flag)
+	rst divmmc;							// issue a hookcode
+	defb f_rmdir;						// change folder
+	ret;								// return without error checking
+
 ;	// file channels
 
 get_handle:
 	ld ix, (curchl);					// get current channel
 	ld a, (ix + 5);						// get file handle
-	ld bc, 1;							// one byte to transfer
 	ret;								// done
 
 file_out:
 	ld (membot), a;						// store character to write in membot
 	call get_handle;					// get the file descriptor in A
 	ld ix, membot;						// get character from membot
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_write;						// write a byte
+	call v_write_one;					// write a byte
 	jr c, report_bad_io_dev;			// jump if error
 	or a;								// clear flags
 	ret;								// done
@@ -79,9 +213,7 @@ file_out:
 file_in:
 	call get_handle;					// get the file descriptor in A
 	ld ix, membot;						// store character in membot
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_read;						// read a byte
+	call v_read_one;					// read a byte
 	jr c, report_bad_io_dev;			// jump if error
 	dec c;								// decrement C (bytes read: should now be zero)
 	ld a, (membot);						// character to A
@@ -96,7 +228,7 @@ file_in:
 ;	// handle AUTOEXEC.BAS
 autoexec:
 	ld ix, autoexec_bas;				// path to AUTOEXEC.BAS
-	call f_open_r_exists;				// open file if it exists
+	call v_open_r_exists;				// open file if it exists
 	ret c;								// return if file not found
 	pop hl;								// drop return address
 	call set_min;						// clear all work areas and calculator stack
@@ -116,11 +248,11 @@ open_file:
 	call make_room;						// reserve channel descriptor
 	pop bc;								// BC = mode
 	push de;							// stack end of channel descriptor
-	call f_open_common;					// open file
+	call v_open;						// open file
 	jr c, open_file_err;				// jump if error
 	pop de;								// unstack end of channel descriptor
 	ld (de), a;							// file descriptor
-	ld (membot + 1), a;					// store a copy of the file handle for pseudo-append
+	ld (handle), a;						// store a copy of the file handle for pseudo-append
 	dec de;								// decrement DE
 	ld hl, file_chan + 4;				// HL = service routines' end
 	ld bc, 5;							// copy 5 bytes
@@ -197,28 +329,14 @@ init_path:
 	jp c_chdir_1;						// immediate jump
 
 
-;	// file open subroutines (IX must point to an ASCIIZ path on entry)
-f_open_w_create:
-	ld b, fa_write | fa_open_al;		// create or open for writing if file exists
-	jr f_open_common;					// immediate jump
+;	// file open subroutines with error handling (IX must point to an ASCIIZ path on entry)
 
 f_open_r_exists:
-	ld b, fa_read | fa_open_ex;			// open for reading if file exists
-
-f_open_common:
-;	// the next two instructions may be unnecessary, but putting them here avoids duplication
-  	ld a, '*';							// use current drive
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_open;						// open file
-    ret;                                // done
-
-f_open_read_ex:
-	call f_open_r_exists;				// open file for reading if it exists
+	call v_open_r_exists;				// open file for reading if it exists
 	jr f_open_ret;						// immediate jump
 
-f_open_write_al:
-	call f_open_w_create;				// open file for writing if it exists else create it
+f_open_w_create:
+	call v_open_w_create;				// open file for writing if it exists else create it
 
 f_open_ret:
 	jr c, report_file_not_found;		// jump if error
@@ -243,42 +361,30 @@ f_append:
 	ld (handle_1), a;					// store handle
 	call append_loop;					// copy original contents
 	ld a, (handle_1);					// get handle
-	rst divmmc;							// issue a hookcode
-	defb f_close;						// close file
+	call v_close;						// close file
 	ld ix, tmp_file;					// path to temporary file
-	rst divmmc;							// issue a hookcode
-	defb f_unlink;						// delete temporary file
+	call v_delete;						// delete temporary file
 	pop hl;								// equivalent of open_end
 	ret;								// done
 
 append_loop:
 	ld a, (handle_1);					// get handle
 	ld ix, membot;						// write byte to membot
-	ld bc, 1;							// read one byte
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_read;						// read a byte
+	call v_read_one;					// read a byte
 	ld a, c;							// test for
 	or b;								// zero
 	ret z;								// return if no more bytes read
-	ld a, (membot + 1);					// get file handle
+	ld a, (handle);						// get file handle
 	ld ix, membot;						// character is in membot
-	ld bc, 1;							// one byte to write
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_write;						// write a byte
+	call v_write_one;					// write a byte
 	jr append_loop;						// loop until done
 
 f_write_out:
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_write;						// change folder
+	call v_write;						// write out
 	jr f_close_0;						// immediate jump
 
 f_read_in:
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_read;						// read a byte
+	call v_read;						// read a byte
 
 f_close_0:
 	jr c, report_file_not_found;		// jump if error
@@ -287,9 +393,7 @@ f_close_1:
 	ld a, (handle);						// restore handle (membot + 1)
 
 f_close_any:
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_close;						// close file
+	call v_close;						// close file
 
 f_return:
 	jr c, report_file_not_found;		// jump if error
@@ -319,7 +423,7 @@ c_bload:
 	call find_int2;						// get address
 	ld (f_addr), bc;					// store it
 	call path_to_ix;					// path to buffer
-	call f_open_read_ex;				// open file for reading
+	call f_open_r_exists;				// open file for reading
 	call f_get_stats;					// get binary length
 	ld a, (handle);						// restore handle (membot + 1)
 	ld bc, (f_size);					// get length
@@ -338,7 +442,7 @@ c_bsave:
 	call find_int2;						// get address
 	ld (f_addr), bc;					// store it
 	call path_to_ix;					// path to buffer
-	call f_open_write_al;				// open file for writing
+	call f_open_w_create;				// open file for writing
 	ld ix, (f_addr);					// start to IX
 	ld bc, (f_size);					// length to BC
 	jr f_write_out;						// save binary
@@ -353,8 +457,7 @@ c_chdir:
 	call path_to_ix;					// path to buffer
 
 c_chdir_1:
-	rst divmmc;							// issue a hookcode
-	defb f_chdir;						// change folder
+	call v_chdir;						// change folder
 
 ;	// common service routine inlined
 chk_path_error:
@@ -378,7 +481,7 @@ c_copy:
 	ld (buffer), de;					// store pointer to start
 	call paths_to_de_ix;				// destination and source paths to buffer
 	push de;							// stack destination
-	call f_open_read_ex;				// open file for reading
+	call f_open_r_exists;				// open file for reading
 	ld (handle), a;						// store handle
 	call f_get_stats;					// get file length
 	pop ix;								// unstack pointer to destination
@@ -419,18 +522,14 @@ copy_close:
 read_chunk:
 	ld a, (handle);						// get file handle to source
 	ld ix, (buffer);					// 256 byte buffer
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_read;						// read a byte
+	call v_read;						// read a byte
 	jp c, report_file_not_found;		// jump if error
 	ret;								// else done
 
 write_chunk:
 	ld a, (handle_1);					// get file handle to destination
 	ld ix, (buffer);					// 256 byte buffer
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_write;						// write a byte
+	call v_write;						// write chunk
 	jp c, report_file_not_found;		// jump if error
 	ret;								// else done
 
@@ -482,12 +581,8 @@ use_cwd:
 open_folder:
 	ld a, 2;							// channel S (upper screen)
 	call chan_open;						// select channel
-	ld b, 0;							// folder access mode (read only?)
-	ld a, '*';							// use current drive
 	ld ix, (buffer_1);					// folder path buffer
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_opendir;						// open folder
+	call v_opendir;						// open folder
 	jp c, report_file_not_found;		// jump if error
 	ld (handle), a;						// store folder handle
 	ld hl, (buffer_1);					// folder path buffer
@@ -516,9 +611,7 @@ pr_asciiz_uc_end:
 read_folders:
 	ld ix, (buffer);					// folder item buffer
 	ld a, (handle);						// get folder handle
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_readdir;						// read a folder entry
+	call v_readdir;						// read a folder entry
 	jp c, report_file_not_found;		// jump if read failed
 	or a;								// last entry?
 	jr z, read_files;					// jump if so
@@ -571,23 +664,16 @@ pr_asciiz:
 
 read_files:
 	ld a, (handle);						// get folder handle
-	rst divmmc;							// issue a hookcode
-	defb f_close;						// close file
-	ld b, 0;							// folder access mode (read only?)
-	ld a, '*';							// use current drive
+	call v_close;						// close file
 	ld ix, (buffer_1);					// folder path buffer
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_opendir;						// open folder
+	call v_opendir;						// open folder
 	jp c, report_file_not_found;		// jump if error
 	ld (handle), a;						// store folder handle
 
 read_files_2:
 	ld ix, (buffer);					// file item buffer
 	ld a, (handle);						// get folder handle
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_readdir;						// read a folder entry
+	call v_readdir;						// read a folder entry
 	jp c, report_file_not_found;		// jump if read failed
 	or a;								// last entry?
 	jr z, last_entry;					// jump if so
@@ -633,12 +719,7 @@ last_entry:
 	ld a, (handle);						// get folder handle
 	ld a, ctrl_cr;						// carriage return
 	rst print_a;						// print it
-
-do_f_close:
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_close;						// close file
-	ret;								// end of subroutine
+	jp v_close;							// close file
 
 print_f:
 	cp '_';								// test for underscore
@@ -657,8 +738,7 @@ no_:
 c_kill:
 	call unstack_z;						// return if checking syntax
 	call path_to_ix;					// path to buffer
-	rst divmmc;							// issue a hookcode
-	defb f_unlink;						// release file
+	call v_delete;						// delete file
 	jp f_return;						// report error or return
 
 ;;
@@ -708,7 +788,7 @@ load_t:
 	call path_to_ix;					// path to buffer
 
 load_t1:
-	call f_open_read_ex;				// open file for reading
+	call f_open_r_exists;				// open file for reading
 
 load_t2:
 	call f_get_stats;					// get program length
@@ -801,8 +881,7 @@ scan_err:
 
 load_end:
 	ld a, (handle);						// get file handle (membot + 1)
-	rst divmmc;							// issue a hookcode
-	defb f_close;						// close file
+	call v_close;						// close file
 	jr c, report_bad_io_dev3;			// jump with error
 	rst error;							// else
 	defb ok;							// clear error
@@ -810,9 +889,7 @@ load_end:
 f_getc:
 	ld a, (handle);						// get file handle (membot + 1)
 	ld ix, membot;						// MEMBOT to IX
-	ld bc, 1;							// one byte
-	rst divmmc;							// issue a hookcode
-	defb f_read;						// read a byte
+	call v_read_one;					// read a byte
 
 f_getc_err:
 	jr c, report_bad_io_dev3;			// jump with error
@@ -841,8 +918,7 @@ c_merge:
 c_mkdir:
 	call unstack_z;						// return if checking syntax
 	call path_to_ix;					// path to buffer
-	rst divmmc;							// issue a hookcode
-	defb f_mkdir;						// create folder
+	call v_mkdir;						// create folder
 	jp chk_path_error;					// test for error
 
 ;;
@@ -871,34 +947,22 @@ c_old:
 
 f_save_old:
 	ld ix, old_bas_path;				// path to old.bas
-	ld a, '*';							// use current drive
-	rst divmmc;							// issue a hookcode
-	defb f_unlink;						// delete file if it exists
+	call v_delete;						// delete file if it exists
 
 	ld ix, rootpath;					// go to root
-	ld a, '*';							// use current drive
-	rst divmmc;							// issue a hookcode
-	defb f_chdir;						// change folder
+	call v_chdir;						// change folder
 
 	ld ix, sys_folder;					// ASCIIZ system
-	ld a, '*';							// use current drive
-	rst divmmc;							// issue a hookcode
-	defb f_mkdir;						// create folder
+	call v_mkdir;						// create folder
 
 	ld ix, sys_folder;					// ASCIIZ system
-	ld a, '*';							// use current drive
-	rst divmmc;							// issue a hookcode
-	defb f_chdir;						// change folder
+	call v_chdir;						// change folder
 
 	ld ix, tmp_folder;					// ASCIIZ temp
-	ld a, '*';							// use current drive
-	rst divmmc;							// issue a hookcode
-	defb f_mkdir;						// create folder
+	call v_mkdir;						// create folder
 
 	ld ix, rootpath;					// go to root
-	ld a, '*';							// use current drive
-	rst divmmc;							// issue a hookcode
-	defb f_chdir;						// change folder
+	call v_chdir;						// change folder
 
 	ld ix, old_bas_path;				// pointer to path
 	jp save_t1;							// immediate jump
@@ -911,8 +975,7 @@ f_save_old:
 c_rmdir:
 	call unstack_z;						// return if checking syntax
 	call path_to_ix;					// path to buffer
-	rst divmmc;							// issue a hookcode
-	defb f_rmdir;						// change folder
+	call v_rmdir;						// remove folder
 	jp chk_path_error;					// test for error
 
 ;;
@@ -951,10 +1014,8 @@ endcp11:
 	ld hl, prgpath;						// complete path
 	ld bc, 6;							// byte count
 	ldir;								// copy it
-	ld a, '*';							// use current drive
 	ld ix, membot;						// pointer to path
-	rst divmmc;							// issue a hookcode
-	defb f_chdir;						// change folder
+	call v_chdir;						// change folder
 	call chk_path_error;				// test for error
 	ld (oldsp), sp;						// save old SP
 	ld sp, $6000;						// lower stack
@@ -978,7 +1039,7 @@ endskp8:
 ; end of get shortname
 
 	ld ix, mem_2;						// default program name
-	call f_open_r_exists;				// open file for reading if it exists
+	call v_open_r_exists;				// open file for reading if it exists
 	jr c, app_not_found;				// jump if error
 	ld (handle), a;						// store handle
 	ld ix, f_stats;						// buffer for file stats
@@ -989,19 +1050,13 @@ endskp8:
 	ld a, (handle);						// restore handle
 	ld bc, (f_size);					// get length
 	ld ix, $6000;						// get address
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_read;						// read a byte
+	call v_read;						// read a byte
 	jr c, app_not_found;				// jump if error
 	ld a, (handle);						// restore handle
-	and a;								// signal no error (clear carry flag)
-	rst divmmc;							// issue a hookcode
-	defb f_close;						// close file
+	call v_close;						// close file
 	jr c, app_not_found;				// jump if error
-	ld a, '*';							// use current drive
 	ld ix, resources;					// path to resource fork
-	rst divmmc;							// issue a hookcode
-	defb f_chdir;						// change folder
+	call v_chdir;						// change folder
 	jp $6000;							// run app
 
 app_not_found:
@@ -1025,7 +1080,7 @@ save_t:
 	call path_to_ix;					// get path in IX
 
 save_t1:
-	call f_open_write_al;				// open file for writing
+	call f_open_w_create;				// open file for writing
 	ld hl, (vars);						// end of BASIC to HL
 	ld de, (prog);						// start of program to DE
 	sbc hl, de;							// get program length

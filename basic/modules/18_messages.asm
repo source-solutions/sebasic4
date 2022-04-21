@@ -17,7 +17,11 @@
 ;	// addresses $3d00 to $3fff are trapped by the divIDE / divMMC hardware
 ;	// these addresses must not contain code or when the PC is in this range, paging will take place.
 
+;;
 ;	// --- MESSAGES ------------------------------------------------------------
+;;
+:
+
 ;	// A total of 608 bytes are allocated for localized messages
 
     org $58a0

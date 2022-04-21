@@ -14,7 +14,10 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
+;;
 ;	// --- FLOATING POINT CALCULATOR -------------------------------------------
+;;
+:
 
 ;	// Microsoft Binary Format (MBF) extended-precision (40 bits)
 ;	//

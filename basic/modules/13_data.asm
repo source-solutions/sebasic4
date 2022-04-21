@@ -17,7 +17,10 @@
 ;	// addresses $3d00 to $3fff are trapped by the divIDE / divMMC hardware
 ;	// these addresses must not contain code or when the PC is in this range, paging will take place.
 
+;;
 ;	// --- DATA TABLES ---------------------------------------------------------
+;;
+:
 
 ;	// Executable code cannot be stored between $3d00 and $3fff because the
 ;	// divMMC hardware traps these locations
@@ -66,9 +69,8 @@ endif
 	defb "SE BASIC IV 4.2-b9 Cordelia", ctrl_cr;
 	defb "Copyright (C)2022 Source Solutions, Inc.", ctrl_cr;
 	defb ctrl_cr;
-	timestamp 'YY-MM-DD h:m';			// RASM directive
-	defb ctrl_cr;
-;	defb "GPL-3.0 License", ctrl_cr;
+;	timestamp 'YY-MM-DD h:m';			// RASM directive
+	defb "GPL-3.0 License", ctrl_cr;
 	defb ctrl_cr, 0;
 
 bytes_free:

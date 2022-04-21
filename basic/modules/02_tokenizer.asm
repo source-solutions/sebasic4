@@ -17,6 +17,7 @@
 ;;
 ;	// --- TOKENIZER -----------------------------------------------------------
 ;;
+:
 
 ;	// called if a line begins with '!' - shortcut for loading apps
 bang:

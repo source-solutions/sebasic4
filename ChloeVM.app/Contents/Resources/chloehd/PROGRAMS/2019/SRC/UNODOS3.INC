@@ -1,3 +1,28 @@
+;;	// vector table address
+
+	vector equ $04c4;
+
+;	// SE Basic IV DOS API
+
+	SEFileAppend equ vector;			// $00
+	SEFileClose equ vector + 3;			// $01
+	SEFileCreate equ vector + 6;		// $02
+	SEFileLoad equ vector + 9;			// $03
+	SEFileOpen equ vector + 12;			// $04
+	SEFileOpenExists equ vector + 15;	// $05
+	SEFileRead equ vector + 18;			// $06
+	SEFileReadOne equ vector + 21;		// $07
+	SEFileRemove equ vector + 24;		// $08
+	SEFileRename equ vector + 27;		// $09
+	SEFileSave equ vector + 30;			// $0a
+	SEFileWrite equ vector + 33;		// $0b
+	SEFileWriteOne equ vector + 36;		// $0c
+	SEFolderCreate equ vector + 39;		// $0d
+	SEFolderOpen equ vector + 42;		// $0e
+	SEFolderRead equ vector + 45;		// $0f
+	SEFolderRemove equ vector + 48;		// $10
+	SEFolderSet equ vector + 51; 		// $11
+
 ;	// UnoDOS 3 hook codes
 
 	divmmc equ 8;

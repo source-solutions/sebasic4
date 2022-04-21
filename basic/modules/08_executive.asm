@@ -14,7 +14,10 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
+;;
 ;	// --- EXECUTIVE ROUTINES --------------------------------------------------
+;;
+:
 
 ;	// +-------+-------+-----------+---------+-----+---------+--
 ;	// | basic | basic | system    | channel | $80 | BASIC   |
@@ -42,10 +45,6 @@
 ;	org $11b7;
 
 ;;
-;
-;;
-
-;;
 ; <code>NEW</code> command
 ; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#NEW" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
@@ -62,6 +61,7 @@ c_new:
 	exx;								// main register set
 
 ;	org $11cb;
+
 ;;
 ; initialization
 ;;
@@ -536,7 +536,7 @@ close_3;
 close_file:
 	ld a, (ix + 5);						// file handle
 	push ix;							// stack channel descriptor base
-	call do_f_close;					// cannot do rst divmmc below $4000
+	call v_close;						// close file
 	jp c, report_bad_io_dev;			// jump on error
 	pop hl;								// HL = channel descriptor base
 	ld bc, 6;							// BC = channel descriptor length
