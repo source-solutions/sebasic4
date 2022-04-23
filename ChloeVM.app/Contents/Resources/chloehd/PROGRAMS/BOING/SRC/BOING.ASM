@@ -241,21 +241,14 @@ palette_loop:
 
 load:
 	ld a, (handle);						// file handle
-	rst divmmc;							// issue a hookcode
-	defb f_read;						// read bytes
-	ret;								// end of subroutine
+	jp SEFileRead;						// exit via read file vector
 
 close:
 	ld a, (handle);						// get folder handle
-	rst divmmc;							// issue a hookcode
-	defb f_close;						// close it
-	ret;
+	jp SEFileClose;						// exit via close file vector
 
 open:
-	ld a, '*';							// use current drive
-	ld b, fa_read | fa_open_ex;			// open for reading if file exists
-	rst divmmc;							// issue a hookcode
-	defb f_open;						// open file
+	call SEFileOpenExists;				// open file
 	ld (handle), a;						// store file handle
 	ret;								// end of subroutine
 

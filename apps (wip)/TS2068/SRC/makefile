@@ -1,2 +1,2 @@
 prg:
-	pasmo TC2068.ASM ../PRG/TC2068.PRG
+	pasmo TS2068.ASM ../PRG/TS2068.PRG

@@ -14,7 +14,10 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
+;;
 ;	// X80 maths co-processor instruction set (requires macro support)
+;;
+:
 
 ;	// never called directly:
 ;	//
@@ -39,11 +42,6 @@
 ;	// fetof
 
 ;	// parameter definitions
-
-;;
-; asmdoc eats the first description
-;;
-	foo equ $f00;
 
 ;;
 ; X80 parameter: less than or equal

@@ -14,7 +14,10 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
+;;
 ;	// --- 80 COLUMN SCREEN HANDLING ROUTINES ----------------------------------
+;;
+:
 
 ;	// FRAME BUFFER
 ;	//
@@ -775,6 +778,7 @@ po_scr_2:
 	call chan_open;						// select channel
 	ld de, scrl_mssg;					// message address
 	call po_asciiz_0;					// print it
+
 wait_msg_loop:
 	ld hl, vdu_flag;					// address sysvar
 	set 5, (hl);						// lower screen requires clearing
