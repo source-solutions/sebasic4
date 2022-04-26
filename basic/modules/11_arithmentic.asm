@@ -17,6 +17,7 @@
 ;;
 ;	// --- ARITHMETIC ROUTINES -------------------------------------------------
 ;;
+:
 
 ;;
 ; E-format to floating point

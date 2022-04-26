@@ -28,18 +28,14 @@ setup:
 	call set_palette;					// make the screen black
 
 read_files:
-	ld b, 0;							// folder access mode (read only?)
-	ld a, '*';							// use current drive
 	ld ix, folder_path;					// folder path buffer
-	rst divmmc;							// issue a hookcode
-	defb f_opendir;						// open folder
+	call SEFolderOpen;					// open folder
 	ld (handle_p), a;					// store path handle
 
 read_files_2:
 	ld ix, folder_entry;				// buffer
 	ld a, (handle_p);					// get path handle
-	rst divmmc;							// issue a hookcode
-	defb f_readdir;						// read a folder entry
+	call SEFolderRead;					// read a folder entry
 	or a;								// last entry?
 	jp z, last_entry;					// jump if so
 	ld hl, folder_entry;				// buffer
@@ -48,10 +44,7 @@ read_files_2:
 	jr nz, read_files_2;				// skip folders
 
 	ld ix, folder_entry + 1;			// ASCIIZ filename
-	ld a, '*';							// use current drive
-	ld b, fa_read | fa_open_ex;			// open for reading if file exists
-	rst divmmc;							// issue a hookcode
-	defb f_open;						// open file
+	call SEFileOpenExists;				// open file
 	ld (handle_f), a;					// store file handle
 
 	ld ix, $c000;						// offset 0 in frame buffer
@@ -63,8 +56,7 @@ read_files_2:
 	call load;							// load the 2nd half of the file + palette
 
 	ld a, (handle_f);					// file handle
-	rst divmmc;							// issue a hookcode
-	defb f_close;						// close file
+	call SEFileClose;					// close file
 
 	call fade;							// pre-fade the palette to black in 7 steps
 
@@ -160,14 +152,11 @@ space3;
 
 load:
 	ld a, (handle_f);					// file handle
-	rst divmmc;							// issue a hookcode
-	defb f_read;						// read bytes
-	ret;								// end of subroutine
+	jp SEFileRead;						// exit via read file vector
 
 last_entry:
 	ld a, (handle_p);					// get folder handle
-	rst divmmc;							// issue a hookcode
-	defb f_close;						// close it
+	call SEFileClose;					// close file
 	jp read_files;						// loop
 
 fade:

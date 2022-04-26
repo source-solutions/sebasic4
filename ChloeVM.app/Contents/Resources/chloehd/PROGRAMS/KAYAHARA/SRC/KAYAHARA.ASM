@@ -250,7 +250,7 @@ pr_key:
 
 	jp start;							// skip shadow screen area
 
-;	// file handling
+;	// file handling (cannot use SE Basic IV DOS API because entire shadow RAM is used as buffer)
 open:
 	ld a, '*';							// use current drive
 	ld b, fa_read | fa_open_ex;			// open for reading if file exists
