@@ -37,12 +37,12 @@
 rst_00:
 	di;									// interrupts off
 	xor a;								// LD A, 0
-;	ld bc, paging;						// HOME bank paging (already set by UnoDOS 3)
+	ld bc, paging;						// HOME bank paging (already set by UnoDOS 3)
 	out (c), a;							// ROM 0, RAM 0, VIDEO 0, paging enabled
 
-	org $0005;							// BDOS
-cpm:
-	jp bdos;							// immediate jump
+;	org $0005;							// BDOS
+;cpm:
+;	jp bdos;							// immediate jump
 
 	org $0008;
 ;;
