@@ -5,7 +5,8 @@
 Returns a string of <code><var>length</var></code> times the character <code><var>char</var></code>.
 
 #### Parameters
-* If <code><var>char</var></code> is a numeric expression, it must be in `[0 to 255]` and is interpreted as the [code point](#code-point) of the character.
+* If <code><var>char</var></code> is a numeric expression, it must be in `[0 to 255]` and is interpreted 
+  as the [code point](#code-point) of the character.
 * If <code><var>char</var></code> is a string expression, its first character is used.
 
 #### Errors

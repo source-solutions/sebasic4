@@ -1,3 +1,3 @@
 ### LINE
 ***
-See [INPUT](#INPUT).
+See [`INPUT`](#INPUT).

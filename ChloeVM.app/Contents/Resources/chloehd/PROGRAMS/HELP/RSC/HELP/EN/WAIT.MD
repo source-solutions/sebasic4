@@ -2,10 +2,10 @@
 ***
 <code><b>WAIT</b> <var>frames</var></code>
 
-Pauses for (_`frames`_/60) seconds.
+Pauses for (<code><var>frames</var></code>/60) seconds.
 
 #### Parameters
-_`frames`_ is in `[0 to 65535]`.
+<code><var>frames</var></code> is in `[0 to 65535]`.
 
 #### Notes
 In Microsoft BASIC, `WAIT` waits for input from a given port.

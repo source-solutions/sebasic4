@@ -5,10 +5,10 @@
 Renames the disk file <code><var>old_name</var></code> into <code><var>new_name</var></code>.
 
 #### Parameters
-The string expressions <code><var>old_name</var></code> and <code><var>new_name</var></code> are valid <a href="#filespec">file specifications</a> giving the path on a disk device to the old and new filenames, respectively.
+The string expressions <code><var>old_name</var></code> and <code><var>new_name</var></code> are valid [fiolespec](#filespec) file specifications giving the path on a disk device to the old and new filenames, respectively.
 
 #### Notes
-<code><var>new_name</var></code> will be modified into <a href="#eightpointthree">all-uppercase 8.3 format</a>.
+<code><var>new_name</var></code> will be modified into [all-uppercase 8.3 format](#eightpointthree).
 
 #### Errors
 * <code><var>old_name</var></code> or <code><var>new_name</var></code> have number values: <samp>Type mismatch</samp>.

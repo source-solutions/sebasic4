@@ -2,7 +2,8 @@
 ***
 <code><b>CLOSE</b> [[<b>#</b>] <var>file_0</var> [<b>,</b> [<b>#</b>] <var>file_1</var>] ...]</code>
 
-Closes streams. If no file numbers are specified, all open streams `[3 to 15]` are closed. The hash (`#`) is optional and has no effect.
+Closes streams. If no file numbers are specified, all open streams `[3 to 15]` are
+closed. The hash (`#`) is optional and has no effect.
 
 #### Parameters
 <code><var>file_1</var>, <var>file_2</var>, ...</code> are numeric expressions yielding stream numbers.

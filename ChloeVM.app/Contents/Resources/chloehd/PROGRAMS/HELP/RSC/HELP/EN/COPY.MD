@@ -6,7 +6,9 @@ Copies the disk file <code><var>file_spec_1</var></code> to <code><var>file_spec
 
 #### Parameters
 
-The string expressions <code><var>file_spec_1</var></code> and <code><var>file_spec_2</var></code> are valid [file specifications](#file-specification) indicating the source and destination files. The first must point to an existing file on a disk device.
+The string expressions <code><var>file_spec_1</var></code> and <code><var>file_spec_2</var></code> are valid 
+[file specifications](#file-specification) indicating the source and destination files. The first
+must point to an existing file on a disk device.
 
 #### Notes
 Typically, this command is not present in Microsoft BASIC.

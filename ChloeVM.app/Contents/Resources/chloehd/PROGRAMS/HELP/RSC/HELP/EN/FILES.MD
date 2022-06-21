@@ -2,10 +2,12 @@
 ***
 <code><b>FILES</b> [<var>filter_spec</var>]</code>
 
-Displays the files fitting the specified filter in the specified folder on a disk device. If <code><var>filter_spec</var></code> is not specified, displays all files in the current working folder.
+Displays the files fitting the specified filter in the specified folder on a 
+disk device. If <code><var>filter_spec</var></code> is not specified, displays all files in the current working folder.
 
 #### Parameters
-* <code><var>filter_spec</var></code> is a string expression that is much like a [file specification](#file-specification), but optionally allows the file name part to contain <dfn>wildcards</dfn>.
+<code><var>filter_spec</var></code> is a string expression that is much like a [file specification](#file-specification), but
+optionally allows the file name part to contain [wildcards](#wildcards).
 
 #### Notes
 Wildcards are not currently supported.

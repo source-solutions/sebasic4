@@ -5,7 +5,8 @@
 Creates a new folder on a disk device.
 
 #### Parameters
-The string expression <code><var>dir_spec</var></code> is a valid [file specification](#file-specification) that specifies the path of the new folder on a disk device.
+The string expression <code><var>dir_spec</var></code> is a valid [file specification](#file-specification) that specifies
+the path of the new folder on a disk device.
 
 #### Errors
 * <code><var>dir_spec</var></code> is not a string: <samp>Type mismatch</samp>.

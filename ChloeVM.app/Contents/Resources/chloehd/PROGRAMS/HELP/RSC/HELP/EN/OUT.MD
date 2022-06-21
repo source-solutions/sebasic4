@@ -2,7 +2,7 @@
 ***
 <code><b>OUT</b> <var>port</var><b>,</b> <var>value</var></code>
 
-Sends a byte to an emulated machine port.
+Sends a byte to a machine I/O port.
 
 #### Parameters
 * <code><var>port</var></code> is a numeric expression in `[0 to 65535]`.

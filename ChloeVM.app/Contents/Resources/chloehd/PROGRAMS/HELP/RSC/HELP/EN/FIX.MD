@@ -8,7 +8,8 @@ Returns a <code><var>number</var></code> truncated towards zero.
 <code><var>number</var></code> is a numeric expression.
 
 #### Notes
-`FIX` truncates towards zero: it removes the fractional part. By contrast, [`INT`](#INT) truncates towards negative infinity.
+`FIX` truncates towards zero: it removes the fractional part. By contrast, [`INT`](#INT) 
+truncates towards negative infinity.
 
 #### Errors
 <code><var>number</var></code> is a string expression: <samp>Type mismatch</samp>.

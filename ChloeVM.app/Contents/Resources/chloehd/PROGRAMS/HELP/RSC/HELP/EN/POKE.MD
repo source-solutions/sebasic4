@@ -2,10 +2,12 @@
 ***
 <code><b>POKE</b> <var>address</var><b>,</b> <var>value</var></code>
 
-Sets the value of the memory byte at <code><var>segment</var> * 16 + <var>address</var></code> to <code><var>value</var></code>, where <code><var>segment</var></code> is the current segment set with [DEF SEG](#DEF-SEG).
+Sets the value of the memory byte at <code><var>segment</var> \* 16 + <var>address</var></code> to <code><var>value</var></code>, where
+<code><var>segment</var></code> is the current segment set with [DEF SEG](#DEF-SEG).
 
 #### Parameters
-* <code><var>address</var></code> is a numeric expression in `[-32768 to 65535]`. Negative values are interpreted as their two's complement.
+* <code><var>address</var></code> is a numeric expression in `[-32768 to 65535]`. Negative values are
+  interpreted as their two's complement.
 * <code><var>value</var></code> is a numeric expression in `[0 to 255]`.
 
 #### Notes
