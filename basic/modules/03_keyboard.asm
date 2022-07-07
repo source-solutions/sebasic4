@@ -328,8 +328,16 @@ k_enter:
 	inc b;								// shift or alternate?
 	ret z;								// return if not
 	bit 5, b;							// shift?
-	ret nz;								// return if so
+	jr nz, k_compose;					// jump if so
 	ld a, key_clr;						// make it CLR key
+	ret;								// end of subroutine
+
+k_compose:
+	ld hl, (k_cur);						// get cursor position
+	call ed_left;						// move it left
+	ld a, 2;							// overprinting code
+	call add_char;						// insert character
+	ld a, ctrl_ht;						// cursor right
 	ret;								// end of subroutine
 
 k_space:

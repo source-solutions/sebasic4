@@ -301,6 +301,28 @@ inverse_6a:
 	org $09f4;
 	ret;								// immediate return
 
+chr_str_1:
+	set 5, (iy + _flags2);				// set force printable flag
+	ret;								// done
+
+force_poable:
+	res 5, (iy + _flags2);				// clear force printable flag
+	jp po_able;							//
+
+chr_str_2:
+	set 6, (iy + _flags2);				// set composable flag
+	ret;								// done
+
+po_compose:
+	res 6, (iy + _flags2);				// clear composable flag
+	push af;							// stack character
+	call po_left;						// move cursor left
+	set 0, (iy + _p_flag);				// set over flag
+	pop af;								// unstack character
+	call po_able;						// overprint character
+	res 0, (iy + _p_flag);				// clear flag
+	ret;								// done
+
 ;;
 ; print out
 ;;
@@ -308,6 +330,19 @@ print_out:
 ;	bit 1, (iy + _flags2);				// test for 40 column mode
 ;	jp nz, s40_print_out;				// jump if so
 	call po_fetch;						// current print position
+
+	bit 5, (iy + _flags2);				// treat next character as printable?
+	jr nz, force_poable;				// jump if so
+
+	bit 6, (iy + _flags2);				// is next character composable?
+	jr nz, po_compose;					// jump if so
+
+	cp 1;								// CHR$ (1)?
+	jr z, chr_str_1;					// make next character printable
+
+	cp 2;								// CHR$ (2)?
+	jr z, chr_str_2;					// make next character composable
+
 	cp ' ';								// space or higher?
 	jp nc, po_able;						// jump if so
 	cp 7;								// character in the range 0 - 6?
@@ -645,12 +680,26 @@ po_asciiz:
 	ld a, (de);							// get character
 
 po_asciiz_chr:
+	cp 2;								// composable character pair?
+	jr z, po_asciiz_composable;			// jump if so
 	call po_save;						// print with alternate register set
+
+po_asciiz_next:
 	inc de;								// next character
 	ld a, (de);							// get character
 	and a;								// null terminator?
 	jr nz, po_asciiz_chr;				// loop until done
 	ret;								// end of subroutine
+
+po_asciiz_composable:
+	ld hl, sposnl;						// cursor
+	inc (hl);							// left
+	inc de;								// next character
+	ld a, (de);							// get character
+	set 0, (iy + _p_flag);				// set over flag
+	call po_save;						// print with alternate register set
+	res 0, (iy + _p_flag);				// clear flag
+	jr po_asciiz_next;					// immediate jump
 
 po_srch_asciiz:
 	ld b, a;							// count to B
