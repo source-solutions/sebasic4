@@ -465,11 +465,10 @@ set_de:
 	ret;								// end of subroutine
 
 get_cols:
-	ld b, 80;							// assume 80 columns
-	bit 1, (iy + _flags2);				// test for 40 column mode
-	ret z;								// return if not
-	ld b, 40;							// 40 columns
-	ret;								// end of subroutine
+	bit 1, (iy + _flags2);				// test for user-defined video mode
+	jp nz, UDV_get_cols;				// jump if so
+	ld b, 80;							// else 80 columns
+	ret;								// return
 
 	org $11a7
 ;;

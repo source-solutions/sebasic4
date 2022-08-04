@@ -266,23 +266,9 @@ c_locate:
 
 	call stk_to_bc;						// column to C, row to B
 
-	bit 1, (iy + _flags2);				// test for 40 column mode
-	jr z, loc_80;						// jump if not
+	bit 1, (iy + _flags2);				// test for user-defined video mode
+	jp nz, UDV_locate;					// jump if so
 
-	ld a, c;							// get column
-	or a;								// test for zero
-	jr z, loc_err						// jump if so
-	cp 41;								// in range?
-	jr nc, loc_err;						// error if not
-	ld a, b;							// get row
-	or a;								// test for zero
-	jr z, loc_err;						// jump if so
-	cp 24;								// upper screen?
-	jr nc, loc_err;						// jump if not
-	ld a, 42;							// left most
-	jr loc_40;							// immedaite jump
-
-loc_80:
 	ld a, c;							// get column
 	or a;								// test for zero
 	jr z, loc_err;						// jump if so
@@ -533,7 +519,7 @@ screen_1:
 	set 1, (iy + _flags2);				// signal 40 columns
 ;	ld a, %00000010;					// lo-res mode
 ;	out (scld), a;						// set it
-	jp s40_c_cls;							// exit via CLS 40
+	jp UDV_c_cls;						// exit via CLS 40
 
 ; 	// TEST 0 OR 1 subroutine
 test_0_or_1:

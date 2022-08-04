@@ -327,8 +327,8 @@ po_compose:
 ; print out
 ;;
 print_out:
-	bit 1, (iy + _flags2);				// test for 40 column mode
-	jp nz, s40_print_out;				// jump if so
+	bit 1, (iy + _flags2);				// test for user defined video mode
+	jp nz, UDV_print_out;				// jump if so
 	call po_fetch;						// current print position
 
 	bit 5, (iy + _flags2);				// treat next character as printable?
@@ -603,6 +603,8 @@ pr_all_1:
 	push bc;							// stack position
 	push hl;							// stack destination
 	ld a, 81;							// 80 columns
+
+pr_all_common:
 	sub c;								// get position
 	ld b, a;							// save it
 	and $07;							// mask off bit 0-2

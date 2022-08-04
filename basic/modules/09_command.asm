@@ -1353,12 +1353,8 @@ input_1:
 	cp b;								// current position above lower screen?
 	jr c, input_2;						// jump if so
 	ld c, 81;							// leftmost position
-
-	bit 1, (iy + _flags2);				// test for 40 column mode
-	jr z, input_1a;						// jump if not
-	ld c, 41;							// leftmost position
-
-input_1a:	
+	bit 1, (iy + _flags2);				// test for user-defined video mode
+	call nz, UDV_input_1;				// call if so
 	ld b, a;							// set print position to top of lower screen
 
 input_2:

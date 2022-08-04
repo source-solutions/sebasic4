@@ -14,6 +14,55 @@
 ;	// You should have received a copy of the GNU General Public License
 ;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
 
+;	// SCREEN 1 selects the user defined video mode. By default this is a low
+;	// resolution 40 column mode. However, because it resides in RAM, it can be
+;	// redefined during run time. A flag determines which set of routines to use
+;	// and the user defined routines are called using a vector table.
+
+;;
+;	// --- USER DEFINED SCREEN HANDLING ROUTINE VECTORS ------------------------
+;;
+:
+
+	org $4800;
+
+UDV_c_cls:
+	jp s40_c_cls;						// CLS
+
+UDV_print_out:
+	jp s40_print_out;					// PRINT OUT
+
+UDV_get_cols:
+	jp s40_get_cols;					// GET COLS
+
+UDV_input_1:
+	jp s40_input_1;						// INPUT 1
+
+UDV_locate:
+	jp s40_locate:						// LOCATE
+
+s40_get_cols:
+	ld b, 40;							// 40 columns
+	ret;								// end of subroutine
+
+s40_input_1:
+	ld c, 41;							// leftmost position
+	ret;								// end of subroutine
+
+s40_locate:
+	ld a, c;							// get column
+	or a;								// test for zero
+	jp z, loc_err						// jump if so
+	cp 41;								// in range?
+	jp nc, loc_err;						// error if not
+	ld a, b;							// get row
+	or a;								// test for zero
+	jp z, loc_err;						// jump if so
+	cp 24;								// upper screen?
+	jp nc, loc_err;						// jump if not
+	ld a, 42;							// left most
+	jp loc_40;							// immedaite jump
+
 ;;
 ;	// --- 40 COLUMN SCREEN HANDLING ROUTINES ----------------------------------
 ;;
@@ -39,7 +88,6 @@
 ;	// There are eight separate routines called based on the first three bits of
 ;	// the column value.
 
-	org $4800;
 ;	// HL points to the first byte of a character in FONT_1
 ;	// DE points to the first byte of the block of screen addresses
 
