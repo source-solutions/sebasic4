@@ -1,6 +1,6 @@
-Welcome to the `SE Basic IV` <var>Cordelia</var> 4.2-b9 Online Help System
+Welcome to the `SE Basic IV` <var>Cordelia</var> 4.2-b10 Online Help System
 ***
-Enter a [`KEYWORD`] or [`EXIT`] to return to BASIC.
+Enter a [`KEYWORD`], [`TOPICS`], or [`EXIT`] to return to BASIC.
 
 #### Functions
 ABS, ACOS, ASC, ASIN, ATAN, CHR$, COS, DEEK, EXP, FIX, FN, INKEY$, INP, INSTR,

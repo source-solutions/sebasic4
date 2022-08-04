@@ -327,8 +327,8 @@ po_compose:
 ; print out
 ;;
 print_out:
-;	bit 1, (iy + _flags2);				// test for 40 column mode
-;	jp nz, s40_print_out;				// jump if so
+	bit 1, (iy + _flags2);				// test for 40 column mode
+	jp nz, s40_print_out;				// jump if so
 	call po_fetch;						// current print position
 
 	bit 5, (iy + _flags2);				// treat next character as printable?
@@ -519,7 +519,6 @@ po_fetch:
 ; print any character
 ;;
 po_any:
-po_char:
 	push bc;							// stack current position
 
 ;	// write to character map

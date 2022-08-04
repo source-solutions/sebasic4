@@ -515,19 +515,25 @@ onerr_test_1:
 c_screen:
 	call test_0_or_1;					// get variable
 	and a;								// test for zero
-;	jr nz, screen_1;					// jump for 40 column
+	jr nz, screen_1;					// jump for 40 column
 
 screen_0:
+	ld hl, p_flag;						// address sysvar
+	ld (hl), %00000000;					// clear p_flag
+
 	res 1, (iy + _flags2);				// signal 80 columns
 	ld a, %00110110;					// yellow on blue (with no ULAplus), hi-res mode
 	out (scld), a;						// set it
 	jp c_cls;							// exit via CLS 80
 
 screen_1:
+	ld hl, p_flag;						// address sysvar
+	ld (hl), %00001100;					// set p_flag to inverse
+
 	set 1, (iy + _flags2);				// signal 40 columns
 ;	ld a, %00000010;					// lo-res mode
 ;	out (scld), a;						// set it
-;	jp s40_cls;							// exit via CLS 40
+	jp s40_c_cls;							// exit via CLS 40
 
 ; 	// TEST 0 OR 1 subroutine
 test_0_or_1:
