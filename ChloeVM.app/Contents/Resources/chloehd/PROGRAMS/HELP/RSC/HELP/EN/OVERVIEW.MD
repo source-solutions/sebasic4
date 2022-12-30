@@ -3,7 +3,7 @@
 This quick start guide covers installation and elementary use of SE Basic IV.
 For more information refer to the [SE Basic IV documentation](Home).
 
-If you find bugs, [open an issue on GitHub](https://github.com/cheveron/sebasic4/issues). It would be most helpful if you
+If you find bugs, [open an issue on GitHub](https://github.com/source-solutions/sebasic4/issues). It would be most helpful if you
 could include a short but of BASIC code that triggers the bug.
 
 ## Installation
