@@ -158,7 +158,7 @@ line_new:
 
 ;;
 ; <code>END</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#END" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#END" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_end:
 	call close_all;						// close all files
@@ -169,7 +169,7 @@ c_end:
 
 ;;
 ; <code>ELSE</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#ELSE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#ELSE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_else:
 	pop bc;								// discard statement return address
@@ -179,7 +179,7 @@ c_else:
 
 ;;
 ; <code>REM</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#REM" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#REM" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_rem:
 	pop af;								// discard statement return address
@@ -475,7 +475,7 @@ use_zero:
 
 ;;
 ; <code>IF</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#IF" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#IF" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_if:
 	pop bc;								// discard stmt-ret return address
@@ -512,7 +512,7 @@ if_1:
 
 ;;
 ; <code>FOR</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#FOR" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#FOR" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_for:
 	cp tk_step;							// STEP token?
@@ -642,7 +642,7 @@ look_p_2:
 
 ;;
 ; <code>NEXT</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#NEXT" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#NEXT" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_next:
 	bit 1, (iy + _flagx);				// variable found
@@ -707,7 +707,7 @@ read_3:
 
 ;;
 ; <code>READ</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#READ" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#READ" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_read:
 	call class_01;						// get entry for existing variable
@@ -743,7 +743,7 @@ read_2:
 
 ;;
 ; <code>DATA</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#DATA" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#DATA" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_data:
 	call syntax_z;						// checking syntax?
@@ -770,7 +770,7 @@ pass_by:
 
 ;;
 ; <code>RESTORE</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RESTORE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#RESTORE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_restore:
 	call find_line;						// valid line number to HL and BC
@@ -785,7 +785,7 @@ rest_run:
 
 ;;
 ; <code>RANDOMIZE</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RANDOMIZE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#RANDOMIZE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_randomize:
 	call find_int2;						// get operand
@@ -800,7 +800,7 @@ rand_1:
 
 ;;
 ; <code>CONT</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CONT" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#CONT" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_cont:
 	ld hl, (oldppc);					// line number to HL
@@ -824,7 +824,7 @@ report_undef_ln_no:
 
 ;;
 ; <code>GOTO</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#GOTO" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#GOTO" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_goto:
 	call find_line;						// valid line number to HL and BC
@@ -837,7 +837,7 @@ goto_2:
 
 ;;
 ; <code>OUT</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#OUT" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#OUT" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_out:
 	call two_param;						// get operands
@@ -846,7 +846,7 @@ c_out:
 
 ;;
 ; <code>POKE</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#POKE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#POKE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_poke:
 	call two_param;						// get operands
@@ -855,7 +855,7 @@ c_poke:
 
 ;;
 ; <code>DOKE</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#DOKE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#DOKE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_doke:
 	call find_int2;						// get first parameter in BC
@@ -904,7 +904,7 @@ report_overflow:
 
 ;;
 ; <code>RUN</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RUN" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#RUN" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_run:
 	rst get_char;						// get character
@@ -931,7 +931,7 @@ run_zero:
 
 ;;
 ; <code>CLEAR</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CLEAR" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#CLEAR" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_clear:
 	call find_int2;						// get operand
@@ -984,7 +984,7 @@ clear_2:
 
 ;;
 ; <code>GOSUB</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#GOSUB" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#GOSUB" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_gosub:
 	pop de;								// stmt_ret address to DE
@@ -1029,7 +1029,7 @@ report_oo_mem:
 
 ;;
 ; <code>RETURN</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RETURN" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#RETURN" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_return:
 	pop bc;								// stmt-ret address to BC
@@ -1055,7 +1055,7 @@ report_ret_wo_gosub:
 
 ;;
 ; <code>WAIT</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#WAIT" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#WAIT" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_wait:
 	call flush_kb;						// signal no key
@@ -1099,7 +1099,7 @@ break_key:
 ;	// FIXME: extend DEF functionality
 ;;
 ; <code>DEF</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#DEF" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#DEF" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_def:
 	call syntax_z;						// checking syntax?
@@ -1175,7 +1175,7 @@ unstack_z:
 
 ;;
 ; <code>PRINT</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#PRINT" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#PRINT" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_print:
 	ld a, 2;							// channel S
@@ -1335,7 +1335,7 @@ str_alter_1:
 
 ;;
 ; <code>INPUT</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#INPUT" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#INPUT" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_input:
 	call syntax_z;						// checking syntax?
@@ -1525,7 +1525,7 @@ in_stop:
 
 ;;
 ; <code>STOP</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#STOP" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#STOP" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_stop:
 	jp report_break;					// clear keyboard buffer and report break
@@ -1570,7 +1570,7 @@ stk_to_a:
 
 ;;
 ; <code>RENUM</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RENUM" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#RENUM" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_renum:
 	ld hl, (stkend);					// value on stack end to HL
@@ -1943,7 +1943,7 @@ lv2:
 
 ;;
 ; <code>KEY</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#KEY" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#KEY" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_key:
 	rst get_char;						// get first character

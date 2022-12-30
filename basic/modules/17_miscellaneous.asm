@@ -21,7 +21,7 @@
 
 ;;
 ; <code>CALL</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CODE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#CODE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_call:
 	call syntax_z;						// checking syntax?
@@ -50,7 +50,7 @@ call_1:
 ;	// entered with PEN and PAPER on calculator stack
 ;;
 ; <code>COLOR</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#COLOR" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#COLOR" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_color:
 	call fp_to_a;						// background color to A
@@ -120,7 +120,7 @@ col_lookup:
 
 ;;
 ; <code>DELETE</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#DELETE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#DELETE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_delete:
 	call get_line;						// get a valid line number
@@ -194,7 +194,7 @@ get_line:
 
 ;;
 ; <code>EDIT</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#EDIT" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#EDIT" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_edit:
 	ld hl, (prog);						// prog contains pointer to program
@@ -244,7 +244,7 @@ edit_1:
 
 ;;
 ; <code>ERROR</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#ERROR" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#ERROR" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_error:
 	call find_int1;						// get 8-bit integer
@@ -254,7 +254,7 @@ c_error:
 ;	// LOCATE command <row>,<column> (counts from 1)
 ;;
 ; <code>LOCATE</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LOCATE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#LOCATE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_locate:
 	fwait;								// enter calculator
@@ -313,7 +313,7 @@ loc_err:
 
 ;;
 ; <code>PALETTE</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#PALETTE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#PALETTE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_palette:
 	call two_param;						// get parameters
@@ -386,7 +386,7 @@ set_pal:
 ;	// trace
 ;;
 ; <code>TRACE</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#TRACE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#TRACE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_trace:
 	rst get_char;						// get first character
@@ -411,7 +411,7 @@ trace_off:
 
 ;;
 ; <code>ON</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#ON" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#ON" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_on:
 	rst get_char;						// get first character
@@ -510,7 +510,7 @@ onerr_test_1:
 
 ;;
 ; <code>SCREEN</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#SCREEN" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#SCREEN" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_screen:
 	call test_0_or_1;					// get variable
@@ -551,7 +551,7 @@ msg_loop:
 
 ;;
 ; <code>WHILE</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#WHILE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#WHILE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_while:
 	fwait;								// enter calculator
@@ -638,7 +638,7 @@ report_missing_wend:
 
 ;;
 ; <code>WEND</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#WEND" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#WEND" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_wend:
 	pop bc;								// stmt-ret address to BC

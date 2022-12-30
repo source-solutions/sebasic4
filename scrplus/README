@@ -8,7 +8,7 @@ https://github.com/avian2/scrplus/
 
 And further modifications as described here:
 
-https://github.com/cheveron/sebasic4/wiki/Developer-guide#Encode-SCR-images
+https://github.com/source-solutions/sebasic4/wiki/Developer-guide#Encode-SCR-images
 
 Note: The output format for Timex images is MLT. The attributes must be converted to SCR order to display the image.
 

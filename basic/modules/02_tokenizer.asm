@@ -50,7 +50,7 @@ inc_hl_make_1:
 
 ;;
 ; tokenizer
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#LOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 tokenizer:
 	res 7, (iy + _flags);				// force edit mode

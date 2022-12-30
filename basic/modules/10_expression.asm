@@ -1328,7 +1328,7 @@ stk_fetch:
 
 ;;
 ; <code>LET</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LET" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#LET" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_let:
 	ld hl, (dest);						// current address of dest
@@ -1626,7 +1626,7 @@ lstrng:
 
 ;;
 ; <code>DIM</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#DIM" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#DIM" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
 c_dim:
 	call look_vars;						// search variables

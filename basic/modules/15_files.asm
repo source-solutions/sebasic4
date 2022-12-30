@@ -415,7 +415,7 @@ report_file_not_found:
 
 ;;
 ; <code>BLOAD</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#BLOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#BLOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
 ; @throws File not found; Path not found.
 ;;
 c_bload:
@@ -432,7 +432,7 @@ c_bload:
 
 ;;
 ; <code>BSAVE</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#BSAVE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#BSAVE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ; @throws File not found; Path not found.
 ;;
 c_bsave:
@@ -449,7 +449,7 @@ c_bsave:
 
 ;;
 ; <code>CHDIR</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#CHDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#CHDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
 ; @throws Path not found.
 ;;
 c_chdir:
@@ -471,7 +471,7 @@ report_path_not_found:
 
 ;;
 ; <code>COPY</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#COPY" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#COPY" target="_blank" rel="noopener noreferrer">Language reference</a>
 ; @throws File not found; Path not found.
 ;;
 c_copy:
@@ -535,7 +535,7 @@ write_chunk:
 
 ;;
 ; <code>FILES</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#FILES" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#FILES" target="_blank" rel="noopener noreferrer">Language reference</a>
 ; @throws File not found; Path not found.
 ;;
 c_files:
@@ -732,7 +732,7 @@ no_:
 
 ;;
 ; <code>KILL</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#KILL" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#KILL" target="_blank" rel="noopener noreferrer">Language reference</a>
 ; @throws File not found; Path not found.
 ;;
 c_kill:
@@ -743,7 +743,7 @@ c_kill:
 
 ;;
 ; <code>LOAD</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#LOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#LOAD" target="_blank" rel="noopener noreferrer">Language reference</a>
 ; @throws File not found; Path not found.
 ;;
 c_load:
@@ -902,7 +902,7 @@ f_getc_err:
 
 ;;
 ; <code>MERGE</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#MERGE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#MERGE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ; @throws File not found; Path not found.
 ;;
 c_merge:
@@ -912,7 +912,7 @@ c_merge:
 
 ;;
 ; <code>MKDIR</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#MKDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#MKDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
 ; @throws Path not found.
 ;;
 c_mkdir:
@@ -923,7 +923,7 @@ c_mkdir:
 
 ;;
 ; <code>NAME</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#NAME" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#NAME" target="_blank" rel="noopener noreferrer">Language reference</a>
 ; @throws File not found; Path not found.
 ;;
 c_name:
@@ -935,7 +935,7 @@ c_name:
 
 ;;
 ; <code>OLD</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#OLD" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#OLD" target="_blank" rel="noopener noreferrer">Language reference</a>
 ; @throws File not found; Path not found.
 ;;
 c_old:
@@ -969,7 +969,7 @@ f_save_old:
 
 ;;
 ; <code>RMDIR</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RMDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#RMDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
 ; @throws Path not found.
 ;;
 c_rmdir:
@@ -980,7 +980,7 @@ c_rmdir:
 
 ;;
 ; <code>RUN</code> command with <i>string</i> parameter
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#RUN" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#RUN" target="_blank" rel="noopener noreferrer">Language reference</a>
 ; @throws File not found; Path not found.
 ;;
 run_app:
@@ -1065,7 +1065,7 @@ app_not_found:
 
 ;;
 ; <code>SAVE</code> command
-; @see <a href="https://github.com/cheveron/sebasic4/wiki/Language-reference#SAVE" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#SAVE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ; @throws File not found; Path not found.
 ;;
 c_save:
