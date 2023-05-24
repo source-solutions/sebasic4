@@ -10,6 +10,6 @@ Localization is carried out in partnership with [Translation Commons](https://tr
 
 <img src="images/TC-logo.png" style="width:200px"/> <img src="images/weblate_logo.png" style="height:100px"/> 
 
-Copyright © 1981-2022 Source Solutions, Inc.
+Copyright © 1981-2023 Source Solutions, Inc.
 
 <img src="images/ssi.png"/>
