@@ -8,7 +8,7 @@ Towards this end, certain behaviors and practices won't be tolerated.
 * Be respectful.
 * No solicitation.
 * We're here to help:
-  - Andrew Owen: @ZedexDragon
+  - Andrew Owen: @AOwenDev
 
 * Abusive behavior is never tolerated.
 * Data published to the channel is hosted at the discretion of the administrators and may be removed.
