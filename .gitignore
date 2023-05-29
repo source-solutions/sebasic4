@@ -37,7 +37,10 @@ symbols.txt
 /chloehd/SYSTEM/FONTS/RISC-OS.CP
 
 # exclyde generated keymaps
-/chloehd/SYSTEM/KEYBOARD.S
+/chloehd/SYSTEM/KEYBOARD.S/*.KB
+
+# exclude compiled languages
+/chloehd/SYSTEM/LANGUAGE.S/*.LN
 
 # exclude optional programs
 /chloehd/PROGRAMS/2019
