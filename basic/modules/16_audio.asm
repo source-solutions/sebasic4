@@ -145,8 +145,8 @@
 ;	// channel entries 38 to 54 are reserved
 
 ;;
-; <code>CHDIR</code> command
-; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#CHDIR" target="_blank" rel="noopener noreferrer">Language reference</a>
+; <code>PLAY</code> command
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#PLAY" target="_blank" rel="noopener noreferrer">Language reference</a>
 ; @throws Syntax error.
 ;;
 c_play:
