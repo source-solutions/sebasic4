@@ -57,45 +57,86 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DL><DT><A HREF="01_restarts-asm.html#bc_1_space"><B>bc_1_space</B></A> - function in file <A HREF="01_restarts-asm.html">01_restarts.asm</A>
 <DD>
  make one space
+<DT><A HREF="04_vectors-asm.html#beeper"><B>beeper</B></A> - function in file <A HREF="04_vectors-asm.html">04_vectors.asm</A>
+<DD>
+<DT><A HREF="04_vectors-asm.html#bell"><B>bell</B></A> - function in file <A HREF="04_vectors-asm.html">04_vectors.asm</A>
+<DD>
+ play bell
 <DT><A HREF="10_expression-asm.html#bin_digit"><B>bin_digit</B></A> - function in file <A HREF="10_expression-asm.html">10_expression.asm</A>
 <DD>
  binary digit
-<DT><A HREF="16_audio-asm.html#beeper"><B>beeper</B></A> - function in file <A HREF="16_audio-asm.html">16_audio.asm</A>
-<DD>
- 1-bit speaker
-<DT><A HREF="16_audio-asm.html#bell"><B>bell</B></A> - function in file <A HREF="16_audio-asm.html">16_audio.asm</A>
-<DD>
- play bell
 </DL><HR>
 <A NAME="C__" ID="C__"><!-- --></A><H2><B>C</B></H2>
-<DL><DT><A HREF="01_restarts-asm.html#ch_add_plus_1"><B>ch_add_plus_1</B></A> - function in file <A HREF="01_restarts-asm.html">01_restarts.asm</A>
+<DL><DT><A HREF="01_restarts-asm.html#c_error"><B>c_error</B></A> - function in file <A HREF="01_restarts-asm.html">01_restarts.asm</A>
+<DD>
+ <code>ERROR</code> command
+ 
+<DT><A HREF="01_restarts-asm.html#ch_add_plus_1"><B>ch_add_plus_1</B></A> - function in file <A HREF="01_restarts-asm.html">01_restarts.asm</A>
 <DD>
  increment CH-ADD
-<DT><A HREF="06_screen_80-asm.html#c_cls"><B>c_cls</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
+<DT><A HREF="04_vectors-asm.html#c_sound"><B>c_sound</B></A> - function in file <A HREF="04_vectors-asm.html">04_vectors.asm</A>
+<DD>
+ <code>SOUND</code> command
+ 
+<DT><A HREF="06_screen_0-asm.html#c_circle"><B>c_circle</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
+<DD>	// stubs for line drawning commands (not supported in text mode)
+c_arc:
+	bit 1, (iy + _flags2);				// test for screen 1 (user defined video mode)
+	jp nz, v_s1_arc;					// jump if so
+	jr no_draw;							// immediate jump
+<DT><A HREF="06_screen_0-asm.html#c_cls"><B>c_cls</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  <code>CLS</code> command
  
-<DT><A HREF="06_screen_80-asm.html#cl_addr"><B>cl_addr</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
+<DT><A HREF="06_screen_0-asm.html#c_color"><B>c_color</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
+<DD>
+ <code>COLOR</code> command
+ 
+<DT><A HREF="06_screen_0-asm.html#c_locate"><B>c_locate</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
+<DD>
+ <code>LOCATE</code> command
+ 
+<DT><A HREF="06_screen_0-asm.html#c_palette"><B>c_palette</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
+<DD>
+ <code>PALETTE</code> command
+ 
+<DT><A HREF="06_screen_0-asm.html#c_screen"><B>c_screen</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
+<DD>
+ <code>SCREEN</code> command
+ 
+<DT><A HREF="06_screen_0-asm.html#cl_addr"><B>cl_addr</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  clear address
-<DT><A HREF="06_screen_80-asm.html#cl_all"><B>cl_all</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
+<DT><A HREF="06_screen_0-asm.html#cl_all"><B>cl_all</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  clear whole display area
-<DT><A HREF="06_screen_80-asm.html#cl_line"><B>cl_line</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
+<DT><A HREF="06_screen_0-asm.html#cl_line"><B>cl_line</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  clear lines
-<DT><A HREF="06_screen_80-asm.html#cl_sc_all"><B>cl_sc_all</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
+<DT><A HREF="06_screen_0-asm.html#cl_sc_all"><B>cl_sc_all</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  scrolling
-<DT><A HREF="06_screen_80-asm.html#cl_set"><B>cl_set</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
+<DT><A HREF="06_screen_0-asm.html#cl_set"><B>cl_set</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  clear set
+<DT><A HREF="07_editor-asm.html#c_call"><B>c_call</B></A> - function in file <A HREF="07_editor-asm.html">07_editor.asm</A>
+<DD>
+ <code>CALL</code> command
+ 
+<DT><A HREF="07_editor-asm.html#c_edit"><B>c_edit</B></A> - function in file <A HREF="07_editor-asm.html">07_editor.asm</A>
+<DD>
+ <code>EDIT</code> command
+ 
 <DT><A HREF="07_editor-asm.html#clear_sp"><B>clear_sp</B></A> - function in file <A HREF="07_editor-asm.html">07_editor.asm</A>
 <DD>
  clear SP
 <DT><A HREF="08_executive-asm.html#c_close"><B>c_close</B></A> - function in file <A HREF="08_executive-asm.html">08_executive.asm</A>
 <DD>
  <code>CLOSE</code> command
+ 
+<DT><A HREF="08_executive-asm.html#c_delete"><B>c_delete</B></A> - function in file <A HREF="08_executive-asm.html">08_executive.asm</A>
+<DD>
+ <code>DELETE</code> command
  
 <DT><A HREF="08_executive-asm.html#c_list"><B>c_list</B></A> - function in file <A HREF="08_executive-asm.html">08_executive.asm</A>
 <DD>
@@ -108,6 +149,14 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DT><A HREF="08_executive-asm.html#c_open"><B>c_open</B></A> - function in file <A HREF="08_executive-asm.html">08_executive.asm</A>
 <DD>
  <code>OPEN</code> command
+ 
+<DT><A HREF="08_executive-asm.html#c_trace"><B>c_trace</B></A> - function in file <A HREF="08_executive-asm.html">08_executive.asm</A>
+<DD>
+ <code>TRACE</code> command
+ 
+<DT><A HREF="08_executive-asm.html#c_while"><B>c_while</B></A> - function in file <A HREF="08_executive-asm.html">08_executive.asm</A>
+<DD>
+ <code>WHILE</code> command
  
 <DT><A HREF="08_executive-asm.html#chan_flag"><B>chan_flag</B></A> - function in file <A HREF="08_executive-asm.html">08_executive.asm</A>
 <DD>
@@ -226,6 +275,10 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DD>
  <code>WAIT</code> command
  
+<DT><A HREF="09_command-asm.html#c_wend"><B>c_wend</B></A> - function in file <A HREF="09_command-asm.html">09_command.asm</A>
+<DD>
+ <code>WEND</code> command
+ 
 <DT><A HREF="09_command-asm.html#check_end"><B>check_end</B></A> - function in file <A HREF="09_command-asm.html">09_command.asm</A>
 <DD>
  check end
@@ -272,6 +325,10 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DT><A HREF="10_expression-asm.html#c_let"><B>c_let</B></A> - function in file <A HREF="10_expression-asm.html">10_expression.asm</A>
 <DD>
  <code>LET</code> command
+ 
+<DT><A HREF="10_expression-asm.html#c_on"><B>c_on</B></A> - function in file <A HREF="10_expression-asm.html">10_expression.asm</A>
+<DD>
+ <code>ON</code> command
  
 <DT><A HREF="11_arithmentic-asm.html#ca_10a_plus_c"><B>ca_10a_plus_c</B></A> - function in file <A HREF="11_arithmentic-asm.html">11_arithmentic.asm</A>
 <DD>
@@ -344,57 +401,10 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
  <code>SAVE</code> command
  
  
-<DT><A HREF="16_audio-asm.html#c_sound"><B>c_sound</B></A> - function in file <A HREF="16_audio-asm.html">16_audio.asm</A>
+<DT><A HREF="16_audio-asm.html#c_play"><B>c_play</B></A> - function in file <A HREF="16_audio-asm.html">16_audio.asm</A>
 <DD>
- <code>SOUND</code> command
+ <code>CHDIR</code> command
  
-<DT><A HREF="17_miscellaneous-asm.html#c_call"><B>c_call</B></A> - function in file <A HREF="17_miscellaneous-asm.html">17_miscellaneous.asm</A>
-<DD>
- <code>CALL</code> command
- 
-<DT><A HREF="17_miscellaneous-asm.html#c_color"><B>c_color</B></A> - function in file <A HREF="17_miscellaneous-asm.html">17_miscellaneous.asm</A>
-<DD>
- <code>COLOR</code> command
- 
-<DT><A HREF="17_miscellaneous-asm.html#c_delete"><B>c_delete</B></A> - function in file <A HREF="17_miscellaneous-asm.html">17_miscellaneous.asm</A>
-<DD>
- <code>DELETE</code> command
- 
-<DT><A HREF="17_miscellaneous-asm.html#c_edit"><B>c_edit</B></A> - function in file <A HREF="17_miscellaneous-asm.html">17_miscellaneous.asm</A>
-<DD>
- <code>EDIT</code> command
- 
-<DT><A HREF="17_miscellaneous-asm.html#c_error"><B>c_error</B></A> - function in file <A HREF="17_miscellaneous-asm.html">17_miscellaneous.asm</A>
-<DD>
- <code>ERROR</code> command
- 
-<DT><A HREF="17_miscellaneous-asm.html#c_locate"><B>c_locate</B></A> - function in file <A HREF="17_miscellaneous-asm.html">17_miscellaneous.asm</A>
-<DD>
- <code>LOCATE</code> command
- 
-<DT><A HREF="17_miscellaneous-asm.html#c_on"><B>c_on</B></A> - function in file <A HREF="17_miscellaneous-asm.html">17_miscellaneous.asm</A>
-<DD>
- <code>ON</code> command
- 
-<DT><A HREF="17_miscellaneous-asm.html#c_palette"><B>c_palette</B></A> - function in file <A HREF="17_miscellaneous-asm.html">17_miscellaneous.asm</A>
-<DD>
- <code>PALETTE</code> command
- 
-<DT><A HREF="17_miscellaneous-asm.html#c_screen"><B>c_screen</B></A> - function in file <A HREF="17_miscellaneous-asm.html">17_miscellaneous.asm</A>
-<DD>
- <code>SCREEN</code> command
- 
-<DT><A HREF="17_miscellaneous-asm.html#c_trace"><B>c_trace</B></A> - function in file <A HREF="17_miscellaneous-asm.html">17_miscellaneous.asm</A>
-<DD>
- <code>TRACE</code> command
- 
-<DT><A HREF="17_miscellaneous-asm.html#c_wend"><B>c_wend</B></A> - function in file <A HREF="17_miscellaneous-asm.html">17_miscellaneous.asm</A>
-<DD>
- <code>WEND</code> command
- 
-<DT><A HREF="17_miscellaneous-asm.html#c_while"><B>c_while</B></A> - function in file <A HREF="17_miscellaneous-asm.html">17_miscellaneous.asm</A>
-<DD>
- <code>WHILE</code> command
  
 </DL><HR>
 <A NAME="D__" ID="D__"><!-- --></A><H2><B>D</B></H2>
@@ -1027,9 +1037,6 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DT><A HREF="12_calculator-asm.html#move_fp"><B>move_fp</B></A> - function in file <A HREF="12_calculator-asm.html">12_calculator.asm</A>
 <DD>
  move a floating point number
-<DT><A HREF="16_audio-asm.html#mute_psg"><B>mute_psg</B></A> - function in file <A HREF="16_audio-asm.html">16_audio.asm</A>
-<DD>
- mute PSG
 </DL><HR>
 <A NAME="N__" ID="N__"><!-- --></A><H2><B>N</B></H2>
 <DL><DT><A HREF="basic-inc.html#ne"><B>ne</B></A> - variable in file <A HREF="basic-inc.html">basic.inc</A>
@@ -1075,59 +1082,59 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
  octal digit
 </DL><HR>
 <A NAME="P__" ID="P__"><!-- --></A><H2><B>P</B></H2>
-<DL><DT><A HREF="06_screen_80-asm.html#po_able"><B>po_able</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
+<DL><DT><A HREF="06_screen_0-asm.html#po_able"><B>po_able</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  printable character codes
-<DT><A HREF="06_screen_80-asm.html#po_any"><B>po_any</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
+<DT><A HREF="06_screen_0-asm.html#po_any"><B>po_any</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  print any character
-<DT><A HREF="06_screen_80-asm.html#po_asciiz"><B>po_asciiz</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
+<DT><A HREF="06_screen_0-asm.html#po_asciiz"><B>po_asciiz</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  message printing
-<DT><A HREF="06_screen_80-asm.html#po_asciiz_0"><B>po_asciiz_0</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
+<DT><A HREF="06_screen_0-asm.html#po_asciiz_0"><B>po_asciiz_0</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  print first message
-<DT><A HREF="06_screen_80-asm.html#po_cr"><B>po_cr</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
+<DT><A HREF="06_screen_0-asm.html#po_cr"><B>po_cr</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  print carriage return
 
-<DT><A HREF="06_screen_80-asm.html#po_down"><B>po_down</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
+<DT><A HREF="06_screen_0-asm.html#po_down"><B>po_down</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  print cursor down
-<DT><A HREF="06_screen_80-asm.html#po_fetch"><B>po_fetch</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
+<DT><A HREF="06_screen_0-asm.html#po_fetch"><B>po_fetch</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  position fetch
-<DT><A HREF="06_screen_80-asm.html#po_left"><B>po_left</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
+<DT><A HREF="06_screen_0-asm.html#po_left"><B>po_left</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  print cursor left
-<DT><A HREF="06_screen_80-asm.html#po_right"><B>po_right</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
+<DT><A HREF="06_screen_0-asm.html#po_right"><B>po_right</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  print cursor right
-<DT><A HREF="06_screen_80-asm.html#po_save"><B>po_save</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
+<DT><A HREF="06_screen_0-asm.html#po_save"><B>po_save</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  print save
-<DT><A HREF="06_screen_80-asm.html#po_scr"><B>po_scr</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
+<DT><A HREF="06_screen_0-asm.html#po_scr"><B>po_scr</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  test for scroll
-<DT><A HREF="06_screen_80-asm.html#po_search"><B>po_search</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
+<DT><A HREF="06_screen_0-asm.html#po_search"><B>po_search</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  table search
-<DT><A HREF="06_screen_80-asm.html#po_store"><B>po_store</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
+<DT><A HREF="06_screen_0-asm.html#po_store"><B>po_store</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  position store
-<DT><A HREF="06_screen_80-asm.html#po_tab"><B>po_tab</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
+<DT><A HREF="06_screen_0-asm.html#po_tab"><B>po_tab</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  print tab
-<DT><A HREF="06_screen_80-asm.html#po_up"><B>po_up</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
+<DT><A HREF="06_screen_0-asm.html#po_up"><B>po_up</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  print cursor up
-<DT><A HREF="06_screen_80-asm.html#po_vt"><B>po_vt</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
+<DT><A HREF="06_screen_0-asm.html#po_vt"><B>po_vt</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  print home
-<DT><A HREF="06_screen_80-asm.html#pr_all"><B>pr_all</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
+<DT><A HREF="06_screen_0-asm.html#pr_all"><B>pr_all</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  print all characters
-<DT><A HREF="06_screen_80-asm.html#print_out"><B>print_out</B></A> - function in file <A HREF="06_screen_80-asm.html">06_screen_80.asm</A>
+<DT><A HREF="06_screen_0-asm.html#print_out"><B>print_out</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  print out
 <DT><A HREF="08_executive-asm.html#pointers"><B>pointers</B></A> - function in file <A HREF="08_executive-asm.html">08_executive.asm</A>
@@ -1404,6 +1411,71 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DT><A HREF="12_calculator-asm.html#str_fetch"><B>str_fetch</B></A> - function in file <A HREF="12_calculator-asm.html">12_calculator.asm</A>
 <DD>
  Like stk_fetch, but fetches only BC and DE and leaves STKEND alone.
+<DT><A HREF="14_screen_1-asm.html#s1_circle"><B>s1_circle</B></A> - function in file <A HREF="14_screen_1-asm.html">14_screen_1.asm</A>
+<DD>
+ <code>CIRCLE</code> command
+ 
+<DT><A HREF="14_screen_1-asm.html#s1_cl_all"><B>s1_cl_all</B></A> - function in file <A HREF="14_screen_1-asm.html">14_screen_1.asm</A>
+<DD>
+ clear whole display area
+<DT><A HREF="14_screen_1-asm.html#s1_cl_line"><B>s1_cl_line</B></A> - function in file <A HREF="14_screen_1-asm.html">14_screen_1.asm</A>
+<DD>
+ clear lines
+<DT><A HREF="14_screen_1-asm.html#s1_cl_sc_all"><B>s1_cl_sc_all</B></A> - function in file <A HREF="14_screen_1-asm.html">14_screen_1.asm</A>
+<DD>
+ scrolling
+<DT><A HREF="14_screen_1-asm.html#s1_cl_set"><B>s1_cl_set</B></A> - function in file <A HREF="14_screen_1-asm.html">14_screen_1.asm</A>
+<DD>
+ clear set
+<DT><A HREF="14_screen_1-asm.html#s1_cls"><B>s1_cls</B></A> - function in file <A HREF="14_screen_1-asm.html">14_screen_1.asm</A>
+<DD>
+<DT><A HREF="14_screen_1-asm.html#s1_color"><B>s1_color</B></A> - function in file <A HREF="14_screen_1-asm.html">14_screen_1.asm</A>
+<DD>
+ <code>COLOR</code> command
+ 
+<DT><A HREF="14_screen_1-asm.html#s1_draw"><B>s1_draw</B></A> - function in file <A HREF="14_screen_1-asm.html">14_screen_1.asm</A>
+<DD>
+ <code>DRAW</code> command
+ 
+<DT><A HREF="14_screen_1-asm.html#s1_plot"><B>s1_plot</B></A> - function in file <A HREF="14_screen_1-asm.html">14_screen_1.asm</A>
+<DD>
+ <code>PLOT</code> command
+ 
+<DT><A HREF="14_screen_1-asm.html#s1_po_able"><B>s1_po_able</B></A> - function in file <A HREF="14_screen_1-asm.html">14_screen_1.asm</A>
+<DD>
+ printable character codes
+<DT><A HREF="14_screen_1-asm.html#s1_po_any"><B>s1_po_any</B></A> - function in file <A HREF="14_screen_1-asm.html">14_screen_1.asm</A>
+<DD>
+ print any character
+<DT><A HREF="14_screen_1-asm.html#s1_po_cr"><B>s1_po_cr</B></A> - function in file <A HREF="14_screen_1-asm.html">14_screen_1.asm</A>
+<DD>
+ print carriage return
+<DT><A HREF="14_screen_1-asm.html#s1_po_down"><B>s1_po_down</B></A> - function in file <A HREF="14_screen_1-asm.html">14_screen_1.asm</A>
+<DD>
+ print cursor down
+<DT><A HREF="14_screen_1-asm.html#s1_po_left"><B>s1_po_left</B></A> - function in file <A HREF="14_screen_1-asm.html">14_screen_1.asm</A>
+<DD>
+ print cursor left
+<DT><A HREF="14_screen_1-asm.html#s1_po_right"><B>s1_po_right</B></A> - function in file <A HREF="14_screen_1-asm.html">14_screen_1.asm</A>
+<DD>
+ print cursor right
+<DT><A HREF="14_screen_1-asm.html#s1_po_scr"><B>s1_po_scr</B></A> - function in file <A HREF="14_screen_1-asm.html">14_screen_1.asm</A>
+<DD>
+<DT><A HREF="14_screen_1-asm.html#s1_po_tab"><B>s1_po_tab</B></A> - function in file <A HREF="14_screen_1-asm.html">14_screen_1.asm</A>
+<DD>
+ print tab
+<DT><A HREF="14_screen_1-asm.html#s1_po_up"><B>s1_po_up</B></A> - function in file <A HREF="14_screen_1-asm.html">14_screen_1.asm</A>
+<DD>
+ print cursor up
+<DT><A HREF="14_screen_1-asm.html#s1_po_vt"><B>s1_po_vt</B></A> - function in file <A HREF="14_screen_1-asm.html">14_screen_1.asm</A>
+<DD>
+ print home
+<DT><A HREF="14_screen_1-asm.html#s1_pr_all"><B>s1_pr_all</B></A> - function in file <A HREF="14_screen_1-asm.html">14_screen_1.asm</A>
+<DD>
+ print all characters
+<DT><A HREF="14_screen_1-asm.html#s1_print_out"><B>s1_print_out</B></A> - function in file <A HREF="14_screen_1-asm.html">14_screen_1.asm</A>
+<DD>
+ print out
 </DL><HR>
 <A NAME="T__" ID="T__"><!-- --></A><H2><B>T</B></H2>
 <DL><DT><A HREF="02_tokenizer-asm.html#tokenizer"><B>tokenizer</B></A> - function in file <A HREF="02_tokenizer-asm.html">02_tokenizer.asm</A>
