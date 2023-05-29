@@ -55,4 +55,4 @@ symbols.txt
 /chloehd/PROGRAMS/VDPTEST
 
 # exclude temporary files
-/chloehd/SYSTEM/TEMPORAR.Y/*
+#/chloehd/SYSTEM/TEMPORAR.Y/*
