@@ -1,2 +1,0 @@
-prg:
-	pasmo LASTV8.ASM ../PRG/LASTV8.PRG

@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia - A classic BASIC interpreter for the Z80 architecture.
-;	// Copyright (c) 1999-2022 Source Solutions, Inc.
+;	// Copyright (c) 1999-2023 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -638,6 +638,7 @@ ENDM
 	mouse_y			equ $ffdf
 	ay_reg			equ	$c0f5
 	paging			equ	$7ffd
+	ay_128reg		equ $fffd
 	ay_128dat		equ	$bffd
 
 
@@ -688,7 +689,7 @@ ENDM
 
 ;	// system variables
 
-	oldsp		equ $5bba;			// (iy - $80)
+	oldsp		equ $5bba;			// (iy - $80)	old stack pointer
 
 	open_x		equ mstate - 2;		// (iy - $42)	address of custom OPEN routine
 	mstate		equ jstate - 4;		// (iy - $40)	mouse state
@@ -724,138 +725,149 @@ ENDM
 	strms_14	equ	strms + 34;		// (iy - $08)
 	strms_15	equ	strms + 36;		// (iy - $06)
 	seg			equ	strms + 38;		// (iy - $04)	RESERVED (word)
-	rasp		equ	seg + 2;		// (iy - $02)
-	pip			equ	rasp + 1;		// (iy - $01)
+	rasp		equ	seg + 2;		// (iy - $02)	length of error sound in 60ths of a second; normally 60
+	pip			equ	rasp + 1;		// (iy - $01)	length of keyboard click (normally zero)
 	err_nr		equ	pip + 1;		// (iy + $00)	error number
 
-	flags		equ	err_nr + 1;		// (iy + $01)
-;	// 0: Set to suppress a leading space
-;	// 1: RESERVED (set if ZX Printer is in use)
-;	// 2: RESERVED (1='L' mode, 0='K' mode. temporary value)
-;	// 3: RESERVED (1='L' mode, 0='K' mode)
-;	// 4: RESERVED (1=128 BASIC, 0=48 BASIC)
-;	// 5: Reset if macros enabled
-;	// 6: Set if scanning result is numeric
-;	// 7: Reset if checking syntax
+	flags		equ	err_nr + 1;		// (iy + $01)	first flags byte
+	flg_space	equ 0;				// set to suppress a leading space
+;									// 1: RESERVED (set if ZX Printer is in use)
+;									// 2: RESERVED (1='L' mode, 0='K' mode. temporary value)
+;									// 3: RESERVED (1='L' mode, 0='K' mode)
+;									// 4: RESERVED (1=128 BASIC, 0=48 BASIC)
+	flg_macro	equ 5;				// set unless macros enabled
+	flg_num		equ 6;				// set if scanning result is numeric
+	flg_syntax	equ 7;				// set unless checking syntax
 
-	vdu_flag	equ	flags + 1;		// (iy + $02)
-;	// 0: Set if lower screen in use.
-;	// 1: RESERVED
-;	// 2: RESERVED
-;	// 3: Set if edit key has been pressed
-;	// 4: Set if an automatic listing
-;	// 5: Set if lower screen to be cleared
-;	// 6: RESERVED
-;	// 7: RESERVED
+	vdu_flag	equ	flags + 1;		// (iy + $02)	display flags
+	flg_lower	equ 0;				// set if lower screen in use
+;									// 1: RESERVED
+;									// 2: RESERVED
+	flg_edit	equ 3;				// set if editing a line
+	flg_auto	equ 4;				// set if automatic listing required
+	flg_cl_low	equ 5;				// set if lower screen to be cleared
+;									// 6: RESERVED
+;									// 7: RESERVED
 
-	err_sp		equ	vdu_flag + 1;	// (iy + $03)
-	list_sp		equ	err_sp + 2;		// (iy + $05)
-	mode		equ	list_sp + 2;	// (iy + $07)
-	newppc		equ	mode + 1;		// (iy + $08)
-	nsppc		equ	newppc + 2;		// (iy + $0a)
-	ppc			equ	nsppc + 1;		// (iy + $0b)
-	subppc		equ	ppc + 2;		// (iy + $0d)
-	bordcr		equ	subppc + 1;		// (iy + $0e)
-	e_ppc		equ	bordcr + 1;		// (iy + $0f)
-	e_ppc_h		equ	e_ppc + 1;		// (iy + $10)
-	vars		equ	e_ppc + 2;		// (iy + $11)
-	dest		equ	vars + 2;		// (iy + $13)
-	chans		equ	dest + 2;		// (iy + $15)
-	curchl		equ	chans + 2;		// (iy + $17)
-	prog		equ	curchl + 2;		// (iy + $19)
-	nxtlin		equ	prog + 2;		// (iy + $1b)
-	datadd		equ	nxtlin + 2;		// (iy + $1d)
-	e_line		equ	datadd + 2;		// (iy + $1f)
-	k_cur		equ	e_line	+2;		// (iy + $21)
-	ch_add		equ	k_cur + 2;		// (iy + $23)
-	x_ptr		equ	ch_add + 2;		// (iy + $25)
-	worksp		equ	x_ptr + 2;		// (iy + $27)
-	stkbot		equ	worksp + 2;		// (iy + $29)
-	stkend		equ	stkbot + 2;		// (iy + $2b)
-	stkend_h	equ	stkend + 1;		// (iy + $2c)
-	breg		equ	stkend + 2;		// (iy + $2d)
-	mem			equ	breg + 1;		// (iy + $2e)
+	err_sp		equ	vdu_flag + 1;	// (iy + $03)	SP value to use when an error occurs
+	list_sp		equ	err_sp + 2;		// (iy + $05)	SP value to use when an automatic list fills the screen
+	mode		equ	list_sp + 2;	// (iy + $07)	cursor mode; lower, caps, alternate or control
+	newppc		equ	mode + 1;		// (iy + $08)	new line to jump to
+	nsppc		equ	newppc + 2;		// (iy + $0a)	new statement to jump to, or $ff
+	ppc			equ	nsppc + 1;		// (iy + $0b)	current line number during program execution
+	subppc		equ	ppc + 2;		// (iy + $0d)	current statement number
+	bordcr		equ	subppc + 1;		// (iy + $0e)	border color in screen 1
+	e_ppc		equ	bordcr + 1;		// (iy + $0f)	number of line with > cursor
+	e_ppc_h		equ	e_ppc + 1;		// (iy + $10)	
+	vars		equ	e_ppc + 2;		// (iy + $11)	address of variables
+	dest		equ	vars + 2;		// (iy + $13)	used in variable assignments
+	chans		equ	dest + 2;		// (iy + $15)	start of channels area
+	curchl		equ	chans + 2;		// (iy + $17)	start of current channel
+	prog		equ	curchl + 2;		// (iy + $19)	program start (address of line number of first line)
+	nxtlin		equ	prog + 2;		// (iy + $1b)	address of next line in BASIC program
+	datadd		equ	nxtlin + 2;		// (iy + $1d)	data address used by READ command
+	e_line		equ	datadd + 2;		// (iy + $1f)	edit line start
+	k_cur		equ	e_line	+2;		// (iy + $21)	address of cursor in the edit line
+	ch_add		equ	k_cur + 2;		// (iy + $23)	current character address
+	x_ptr		equ	ch_add + 2;		// (iy + $25)	address in the edit line of a syntax error
+	worksp		equ	x_ptr + 2;		// (iy + $27)	workspace start
+	stkbot		equ	worksp + 2;		// (iy + $29)	address of bottom of calculator stack
+	stkend		equ	stkbot + 2;		// (iy + $2b)	end of floating point calculator stack
+	stkend_h	equ	stkend + 1;		// (iy + $2c)	
+	breg		equ	stkend + 2;		// (iy + $2d)	calculator’s B register
+	mem			equ	breg + 1;		// (iy + $2e)	start of calculator’s memory area
 
-	flags2		equ	mem + 2;		// (iy + $30)
-;	// 0: Set if main screen to be cleared
-;	// 1: Set if 40 column mode in use (State of ZX printer buffer)
-;	// 2: Set if a ':' is within quotes
-;	// 3: Set if caps lock on
-;	// 4: Set if 'K' channel is use
-;	// 5: NOT USED
-;	// 6: NOT USED
-;	// 7: Set if trace enabled
+	flags2		equ	mem + 2;		// (iy + $30)	second flag byte
+	flg_main	equ 0;				// set if main screen to be cleared
+	flg_screen	equ 1;				// set if screen 1 in use
+	flg_colon	equ 2;				// set if a ':' is within quotes
+	flg_caps	equ 3;				// set if caps lock on
+	flg_kchan	equ 4;				// set if 'K' channel is use
+;									// 5: NOT USED
+;									// 6: NOT USED
+	flg_trace	equ 7;				// set if trace enabled
 
-	df_sz		equ	flags2 + 1;		// (iy + $31)
-	s_top		equ	df_sz + 1;		// (iy + $32)
-	oldppc		equ	s_top + 2;		// (iy + $34)
-	osppc		equ	oldppc + 2;		// (iy + $36)
+	df_sz		equ	flags2 + 1;		// (iy + $31)	number of lines (including one blank line) in the lower part of the screen
+	s_top		equ	df_sz + 1;		// (iy + $32)	line number of top line in an automatic listing
+	oldppc		equ	s_top + 2;		// (iy + $34)	line number that CONT goes to
+	osppc		equ	oldppc + 2;		// (iy + $36)	tatement number that CONT goes to
 
-	flagx		equ	osppc + 1;		// (iy + $37)
-;	// 0: Set if handling a simple string
-;	// 1: Set if handling a new variable
-;	// 2: NOT USED
-;	// 3: NOT USED
-;	// 4: NOT USED
-;	// 5: Set if in input mode
-;	// 6: NOT USED
-;	// 7: Set if handling INPUT LINE
+	flagx		equ	osppc + 1;		// (iy + $37)	flags for INPUT command and editor
+	flg_str		equ 0;				// set if handling a simple string
+	flg_var		equ 1;				// set if handling a new variable
+;									// 2: NOT USED
+;									// 3: NOT USED
+;									// 4: NOT USED
+	flg_inp		equ 5;				// set if in input mode
+;									// 6: NOT USED
+	flg_line	equ 7;				// set if handling INPUT LINE
 
 	strlen		equ	flagx + 1;		// (iy + $38)	length of string type destination in assignment
 	t_addr		equ	strlen + 2;		// (iy + $3a)	address of next item in syntax table
 	seed		equ	t_addr + 2;		// (iy + $3c)	seed for RND (set by RANDOMIZE)
 	frame		equ	seed + 2;		// (iy + $3e)	cuurent frame (0-49 PAL / 0-59 NTSC)
 	time_t		equ	frame + 1;		// (iy + $3f)	POSIX time (unsigned)
+	coords		equ	time_t + 4;		// (iy + $43)	pixel co-ordinates
 	coord_y		equ	time_t + 4;		// (iy + $43)	y pixel co-ordinate (0-255)
 	coord_x		equ	coord_y + 1;	// (iy + $44)	x pixel co-ordinate (0-65535)
 	nmiadd		equ	coord_x + 2;	// (iy + $46)	address to jump to on NMI
-	echo_e		equ	nmiadd + 2;		// (iy + $48)
-	df_cc		equ	echo_e + 2;		// (iy + $4a)
-	df_ccl		equ	df_cc + 2;		// (iy + $4c)
-	s_posn		equ	df_ccl + 2;		// (iy + $4e)
-	s_posn_h	equ	s_posn + 1;		// (iy + $4f)
-	sposnl		equ	s_posn + 2;		// (iy + $50)
-	sposnl_h	equ	sposnl + 1;		// (iy + $51)
-	scr_ct		equ	sposnl + 2;		// (iy + $52)
-	attr_p		equ	scr_ct + 1;		// (iy + $53)
-	mask_p		equ	attr_p + 1;		// (iy + $54)
-	attr_t		equ	mask_p + 1;		// (iy + $55)
-	mask_t		equ	attr_t + 1;		// (iy + $56)
-	p_flag		equ	mask_t + 1;		// (iy + $57)
-	membot		equ	p_flag + 1;		// (iy + $58)
-	mem_0_1		equ	membot + 1;		// (iy + $59)
-	mem_0_2		equ	membot + 2;		// (iy + $5a)
-	mem_0_3		equ	membot + 3;		// (iy + $5b)
-	mem_0_4		equ	membot + 4;		// (iy + $5c)
-	mem_1		equ	membot + 5;		// (iy + $5d)
-	mem_1_1		equ	membot + 6;		// (iy + $5e)
-	mem_1_2		equ	membot + 7;		// (iy + $5f)
-	mem_1_3		equ	membot + 8;		// (iy + $60)
-	mem_1_4		equ	membot + 9;		// (iy + $61)
-	mem_2		equ	membot + 10;	// (iy + $62)
-	mem_2_1		equ	membot + 11;	// (iy + $63)
-	mem_2_2		equ	membot + 12;	// (iy + $64)
-	mem_2_3		equ	membot + 13;	// (iy + $65)
-	mem_2_4		equ	membot + 14;	// (iy + $66)
-	mem_3		equ	membot + 15;	// (iy + $67)
-	mem_3_1		equ	membot + 15;	// (iy + $68)
-	mem_3_2		equ	membot + 17;	// (iy + $69)
-	mem_3_3		equ	membot + 18;	// (iy + $6a)
-	mem_3_4		equ	membot + 19;	// (iy + $6b)
-	mem_4		equ	membot + 20;	// (iy + $6c)
-	mem_4_1		equ	membot + 21;	// (iy + $6d)
-	mem_4_2		equ	membot + 22;	// (iy + $6e)
-	mem_4_3		equ	membot + 23;	// (iy + $6f)
-	mem_4_4		equ	membot + 24;	// (iy + $70)
-	mem_5		equ	membot + 25;	// (iy + $71)
-	mem_5_1		equ	membot + 26;	// (iy + $72)
-	mem_5_2		equ	membot + 27;	// (iy + $73)
-	mem_5_3		equ	membot + 28;	// (iy + $74)
-	mem_5_4		equ	membot + 29;	// (iy + $75)
-	dosvar		equ	membot + 30;	// (iy + $76)
-	ramtop		equ	dosvar + 2;		// (iy + $78)
-	p_ramt		equ	ramtop + 2;		// (iy + $7a)
-	channels	equ	p_ramt + 2;		// (iy + $7c)
+	echo_e		equ	nmiadd + 2;		// (iy + $48)	column number and line number (in lower half) of end of input buffer
+	df_cc		equ	echo_e + 2;		// (iy + $4a)	address in display file of upper window PRINT position
+	df_ccl		equ	df_cc + 2;		// (iy + $4c)	address in display file of lower window PRINT position
+	s_posn		equ	df_ccl + 2;		// (iy + $4e)	upper window position as column/row
+	s_posn_h	equ	s_posn + 1;		// (iy + $4f)	
+	sposnl		equ	s_posn + 2;		// (iy + $50)	lower window position as column/row
+	sposnl_h	equ	sposnl + 1;		// (iy + $51)	
+	scr_ct		equ	sposnl + 2;		// (iy + $52)	counter used to give “Scroll?” prompt
+	attr_p		equ	scr_ct + 1;		// (iy + $53)	attributes (foregorund and background in screen 0 or attribute byte in screen 1)
+	mask_p		equ	attr_p + 1;		// (iy + $54)	NOT USED
+	attr_t		equ	mask_p + 1;		// (iy + $55)	NOT USED
+	mask_t		equ	attr_t + 1;		// (iy + $56)	NOT USED
+
+	p_flag		equ	mask_t + 1;		// (iy + $57)	print flag
+	flg_over	equ 0;				// set if OVER in use
+;									// 1: NOT USED
+	flg_inv		equ 2;				// set if INVERSE in use
+;									// 3: NOT USED
+;									// 4: NOT USED
+;									// 5: NOT USED
+;									// 6: NOT USED
+;									// 7: NOT USED
+
+	membot		equ	p_flag + 1;		// (iy + $58)	calculator’s memory area
+	mem_0_1		equ	membot + 1;		// (iy + $59)	
+	mem_0_2		equ	membot + 2;		// (iy + $5a)	
+	mem_0_3		equ	membot + 3;		// (iy + $5b)	
+	mem_0_4		equ	membot + 4;		// (iy + $5c)	
+	mem_1		equ	membot + 5;		// (iy + $5d)	
+	mem_1_1		equ	membot + 6;		// (iy + $5e)	
+	mem_1_2		equ	membot + 7;		// (iy + $5f)	
+	mem_1_3		equ	membot + 8;		// (iy + $60)	
+	mem_1_4		equ	membot + 9;		// (iy + $61)	
+	mem_2		equ	membot + 10;	// (iy + $62)	
+	mem_2_1		equ	membot + 11;	// (iy + $63)	
+	mem_2_2		equ	membot + 12;	// (iy + $64)	
+	mem_2_3		equ	membot + 13;	// (iy + $65)	
+	mem_2_4		equ	membot + 14;	// (iy + $66)	
+	mem_3		equ	membot + 15;	// (iy + $67)	
+	mem_3_1		equ	membot + 15;	// (iy + $68)	
+	mem_3_2		equ	membot + 17;	// (iy + $69)	
+	mem_3_3		equ	membot + 18;	// (iy + $6a)	
+	mem_3_4		equ	membot + 19;	// (iy + $6b)	
+	mem_4		equ	membot + 20;	// (iy + $6c)	
+	mem_4_1		equ	membot + 21;	// (iy + $6d)	
+	mem_4_2		equ	membot + 22;	// (iy + $6e)	
+	mem_4_3		equ	membot + 23;	// (iy + $6f)	
+	mem_4_4		equ	membot + 24;	// (iy + $70)	
+	mem_5		equ	membot + 25;	// (iy + $71)	
+	mem_5_1		equ	membot + 26;	// (iy + $72)	
+	mem_5_2		equ	membot + 27;	// (iy + $73)	
+	mem_5_3		equ	membot + 28;	// (iy + $74)	
+	mem_5_4		equ	membot + 29;	// (iy + $75)	
+	dosvar		equ	membot + 30;	// (iy + $76)	used by the operating system
+	ramtop		equ	dosvar + 2;		// (iy + $78)	address of last byte of BASIC system area
+	p_ramt		equ	ramtop + 2;		// (iy + $7a)	address of last byte of physical RAM
+	channels	equ	p_ramt + 2;		// (iy + $7c)	start of channels data
 
 
 ;	// system variable IY offsets

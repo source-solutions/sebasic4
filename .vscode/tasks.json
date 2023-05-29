@@ -7,7 +7,7 @@
 			"label": "Build",
 			"type": "shell",
 			"linux": {
-				"command": "./scripts/build-deb.sh",
+				"command": "./scripts/build-linux.sh",
 			},
 			"osx": {
 				"command": "./scripts/build-mac.sh",
@@ -28,10 +28,10 @@
 			"label": "Run",
 			"type": "shell",
 			"linux": {
-				"command": "./scripts/run-deb.sh",
+				"command": "./scripts/run-linux.sh",
 			},
 			"osx": {
-				"command": "open ChloeVM.app",
+				"command": "./scripts/run-mac.sh",
 			},
 			"windows": {
 				"command": ".\\scripts\\run.cmd"
@@ -81,6 +81,52 @@
 			},
 			"windows": {
 				"command": ".\\scripts\\locales.cmd",
+			},
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"problemMatcher": []
+		},
+
+		{
+			"label": "keymaps",
+			"type": "shell",
+			"linux": {
+				"command": "./scripts/keymaps.sh",
+			},
+			"osx": {
+				"command": "./scripts/keymaps.sh",
+			},
+			"windows": {
+				"command": ".\\scripts\\keymaps.cmd",
+			},
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"problemMatcher": []
+		},
+
+		{
+			"label": "debug",
+			"type": "shell",
+			"linux": {
+				"command": "./scripts/run-linux.sh",
+			},
+			"osx": {
+				"command": "./scripts/run-linux.sh",
+			},
+			"windows": {
+				"command": ".\\scripts\\debug.cmd",
 			},
 			"group": {
 				"kind": "test",

@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2022 Source Solutions, Inc.
+;	// Copyright (c) 1999-2023 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -465,11 +465,41 @@ set_de:
 	ret;								// end of subroutine
 
 get_cols:
-	ld b, 80;							// assume 80 columns
-	bit 1, (iy + _flags2);				// test for 40 column mode
-	ret z;								// return if not
-	ld b, 40;							// 40 columns
-	ret;								// end of subroutine
+	bit 1, (iy + _flags2);				// test for user-defined video mode
+	jp nz, v_s1_get_cols;				// jump if so
+	ld b, 80;							// else 80 columns
+	ret;								// return
+
+;	// 4 unused bytes
+;	defs 4, $ff;						// the next routine is placed for space efficiency
+
+;;
+; <code>CALL</code> command
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#CODE" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_call:
+	call syntax_z;						// checking syntax?
+	jr nz, call_1;						// jump if not
+	rst get_char;						// get character
+	cp ',';								// test for comma
+	ret nz;								// return if not
+
+call_param:
+	rst next_char;						// next character
+	call scanning;						// next expression
+	cp ',';								// comma?
+	jr z, call_param;					// loop until all passed
+	call check_end;						// return if checking syntax (always true)
+
+call_1:
+	call find_int2;						// get address
+	ld l, c;							// address to
+	ld h, b;							// HL
+	call call_jump;						// call address
+	exx;								// alternate register set
+	ld hl, $2758;						// restore value of HL'
+	exx;								// main register set
+	ret;								// return to BASIC
 
 	org $11a7
 ;;
@@ -486,3 +516,73 @@ remove_fp:
 	cp ctrl_cr;							// carriage return?
 	jr nz, remove_fp;					// jump if not
 	ret;								// end of subroutine
+
+;;
+; <code>EDIT</code> command
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#EDIT" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_edit:
+	ld hl, (prog);						// prog contains pointer to program
+	ld a, (hl);							// get value at address in HL
+	cp $80;								// no program?
+	ret z;								// return if so
+
+	call get_line;						// get a valid line number
+	ld a, c;							// test
+	or b;								// for zero
+	jr z, edit_1;						// use current line if so
+	ld (e_ppc), bc;						// else make it the current line
+
+edit_1:
+	res	5, (iy + _flagx);				// signal line editing mode
+	ld hl, (e_ppc);						// line number to HL
+	call line_addr;						// get line address
+	call line_no;						// get line number
+	push hl;							// stack address of line
+	inc hl;								// address line length
+	ld c, (hl);							// transfer
+	inc hl;								// to to
+	ld b, (hl);							// BC
+	ld hl, 10;							// add ten
+	add hl, bc;							// to it
+	ld c, l;							// transfer
+	ld b, h;							// to BC
+	call test_room;						// check for space
+	call clear_sp;						// clear editing area
+	ld hl, (curchl);					// get current channel
+	ex (sp), hl;						// swap with address of line
+	push hl;							// stack it
+	ld a, $ff;							// channel W
+	call chan_open;						// select channel
+	pop hl;								// address of line
+	dec hl;								// suppress cursor
+	dec (iy + _e_ppc);					// FIXME - remove after autolist removed
+	call out_line;						// print the line
+	inc (iy + _e_ppc);					// FIXME - remove after autolist removed
+	ld hl, (e_line);					// start of line to HL
+	ld (k_cur), hl;						// set cursor position
+	pop hl;								// unstack former channel address
+	call chan_flag;						// restore flags
+	ld sp, (err_sp);					// move stack
+	pop af;								// drop address
+	jp main_2;							// immediate jump
+
+;	// 60 unused bytes
+;	defs 60, $ff;						// 
+
+;	// temp
+
+;	// used in 16_audio
+semi_tone:
+	deff 261.625565300599;				// C
+	deff 277.182630976872;				// C#
+	deff 293.664767917408;				// D
+	deff 311.126983722081;				// D#
+	deff 329.627556912870;				// E
+	deff 349.228231433004;				// F
+	deff 369.994422711634;				// F#
+	deff 391.995435981749;				// G
+	deff 415.304697579945;				// G#
+	deff 440.000000000000;				// A
+	deff 466.163761518090;				// A#
+	deff 493.883301256124;				// B

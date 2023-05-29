@@ -1,2 +1,0 @@
-prg:
-	pasmo TS1500.ASM ../PRG/TS1500.PRG

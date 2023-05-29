@@ -1,2 +1,0 @@
-prg:
-	pasmo KAYAHARA.ASM ../PRG/KAYAHARA.PRG

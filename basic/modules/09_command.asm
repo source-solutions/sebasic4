@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2022 Source Solutions, Inc.
+;	// Copyright (c) 1999-2023 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -944,7 +944,7 @@ clear_run:
 
 clear_1:
 	push bc;							// stack value
-	call mute_psg;						// switch off sound chip
+;	call mute_psg_midi;					// mute PSG and MIDI - FIXME (borks CLEAR)
 	call close_all;						// close all streams
 	xor a;								// LD A, $ff
 	dec a;								// sets
@@ -1274,6 +1274,9 @@ pr_end_z:
 	cp ')';								// closing parenthesis
 	ret z;								// return if so
 
+;	// 82 unused bytes
+;	defs 82, $ff;						// 
+
 ;	// UnoDOS 3 entry point
 	org $2048;
 pr_st_end:
@@ -1353,12 +1356,8 @@ input_1:
 	cp b;								// current position above lower screen?
 	jr c, input_2;						// jump if so
 	ld c, 81;							// leftmost position
-
-	bit 1, (iy + _flags2);				// test for 40 column mode
-	jr z, input_1a;						// jump if not
-	ld c, 41;							// leftmost position
-
-input_1a:	
+	bit 1, (iy + _flags2);				// test for user-defined video mode
+	call nz, v_s1_input_1;				// call if so
 	ld b, a;							// set print position to top of lower screen
 
 input_2:
@@ -2096,3 +2095,25 @@ skip_quot:
 count_stmt:
 	inc (iy + _subppc);					// increment subppc
 	ret;								// end of subroutine
+
+;;
+; <code>WEND</code> command
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#WEND" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_wend:
+	pop bc;								// stmt-ret address to BC
+	pop hl;								// error address to HL
+	pop de;								// last entry on gosub stack to DE
+	ld a, d;							// D to A
+	cp $3e;								// test for gosub end marker
+	jp nz, c_return_wend;				// jump if not
+	push de;							// stack end marker
+	push hl;							// stack error address
+	rst error;							// throw
+	defb wend_without_while;			// error
+
+;	// get line subroutine
+get_line:
+ 	call find_line;						// get valid line
+ 	call line_addr;						// get line address
+	ret;								// return

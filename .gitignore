@@ -1,17 +1,55 @@
-/api/perl
+# exclude macOS meta files
 .DS_Store
+
+# exclude Windows local Perl instance
+/api/perl
+
+# exclude intermediate binary and symbols file
 23.bin
-basic.rom
-boot.rom
-unodos-0.sys
-unodos-1.sys
-pasmo.exe
-/reference/*
-*.ZX1
-ba????.bmp
 symbols.txt
 
-# exclude generated docs
+# exclude keymap executables
+/keymaps/*.o
+
+# exclude generated API docs
 /api/*.html
 /api/*.css
 
+# exclude generated fonts
+/chloehd/SYSTEM/FONTS/0437-IBM.CP
+/chloehd/SYSTEM/FONTS/1250-EUC.CP
+/chloehd/SYSTEM/FONTS/1251-CYR.CP
+/chloehd/SYSTEM/FONTS/1252-EUW.CP
+/chloehd/SYSTEM/FONTS/1253-GRE.CP
+/chloehd/SYSTEM/FONTS/1254-TUR.CP
+/chloehd/SYSTEM/FONTS/1255-HEB.CP
+/chloehd/SYSTEM/FONTS/1256-ARA.CP
+/chloehd/SYSTEM/FONTS/1257-BAL.CP
+/chloehd/SYSTEM/FONTS/1258-VIE.CP
+/chloehd/SYSTEM/FONTS/APPLE-II.CP
+/chloehd/SYSTEM/FONTS/ATARI-ST.CP
+/chloehd/SYSTEM/FONTS/ATASCII.CP
+/chloehd/SYSTEM/FONTS/IR-109.CP
+/chloehd/SYSTEM/FONTS/IR-226.CP
+/chloehd/SYSTEM/FONTS/KOI8-R.CP
+/chloehd/SYSTEM/FONTS/MACROMAN.CP
+/chloehd/SYSTEM/FONTS/PETSCII.CP
+/chloehd/SYSTEM/FONTS/RISC-OS.CP
+
+# exclyde generated keymaps
+/chloehd/SYSTEM/KEYBOARD.S
+
+# exclude optional programs
+/chloehd/PROGRAMS/2019
+/chloehd/PROGRAMS/BOING
+/chloehd/PROGRAMS/JUGGLER
+/chloehd/PROGRAMS/KAYAHARA
+/chloehd/PROGRAMS/LASTV8
+/chloehd/PROGRAMS/RUNBASIC
+/chloehd/PROGRAMS/SCRSHOW
+/chloehd/PROGRAMS/SKYFALL
+/chloehd/PROGRAMS/TC2048
+/chloehd/PROGRAMS/VDPTEST
+
+# exclude temporary files
+/chloehd/SYSTEM/TEMPORAR.Y/*

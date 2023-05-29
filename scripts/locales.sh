@@ -40,5 +40,5 @@ for f in *.json; do
     head -c 608 $fname > TEMP.LN
     mv TEMP.LN $fname
     perl -pi -e 's/_/\0/g' $fname
-    mv $fname ../ChloeVM.app/Contents/Resources/chloehd/SYSTEM/LANGUAGE.S/$fname
+    mv $fname ../chloehd/SYSTEM/LANGUAGE.S/$fname
 done

@@ -3,6 +3,8 @@ name: API
 on:
   push:
     branches: [ main ]
+    paths:
+    - 'basic/**'
   workflow_dispatch:
 
 jobs:

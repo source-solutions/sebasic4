@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2022 Source Solutions, Inc.
+;	// Copyright (c) 1999-2023 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -273,6 +273,38 @@ mouse:
 	in a, (c);							// read it
 	ld (hl), a;							// store it
 	ret;								// end of subroutine
+
+;;
+; <code>ERROR</code> command
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#ERROR" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_error:
+	call find_int1;						// get 8-bit integer
+	ld l, a;							// error to A
+	jr error_3;							// generate error message
+
+; 	// TEST 0 OR 1 subroutine
+test_0_or_1:
+	call find_int1;						// get variable
+	cp 2;								// 0 or 1?
+	ret c;								// return if so
+	pop af;								// else drop return address
+	rst error;							// and call
+	defb illegal_function_call;			// error handler
+
+;	// pause after printing a message (prevents messages being cleared after NEW or BREAK)
+msg_pause:
+	ld bc, 0;							// set delaty to 65536 
+
+msg_loop:
+	dec bc;								// reduce count
+	ld a, c;							// test against zero
+	or b;								// prevents keypress immediately erasing BREAK message
+	ret z;								// return when done
+	jr msg_loop;						// loop until done
+
+;	// 25 unused bytes
+;	defs 25, $ff;						// 
 
 	org $00ff
 im2:

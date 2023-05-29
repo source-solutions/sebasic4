@@ -1,0 +1,26 @@
+name: build keymaps
+
+on:
+  push:
+    paths:
+    - 'keymaps/**'
+  workflow_dispatch:
+
+jobs:
+  keymaps:
+    runs-on: ubuntu-latest
+    
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name:
+        run: |
+          cd keymaps
+          make all
+          make install
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "keymaps"
+          git push origin main

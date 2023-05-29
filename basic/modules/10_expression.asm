@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2022 Source Solutions, Inc.
+;	// Copyright (c) 1999-2023 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -1305,6 +1305,108 @@ i_restore:
 	pop hl;								// unstack HL
 	pop de;								// unstack DE
 	ret;								// end of subroutine
+
+;;
+; <code>ON</code> command
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#ON" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_on:
+	rst get_char;						// get first character
+	cp tk_error;						// ERROR token?
+	jr z, on_error;						// jump if so
+	call expt_1num;						// get expression
+	call syntax_z;						// checking syntax?
+	call nz, find_int1;					// get number if not
+	ld (membot), a;						// store entry in membot
+	rst get_char;						// next character
+	ld bc, $0100;						// set count to zero, flag to one
+	cp tk_gosub;						// GOSUB token?
+	jr z, on_number;					// jump if so
+	inc b;								// GOSUB =1, GOTO =2
+	cp tk_goto;							// GOTO token?
+	jr z, on_number;					// jump if so
+	rst error;							// else
+	defb syntax_error;					// error
+
+on_number:
+	rst next_char;						// next character
+	push bc;							// stack BC
+	call expt_1num;						// get expression
+	pop bc;								// unstack BC
+	inc c;								// increment count
+	ld a, (membot);						// get entry
+	cp c;								// match?
+	jr z, on_match;						// jump if so
+	rst get_char;						// next character
+	cp ',';								// comma
+	jr z, on_number;					// check for another number if so
+	call check_end;						// expect end of line
+	ret;								// done
+
+on_match:
+	call unstack_z;						// exit if validating line
+	dec b;								// GOSUB or GOTO?
+	jp nz, c_goto;						// jump with GOTO
+	jp c_gosub;							// jump with GOSUB
+
+on_error:
+	rst next_char;						// next character
+	cp tk_goto;							// GOTO token?
+	jr z, onerr_goto;					// jump if so
+	cp tk_cont;							// CONTINUE token?
+	jr z, onerr_cont;					// jump if so
+	cp tk_stop;							// STOP token?
+	jr z, onerr_stop;					// jump if so
+	rst error;							// else
+	defb syntax_error;					// error
+
+onerr_goto:
+	rst next_char;						// next character
+	call expt_1num;						// expect number
+	call check_end;						// expect end of line
+	call find_line;						// get line number
+	ld (onerr), bc;						// set on error address
+	ret;								// end of routine
+
+onerr_cont:
+	rst next_char;						// next character
+	call check_end;						// expect end of line
+	ld a, $fe;							// signal on err continue
+
+onerr_exit:
+	ld (onerr_h), a;					// set on err flag
+	ret;								// end of subroutine
+
+onerr_stop:
+	call onerr_cont;					// expect end of line
+	ret z;								// return if checking syntax
+	inc a;								// signal on err stop
+	jr onerr_exit;						// immediate jump
+
+;	// ON ERROR handler
+onerr_test:
+	cp ok;								// no error?
+	ret z;								// return if so
+	cp msg_break;						// BREAK?
+	ret z;								// return if so
+	ld hl, (onerr);						// get flag or line number
+	ld a, h;							// flag to H
+	cp $ff;								// on error stop?
+	ret	z;								// return if so
+	cp $fe;								// on error continue?
+	jr z, onerr_test_1;					// jump if so
+	ld (newppc), hl;					// store line to jump to in newppc
+	ld (iy + _nsppc), 0;				// clear statement number
+
+onerr_test_1:
+	ld (iy + _err_nr), ok;				// signal no error
+	pop	hl;								// discard return address
+	ld hl, main_4;						// make main-4
+	push hl;							// new return address
+	jp stmt_r_1;						// immediate jump
+
+; 	// 5 unused bytes;
+;	defs 5, $ff;						// 
 
 	org $2bf1
 ;;

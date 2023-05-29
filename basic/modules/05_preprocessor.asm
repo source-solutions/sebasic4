@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2022 Source Solutions, Inc.
+;	// Copyright (c) 1999-2023 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -161,11 +161,11 @@ fn_alpha:
 	ld de, tk_ptr_fn;					// point to token
 	call match_token;					// check for match
 	pop de;								// restore DE
-	jr nz, exit_pp;					// jump if not
+	jr nz, exit_pp;						// jump if not
 	inc hl;								// next character
 	ld a, (hl);							// get it in A
 	call alpha;							// alpha?
-	jp nc, exit_pp;					// jump if not
+	jp nc, exit_pp;						// jump if not
 	call open_paren;					// check for '('
 	dec hl;								// back 	
 	dec hl;								// two

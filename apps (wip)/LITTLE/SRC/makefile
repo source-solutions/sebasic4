@@ -1,2 +1,0 @@
-prg:
-	pasmo LITTLE.ASM ../PRG/LITTLE.PRG

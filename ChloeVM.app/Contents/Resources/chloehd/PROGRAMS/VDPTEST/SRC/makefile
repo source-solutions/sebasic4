@@ -1,2 +1,0 @@
-prg:
-	pasmo VDPTEST.ASM ../PRG/VDPTEST.PRG

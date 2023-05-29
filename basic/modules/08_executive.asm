@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2022 Source Solutions, Inc.
+;	// Copyright (c) 1999-2023 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@
 
 ;	// FIXME - further optimization is possible
 
-;	org $11b7;
+	org $124a;
 
 ;;
 ; <code>NEW</code> command
@@ -60,16 +60,15 @@ c_new:
 	ld hl, (nmiadd);					// variables
 	exx;								// main register set
 
-;	org $11cb;
-
 ;;
 ; initialization
 ;;
 start_new:
 	ex af, af';							// store A
 
-	ld a, %00110110;					// yellow on blue (with no ULAplus), hi-res mode
-	out (scld), a;						// set it
+;	ld a, %00110110;					// yellow on blue (with no ULAplus), hi-res mode
+;	ld a, %00110010;					// yellow on blue (with no ULAplus), hi-col mode
+;	out (scld), a;						// set it
 
 	ld bc, paging;						// HOME bank paging
 	ld a, %00011000;					// ROM 1, FBUFF 1, HOME 0
@@ -140,9 +139,6 @@ initial:
 	ld (hl), end_marker;				// store variables end marker
 	inc hl;								// next location
 	ld (e_line), hl;					// store address in sysvar
-	ld a, %01110001;					// light gray foreground, dark blue background
-	ld (bordcr), a;						// set border color
-	ld (attr_p), a;						// set permanent attribute
 	ld hl, $031e;						// set initial values (repdel = 30, repper = 3)
 	ld (repdel), hl;					// for repdel and repper
 	ld hl, initial;						// address of routine to jump to on NMI
@@ -154,31 +150,9 @@ initial:
 	ld hl, init_strm;					// source
 	ldir;								// copy initial streams table
 	ld (iy + _df_sz), 1;				// set lower display size
+	call mute_psg_midi;					// mute PSG and MIDI
 	call init_path;						// initialize path
-
-	ld de, $ffbf;						// d=data, e=reg
-	ld a, 30;							// foreground (ULAplus)
-	ld bc, $bf3b;						// register select
-	out (c), a;							// select it
-	ld b, d;							// data select
-	ld a, %10110110;					// light gray
-	out (c),a;							// set it
-
-	ld a, 22;							// foreground (Uno)
-	ld b, e;							// register select
-	out (c), a;							// select it
-	ld b, d;							// data select
-	ld a, %10110110;					// light gray
-	out (c),a;							// set it
-
-	ld a, 25;							// background
-	ld b, e;							// register select
-	out (c), a;							// select it
-	ld a, %00000010;					// blue
-	ld b, d;							// data select
-	out (c),a;							// set it
-
-	call c_cls;							// clear screen
+	call screen_0;						// initialize screen
 	call set_min;						// clear all work areas and calculator stack
 	ld a, 2;							// channel S
 	call chan_open;						// select channel
@@ -884,6 +858,35 @@ reserve:
 	inc hl;								// HL points to first displaced byte
 	ret;								// end of subroutine
 
+;	// trace
+;;
+; <code>TRACE</code> command
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#TRACE" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_trace:
+	rst get_char;						// get first character
+	cp tk_on;							// ON token?
+	jr z, trace_on;						// jump if so
+	cp tk_off;							// OFF token?
+	jr z, trace_off;					// jump if so
+	rst error;							// else error
+	defb syntax_error;					// FIXME: add ON n handler
+
+trace_on:
+	rst next_char;						// next character
+	call check_end;						// expect end of line
+	set 7, (iy + _flags2);				// switch trace on
+	ret;								// end of routine
+
+trace_off:
+	rst next_char;						// next character
+	call check_end;						// expect end of line
+	res 7, (iy + _flags2);				// switch trace off
+	ret;								// end of routine
+
+;	// 2 unused bytes
+;	defs 2, $ff;						// 
+
 	org $16b0;
 ;;
 ; set minimum
@@ -1192,7 +1195,8 @@ out_curs:
 	ret nz;								// return if not
 
 out_curs_ready:
-	ld a, '_';							// use underline as cursor (for ncurses)
+;	ld a, '_';							// use underline as cursor (for ncurses)
+	ld a, ' ';							// use space as cursor
 	exx;								// alternate register set
 	ld hl, p_flag;						// address sysvar
 	ld d, (hl);							// p_flag to D
@@ -1279,6 +1283,113 @@ out_ch_3:
 	rst print_a;						// print character
 	ret;								// end of subroutine
 
+;;
+; <code>WHILE</code> command
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#WHILE" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_while:
+	fwait;								// enter calculator
+	fdel;								// remove last item
+	fce;								// exit calculator
+	ex de, hl;							// swap pointers
+	call test_zero;						// zero?
+	jr c, skip_while;					// jump if so
+	pop de;								// fetch return address
+	ld h, (iy + _subppc);				// statement number
+	ex (sp), hl;						// put on the stack, HL = error handler
+	inc sp;								// but only 1 byte
+	ld bc, (ppc);						// line number
+	push bc;							// put on the stack
+	push hl;							// stack error handler
+	ld (err_sp), sp;					// update ERR_SP
+	push de;							// stack return address
+	jp test_20_bytes;					// continue like GO SUB
+
+skip_while:
+	ld bc, 0;							// nesting depth
+	rst get_char;						// get character
+	cp ':';								// colon?
+	jr z, skip_while_1;					// jump if so
+
+skip_while_0:
+	inc hl;								// 
+	ld a, (hl);							// 
+	cp $40;								// WEND found?
+	jr nc, report_missing_wend;			// jump if not
+	ld d, a;							// 
+	inc hl;								// 
+	ld e, (hl);							// DE = line number
+	ld (ppc), de;						// store line number
+	ld (iy + _subppc), 0;				// store zero in subppc
+	inc hl;								// 
+	ld e, (hl);							// 
+	inc hl;								// 
+	ld d, (hl);							// DE = line length
+	ex de, hl;							// HL = line length
+	add hl, de;							// 
+	inc hl;								// HL = next line pointer
+	ld (nxtlin), hl;					// set next line
+	ex hl, de;							// HL = pointer before the first character in the line
+	ld (ch_add), hl;					// set character address
+
+skip_while_1:
+	inc (iy + _subppc);					// increase statement counter
+	rst next_char;						// next character
+	cp tk_while;						// WHILE token?
+	jr nz, skip_while_2;				// jump if not
+	inc bc;								// increase nesting depth
+
+skip_while_2:
+	cp tk_wend;							// WEND token?
+	jr nz, skip_while_3;				// jump if not
+	ld a, c;							// test for
+	or b;								// zero
+	jr nz, skip_wend;					// jump if not
+	rst next_char;						// skip WEND token
+	ret;								// continue with execution
+
+skip_wend:
+	dec bc;								// decrease nesting depth
+
+skip_while_3:
+	inc hl;								// 
+	ld a, (hl);							// 
+	call number;						// skip floating point representation
+	cp ':';								// colon?
+	jr z, skip_while_4;					// jump if so
+	cp ctrl_cr;							// carraige return?
+	jr z, skip_while_0;					// jump if so
+	cp tk_then;							// THEN token?
+	jr nz, skip_while_3;				// jump if not
+
+skip_while_4:
+	ld (ch_add), hl;					// set character address
+	jr skip_while_1;					// immediate jump
+
+report_missing_wend:
+	rst error;							// throw
+	defb while_without_wend;			// error
+
+;;
+; <code>DELETE</code> command
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#DELETE" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_delete:
+	call get_line;						// get a valid line number
+	call next_one;						// find address
+	push de;							// stack it
+	call get_line;						// get next line number
+	pop de;								// unstack address
+	and a;								// clear carry flag
+	sbc hl, de;							// check line range
+	jp nc, report_bad_fn_call;			// error if not valid
+	add hl, de;							// restore line number
+	ex de, hl;							// swap pointers
+	jp reclaim_1;						// immediate jump
+
+;	// 5 unused bytes
+;	defs 5, $ff;						// 
+
 	org $196e;
 ;;
 ; line address
@@ -1290,7 +1401,6 @@ line_addr:
 	ld e, l;							// HL to
 	ld d, h;							// to DE
 
-;	org $1974;
 line_ad_1:
 	pop bc;								// unstack line number in BC
 	call cp_lines;						// compare with addressed line

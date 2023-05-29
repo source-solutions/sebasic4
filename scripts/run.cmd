@@ -1,2 +1,1 @@
-cd ChloeVM.app
-ChloeVM.cmd
+"C:\Program Files (x86)\ZEsarUX_windows-10.2\zesarux.exe" --noconfigfile --enable-mmc --enable-divmmc --mmc-file C:\Development\sebasic4\bin\empty.img --def-f-function f1 NMI --def-f-function f4 Reset --enablekempstonmouse --enable-esxdos-handler --esxdos-root-dir C:\Development\sebasic4\chloehd --machine Chloe280 --romfile C:\Development\sebasic4\bin\se.rom --disablefooter --nowelcomemessage --quickexit --nosplash --gui-style QL --menucharwidth 6 --zoomx 4 --zoomy 3
