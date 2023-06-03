@@ -1194,7 +1194,7 @@ cl_scr_2:
 	ld hl, $f8e0;						// set DE to
 	add hl, de;							// destination
 	ex de, hl;							// swap pointers
-	ld bc, 32;							// 32 bytes per half row
+	ld bc, 31;							// 31 bytes per half row
 	dec a;								// reduce count
 	call ldir2;							// clear half row
 
