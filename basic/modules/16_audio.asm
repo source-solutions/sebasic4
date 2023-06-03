@@ -150,15 +150,29 @@
 ; @throws Syntax error.
 ;;
 c_play:
-	ld bc, uno_reg;						// Uno register select
-	ld a, scandbl_ctrl;					// scan double and control register
-	out (c), a;							// select it
-	inc b;								// LD BC, uno_dat
-	in a, (c);							// get current value
-	and %00111111;						// 3.5MHz mode
-	out (c), a;							// set it
+	res 0, (iy - _flagp);				// signal PSG
+	rst get_char;						// get character
+	cp '#';								// number sign?
+	jr nz, L5192;						// jump if not
+	rst next_char;						// next character
+	call expt_1num;						// get parameter
+	call syntax_z;						// checking syntax?
+	jr z, L5191;						// jump if so
+	call find_int1;						// parameter to A
+	cp 2;								// in range (0 to 1)?
+	jp nc, play_error;					// error if not
+	and a;								// zero?
+	jr z, L5191;						// jump if so
+	set 0, (iy - _flagp);				// signal MIDI
+
+L5191:
+	rst get_char;						// get character
+	cp ',';								// comma
+	ret nz;								// return if not
+	rst next_char;						// next character
+
+L5192:
 	ld b, 0;							// string index
-	rst get_char;						// get
 
 L5193:
 	push bc;							// stack BC
@@ -173,13 +187,22 @@ L5193:
 L51A0:
 	ld a, b;							// check index
 	cp 9;								// more than 8 strings?
-	jr c, L51A8;						// jump if no
+	jr c, L51A8;						// jump if not
 	jp play_error;						// else error
 
 L51A8:
 	call check_end;						// return if checking syntax
 	di;									// interrupts off (FIXME: would be better to leave them on, but timing is tied to CPU speed)
 	push bc;							// create workspade with channel string number (1 to 8) in B
+
+	ld bc, uno_reg;						// Uno register select
+	ld a, scandbl_ctrl;					// scan double and control register
+	out (c), a;							// select it
+	inc b;								// LD BC, uno_dat
+	in a, (c);							// get current value
+	and %00111111;						// 3.5MHz mode
+	out (c), a;							// set it
+
 	ld de, 55;							// channel block length
 	ld hl, 60;							// command block length
 
@@ -366,6 +389,7 @@ L52D6:
 	jr L52BB;							// jump back to get next character
 
 L52DD:
+	res 1, (ix + 10);					// clear flag to raise octave by one
 	bit 5, a;							// lower case letter?
 	jr nz, L52E5;						// jump if so
 	set 1, (ix + 10);					// set a flag to raise octave by one
@@ -921,7 +945,6 @@ L5598:
 	bit 1, (ix + 10);					// up one octave?
 	jr z, test_octave_zero;				//
 	inc b;								//
-	res 1, (ix + 10);					// clear flag
 	jr div2_16bit;						// immediate jump
 
 test_octave_zero
@@ -970,7 +993,7 @@ set_ay:
 
 L55FB:
 	ld a, $fe;							// do second AY first
-	
+
 ay_loop:
 	ld bc, $fffd;						// register port
 	out (c), a;							// select AY (first or second)
@@ -1109,6 +1132,8 @@ L56A7:
 	ld d, a;							// D=Register (8 + string index), i.e. channel A, B or C volume register
 	ld e, (ix + volume);				// E=Volume for the current channel
 	call L55E3;							// Write to sound generator register to set the output volume
+
+;	// MIDI only
 	call L57E6;							// Play a note and set the volume on the assigned MIDI channel
 
 L56CA:
@@ -1306,6 +1331,11 @@ L57DC:
 
 ;	// Play Note on MIDI Channel
 L57E6:
+	ld a, (flagp)
+	cp 1
+	ret nz
+;	call mute_psg;
+
 	ld a, (ix + midi_chan);				// Is a MIDI channel assigned to this string?
 	or a;								// 
 	ret m;								// Return if not
@@ -1313,9 +1343,14 @@ L57E6:
 ;	// A holds the assigned channel number ($00..$0F)
 	or %10010000;						// Set bits 4 and 7 of the channel number. A=$90..$9F
 	call L5823;							// Write byte to MIDI device
-	ld a, (ix + note_num);				// get note number
-	ld b, a;							// store in B
-	ld a, (ix + octave);				// get octave
+	ld b, (ix + note_num);				// get note number
+	dec b;								// adjust note for MIDI
+	ld a, (ix + 3);						// get octave
+	bit 1, (ix + 10);					// up one octave?
+	jr z, adjust_octave;				//
+	inc a;								//
+
+adjust_octave:
 	ld c, a;							// store in C
 	add a, a;							// octave * 2
 	add a, c;							// * 3

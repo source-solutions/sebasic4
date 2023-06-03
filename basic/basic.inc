@@ -691,8 +691,9 @@ ENDM
 
 	oldsp		equ $5bba;			// (iy - $80)	old stack pointer
 
-	open_x		equ mstate - 2;		// (iy - $42)	address of custom OPEN routine
-	mstate		equ jstate - 4;		// (iy - $40)	mouse state
+	flagp		equ open_x - 1;		// (iy - $44)	flags for PLAY command
+	open_x		equ mstate - 2;		// (iy - $43)	address of custom OPEN routine
+	mstate		equ jstate - 4;		// (iy - $41)	mouse state
 	jstate		equ k_head - 1;		// (iy - $3d)	joystick state
 	k_head		equ k_tail - 1;		// (iy - $3c)	pointer to head of keyboard buffer
 	k_tail		equ kstate - 1;		// (iy - $3b)	pointer to tail of keyboard buffer
@@ -875,6 +876,10 @@ ENDM
 ;	// negative
 	_oldsp		equ $80;
 
+	_flagp		equ $44;
+	_open_x		equ $43;
+	_mstate		equ $41;
+	_jstatew	equ $3d;
 	_k_head		equ $3c;
 	_k_tail		equ $3b;
 	_kstate		equ $3a;
