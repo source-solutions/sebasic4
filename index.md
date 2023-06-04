@@ -1,4 +1,4 @@
-[API docs](https://source-solutions.github.io/sebasic4/api/) | [Online user guide](https://github.com/source-solutions/sebasic4/wiki) | [Instagram](https://www.instagram.com/chloe280se/) | [Patreon](https://www.patreon.com/chloe280se) | [Telegram](https://t.me/chloe280seug) | [Vimeo](https://vimeo.com/chloecorp) | [Online Emulator](https://source-solutions.github.io/sebasic4/emu/)
+[API docs](https://source-solutions.github.io/sebasic4/api/) | [User guide](https://github.com/source-solutions/sebasic4/wiki) | [Instagram](https://www.instagram.com/chloe280se/) | [Patreon](https://www.patreon.com/chloe280se) | [Telegram](https://t.me/chloe280seug) | [Vimeo](https://vimeo.com/chloecorp) | [Try it out](https://source-solutions.github.io/sebasic4/emu/)
 
 ![SE Basic 4.2.0](/images/sebasic4-2.png)
 
