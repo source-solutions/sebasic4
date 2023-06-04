@@ -152,7 +152,8 @@ initial:
 	ld (iy + _df_sz), 1;				// set lower display size
 	call mute_psg_midi;					// mute PSG and MIDI
 	call init_path;						// initialize path
-	call screen_0;						// initialize screen
+;	call screen_0;						// initialize screen
+	call v_s1_init
 	call set_min;						// clear all work areas and calculator stack
 	ld a, 2;							// channel S
 	call chan_open;						// select channel

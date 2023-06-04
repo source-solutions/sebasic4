@@ -495,6 +495,7 @@ s1_po_able:
 s1_po_any:
 	push bc;							// stack current position
 
+ifndef slam
 ;	// write to character map
 	push hl;							// stack print address
 	ex af, af';							// save character
@@ -542,6 +543,7 @@ s1_write_char:
 s1_no_write_char:
 	pop hl;								// restore screen address
 ;	// character map code ends
+endif
 
 	ld bc, font;						// font stored in framebuffer at $f800
 
@@ -910,7 +912,8 @@ s1_init:
 	call set_reg;						// set it
 
 	set 1, (iy + _flags2);				// signal screen 1 (40 columns)
-	ld a, %00000010;					// lo-res mode
+;	ld a, %00000010;					// lo-res mode
+	ld a, %00000000;					// specrtum mode
 	out (scld), a;						// set it and continue into CLS
 
 ; <code>CLS</code> command
@@ -1028,7 +1031,7 @@ s1_cl_scr_2:
 	ld hl, $f8e0;						// set DE to
 	add hl, de;							// destination
 	ex de, hl;							// swap pointers
-	ld bc, 31;							// 31 bytes per half row
+	ld bc, 31;							// 32 bytes per half row
 	dec a;								// reduce count
 ;	call s1_ldir2;						// clear half row
 	call ldir2;							// clear half row (screen 0 code)
@@ -1191,6 +1194,10 @@ s1_border_loop:
 s1_cls_attr:
 	ex af, af';							// use alternate register set
 	ld a, (attr_p);						// get permanent attribute
+
+	ld bc, 766;							// total
+	ld hl, $d801;						// start of low res attributes
+
 	jr s1_cls_all;						// clear screen
 
 s1_cls_2nd:
