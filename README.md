@@ -23,7 +23,7 @@
 
 ![SE Basic 4.2.0](https://github.com/source-solutions/sebasic4/raw/gh-pages/images/sebasic4-2.png)
 
-# SE Basic IV 4.2 Cordelia
+# SE Basic IV Cordelia 4.2.0
 A classic BASIC interpreter for the Z80 architecture
 
 Copyright © 1999-2023 Source Solutions, Inc.
