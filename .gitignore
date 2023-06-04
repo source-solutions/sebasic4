@@ -40,7 +40,7 @@ symbols.txt
 /chloehd/SYSTEM/KEYBOARD.S/*.KB
 
 # exclude compiled languages
-/chloehd/SYSTEM/LANGUAGE.S/*.LN
+#/chloehd/SYSTEM/LANGUAGE.S/*.LN
 
 # exclude optional programs
 /chloehd/PROGRAMS/2019
