@@ -21,6 +21,8 @@
 * [Acknowledgments](https://github.com/source-solutions/sebasic4/wiki/Acknowledgments)
 * [License](https://github.com/source-solutions/sebasic4/wiki/License)
 
+![SE Basic 4.2.0](https://github.com/source-solutions/sebasic4/raw/gh-pages/images/sebasic4-2.png)
+
 # SE Basic IV 4.2 Cordelia
 A classic BASIC interpreter for the Z80 architecture
 
