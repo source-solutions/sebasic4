@@ -1,9 +1,27 @@
-;	// vector table address
+;	// SE Basic IV 4.2 Cordelia
+;	// Copyright (c) 1999-2023 Source Solutions, Inc.
 
+;	// SE Basic IV is free software: you can redistribute it and/or modify
+;	// it under the terms of the GNU General Public License as published by
+;	// the Free Software Foundation, either version 3 of the License, or
+;	// (at your option) any later version.
+;	// 
+;	// SE Basic IV is distributed in the hope that it will be useful,
+;	// but WITHOUT ANY WARRANTY; without even the implied warranty o;
+;	// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+;	// GNU General Public License for more details.
+;	// 
+;	// You should have received a copy of the GNU General Public License
+;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
+
+;;
+;	// --- SYSTEM HEADERS ------------------------------------------------------
+;;
+
+;;	// vector table address
 	vector equ $04c4;
 
 ;	// SE Basic IV DOS API
-
 	SEFileAppend equ vector;			// $00
 	SEFileClose equ vector + 3;			// $01
 	SEFileCreate equ vector + 6;		// $02
@@ -22,10 +40,19 @@
 	SEFolderRead equ vector + 45;		// $0f
 	SEFolderRemove equ vector + 48;		// $10
 	SEFolderSet equ vector + 51; 		// $11
+;	SE equ vector + 54; 				// $12 (reserved)
+;	SE equ vector + 57; 				// $13 (reserved)
 
+;	// SE Basic IV console API
+	SEScreenMode equ vector + 60; 				// $14
+	SEScreenClear equ vector + 63; 				// $15
+	SEScreenPrintString equ vector + 66; 		// $16
+	SEScreenLowerPrintString equ vector + 69; 	// $17
+	SEPaletteSet equ vector + 72;				// $18
+	SEKeyFlushBuffer equ vector + 75;			// $19
+	SEKeyWait equ vector + 78;					// $19
 
 ;	// UnoDOS 3 hook codes
-
 	divmmc equ 8;
 	hook_base equ 128;
 	misc_base equ hook_base + 8;

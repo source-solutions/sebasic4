@@ -36,6 +36,60 @@
 ;	// $C000 +---------------+ 49152
 
 ;	// LOCATE command <row>,<column> (counts from 1)
+
+
+	org $0800
+
+v_pr_str_lo:
+	push af;							// stack AF
+	ld a, 1;							// set lower screen
+	jr v_pr_any;						// immedaite jump
+
+v_pr_str
+	push af;							// stack AF
+	ld a, 2;							// set upper screen
+
+v_pr_any:
+	push bc;							// stack BC
+	push de;							// stack DE
+	push hl;							// stack HL
+	call chan_open;						// open the channel
+	ld e, ixl;							// IX
+	ld d, ixh;							// to DE
+	call po_asciiz_0;					// print string
+	jr s0_API_return;					// unstack and exit
+
+;	// write 64 palette entries at HL to registers 
+v_write_pal:
+	push af;							// stack AF
+	push bc;							// stack BC
+	push de;							// stack DE
+	push hl;							// stack HL
+	push ix;							// IX points to palette data
+	pop hl;								// no LD HL, IX instruction
+	ld bc, 63;							// offeset to last entry
+	add hl, bc;							// HL points to entry
+	ld c, $3b;							// palette port
+	ld de, $00bf;						// d = data, e = register
+	ld a, 64;							// becomes 63
+	halt;								// wait for vblank
+
+write_pal:
+	dec a;								// next register
+	ld b, e;							// register port
+	out (c), a;							// select register
+	ld b, d;							// data port
+	outd;								// dec b; out bc, (hl); dec hl
+	and a;								// was that the last register?
+	jr nz, write_pal;					// set all 64 entries (API exit when done)
+
+s0_API_return:
+	pop hl;								// unstack HL
+	pop de;								// usntack DE
+	pop bc;								// unstack BC
+	pop af;								// unstack AF
+	ret;								// end of subroutine
+
 	org $0861
 
 ;;
@@ -1053,6 +1107,8 @@ no_draw:
 ;;
 c_screen:
 	call test_0_or_1;					// get variable
+
+v_scr_mode:
 	and a;								// test for zero
 	jp nz, v_s1_init;					// jump if not to initialize screen 1
 
@@ -1070,6 +1126,7 @@ screen_0:
 ; <code>CLS</code> command
 ; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#CLS" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
+v_cls:
 c_cls:
 	bit 1, (iy + _flags2);				// test for screen 1 (user defined video mode)
 	jp nz, v_s1_cls;	    			// jump if so

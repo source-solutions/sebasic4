@@ -370,11 +370,27 @@ flush_kb:
 	ld a, (hl);							// pointer to A
 	inc l;								// point to k_tail
 	ld (hl), a;							// signal no key
-
 	ld bc, uno_reg;						// Uno register port
 	ld a, 5;							// Key state
 	out (c), a;							// Select key state
 	inc b;								// Uno data port
 	in a, (c);							// clear key state
+	ret;								// end of subroutine
 
+;	// wait for a keypress (return it in A)
+v_key_wait:
+	call flush_kb;						// clear buffer
+
+v_key_wait_lp:
+	ld a, (k_head);						// pointer to head of buffer to A
+	ld l, a;							// to L
+	ld a, (k_tail);						// pointer to tail of buffer to A
+	cp l;								// compare pointers
+	jr z, v_key_wait_lp;				// loop with match (no key)
+	ld hl, k_tail;						// get address of tail pointer
+	ld l, (hl);							// to HL
+	ld a, (hl);							// code to A
+	push af;							// stack code
+	call flush_kb;						// clear buffer
+	pop af;;							// restore code
 	ret;								// end of subroutine

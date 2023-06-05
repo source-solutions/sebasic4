@@ -375,32 +375,57 @@ SEFolderSet:
 	jp v_chdir;							// $11
 
 
-; $12
-	jp $ffff;							// 
+;	// RESERVED
+	jp $ffff;							// $12
 
-; $13
-	jp $ffff;							// 
+;	// RESERVED
+	jp $ffff;							// $13
 
-; $14
-	jp $ffff;							// 
+;;
+; set the screen mode
+; @param A - mode (0 system, 1 user)
+;;
+SEScreenMode:
+	jp v_scr_mode;						// $14
 
-; $15
-	jp $ffff;							// 
+;;
+; clear the screen
+;;
+SEScreenClear:
+	jp v_cls;							// $15
 
-; $16
-	jp $ffff;							// 
+;;
+; print an ASCIIZ string to the main display
+; @param IX - pointer to ASCIIZ string
+;;
+SEScreenPrintString:
+	jp v_pr_str;						// $16
 
-; $17
-	jp $ffff;							// 
+;;
+; print an ASCIIZ string to the lower display
+; @param IX - pointer to ASCIIZ string
+;;
+SEScreenLowerPrintString:
+	jp v_pr_str_lo;						// $17
 
-; $18
-	jp $ffff;							//
+;;
+; set the 64 palette registers (during vblank)
+; @param IX - pointer to palette data
+;;
+SEPaletteSet:
+	jp v_write_pal;						// $18
 
-; $19
-	jp $ffff;							// 
+;;
+; flush keyboard buffer
+;;
+SEKeyFlushBuffer:
+	jp flush_kb;						// $19
 
-; $1a
-	jp $ffff;							// 
+;;
+; get a character from keyboard buffer
+;;
+SEKeyWait
+	jp v_key_wait;						// $1a
 
 ; $1b
 	jp $ffff;							// 
@@ -489,18 +514,9 @@ SEFolderSet:
 ; SEMemorySet:
 ; 	jp v_mem;							// 
 
-; ;;
-; ; clear the screen
-; ;;
-; SEScreenClear:
-; 	jp c_cls;							// 
 
-; ;;
-; ; set the screen mode
-; ; @param A - mode
-; ;;
-; SEScreenModeSet:
-; 	jp v_scr_mode;						//
+
+
 
 ; ;;
 ; ; set the palette
@@ -509,16 +525,4 @@ SEFolderSet:
 ; SEScreenPaletteSet:
 ; 	jp v_pal_set;						//
 
-; ;;
-; ; print an ASCIIZ string to the main display
-; ; @param IX - pointer to ASCIIZ string
-; ;;
-; SEScreenPrintString:
-; 	jp v_pr_string;						// 
 
-; ;;
-; ; print an ASCIIZ string to the lower display
-; ; @param IX - pointer to ASCIIZ string
-; ;;
-; SEScreenPrintStringLower:
-; 	jp v_pr_string_lo;					// 
