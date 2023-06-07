@@ -59,8 +59,10 @@
 
 
 ;	// CP/M emulation layer:
-bdos:
-	ret
+;bdos:
+;	ret
+
+	org $4b8a
 
 ;	// vectored file system routines
 

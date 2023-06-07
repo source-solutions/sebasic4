@@ -1329,7 +1329,7 @@ skip_while_0:
 	add hl, de;							// 
 	inc hl;								// HL = next line pointer
 	ld (nxtlin), hl;					// set next line
-	ex hl, de;							// HL = pointer before the first character in the line
+	ex de, hl;							// HL = pointer before the first character in the line
 	ld (ch_add), hl;					// set character address
 
 skip_while_1:

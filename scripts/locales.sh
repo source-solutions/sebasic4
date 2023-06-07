@@ -35,9 +35,9 @@ for f in *.json; do
     file=$(jq -r .FILE $jname)
     input=$(jq -r .INPUT $jname)
     path=$(jq -r .PATH $jname)
-    echo $scroll"_"$error"_"$ready"_"$ok"_"$break"_"$for"_"$synatx"_"$gosub"_"$data"_"$call"_"$overflow"_"$memory"_"$line"_"$subscript"_"$variable"_"$address"_"$statement"_"$type"_"$screen"_"$device"_"$stream"_"$channel"_"$function"_"$buffer"_"$next"_"$wend"_"$while"_"$file"_"$input"_"$path"____________________________________________________________________________________________________________________________________________________________________________________________________________________" > TEMP.LN
+    echo $scroll"_"$error"_"$ok"_"$break"_"$for"_"$synatx"_"$gosub"_"$data"_"$call"_"$overflow"_"$memory"_"$line"_"$subscript"_"$variable"_"$address"_"$statement"_"$type"_"$screen"_"$device"_"$stream"_"$channel"_"$function"_"$buffer"_"$next"_"$wend"_"$while"_"$file"_"$input"_"$path"____________________________________________________________________________________________________________________________________________________________________________________________________________________" > TEMP.LN
     iconv -f UTF8 -t $iconv TEMP.LN > $fname
-    head -c 608 $fname > TEMP.LN
+    head -c 600 $fname > TEMP.LN
     mv TEMP.LN $fname
     perl -pi -e 's/_/\0/g' $fname
     mv $fname ../chloehd/SYSTEM/LANGUAGE.S/$fname

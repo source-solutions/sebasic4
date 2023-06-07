@@ -45,6 +45,8 @@
 ;;
 :
 
+	org $518d
+
 ;	// SE Basic IV supports up to 6 channels of music (with or without noise)
 ;	// and up to 8 channels of GM-MIDI music. (FIXME: enable selection of PSG or MIDI)
 ;	// the PLAY command reserves space for a command block and data block for each channel

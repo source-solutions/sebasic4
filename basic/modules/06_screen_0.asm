@@ -35,9 +35,6 @@
 ;	//       | even columns  |
 ;	// $C000 +---------------+ 49152
 
-;	// LOCATE command <row>,<column> (counts from 1)
-
-
 	org $0800
 
 v_pr_str_lo:
@@ -90,8 +87,23 @@ s0_API_return:
 	pop af;								// unstack AF
 	ret;								// end of subroutine
 
-	org $0861
+	org $0853
 
+get_reg:
+	ld b, e;							// register port
+	out (c), a;							// select register
+	ld b, d;							// data port
+	in a, (c)							// read register value
+	ret;								// end of subroutine
+
+set_reg:
+	ld b, e;							// register port
+	out (c), l;							// select register
+	ld b, d;							// data port
+	out (c), a;							// select register
+	ret;								// end of subroutine
+
+;	// LOCATE command <row>,<column> (counts from 1)
 ;;
 ; <code>LOCATE</code> command
 ; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#LOCATE" target="_blank" rel="noopener noreferrer">Language reference</a>
@@ -1063,7 +1075,7 @@ read_pal:
 	bit 1, (iy + _flags2);				// test for screen 1 (40 column mode)
 	ret nz;								// return if so
 
-	jp, set_color;						// set color in 80 column mode
+	jp set_color;						// set color in 80 column mode
 
 set_pal:
 	ld bc, $bf3b;						// address I/O register

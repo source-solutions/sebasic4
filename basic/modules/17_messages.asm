@@ -22,9 +22,9 @@
 ;;
 :
 
-;	// A total of 608 bytes are allocated for localized messages
+;	// A total of 600 bytes are allocated for localized messages
 
-    org $58a0
+    org $58a8
 
 ;	// used in 06_screen_80
 scrl_mssg:
@@ -35,12 +35,6 @@ scrl_mssg:
 
 sp_in_sp:
 	defb " in ", 0;
-
-ready:
-	defb "Ready", 0;
-
-;	// padding for localization
-	org ready + 13
 
 ;	// used in 08_executive
 rpt_mesgs:

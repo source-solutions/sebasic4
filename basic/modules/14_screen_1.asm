@@ -872,20 +872,6 @@ s1_po_scr_4b:
 	pop bc;								// unstack line and column numbers
 	ret;								// end of subroutine
 
-get_reg:
-	ld b, e;							// register port
-	out (c), a;							// select register
-	ld b, d;							// data port
-	in a, (c)							// read register value
-	ret;								// end of subroutine
-
-set_reg:
-	ld b, e;							// register port
-	out (c), l;							// select register
-	ld b, d;							// data port
-	out (c), a;							// select register
-	ret;								// end of subroutine
-
 s1_init:
 	ld a, %00001111;					// light gray foreground, dark blue background
 	ld (bordcr), a;						// set border color

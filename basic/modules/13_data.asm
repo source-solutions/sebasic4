@@ -554,8 +554,8 @@ p_while:
 copyright:
 
 ifndef slam
-	defb "CHLOE 280SE 512K Personal Color Computer", ctrl_cr;
-	defb "Copyright (C)1999 Chloe Corporation", ctrl_cr;
+	defb "CHLOE 280SE Personal Color Computer", ctrl_cr;
+	defb "Copyright (C) 1999 Chloe Corp.", ctrl_cr;
 endif
 
 ifdef slam
@@ -564,17 +564,96 @@ ifdef slam
 endif
 
 	defb ctrl_cr;
-	defb "SE BASIC IV Cordelia 4.2.0-RC1", ctrl_cr;
-	defb "Copyright (C)2023 Source Solutions, Inc.", ctrl_cr;
-	defb ctrl_cr;
-	timestamp 'YY-MM-DD h:m';			// RASM directive
-	defb ' ';							// makes same length as license statement
-;	defb "GPL-3.0 License";				// replaces timestamp in release versions
-	defb ctrl_cr, ctrl_cr, 0;
+	defb "SE BASIC (GPL-3.0 License)", ctrl_cr;
+	defb "Copyright (C) 2023 Source Solutions Inc.", ctrl_cr;
+;	timestamp 'YY-MM-DD h:m';			// RASM directive
+	defb ctrl_cr, 0;
 
 bytes_free:
-	defb " BASIC bytes free", ctrl_cr;
+	defb " bytes free", ctrl_cr;
 	defb ctrl_cr, 0;
+
+	org $3ff1
+;	// used in 07_editor
+ed_f_keys_t:
+	defb s_f1 - $;						// $11
+	defb s_f2 - $;						// $12
+	defb s_f3 - $;						// $13
+	defb s_f4 - $;						// $14
+	defb s_f5 - $;						// $15
+	defb s_f6 - $;						// $16
+	defb s_f7 - $;						// $17
+	defb s_f8 - $;						// $18
+	defb s_f9 - $;						// $19
+	defb s_f10 - $;						// $1a
+	defb s_f11 - $;						// $1b
+	defb s_f12 - $;						// $1c
+	defb s_f13 - $;						// $1d
+	defb s_f14 - $;						// $1e
+	defb s_f15 - $;						// $1f
+
+	org $4000
+;	// macro definitions
+;	// each definition is 16 bytes. The last byte is always zero.
+s_f1:
+	defb "LIST "
+	defs 11, 0;							// LIST
+
+s_f2:
+	defb "RUN", ctrl_cr;
+	defs 12, 0;							// RUN <RETURN> (overridden by tab in ZX core but still works)
+
+s_f3:
+	defb "LOAD",'"', ".BAS", '"', ctrl_bs, ctrl_bs, ctrl_bs, ctrl_bs, ctrl_bs;
+	defs 1, 0;							// LOAD"[].BAS"
+
+s_f4:
+	defb "SAVE",'"', ".BAS", '"', ctrl_bs, ctrl_bs, ctrl_bs, ctrl_bs, ctrl_bs;
+	defs 1, 0;							// SAVE"[].BAS"
+
+s_f5:
+	defb "CONT", ctrl_cr;
+	defs 11, 0;							// CONT (overriden by NMI in ZX core)
+
+s_f6:
+	defb "TRACE ";
+	defs 10, 0;							// TRACE O[n|ff]
+
+s_f7:
+	defb "BLOAD ",'"', '"', ",", ctrl_bs, ctrl_bs, 0;";
+	defs 4, 0;							// BLOAD "[]"
+
+s_f8:
+	defb "BSAVE ",'"', '"', ",,", ctrl_bs, ctrl_bs, ctrl_bs, 0;";
+	defs 2, 0;							// BSAVE "[]"
+
+s_f9:
+	defb "KEY ", 0;
+	defs 11, 0;							// KEY [n,a$|LIST]
+
+s_f10:
+	defb "SCREEN ", 0;
+	defs 8, 0;							// SCREEN n
+
+s_f11:
+	defb "FILES",  ctrl_cr, 0;";
+	defs 9, 0;							// FILES <RETURN>
+
+s_f12:
+	defb "CHDIR ",'"', '"', ctrl_bs, 0;";
+	defs 6, 0;							// CHDIR "[]"
+
+s_f13:
+	defb "FI.", '"', "/PROGRAMS", '"', ctrl_cr, 0;";
+;										// FILES "/PROGRAMS" <RETURN> (overriden but works with SHIFT held)
+
+s_f14:
+	defb "COLOR 7,1,1", ctrl_cr, 0;
+	defs 3, 0;							// COLOR 7,1,1 <RETURN>
+
+s_f15:
+	defb "KEY LIST", ctrl_cr, 0;
+	defs 6, 0;							// KEY LIST <RETURN> (overriden by ZX core but can be composed with F9 + F1 + <RETURN>)
 
 ;	// used in 16_audio
 
@@ -705,88 +784,6 @@ tab_func:
 	defw s_str;
 	defw s_string_str;
 	defw s_instr;
-
-	org $40f1
-;	// used in 07_editor
-ed_f_keys_t:
-	defb s_f1 - $;						// $11
-	defb s_f2 - $;						// $12
-	defb s_f3 - $;						// $13
-	defb s_f4 - $;						// $14
-	defb s_f5 - $;						// $15
-	defb s_f6 - $;						// $16
-	defb s_f7 - $;						// $17
-	defb s_f8 - $;						// $18
-	defb s_f9 - $;						// $19
-	defb s_f10 - $;						// $1a
-	defb s_f11 - $;						// $1b
-	defb s_f12 - $;						// $1c
-	defb s_f13 - $;						// $1d
-	defb s_f14 - $;						// $1e
-	defb s_f15 - $;						// $1f
-
-	org $4100
-;	// macro definitions
-;	// each definition is 16 bytes. The last byte is always zero.
-s_f1:
-	defb "LIST "
-	defs 11, 0;							// LIST
-
-s_f2:
-	defb "RUN", ctrl_cr;
-	defs 12, 0;							// RUN <RETURN> (overridden by tab in ZX core but still works)
-
-s_f3:
-	defb "LOAD",'"', ".BAS", '"', ctrl_bs, ctrl_bs, ctrl_bs, ctrl_bs, ctrl_bs;
-	defs 1, 0;							// LOAD"[].BAS"
-
-s_f4:
-	defb "SAVE",'"', ".BAS", '"', ctrl_bs, ctrl_bs, ctrl_bs, ctrl_bs, ctrl_bs;
-	defs 1, 0;							// SAVE"[].BAS"
-
-s_f5:
-	defb "CONT", ctrl_cr;
-	defs 11, 0;							// CONT (overriden by NMI in ZX core)
-
-s_f6:
-	defb "TRACE ";
-	defs 10, 0;							// TRACE O[n|ff]
-
-s_f7:
-	defb "BLOAD ",'"', '"', ",", ctrl_bs, ctrl_bs, 0;";
-	defs 4, 0;							// BLOAD "[]"
-
-s_f8:
-	defb "BSAVE ",'"', '"', ",,", ctrl_bs, ctrl_bs, ctrl_bs, 0;";
-	defs 2, 0;							// BSAVE "[]"
-
-s_f9:
-	defb "KEY ", 0;
-	defs 11, 0;							// KEY [n,a$|LIST]
-
-s_f10:
-	defb "SCREEN ", 0;
-	defs 8, 0;							// SCREEN n
-
-s_f11:
-	defb "FILES",  ctrl_cr, 0;";
-	defs 9, 0;							// FILES <RETURN>
-
-s_f12:
-	defb "CHDIR ",'"', '"', ctrl_bs, 0;";
-	defs 6, 0;							// CHDIR "[]"
-
-s_f13:
-	defb "FI.", '"', "/PROGRAMS", '"', ctrl_cr, 0;";
-;										// FILES "/PROGRAMS" <RETURN> (overriden but works with SHIFT held)
-
-s_f14:
-	defb "COLOR 7,1", ctrl_cr, 0;
-	defs 5, 0;							// COLOR 7,1 <RETURN>
-
-s_f15:
-	defb "KEY LIST", ctrl_cr, 0;
-	defs 6, 0;							// KEY LIST <RETURN> (overriden by ZX core but can be composed with F9 + F1 + <RETURN>)
 
 ;	// used in 03_keyboard
 kt_main:

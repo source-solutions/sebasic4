@@ -22,7 +22,7 @@
 
 ;	slam equ 1;							// uncomment to build SLAM+128/divMMC version
 
-	messages equ $58a0;					// check against symbol table before building
+	messages equ $58a8;					// check against symbol table before building
 
 ;	// restarts
 	divmmc equ $08;
