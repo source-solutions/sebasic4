@@ -387,6 +387,7 @@ out_code:
 	ld e, '0';							// convert number
 	add a, e;							// value to ASCII
 
+v_pr_chr:
 print_a_2:
 	exx;								// alternate register set
 	push hl;							// stack HL'

@@ -189,7 +189,6 @@ SEFolderRemove:
 SEFolderSet:
 	jp v_chdir;							// $11
 
-
 ;	// RESERVED
 	jp $ffff;							// $12
 
@@ -197,62 +196,72 @@ SEFolderSet:
 	jp $ffff;							// $13
 
 ;;
-; set the screen mode
-; @param A - mode (0 system, 1 user)
+; flush keyboard buffer
 ;;
-SEScreenMode:
-	jp v_scr_mode;						// $14
+SEKeyboardFlushBuffer:
+	jp flush_kb;						// $14
+
+;;
+; get a character from the keyboard buffer
+; @return character <code>A</code>
+; @throws sets carry flag on error
+;;
+SEKeyboardGetCharacter;
+	jp v_get_chr;						// $15
+
+;;
+; wait for keypress and get character from keyboard buffer
+; @return character <code>A</code>
+;;
+SEKeyboardWaitKey
+	jp v_key_wait;						// $16
 
 ;;
 ; clear the screen
 ;;
 SEScreenClear:
-	jp v_cls;							// $15
-
-;;
-; print an ASCIIZ string to the main display
-; @param IX - pointer to ASCIIZ string
-;;
-SEScreenPrintString:
-	jp v_pr_str;						// $16
+	jp v_cls;							// $17
 
 ;;
 ; print an ASCIIZ string to the lower display
 ; @param IX - pointer to ASCIIZ string
 ;;
 SEScreenLowerPrintString:
-	jp v_pr_str_lo;						// $17
+	jp v_pr_str_lo;						// $18
 
 ;;
-; set the 64 palette registers (during vblank)
-; @param IX - pointer to 64 bytes of palette data
+; set the screen mode
+; @param A - mode (0 system, 1 user)
 ;;
-SEPaletteSet:
-	jp v_write_pal;						// $18
+SEScreenMode:
+	jp v_scr_mode;						// $19
 
 ;;
-; flush keyboard buffer
+; print an ASCII character to the main display
+; @param A - ASCII code
 ;;
-SEKeyFlushBuffer:
-	jp flush_kb;						// $19
+SEScreenPrintCharacter:
+	jp v_pr_chr;						// $1a
 
 ;;
-; get a character from keyboard buffer
+; print an ASCIIZ string to the main display
+; @param IX - pointer to ASCIIZ string
 ;;
-SEKeyWait
-	jp v_key_wait;						// $1a
-
-; $1b
-	jp $ffff;							// 
+SEScreenPrintString:
+	jp v_pr_str;						// $1b
 
 ; $1c
 	jp $ffff;							// 
 
 ; $1d
-	jp $ffff;							// 
-
-; $1e
 	jp $ffff;							//
+
+;;
+; set the 64 palette registers (during vblank)
+; @param IX - pointer to 64 bytes of palette data
+;;
+SEGraphicsPaletteSet:
+	jp v_write_pal;						// $1e
 
 ; $1f
 	jp $ffff;							// 
@@ -395,3 +404,39 @@ SEKeyWait
 ;
 ;    jp (hl);                            // immedaite jump (execute routine)
 ;
+
+;	// temp - FIXME
+
+;	// SOUND <pitch integer>, <duration in seconds>
+;;
+; <code>SOUND</code> command
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#SOUND" target="_blank" rel="noopener noreferrer">Language reference</a>
+;;
+c_sound:
+	ret;
+
+;;
+; play bell
+;;
+bell:
+	ret;
+
+;;
+; mute PSG
+;;
+;mute_psg:
+;	ld hl, $fe07;						// H = AY-0, L = Volume register (7)
+;	ld de, $bfff;						// D = data port, E = register port / mute
+;	ld c, $fd;							// low byte of AY port
+;	call mute_ay;						// mute AY-0
+;	inc h;								// AY-1
+;
+;mute_ay:
+;	ld b, e;							// AY register port
+;	out (c), h;							// select AY (255/254)
+;	out (c), l;							// select register
+;	ld b, d;							// AY data port
+;	out (c), e;							// AY off;
+;	ret;								// end of subroutine
+
+;	// end of temp - FIXME
