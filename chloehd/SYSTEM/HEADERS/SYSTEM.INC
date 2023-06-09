@@ -48,9 +48,9 @@
 	SEScreenClear equ vector + 63; 				// $15
 	SEScreenPrintString equ vector + 66; 		// $16
 	SEScreenLowerPrintString equ vector + 69; 	// $17
-	SEGraphicsPaletteSet equ vector + 72;				// $18
-	SEKeyboardFlushBuffer equ vector + 75;			// $19
-	SEKeyboardWaitKey equ vector + 78;					// $19
+	SEGraphicsPaletteSet equ vector + 72;		// $18
+	SEKeyboardFlushBuffer equ vector + 75;		// $19
+	SEKeyboardWaitKey equ vector + 78;			// $19
 
 ;	// UnoDOS 3 hook codes
 	divmmc equ 8;
