@@ -37,6 +37,9 @@
 
 	org $0800
 
+;	// reserved to extend screen 0 code
+	defs 26, $ff;						// RESERVED
+
 v_pr_str_lo:
 	push af;							// stack AF
 	ld a, 1;							// set lower screen
@@ -56,7 +59,7 @@ v_pr_any:
 	call po_asciiz_0;					// print string
 	jr s0_API_return;					// unstack and exit
 
-;	// write 64 palette entries at HL to registers 
+;	// write 64 palette entries at IX to registers 
 v_write_pal:
 	push af;							// stack AF
 	push bc;							// stack BC
@@ -1110,9 +1113,6 @@ no_draw:
 	rst error;							// else
 	defb syntax_error;					// error
 
-;	// 2 spare bytes
-;	defs 2, $ff;						// room to add additional stubs
-
 ;;
 ; <code>SCREEN</code> command
 ; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#SCREEN" target="_blank" rel="noopener noreferrer">Language reference</a>
@@ -1132,6 +1132,9 @@ screen_0:
 	ld (attr_p), a;						// set permanent attribute
 	call set_color;						// set colors
 	jp c_cls;							// exit via CLS 80
+
+;	// reserved to extend screen 0 code
+	defs 11, $ff;						// RESERVED
 
 	org $0d60;
 ;;
@@ -1498,6 +1501,6 @@ set_color:
 	ret;								// end of subroutine
 
 ;	// 4 unused bytes
-;	defs 4, $ff;
+	defs 4, $ff;
 
 

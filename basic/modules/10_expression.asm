@@ -1406,7 +1406,7 @@ onerr_test_1:
 	jp stmt_r_1;						// immediate jump
 
 ; 	// 5 unused bytes;
-;	defs 5, $ff;						// 
+	defs 5, $ff;						// 
 
 	org $2bf1
 ;;

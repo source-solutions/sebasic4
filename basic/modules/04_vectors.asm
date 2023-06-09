@@ -329,6 +329,9 @@ SEGraphicsPaletteSet:
 ; $34
 	jp $ffff;							// ($0562 must never be called)
 
+;	// 236 spare bytes;
+	defs 236, $ff;						// reserved for DLL handler
+
 ;	// permits extension of vector table if required
 
 ;dll_init:
@@ -404,39 +407,3 @@ SEGraphicsPaletteSet:
 ;
 ;    jp (hl);                            // immedaite jump (execute routine)
 ;
-
-;	// temp - FIXME
-
-;	// SOUND <pitch integer>, <duration in seconds>
-;;
-; <code>SOUND</code> command
-; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#SOUND" target="_blank" rel="noopener noreferrer">Language reference</a>
-;;
-c_sound:
-	ret;
-
-;;
-; play bell
-;;
-bell:
-	ret;
-
-;;
-; mute PSG
-;;
-;mute_psg:
-;	ld hl, $fe07;						// H = AY-0, L = Volume register (7)
-;	ld de, $bfff;						// D = data port, E = register port / mute
-;	ld c, $fd;							// low byte of AY port
-;	call mute_ay;						// mute AY-0
-;	inc h;								// AY-1
-;
-;mute_ay:
-;	ld b, e;							// AY register port
-;	out (c), h;							// select AY (255/254)
-;	out (c), l;							// select register
-;	ld b, d;							// AY data port
-;	out (c), e;							// AY off;
-;	ret;								// end of subroutine
-
-;	// end of temp - FIXME

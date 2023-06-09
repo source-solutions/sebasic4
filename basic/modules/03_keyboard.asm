@@ -420,3 +420,76 @@ v_get_chr:
 	and a;								// clear carry flag
 	pop hl;								// unstack HL
 	ret;								// end of subroutine
+
+;	// BEEP and SOUND commands are placed here in the expectation that the keyboard code will grow and the audio code will shrink in future
+
+;;
+; <code>BEEP</code> command
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#BEEP" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws Syntax error.
+;;
+c_beep:
+bell:
+	ld de, $bfff;						// D = data port, E = register port
+	ld c, $fd;							// low byte of AY port
+	ld l, 5;							// channel C coarse
+	ld a, 128;							// 800 Hz (ish)
+	call ay_out;						// write it
+	ld l, 7;							// mixer
+	ld a, %11111011;					// channel C on (tone)
+	call ay_out;						// write it
+	ld l, 10;							// volume
+	ld a, 15;							// 100%
+	call ay_out;						// write it
+	ld b, a;							// 15 frames to wait
+
+bell_loop:
+	halt;								// wait for v-blank
+	djnz, bell_loop;					// loop for 0.25 seconds
+
+	ld l, 7;							// mixer
+	ld a, %11111111;					// all channels off
+
+ay_out:
+	ld b, e;							// AY register port
+	out (c), l;							// select register
+	ld b, d;							// AY data port
+	out (c), a;							// write data;
+	ret;								// end of subroutine
+
+sound_next:
+	rst next_char						// next character
+
+;;
+; <code>SOUND</code> command
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#SOUND" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws Syntax error.
+;;
+c_sound:
+	rst get_char;						// get character
+	call expt_2num;						// expect two comma separated numbers
+	call syntax_z;						// checking syntax?
+	jr z, sound_1;						// jump if so
+	call fp_to_a;						// data to A
+	ex af, af';							// store data
+	call fp_to_a;						// register to A
+	cp 17;								// 0 to 16?
+	jp nc, play_error;					// error if not
+	dec a;								// is it zero?
+	inc a;								// restore value
+	jp m, play_error;					// error if zero
+	ld bc, ay_128reg;					// register select
+	out (c), a;							// write it
+	ex af, af';							// restore data
+	ld b, $bf;							// LD BC, ay_128dat
+	out (c), a;							// write it
+
+sound_1:
+	rst get_char;						// get character
+	cp ';';								// another pair follows?
+	jr z, sound_next;					// jump if so
+	call check_end;						// else check end of statement
+	ret									// and return
+
+;	// unused bytes
+	defs 82, $ff;						// reserved for full keyboard implementation

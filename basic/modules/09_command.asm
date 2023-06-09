@@ -1275,7 +1275,7 @@ pr_end_z:
 	ret z;								// return if so
 
 ;	// 82 unused bytes
-;	defs 82, $ff;						// 
+	defs 82, $ff;						// 
 
 ;	// UnoDOS 3 entry point
 	org $2048;

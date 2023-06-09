@@ -471,7 +471,7 @@ get_cols:
 	ret;								// return
 
 ;	// 4 unused bytes
-;	defs 4, $ff;						// the next routine is placed for space efficiency
+	defs 4, $ff;						// the next routine is placed for space efficiency
 
 ;;
 ; <code>CALL</code> command
@@ -567,5 +567,5 @@ edit_1:
 	pop af;								// drop address
 	jp main_2;							// immediate jump
 
-;	// 60 unused bytes
-;	defs 60, $ff;						// 
+;	// 68 unused bytes
+	defs 68, $ff;						// RESERVED

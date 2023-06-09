@@ -42,7 +42,7 @@
 
 ;	// FIXME - further optimization is possible
 
-	org $124a;
+	org $1252;
 
 ;;
 ; <code>NEW</code> command
@@ -56,7 +56,7 @@ c_new:
 	ld de, (ramtop);					// get sysvar
 	exx;								// alternate register set
 	ld bc, (p_ramt);					// store
-	ld de, (rasp);						// system
+	ld de, ($4000);						// system
 	ld hl, (nmiadd);					// variables
 	exx;								// main register set
 
@@ -65,18 +65,11 @@ c_new:
 ;;
 start_new:
 	ex af, af';							// store A
-
-;	ld a, %00110110;					// yellow on blue (with no ULAplus), hi-res mode
-;	ld a, %00110010;					// yellow on blue (with no ULAplus), hi-col mode
-;	out (scld), a;						// set it
-
 	ld bc, paging;						// HOME bank paging
 	ld a, %00011000;					// ROM 1, FBUFF 1, HOME 0
 	out (c), a;							// set it
-
 	xor a;								// set I
 	ld i, a;							// to $00(ff)
-
 	ld iyh, d;							// ramtop
 	ld iyl, e;							// to IY
 	ex de, hl;							// swap pointers
@@ -91,14 +84,12 @@ start_new:
 	ldir;								// wipe bytes
 	exx;								// alternate register set
 	ld (p_ramt), bc;					// restore p_ramt
-	ld (rasp), de;						// restore rasp
+	ld ($4000), de;						// restore system variable FIXME: DE seems to be corrupted
 	ld (nmiadd), hl;					// restore nmiadd
 	exx;								// main resister set
 	ex af, af';							// restore A
 	inc a;								// NEW command?
 	jr z, ram_set;						// jump if sp
-	ld bc, $ff40;						// set RASP to $40
-	ld (rasp), bc;						// set PIP to $ff
 	ld (p_ramt), iy;					// set top of RAM
 	ld hl, (p_ramt);					// p-ramt to HL
 
@@ -158,7 +149,6 @@ initial:
 	call chan_open;						// select channel
 	ld de, copyright;					// copyright message
 	call po_asciiz_0;					// print it
-
 	ld hl, (ramtop);					// get top of BASIC RAM
 	ld de, (prog);						// start of program to DE
 	sbc hl, de;							// subtract bottom from top
@@ -166,27 +156,20 @@ initial:
 	ld c, l;							// to BC
 	call stack_bc;						// stack free RAM
 	call print_fp;						// output value
-
 	ld de, bytes_free;					// bytes free message
 	call po_asciiz_0;					// print it
-
 	xor a;								// LD A, 0; channel K
 	call chan_open;						// select channel
-;	ld de, ready;						// ready message
-;	call po_asciiz_0;					// print it
 	call out_curs_ready;				// display cursor
 	call msg_pause;						// pause in case of NEW
-
 	set 3, (iy + _flags2);				// enable CAPS LOCK
 	call flush_kb;						// flush the keyboard buffer
-
 	ld hl, pip;							// address PIP
 	ld a, (hl);							// get PIP ($ff on cold start)
 	ld (hl), 0;							// zero PIP
 	inc a;								// test PIP ($00 on cold start)
 	jr nz, main_1;						// immediate jump with warm start
 	call autoexec;						// test for AUTOEXEC.BAS
-
 	jr main_1;							// immediate jump
 
 ;;
@@ -886,7 +869,7 @@ trace_off:
 	ret;								// end of routine
 
 ;	// 2 unused bytes
-;	defs 2, $ff;						// 
+	defs 2, $ff;						// 
 
 	org $16b0;
 ;;
@@ -1389,7 +1372,7 @@ c_delete:
 	jp reclaim_1;						// immediate jump
 
 ;	// 5 unused bytes
-;	defs 5, $ff;						// 
+	defs 5, $ff;						// 
 
 	org $196e;
 ;;

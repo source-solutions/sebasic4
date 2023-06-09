@@ -45,7 +45,7 @@
 ;;
 :
 
-	org $518d
+	org $518e
 
 ;	// SE Basic IV supports up to 6 channels of music (with or without noise)
 ;	// and up to 8 channels of GM-MIDI music. (FIXME: enable selection of PSG or MIDI)
@@ -339,7 +339,7 @@ L5296:
 	ld a, (iy + chan_bmp);				// Channel bitmap
 	cp $FF;								// Is there anything to play?
 	jr nz, L52A0;						// Jump if there is
-	jp mute_psg_midi;					// Turn off all sound and restore IY and re-enable interrupts
+	jp play_exit;						// max CPU speed, switch off all sound, restore IY and enable interrupts
 
 L52A0:
 	dec de;								// DE=Smallest channel duration length, i.e. duration until the next channel state change
@@ -475,9 +475,9 @@ L533E:
 L5345:
 	call break_key;						// Test for BREAK being pressed
 	jr c, L534F;						// Jump ahead if not pressed
-	call mute_psg_midi;					// Turn off all sound and restore IY and Re-enable interrupts
+	call play_exit;						// max CPU speed, switch off all sound, restore IY and enable interrupts
 	rst error;							// then
-	defb 2;								// syntax_error
+	defb msg_break;						// report
 
 L534F:
 	call L52AC;							// Get the current character from the PLAY string, and advance the position pointer
@@ -531,9 +531,9 @@ play_lt_256:
 
 ;	// Produce Play Error Reports
 play_error:
-	call mute_psg_midi;					// switch off all sound, restore IY and enable interrupts
+	call play_exit;						// max CPU speed, switch off all sound, restore IY and enable interrupts
 	rst error;							// then
-	defb 2;								// syntax_error
+	defb illegal_function_call;			// error
 
 ;	// PLAY command: O (octae)
 play_octave:
@@ -985,7 +985,7 @@ L55E3:
 	dec a;								// else use second AY
 
 set_ay:
-	ld bc, $fffd;						// AY register select
+	ld bc, ay_128reg;					// AY register select
 	out (c), a;							// set AY (first or second)
 	out (c), d;							// select register
 	ld b, $bf; 							// select data port
@@ -997,7 +997,7 @@ L55FB:
 	ld a, $fe;							// do second AY first
 
 ay_loop:
-	ld bc, $fffd;						// register port
+	ld bc, ay_128reg;					// register port
 	out (c), a;							// select AY (first or second)
 	out (c), d;							// set register
 	ld b, $bf;							// data port
@@ -1016,7 +1016,7 @@ L560D:
 	ret;								// and return
 
 ;	// Turn Off All Sound
-mute_psg_midi:
+play_exit:
 	ld bc, uno_reg;						// Uno register select
 	ld a, scandbl_ctrl;					// scan double and control register
 	out (c), a;							// select it
@@ -1024,6 +1024,8 @@ mute_psg_midi:
 	in a, (c);							// get current value
 	or %11100000;						// 28MHz
 	out (c), a;							// set it
+
+mute_psg_midi:
 	ld d, 7;							// Register 7 - Mixer
 	ld e, $FF;							// I/O ports are inputs, noise output off, tone output off
 	call L55FB;							// set register
@@ -1381,14 +1383,14 @@ L580E:
 	ld a, 64;							// The note velocity
 	jp L5823;							// Write byte to MIDI device
 
-;	// Send Byte to MIDI Device
+;	// Send byte to MIDI device
 L5823:
 	ld l, a;							// Store the byte to send
-	ld bc, $FFFD;						// 
+	ld bc, ay_128reg;					// 
 	ld a, 14;							// 
-	out  (c), a;						// Select register 14 - I/O port
-	ld bc, $BFFD;						// 
-	ld a, $FA;							// Set RS232 'RXD' transmit line to 0. (Keep KEYPAD 'CTS' output line low to prevent the keypad resetting)
+	out (c), a;							// Select register 14 - I/O port
+	ld b, $bf;							// LD BC, ay_128dat
+	ld a, $fa;							// Set RS232 'RXD' transmit line to 0. (Keep KEYPAD 'CTS' output line low to prevent the keypad resetting)
 	out  (c), a;						// Send out the START bit
 	ld e, 3;							// (7) Introduce delays such that the next bit is output 113 T-states from now
 

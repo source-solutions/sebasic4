@@ -62,7 +62,7 @@
 ;bdos:
 ;	ret
 
-	org $4b8a
+	org $4b70
 
 ;	// vectored file system routines
 
@@ -1108,3 +1108,5 @@ save_1:
 ;	// FIXME - SEEK takes a stream number and a floating point value to set the pointer in a currently open file
 c_seek:
 	ret;
+
+	defs 27, $ff;						// 27 bytes reserved for routine
