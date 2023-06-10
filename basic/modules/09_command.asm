@@ -118,7 +118,7 @@ separator:
 ; statement return
 ;;
 stmt_ret:
-	call break_key;						// break?
+	call esc_key;						// break?
 	jr c, stmt_r_1;						// jump if not
 	call msg_loop;
 	jp report_break;					// clear keyboard buffer and report break
@@ -1085,7 +1085,7 @@ wait_end:
 	ret;								// end of routine
 
 ;	break key subroutine
-break_key:
+esc_key:
 	ld a, $7f;							// high byte of I/O address
 	in a, (ula);						// read byte
 	rra;								// set carry if space pressed

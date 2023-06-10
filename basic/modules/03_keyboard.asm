@@ -478,10 +478,10 @@ c_sound:
 	dec a;								// is it zero?
 	inc a;								// restore value
 	jp m, play_error;					// error if zero
-	ld bc, ay_128reg;					// register select
+	ld bc, psg_128reg;					// register select
 	out (c), a;							// write it
 	ex af, af';							// restore data
-	ld b, $bf;							// LD BC, ay_128dat
+	ld b, $bf;							// LD BC, psg_128dat
 	out (c), a;							// write it
 
 sound_1:

@@ -638,8 +638,8 @@ ENDM
 	mouse_y			equ $ffdf
 	ay_reg			equ	$c0f5
 	paging			equ	$7ffd
-	ay_128reg		equ $fffd
-	ay_128dat		equ	$bffd
+	psg_128reg		equ $fffd
+	psg_128dat		equ	$bffd
 
 
 ;	// restarts
