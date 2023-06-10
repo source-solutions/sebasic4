@@ -1107,6 +1107,22 @@ save_1:
 
 ;	// FIXME - SEEK takes a stream number and a floating point value to set the pointer in a currently open file
 c_seek:
+	call fp_to_bcde;					// get 32-bit integer
+	push bc;							// stack seek address
+	push de;							// 
+	call fp_to_a;						// stream number to A
+	pop de;								// unstack seek address
+	pop bc;								//
+	ld hl, $4000;
+	ld (hl), b
+	inc hl
+	ld (hl), c
+	inc hl
+	ld (hl), d
+	inc hl
+	ld (hl), e
+	inc hl
+	ld (hl), a
 	ret;
 
-	defs 27, $ff;						// 27 bytes reserved for routine
+;	defs 27, $ff;						// 27 bytes reserved for routine

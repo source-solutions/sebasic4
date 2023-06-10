@@ -116,7 +116,25 @@ int_store:
 	ret;								// end of subroutine
 
 ;;
-; floating point to BC
+; floating point to A (8-bit integer)
+;
+fp_to_a:
+	call fp_to_bc;						// last value on calc stack to BC
+	ret c;								// return if out of range
+	push af;							// stack result and flags
+	dec b;								// is B
+	inc b;								// zero?
+	jr z, fp_a_end;						// jump if not
+	pop af;								// unstack result and flags
+	scf;								// signal out of range
+	ret;								// end of subroutine
+
+fp_a_end:
+	pop af;								// unstack result and flags
+	ret;								// end of subroutine
+
+;;
+; floating point to BC (16-bit integer)
 ;;
 fp_to_bc:
 	fwait;								// stkend_5 
@@ -149,46 +167,30 @@ fp_to_bc_delete:
 	pop de;								// pointers
 	ret;								// end of subroutine
 
-; ------------------------------------------------------------------------------
-
 ;;
-; floating point to BCDE (32-bit integer) FIXME - work in progress
+; floating point to BCDE (32-bit integer)
 ;;
 fp_to_bcde:
-	fwait;								// round to
-	fstkhalf;							// nearest integer
-	fadd;								// and then
+	fwait;								// calculate timing loop counter
+	fmove;								// copy last number
+	fstk0;								// stack zero
+	fst 0;								// store it in mem-0
+	fdel;								// remove last item
+	fce;								// exit calc
+	ld (iy + _membot), $91;				// make it 65536 FIXME: just stack the correct number
+	fwait;								// calculate timing loop counter
+	fgt 0;								// get value	
+	fdiv;								// high 16 bits
+	fint;								// to integer
+	fxch;								// swap with float
+	fgt 0;								// get value	
+	fmod;								// modulo 65536
 	fce;								// exit calculator
-	call stk_fetch;						// 40-bit floating point value to AEDCB
-	bit 7, b;							// 
-	jp nz, report_overflow_2;			// jump if out of range
-	set 7, b;							// 
-	cp $a0;								// maximum exponent
-	jp nc, report_overflow_2;			// jump if out of range
-	sub $80;							// minimum exponent
-	jr c, zero;							// jump if zero
-	jr z, zero;							// jump if zero
-	cpl;								// one's complement
-	add a, 33;							// adjust
-	ret z;								// 
-
-norm_loop:
-	srl b;								// shift B right logical
-	rr c;								// shift C right
-	rr d;								// shift D right
-	rr e;								// shift E right
-	dec a;								// decrement A
-	jr nz, norm_loop;					// loop until normalized
-	ret;								// done
-
-zero:
-	ld b, 0;							// set
-	ld c, b;							// 32-bit
-	ld d, b;							// value
-	ld e, b;							// to zero
-	ret;								// and return
-
-; ------------------------------------------------------------------------------
+	call fp_to_bc;						// get low word to BC
+	push bc;							// stack it
+	call fp_to_bc;						// get high word to BC
+	pop de;								// low word to DE;
+	ret;								// end of subroutine
 
 ;;
 ; log (2^A)
@@ -209,24 +211,6 @@ log_2_a:
 	fmul;								// x * log 2
 	fint;								// int log (2^x)
 	fce;								// exit calculator
-
-;;
-; floating point to A
-;
-fp_to_a:
-	call fp_to_bc;						// last value on calc stack to BC
-	ret c;								// return if out of range
-	push af;							// stack result and flags
-	dec b;								// is B
-	inc b;								// zero?
-	jr z, fp_a_end;						// jump if not
-	pop af;								// unstack result and flags
-	scf;								// signal out of range
-	ret;								// end of subroutine
-
-fp_a_end:
-	pop af;								// unstack result and flags
-	ret;								// end of subroutine
 
 ;;
 ; print a floating-point number
