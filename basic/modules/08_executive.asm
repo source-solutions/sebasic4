@@ -141,7 +141,7 @@ initial:
 	ld hl, init_strm;					// source
 	ldir;								// copy initial streams table
 	ld (iy + _df_sz), 1;				// set lower display size
-	call mute_psg_midi;					// mute PSG and MIDI
+;	call mute_psg;						// mute PSG and MIDI
 	call init_path;						// initialize path
 	call screen_0;						// initialize screen
 	call set_min;						// clear all work areas and calculator stack

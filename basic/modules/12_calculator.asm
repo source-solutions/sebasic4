@@ -1556,3 +1556,7 @@ fp_quot:
 	fint;								// to small integer
 	fce;								// exit calculator
 	ret;								// done
+
+;	// 25 spare bytes
+	defs 25, $ff;						// RESERVED for future use
+

@@ -944,7 +944,7 @@ clear_run:
 
 clear_1:
 	push bc;							// stack value
-;	call mute_psg_midi;					// mute PSG and MIDI - FIXME (borks CLEAR)
+;	call mute_psg;						// mute PSG and MIDI - FIXME (borks CLEAR)
 	call close_all;						// close all streams
 	xor a;								// LD A, $ff
 	dec a;								// sets

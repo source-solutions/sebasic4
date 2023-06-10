@@ -62,7 +62,7 @@
 ;bdos:
 ;	ret
 
-	org $4b70
+	org $4b30
 
 ;	// vectored file system routines
 
@@ -1110,19 +1110,22 @@ c_seek:
 	call fp_to_bcde;					// get 32-bit integer
 	push bc;							// stack seek address
 	push de;							// 
-	call fp_to_a;						// stream number to A
-	pop de;								// unstack seek address
-	pop bc;								//
-	ld hl, $4000;
-	ld (hl), b
-	inc hl
-	ld (hl), c
-	inc hl
-	ld (hl), d
-	inc hl
-	ld (hl), e
-	inc hl
-	ld (hl), a
-	ret;
+	call str_data;						// get channel
+	jr nz, seek_valid;					// jump if stream open
+	pop hl;								// unstack
+	pop hl;								// registers
+	rst error;							// and 
+	defb undefined_stream;				// error
 
-;	defs 27, $ff;						// 27 bytes reserved for routine
+seek_valid:
+	ld hl, (chans);						// base address of channel to HL
+	add hl, bc;							// channel address 
+	push hl;							// HL
+	pop ix;								// to IX
+	ld a, (ix + 5);						// file handle
+	pop de;								// 32-bit integer
+	pop bc;								// 
+	ld ixl, 0;							// read from start of file
+	rst divmmc;							// DOS call
+	defb f_seek;						//
+	ret;

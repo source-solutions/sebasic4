@@ -1183,6 +1183,3 @@ p_wend:
 p_while:
 	defb num_exp_no_f_ops;
 	defw c_while;
-
-;	// 66 spare bytes
-	defs 66, $ff;	// RESERVED for extra commands

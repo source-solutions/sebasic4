@@ -24,7 +24,7 @@
 ;;
 :
 
-	org $4500
+	org $44c0
 
 v_s1_init:
 	jp s1_init;							// initialize screen
