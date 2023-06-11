@@ -171,22 +171,22 @@ fp_to_bc_delete:
 ; floating point to BCDE (32-bit integer) FIXME: numbers above 2^32 − 1 are not trapped
 ;;
 fp_to_bcde:
-	fwait;								// calculate timing loop counter
-	fmove;								// copy last number
+	fwait;								// calculate timing loop counter	x
+	fmove;								// copy last number					x, x
 	fstk;								// stack a value
-	defb $00, $41, $00;					// 65536
+	defb $00, $41, $00;					// 65536							x, x, 65536
 	fst 0;								// store it in mem_0
-	fdiv;								// high 16 bits
-	fint;								// to integer
-	fxch;								// swap with float
-	fgt 0;								// get value	
-	fmod;								// modulo 65536 
+	fdiv;								// high 16 bits						x, x/65536
+	fint;								// to integer						x, int (x/65536)
+	fxch;								// swap with float					int (x/65536), x
+	fgt 0;								// get value						int (x/65536), x, 65536
+	fmod;								// modulo 65536 					int (x/65536), x mod 65536
 	fce;								// exit calculator
-	call fp_to_bc;						// get low word to BC
+	call fp_to_bc;						// get low word to BC				BC = low word
 	push bc;							// stack it
-	call fp_to_bc;						// get high word to BC
-	pop de;								// low word to DE;
-	ret;								// end of subroutine
+	call fp_to_bc;						// get high word to BC				BC   = hi word
+	pop de;								// low word to DE;					DE   = low word
+	ret;								// end of subroutine				BCDE = long
 
 ;;
 ; log (2^A)
