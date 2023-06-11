@@ -1110,22 +1110,24 @@ c_seek:
 	call fp_to_bcde;					// get 32-bit integer
 	push bc;							// stack seek address
 	push de;							// 
-	call str_data;						// get channel
+	call str_data1;						// get channel
 	jr nz, seek_valid;					// jump if stream open
-	pop hl;								// unstack
-	pop hl;								// registers
+	pop af;								// unstack
+	pop af;								// registers
 	rst error;							// and 
 	defb undefined_stream;				// error
 
 seek_valid:
 	ld hl, (chans);						// base address of channel to HL
 	add hl, bc;							// channel address 
-	push hl;							// HL
-	pop ix;								// to IX
-	ld a, (ix + 5);						// file handle
-	pop de;								// 32-bit integer
-	pop bc;								// 
+	inc hl;								// advance to file handle
+	inc hl;								// 
+	inc hl;								// 
+	inc hl;								// 
+	ld a, (hl);							// get it in A
+	pop de;								// 32-bit unsigned integer
+	pop bc;								// BCDE
 	ld ixl, 0;							// read from start of file
-	rst divmmc;							// DOS call
-	defb f_seek;						//
-	ret;
+	rst divmmc;							// issue a hookcode
+	defb f_seek;						// seek to BCDE
+	ret;								// end of subroutine
