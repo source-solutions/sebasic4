@@ -1089,11 +1089,6 @@ set_pal:
 
 ;;	// stubs for line drawning commands (not supported in text mode)
 
-;c_arc:
-;	bit 1, (iy + _flags2);				// test for screen 1 (user defined video mode)
-;	jp nz, v_s1_arc;					// jump if so
-;	jr no_draw;							// immediate jump
-
 c_circle:
 	bit 1, (iy + _flags2);				// test for screen 1 (user defined video mode)
 	jp nz, v_s1_circle;					// jump if so
@@ -1112,6 +1107,9 @@ no_draw:
 	call unstack_z;						// return if checking syntax
 	rst error;							// else
 	defb syntax_error;					// error
+
+;	// 2 spare bytes
+;	defs 2, $ff;						// room to add additional stubs
 
 ;;
 ; <code>SCREEN</code> command
@@ -1501,6 +1499,6 @@ set_color:
 	ret;								// end of subroutine
 
 ;	// 4 unused bytes
-	defs 4, $ff;
+;	defs 4, $ff;
 
 
