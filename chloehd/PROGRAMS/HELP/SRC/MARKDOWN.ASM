@@ -43,13 +43,13 @@ loop:
 	and a;								// test for zero (terminating byte)
 	jr z, exit;							// return if so
 
-test_link_open:
-	cp '[';								// open square bracket?
-	call z, link_open;					// call if so
+;test_link_open:
+;	cp '[';								// open square bracket?
+;	call z, link_open;					// call if so
 
-test_link_close:
-	cp ']';								// close square bracket?
-	call z, link_close;					// call if so
+;test_link_close:
+;	cp ']';								// close square bracket?
+;	call z, link_close;					// call if so
 
 test_esc:
 	cp 92;								// test for escape character ( \ )
@@ -214,13 +214,13 @@ nm_bold:
 	jr nm_lookup;						// immediate jump
 
 ;	// deal with links
-link_open:
-	ld (ix), 1;							// set bold
-	ret;								// return
+;link_open:
+;	ld (ix), 1;							// set bold
+;	ret;								// return
 
-link_close:
-	ld (ix), 0;							// set roman
-	ret;
+;link_close:
+;	ld (ix), 0;							// set roman
+;	ret;
 
 ;	// apply conversions
 
