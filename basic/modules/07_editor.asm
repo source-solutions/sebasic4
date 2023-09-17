@@ -471,7 +471,7 @@ get_cols:
 	ret;								// return
 
 ;	// 4 unused bytes
-	defs 4, $ff;						// the next routine is placed for space efficiency
+;	defs 4, $ff;						// the next routine is placed for space efficiency
 
 ;;
 ; <code>CALL</code> command
@@ -495,7 +495,7 @@ call_1:
 	call find_int2;						// get address
 	ld l, c;							// address to
 	ld h, b;							// HL
-	call call_jump;						// call address
+	call call_jump;						// CALL HL
 	exx;								// alternate register set
 	ld hl, $2758;						// restore value of HL'
 	exx;								// main register set
@@ -567,5 +567,5 @@ edit_1:
 	pop af;								// drop address
 	jp main_2;							// immediate jump
 
-;	// 68 unused bytes
-	defs 68, $ff;						// RESERVED
+;	// 61 unused bytes
+	defs 61, $ff;						// RESERVED
