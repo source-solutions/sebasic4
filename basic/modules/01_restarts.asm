@@ -303,8 +303,8 @@ msg_loop:
 	ret z;								// return when done
 	jr msg_loop;						// loop until done
 
-	// 25 unused bytes
-	defs 25, $ff;						// RESERVED for future service calls
+;	// 25 unused bytes
+	defs 25, $ff;						// RESERVED
 
 	org $00ff
 im2:
