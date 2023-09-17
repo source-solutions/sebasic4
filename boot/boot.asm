@@ -1088,7 +1088,7 @@ cf_end:
 ;	// code page 437 font
 	org $2a00
 font:
-	incbin "0437-IBM.CP"
+	incbin "../chloehd/SYSTEM/FONTS/0437-IBM.CP"
 
 ;	// entry point from OS ROM
 	org $3200

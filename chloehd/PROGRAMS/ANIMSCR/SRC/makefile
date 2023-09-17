@@ -1,0 +1,2 @@
+prg:
+	pasmo ANIMSCR.ASM ../PRG/ANIMSCR.PRG
