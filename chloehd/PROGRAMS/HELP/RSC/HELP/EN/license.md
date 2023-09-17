@@ -4,7 +4,7 @@
 
 Copyright (C) 1981-2022 Source Solutions, Inc.
 
-Source code available at [https://github.com/cheveron/sebasic4](https://github.com/cheveron/sebasic4).
+Source code available at [https://github.com/source-solutions/sebasic4](https://github.com/source-solutions/sebasic4).
 
 
 This program is free software: you can redistribute it and/or modify it under
