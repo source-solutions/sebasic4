@@ -57,12 +57,7 @@
 	buffer		equ handle_1 + 1;		// (iy + $68)
 	buffer_1	equ buffer + 2;			// (iy + $6a)
 
-
-;	// CP/M emulation layer:
-;bdos:
-;	ret
-
-	org $4b30
+	org $4b70
 
 ;	// vectored file system routines
 
@@ -1105,7 +1100,11 @@ save_1:
 	ld ix, (curchl);					// current channel to IX
 	call close_file;					// it is, in fact, a jump, as the return address will be popped
 
-;	// FIXME - SEEK takes a stream number and a floating point value to set the pointer in a currently open file
+;;
+; <code>SEEK</code> command
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#SEEK" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws Stream not found.
+;;
 c_seek:
 	call fp_to_bcde;					// get 32-bit integer
 	push bc;							// stack seek address
@@ -1131,3 +1130,6 @@ seek_valid:
 	rst divmmc;							// issue a hookcode
 	defb f_seek;						// seek to BCDE
 	ret;								// end of subroutine
+
+;	// RESERVED
+	defs 1, $ff;							// spare byte
