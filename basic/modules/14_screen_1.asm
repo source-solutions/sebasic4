@@ -24,7 +24,7 @@
 ;;
 :
 
-	org $44c0
+	org $4500
 
 v_s1_init:
 	jp s1_init;							// initialize screen
@@ -880,7 +880,7 @@ s1_init:
 	ld c, $3b;							// palette port
 	ld de, $ffbf;						// d = data, e = register
 
-	ld a, 6;							// register to read
+	ld a, 46;							// register to read
 	call get_reg;						// get it
 	ld l, 22;							// register to write
 	call set_reg;						// set it
@@ -890,7 +890,7 @@ s1_init:
 	ld l, 25;							// register to write
 	call set_reg;						// set it
 
-	ld a, 14;							// register to read
+	ld a, 6;							// register to read
 	call get_reg;						// get it
 	ld l, 30;							// register to write
 	call set_reg;						// set it
