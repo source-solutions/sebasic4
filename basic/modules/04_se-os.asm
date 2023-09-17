@@ -1,21 +1,21 @@
-;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2023 Source Solutions, Inc.
+;	// SE/OS 1.0.0
+;	// Copyright (c) 2023 Source Solutions, Inc.
 
-;	// SE Basic IV is free software: you can redistribute it and/or modify
+;	// SE/OS is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
 ;	// the Free Software Foundation, either version 3 of the License, or
 ;	// (at your option) any later version.
 ;	// 
-;	// SE Basic IV is distributed in the hope that it will be useful,
+;	// SE/OS is distributed in the hope that it will be useful,
 ;	// but WITHOUT ANY WARRANTY; without even the implied warranty o;
 ;	// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 ;	// GNU General Public License for more details.
 ;	// 
 ;	// You should have received a copy of the GNU General Public License
-;	// along with SE Basic IV. If not, see <http://www.gnu.org/licenses/>.
+;	// along with SE/OS. If not, see <http://www.gnu.org/licenses/>.
 
 ;;
-;	// --- VECTOR TABLE ---------------------------------------------------------
+;	// --- SE/OS API ------------------------------------------------------------
 ;;
 :
 
@@ -328,82 +328,3 @@ SEGraphicsPaletteSet:
 
 ; $34
 	jp $ffff;							// ($0562 must never be called)
-
-;	// 236 spare bytes;
-	defs 236, $ff;						// reserved for DLL handler
-
-;	// permits extension of vector table if required
-
-;dll_init:
-;    pop hl;                             // get return address
-;
-;    ld e, l;                            // store it in
-;    ld d, h;                            // DE
-;
-;    dec hl;                             // point to init address
-;    dec hl;                             //
-;    dec hl;                             //
-;
-;    push hl;                            // stack it
-;
-;    ex de, hl;                          // first label to HL
-;
-;label:
-;    ld c, (hl);                         // label address to BC
-;    inc hl;                             //
-;    ld b, (hl);                         // 
-;
-;    inc hl;                             // next word
-;
-;    ld a, c;                            // test for final end marker
-;    or b;                               //
-;    jr z, init_patch;                   // jump if so
-;
-;    ex de, hl;                          // store index pointer in DE
-;    pop hl;                             // get init address
-;    push hl;                            // restack it
-;    add hl, bc;                         // get real addres
-;    ld c, l;                            // store it in
-;    ld b, h;                            // BC
-;    ex de, hl;                          // restore index pointer to HL
-;
-;patch:
-;    ld e, (hl);                         // patch address to DE
-;    inc hl;                             //
-;    ld d, (hl);                         //
-;
-;    inc hl;                             // next word
-;
-;    ld a, e;                            // test for patch end marker
-;    or d;                               //
-;    jr z, label;                        // jump if so to do next label
-;
-;    push hl;                            // store HL
-;    pop ix;                             // in IX
-;    pop hl;                             // get init address
-;    push hl;                            // restack it
-;    add hl, de;                         // label address to HL
-;    ld (hl), c;                         // write low byte of label address
-;    inc hl;                             // address high byte
-;    ld (hl), b;                         // write high byte of label address
-;    push ix;                            // restore IX
-;    pop hl;                             // to HL
-;
-;    jr patch;                           // loop for next address
-;
-;init_patch;
-;    ex de, hl;                          // start address to DE
-;    pop hl;                             // init address to HL
-;   
-;    push hl;                            // restack it
-;
-;    ld (hl), $c3;                       // jump instruction
-;    inc hl;                             // next address
-;    ld (hl), e;                         // low byte of start
-;    inc hl;                             // next address
-;    ld (hl), d;                         // high byte of start
-;
-;    pop hl;                             // unstack init address
-;
-;    jp (hl);                            // immedaite jump (execute routine)
-;
