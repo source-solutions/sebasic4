@@ -18,39 +18,41 @@
 ;	// --- SYSTEM HEADERS ------------------------------------------------------
 ;;
 
-;;	// vector table address
+;;	// SE/OS vector table address
 	vector equ $04c4;
 
-;	// SE Basic IV DOS API
-	SEFileAppend equ vector;			// $00
-	SEFileClose equ vector + 3;			// $01
-	SEFileCreate equ vector + 6;		// $02
-	SEFileLoad equ vector + 9;			// $03
-	SEFileOpen equ vector + 12;			// $04
-	SEFileOpenExists equ vector + 15;	// $05
-	SEFileRead equ vector + 18;			// $06
-	SEFileReadOne equ vector + 21;		// $07
-	SEFileRemove equ vector + 24;		// $08
-	SEFileRename equ vector + 27;		// $09
-	SEFileSave equ vector + 30;			// $0a
-	SEFileWrite equ vector + 33;		// $0b
-	SEFileWriteOne equ vector + 36;		// $0c
-	SEFolderCreate equ vector + 39;		// $0d
-	SEFolderOpen equ vector + 42;		// $0e
-	SEFolderRead equ vector + 45;		// $0f
-	SEFolderRemove equ vector + 48;		// $10
-	SEFolderSet equ vector + 51; 		// $11
-;	SE equ vector + 54; 				// $12 (reserved)
-;	SE equ vector + 57; 				// $13 (reserved)
+;	// SE/OS Storage kit
+	SEFileAppend equ vector;					// $00
+	SEFileClose equ vector + 3;					// $01
+	SEFileCreate equ vector + 6;				// $02
+	SEFileLoad equ vector + 9;					// $03
+	SEFileOpen equ vector + 12;					// $04
+	SEFileOpenExists equ vector + 15;			// $05
+	SEFileRead equ vector + 18;					// $06
+	SEFileReadOne equ vector + 21;				// $07
+	SEFileRemove equ vector + 24;				// $08
+	SEFileRename equ vector + 27;				// $09
+	SEFileSave equ vector + 30;					// $0a
+	SEFileWrite equ vector + 33;				// $0b
+	SEFileWriteOne equ vector + 36;				// $0c
+	SEFolderCreate equ vector + 39;				// $0d
+	SEFolderOpen equ vector + 42;				// $0e
+	SEFolderRead equ vector + 45;				// $0f
+	SEFolderRemove equ vector + 48;				// $10
+	SEFolderSet equ vector + 51; 				// $11
 
-;	// SE Basic IV console API
-	SEScreenMode equ vector + 60; 				// $14
+;	// SE/OS Console kit
+	SEKeyboardFlushBuffer equ vector + 54;		// $12
+	SEKeyboardGetCharacter equ vector + 57;		// $13
+	SEKeyboardWaitKey equ vector + 60;			// $14
 	SEScreenClear equ vector + 63; 				// $15
-	SEScreenPrintString equ vector + 66; 		// $16
-	SEScreenLowerPrintString equ vector + 69; 	// $17
-	SEGraphicsPaletteSet equ vector + 72;		// $18
-	SEKeyboardFlushBuffer equ vector + 75;		// $19
-	SEKeyboardWaitKey equ vector + 78;			// $19
+	SEScreenLowerPrintString equ vector + 66; 	// $16
+	SEScreenMode equ vector + 69; 				// $17
+	SEScreenPrintCharacter equ vector + 72;		// $18
+	SEScreenPrintString equ vector + 75; 		// $19
+
+;	// SE/OS Graphics kit
+	SEGraphicsPaletteSet equ vector + 78;		// $1a
 
 ;	// UnoDOS 3 hook codes
 	divmmc equ 8;

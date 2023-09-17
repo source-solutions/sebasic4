@@ -15,7 +15,7 @@
 ;	// along with SE/OS. If not, see <http://www.gnu.org/licenses/>.
 
 ;;
-;	// --- SE/OS API ------------------------------------------------------------
+;	// --- SE/OS API 1.0 --------------------------------------------------------
 ;;
 :
 
@@ -30,6 +30,8 @@
 ;	ret;								// must never call this address
 
 	org $04c4;
+
+;	// --- Storage kit ----------------------------------------------------------
 
 ;;
 ; open a file for appending if it exists
@@ -189,17 +191,13 @@ SEFolderRemove:
 SEFolderSet:
 	jp v_chdir;							// $11
 
-;	// RESERVED
-	jp $ffff;							// $12
-
-;	// RESERVED
-	jp $ffff;							// $13
+;	// --- Console kit ----------------------------------------------------------
 
 ;;
 ; flush keyboard buffer
 ;;
 SEKeyboardFlushBuffer:
-	jp flush_kb;						// $14
+	jp flush_kb;						// $12
 
 ;;
 ; get a character from the keyboard buffer
@@ -207,61 +205,73 @@ SEKeyboardFlushBuffer:
 ; @throws sets carry flag on error
 ;;
 SEKeyboardGetCharacter;
-	jp v_get_chr;						// $15
+	jp v_get_chr;						// $13
 
 ;;
 ; wait for keypress and get character from keyboard buffer
 ; @return character <code>A</code>
 ;;
 SEKeyboardWaitKey
-	jp v_key_wait;						// $16
+	jp v_key_wait;						// $14
 
 ;;
 ; clear the screen
 ;;
 SEScreenClear:
-	jp v_cls;							// $17
+	jp v_cls;							// $15
 
 ;;
 ; print an ASCIIZ string to the lower display
 ; @param IX - pointer to ASCIIZ string
 ;;
 SEScreenLowerPrintString:
-	jp v_pr_str_lo;						// $18
+	jp v_pr_str_lo;						// $16
 
 ;;
 ; set the screen mode
 ; @param A - mode (0 system, 1 user)
 ;;
 SEScreenMode:
-	jp v_scr_mode;						// $19
+	jp v_scr_mode;						// $17
 
 ;;
 ; print an ASCII character to the main display
 ; @param A - ASCII code
 ;;
 SEScreenPrintCharacter:
-	jp v_pr_chr;						// $1a
+	jp v_pr_chr;						// $18
 
 ;;
 ; print an ASCIIZ string to the main display
 ; @param IX - pointer to ASCIIZ string
 ;;
 SEScreenPrintString:
-	jp v_pr_str;						// $1b
+	jp v_pr_str;						// $19
 
-; $1c
-	jp $ffff;							// 
-
-; $1d
-	jp $ffff;							//
+;	// --- Graphics kit ---------------------------------------------------------
 
 ;;
 ; set the 64 palette registers (during vblank)
 ; @param IX - pointer to 64 bytes of palette data
 ;;
 SEGraphicsPaletteSet:
-	jp v_write_pal;						// $1e
+	jp v_write_pal;						// $1a
+
+;;
+;	// --- SE/OS API 1.1 --------------------------------------------------------
+;;
+
+; $1b
+	jp $ffff;							// 
+
+; $1c
+	jp $ffff;							// 
+
+; $1d
+	jp $ffff;							// 
+
+; $1e
+	jp $ffff;							// 
 
 ; $1f
 	jp $ffff;							// 
