@@ -32,7 +32,7 @@
 	include "modules/01_restarts.asm"
 	include "modules/02_tokenizer.asm"
 	include "modules/03_keyboard.asm"
-	include "modules/04_vectors.asm"
+	include "modules/04_se-os.asm"
 	include "modules/05_preprocessor.asm"
 	include "modules/06_screen_0.asm"
 	include "modules/07_editor.asm"
