@@ -43,6 +43,14 @@ loop:
 	and a;								// test for zero (terminating byte)
 	jr z, exit;							// return if so
 
+test_link_open:
+	cp '[';								// open square bracket?
+	call z, link_open;					// call if so
+
+test_link_close:
+	cp ']';								// close square bracket?
+	call z, link_close;					// call if so
+
 test_esc:
 	cp 92;								// test for escape character ( \ )
 	jr nz, test_lf;						// jump if not
@@ -205,11 +213,24 @@ nm_bold:
 	ld hl, bold;						// table base
 	jr nm_lookup;						// immediate jump
 
+;	// deal with links
+link_open:
+	ld (ix), 1;							// set bold
+	ret;								// return
+
+link_close:
+	ld (ix), 0;							// set roman
+	ret;
+
 ;	// apply conversions
 
 pr_head:
 	inc hl;								// next character
 	ld a, (hl);							// get character
+
+	cp ' ';								is it a space?
+	jr z, sp_found;						// jump if so
+
 	cp '#';								// is it another '#'
 	dec hl;								// current character
 	ld a, (hl);							// restore character
@@ -220,6 +241,8 @@ pr_head_loop:
 	ld a, (hl);							// get character
 	cp ' ';								// is it a space?
 	jr nz, pr_head_loop;				// jump until found
+
+sp_found:
 	ld (ix), 1;							// set bold
 	inc hl;								// next character
 	ld a, (hl);							// get it
