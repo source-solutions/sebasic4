@@ -1,6 +1,9 @@
 # exclude macOS meta files
 .DS_Store
 
+# exclude SE/OS temporary files
+*.$$$
+
 # exclude Windows local Perl instance
 /api/perl
 

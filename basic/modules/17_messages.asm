@@ -92,3 +92,5 @@ rpt_mesgs:
 	defb "Input past end", 0;			// code 62
 	path_not_found equ $19;
 	defb "Path not found", 0;			// code 76
+
+	defs 325, $ff;						// space for longer translations
