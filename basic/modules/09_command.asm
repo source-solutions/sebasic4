@@ -19,7 +19,7 @@
 ;;
 :
 
-;	org $1ae9
+	org $1a7d
 
 ;;
 ; BASIC main parser
@@ -944,7 +944,7 @@ clear_run:
 
 clear_1:
 	push bc;							// stack value
-;	call mute_psg;						// mute PSG and MIDI - FIXME (borks CLEAR)
+;	call mute_psg;						// mute PSG [FIXME: For some reason this kills the Help app if enabled]
 	call close_all;						// close all streams
 	xor a;								// LD A, $ff
 	dec a;								// sets
@@ -1084,7 +1084,7 @@ wait_end:
 	call flush_kb;						// signal no key
 	ret;								// end of routine
 
-;	break key subroutine
+;	<Esc> key subroutine
 esc_key:
 	ld a, $7f;							// high byte of I/O address
 	in a, (ula);						// read byte
@@ -1273,9 +1273,71 @@ pr_string:
 pr_end_z:
 	cp ')';								// closing parenthesis
 	ret z;								// return if so
+	jr pr_st_end;						// immediate jump
 
-;	// 82 unused bytes
-	defs 82, $ff;						// 
+bell:
+;;
+; <code>BEEP</code> command
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#BEEP" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws Syntax error.
+;;
+c_beep:
+	ld de, $bfff;						// D = data port, E = register port
+	ld c, $fd;							// low byte of PSG port
+	ld l, 5;							// channel C coarse
+	ld a, 128;							// 800 Hz (ish)
+	call psg_out;						// write it
+	ld l, 7;							// mixer
+	ld a, %11111011;					// channel C on (tone)
+	call psg_out;						// write it
+	ld l, 10;							// volume
+	ld a, 15;							// 100%
+	call psg_out;						// write it
+	ld b, a;							// 15 frames to wait
+
+bell_loop:
+	halt;								// wait for v-blank
+	djnz, bell_loop;					// loop for 0.25 seconds
+
+mute_psg:
+	ld hl, $fe07;						// H = chip-0 ($fe), L = Volume register (7)
+	ld de, $bfff;						// D = data port, E = register port / mute
+	ld c, $fd;							// low byte of PSG port
+	ld a, e;							// LD A, $ff
+	call psg_chip;						// mute chip-0
+	inc h;								// chip-1 ($fe)
+
+psg_chip:
+	out (c), h;							// select chip (255/254)
+
+psg_out:
+	ld b, e;							// PSG register port
+	out (c), l;							// select register
+	ld b, d;							// PSG data port
+	out (c), a;							// chip off;
+	ret;								// end of subroutine
+
+;	// SOUND <PSG register>, <PSG value>
+;;
+; <code>SOUND</code> command
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#SOUND" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws Syntax error.
+;;
+c_sound:
+	call fp_to_a;						// data to A
+	ex af, af';							// store data
+	call fp_to_a;						// register to A
+	cp 17;								// 0 to 16?
+	jp nc, play_error;					// error if not
+	dec a;								// is it zero?
+	inc a;								// restore value
+	jp m, play_error;					// error if zero
+	ld bc, psg_128reg;					// register select
+	out (c), a;							// write it
+	ex af, af';							// restore data
+	ld b, $bf;							// LD BC, psg_128dat
+	out (c), a;							// write it
+	ret									// and return
 
 ;	// UnoDOS 3 entry point
 	org $2048;
@@ -2117,8 +2179,3 @@ get_line:
  	call find_line;						// get valid line
  	call line_addr;						// get line address
 	ret;								// return
-
-bell:
-c_sound:
-c_beep:
-
