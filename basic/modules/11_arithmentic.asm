@@ -116,25 +116,7 @@ int_store:
 	ret;								// end of subroutine
 
 ;;
-; floating point to A (8-bit integer)
-;
-fp_to_a:
-	call fp_to_bc;						// last value on calc stack to BC
-	ret c;								// return if out of range
-	push af;							// stack result and flags
-	dec b;								// is B
-	inc b;								// zero?
-	jr z, fp_a_end;						// jump if not
-	pop af;								// unstack result and flags
-	scf;								// signal out of range
-	ret;								// end of subroutine
-
-fp_a_end:
-	pop af;								// unstack result and flags
-	ret;								// end of subroutine
-
-;;
-; floating point to BC (16-bit integer)
+; floating point to BC
 ;;
 fp_to_bc:
 	fwait;								// stkend_5 
@@ -207,6 +189,24 @@ log_2_a:
 	fmul;								// x * log 2
 	fint;								// int log (2^x)
 	fce;								// exit calculator
+
+;;
+; floating point to A
+;
+fp_to_a:
+	call fp_to_bc;						// last value on calc stack to BC
+	ret c;								// return if out of range
+	push af;							// stack result and flags
+	dec b;								// is B
+	inc b;								// zero?
+	jr z, fp_a_end;						// jump if not
+	pop af;								// unstack result and flags
+	scf;								// signal out of range
+	ret;								// end of subroutine
+
+fp_a_end:
+	pop af;								// unstack result and flags
+	ret;								// end of subroutine
 
 ;;
 ; print a floating-point number

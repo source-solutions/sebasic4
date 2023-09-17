@@ -22,6 +22,8 @@
 ;;
 :
 
+	org $3c17
+
 ;	// Executable code cannot be stored between $3d00 and $3fff because the
 ;	// divMMC hardware traps these locations
 ;	//
@@ -201,6 +203,8 @@ durations:
 	defb 8;								// twelfth note / triple quaver
 	defb 16;							// sixth note / triple crotchet
 
+;	// 24 unused bytes
+	defs 24, $ff;						// RESERVED
 
 	org $3d00;
 
@@ -242,7 +246,6 @@ play_tab:
 	defw play_rep;						// [
 	defw play_rep_end;					// ]
 	defw play_tempo;					// T
-;	defw play_mixer;					// N -FIXME (fix or remove)
 	defw play_volume;					// V
 	defw play_envelope;					// S
 	defw play_envdur;					// M
@@ -384,24 +387,25 @@ sbst_chr_tbl:
 	defb '|', tk_or;					// OR
 	defb 0;								// null end marker
 
-;	// 8 unused bytes
-	defs 8, $ff;						// reserved to modify copyright message
+;	// 2 unused bytes
+	defs 2, $ff;						// reserved to modify copyright message
 
 ;	// copyright message
-copyright:
-
 ifndef slam
+copyright:
 	defb "CHLOE 280SE Personal Color Computer", ctrl_cr;
 	defb "Copyright (C) 1999 Chloe Corp.", ctrl_cr;
 endif
 
 ifdef slam
-	defb "ZX Spectrum 128 Personal Computer", ctrl_cr;
-	defb "Copyright (C)1985 Sinclair Research Ltd.", ctrl_cr;
+	defs 10, $ff;						// reserved to modify copyright message
+copyright:
+	defb "ZX Spectrum 128", ctrl_cr;
+	defb "Copyright (C) 1985 Sinclair Research Ltd", ctrl_cr;
 endif
 
 	defb ctrl_cr;
-	defb "SE BASIC (GPL-3.0 License)", ctrl_cr;
+	defb "SE BASIC 4.2.0 (GPL-3.0 License)", ctrl_cr;
 	defb "Copyright (C) 2023 Source Solutions Inc.", ctrl_cr;
 ;	timestamp 'YY-MM-DD h:m';			// RASM directive
 	defb ctrl_cr, 0;
@@ -1183,3 +1187,6 @@ p_wend:
 p_while:
 	defb num_exp_no_f_ops;
 	defw c_while;
+
+;	// 66 unused bytes
+	defs 66, $ff;						// RESERVED

@@ -1549,14 +1549,9 @@ last:
 	fce;								// exit calculator
 	ret;								// end of subroutine
 
-
 fp_quot:
 	fwait;								// enter calculator
 	fdiv;								// divide and convert
 	fint;								// to small integer
 	fce;								// exit calculator
 	ret;								// done
-
-;	// 25 spare bytes
-	defs 25, $ff;						// RESERVED for future use
-
