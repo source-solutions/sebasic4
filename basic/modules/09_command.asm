@@ -2117,3 +2117,8 @@ get_line:
  	call find_line;						// get valid line
  	call line_addr;						// get line address
 	ret;								// return
+
+bell:
+c_sound:
+c_beep:
+
