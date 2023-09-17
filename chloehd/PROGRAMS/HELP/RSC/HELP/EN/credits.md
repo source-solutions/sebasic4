@@ -3,7 +3,7 @@
 SE BASIC 4.2.0 Cordelia.
 Copyright (C)1981-2023 Source Solutions, Inc.
 
-Based on T/S1000 BASIC by John Grant and Steven Vickers.
+Based on "T/S1000 BASIC" by John Grant and Steven Vickers.
 
 Written by Andrew Owen with contributions from Ian Collier, Jonathan Hartson, 
 Richard Kelsh, Slavo Labsky, Jiri LeMac, Ian Logan, Gerton Lunter, Kevin Males,
@@ -25,13 +25,14 @@ Mette Hafstad Attar, Baskman, Johanna Behm, Ivan Benishek, Andrea Cebrián,
 Aiko Chiba, Pia Christensen, Giulia Crotti, Caroline Eira, Arda Erdikmen, 
 Rodrigo Fernandes, Nazar Grymnak, Davide Guida, Ray Juodvirsis, Vessela Kateva, 
 Vasiliki Korfiati, Anestis Koutsoudis, Mike van der Lee, François Lionet, 
-Subi Nga, Wout Plattel, Antonela Prusina, João Diogo Ramos, Alex Semenov, 
+Subi Nga, Wout Plattel, Antonela Prusina, Joao Diogo Ramos, Alex Semenov, 
 Jad Sinoradzka, Rossella Squillace, Dora Stancu and Tiia Tsurkka.
 
-Patreon support by Sebastian Braunert, Ricardo Calcagno, Gregory Zentkovich, 
-Bruno Silva, Nikolay Ivanchev, John Cook, George Schizas, Thomas Jager, 
-APBDeveloper, John van der Vuurst, Andrew Stephen, Matt Myers, Ramon Martinez 
-Palomares, Benjamin Kleiner, Guy Black, Paul Becker, Robsoft, Manuel Montoto, 
-Gavin Haubelt, Tom Wilson, Charles Stanhope, John Young, Igmar Palsenberg, 
-Richard Hallas, Alexander Sharikhin, Mattew Butch and Warren Stanley.
+Patreon support by Sebastian Braunert, Ricardo Calcagno, Gregory Zentkovich,
+Bruno Silva, Nikolay Ivanchev, John Cook, Thomas Jager, George Schizas,
+APBDeveloper, John van der Vuurst, Andrew Stephen, Matt Myers, Benjamin Kleiner,
+Ramon Martinez Palomares, Manuel Montoto, Guy Black, Paul Becker, Robsoft,
+Gavin Haubelt, Tom Wilson, John Young, Richard Hallas, Charles Stanhope,  
+Alexander Sharikhin, Igmar Palsenberg, Steve Hawkes, Mattew Butch,
+Warren Stanley, David B and Jaco Bot.
 
