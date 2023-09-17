@@ -1,7 +1,7 @@
 # Acknowledgments
 ***
 SE BASIC 4.2.0 Cordelia.
-Copyright (C)1981-2023 Source Solutions, Inc.
+Copyright (C) 1981-2023 Source Solutions, Inc.
 
 Based on "T/S1000 BASIC" by John Grant and Steven Vickers.
 

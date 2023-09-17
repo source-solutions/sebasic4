@@ -12,7 +12,7 @@ PROGRAMS
                           RSC
                           |----------- RESOURCE.BIN
 ```
-The `RUN` command sets the stack pointer to `$6000`, loads the binary (`PRG` file) at $6000, changes the path to the resource (`RSC`) folder and sets the program
+The `RUN` command sets the stack pointer to `$6000`, loads the binary (`PRG` file) at `$6000`, changes the path to the resource (`RSC`) folder and sets the program
 counter to `$6000`.
 
 
