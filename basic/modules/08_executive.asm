@@ -42,7 +42,7 @@
 
 ;	// FIXME - further optimization is possible
 
-	org $1252;
+	org $124b;
 
 ;;
 ; <code>NEW</code> command
@@ -56,7 +56,7 @@ c_new:
 	ld de, (ramtop);					// get sysvar
 	exx;								// alternate register set
 	ld bc, (p_ramt);					// store
-	ld de, ($4000);						// system
+	ld de, (flags2);					// system
 	ld hl, (nmiadd);					// variables
 	exx;								// main register set
 
@@ -84,12 +84,14 @@ start_new:
 	ldir;								// wipe bytes
 	exx;								// alternate register set
 	ld (p_ramt), bc;					// restore p_ramt
-	ld ($4000), de;						// restore system variable FIXME: DE seems to be corrupted
+	ld (flags2), de;					// restore flags2 (screen mode / CAPS lock)
 	ld (nmiadd), hl;					// restore nmiadd
 	exx;								// main resister set
 	ex af, af';							// restore A
 	inc a;								// NEW command?
 	jr z, ram_set;						// jump if sp
+	ld a, %00001000;					// CAPS LOCK / screen 0
+	ld (flags2), a;						// set FLAGS2
 	ld (p_ramt), iy;					// set top of RAM
 	ld hl, (p_ramt);					// p-ramt to HL
 
@@ -102,7 +104,7 @@ ram_set:
 initial:
 	ld hl, (ramtop);					// ramtop to HL
 	ld (hl), $3e;						// set it to the GOSUB end marker
-	dec hl;
+	dec hl;								// reduce HL
 	ld sp, hl;							// point stack to same location
 	dec hl;								// (pointer moves down during PUSH)
 	dec hl;								// skip two locations
@@ -141,9 +143,12 @@ initial:
 	ld hl, init_strm;					// source
 	ldir;								// copy initial streams table
 	ld (iy + _df_sz), 1;				// set lower display size
-;	call mute_psg;						// mute PSG and MIDI
 	call init_path;						// initialize path
-	call screen_0;						// initialize screen
+	bit 1, (iy + _flags2);				// test screen mode
+	push af;							// stack result
+	call z, screen_0;					// initialize screen 0
+	pop af;								// unstack result
+	call nz, v_s1_init;					// initialize screen 1
 	call set_min;						// clear all work areas and calculator stack
 	ld a, 2;							// channel S
 	call chan_open;						// select channel
@@ -162,7 +167,6 @@ initial:
 	call chan_open;						// select channel
 	call out_curs_ready;				// display cursor
 	call msg_pause;						// pause in case of NEW
-	set 3, (iy + _flags2);				// enable CAPS LOCK
 	call flush_kb;						// flush the keyboard buffer
 	ld hl, pip;							// address PIP
 	ld a, (hl);							// get PIP ($ff on cold start)
@@ -381,7 +385,7 @@ call_sub:
 	inc hl;								// to
 	ld d, (hl);							// DE
 	ex de, hl;							// swap pointers
-	call call_jump;						// call subroutine
+	call call_jump;						// CALL HL
 	pop hl;								// unstack HL'
 	exx;								// main register set
 	ret;								// end of subroutine
