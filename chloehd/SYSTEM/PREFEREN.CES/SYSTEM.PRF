@@ -1,4 +1,5 @@
 ### language (including code page if required)
+### CAUTION: At this time, not recommended for use with ZXTRES.
 
 ## Spanish
 #ln=ES-1252
@@ -12,12 +13,8 @@
 
 ## Spanish
 #kb=ES
-kb=chloe
 
 ### scandoubler setting
 
 ## ZX-Uno
 #sc=on
-
-## ZXTRES
-sc=off

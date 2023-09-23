@@ -1,2 +1,0 @@
-prg:
-	pasmo JUGGLER.ASM ../PRG/JUGGLER.PRG
