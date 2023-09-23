@@ -255,10 +255,10 @@ text:
 	defb " Taking the three most significant bits for green and red, and the two", 13;
 	defb " most significant bits for blue resulted in 50 unique colors. These were", 13;
 	defb " then order sorted and distributed across the four CLUTs to provide an", 13;
-	defb " optimal palette. But this version was batch converted in DaDither.", 13;
+	defb " optimal palette. The individual images were converted in Image2ULAplus.", 13;
 	defb 13
 	defb " An image uses 12K bytes for storage. Images are loaded in less than 30", 13;
-	defb " milliseconds. A fixed 17-color palette is used to avoid having to set the", 13;
+	defb " milliseconds. A fixed palette is used to avoid having to set the", 13;
 	defb " palette registers on each frame. This enables a constant frame rate of", 13;
 	defb " 30 frames per second.";
 
