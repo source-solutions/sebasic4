@@ -12,6 +12,7 @@
 
 ## Spanish
 #kb=ES
+kb=chloe
 
 ### scandoubler setting
 
@@ -19,4 +20,4 @@
 #sc=on
 
 ## ZXTRES
-#sc=off
+sc=off

@@ -39,8 +39,8 @@ symbols.txt
 /chloehd/SYSTEM/FONTS/PETSCII.CP
 /chloehd/SYSTEM/FONTS/RISC-OS.CP
 
-# exclyde generated keymaps
-/chloehd/SYSTEM/KEYBOARD.S/*.KB
+# exclyde generated keymaps (currently not building)
+#/chloehd/SYSTEM/KEYBOARD.S/*.KB
 
 # exclude compiled languages
 #/chloehd/SYSTEM/LANGUAGE.S/*.LN
