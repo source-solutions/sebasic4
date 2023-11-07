@@ -23,7 +23,7 @@
     "CALL": "Ongeldige functie-aanroep",
     "OVERFLOW": "Overloop",
     "LINE": "Ongeldig regelnummer",
-    "SUBSCRIPT": "Ongeldig regelnummer",
+    "SUBSCRIPT": "Subscript buiten bereik",
     "MEMORY": "Niet genoeg geheugen",
     "STATEMENT": "Opdracht ontbreekt",
     "TYPE": "Type komt niet overeen",
