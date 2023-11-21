@@ -32,7 +32,7 @@ Everything shared in the Chloe 280SE community is under FrieNDA. All opinions, c
 
 Any spamming, trolling, flaming, baiting, or other attention-stealing behavior isn't welcome and won't be tolerated.
 
-Harassing other Chloe 280SE users is never tolerated, whether via public or private media.
+Harassing other Chloe 280SE users is never tolerated, whether using public or private media.
 
 Avoid using offensive or harassing package names, nicknames, or other identifiers that might detract from a friendly, safe and welcoming environment for all.
 
