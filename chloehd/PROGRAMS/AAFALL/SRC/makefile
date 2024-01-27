@@ -1,0 +1,2 @@
+prg:
+	pasmo AAFALL.ASM ../PRG/AAFALL.PRG
