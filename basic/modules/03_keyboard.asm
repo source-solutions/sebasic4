@@ -216,8 +216,8 @@ k_ch_set:
 	ret z;								// return if not free
 
 k_new:
-	ld e, a;							// code to kstate
 	ld (hl), a;							// code to E
+	ld e, a;							// code to kstate
 	inc hl;								// 5 call counter
 	ld (hl), 5;							// reset to 5
 	ld a, (repdel);						// repeat delay to A
