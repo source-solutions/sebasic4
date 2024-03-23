@@ -1,2 +1,0 @@
-prg:
-	pasmo TC2048.ASM ../PRG/TC2048.PRG

@@ -1,2 +1,0 @@
-prg:
-	pasmo AARDMAN.ASM ../PRG/AARDMAN.PRG

@@ -1,1 +1,0 @@
-Programs in this folder are tested and working with the ZX-Uno but may cause unexpected behavior with the ZXTRES.

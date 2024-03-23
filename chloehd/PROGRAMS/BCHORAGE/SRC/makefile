@@ -1,2 +1,0 @@
-prg:
-	pasmo BCHORAGE.ASM ../PRG/BCHORAGE.PRG

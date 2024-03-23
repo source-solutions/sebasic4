@@ -1,2 +1,0 @@
-prg:
-	pasmo SNOWFALL.ASM ../PRG/SNOWFALL.PRG

@@ -1,2 +1,0 @@
-prg:
-	pasmo TAKEONME.ASM ../PRG/TAKEONME.PRG
