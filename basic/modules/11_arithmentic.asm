@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2023 Source Solutions, Inc.
+;	// Copyright (c) 1999-2024 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -803,8 +803,8 @@ shift_len:
 
 test_neg:
 	exx;								// swap register set
-	ld a, l;							// sign bit to A
-	and %10000000;						// set sign
+	ld a, %10000000;					// sign bit to A
+	and l;								// and set sign
 	exx;								// alternate register set
 	inc hl;								// point to second byte
 	ld (hl), a;							// store sign

@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2023 Source Solutions, Inc.
+;	// Copyright (c) 1999-2024 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -613,8 +613,8 @@ read_folders:
 	or a;								// last entry?
 	jr z, read_files;					// jump if so
 	ld hl, (buffer);					// folder item buffer
-	ld a, (hl);							// attibutes to A
-	and %00010000;						// folder?
+	ld a, %00010000;					// attibutes to A
+	and (hl);							// folder?
 	jr z, read_folders;					// skip files
 	inc hl;								// next location
 	ld b, 12;							// count (12 characters)
@@ -675,8 +675,8 @@ read_files_2:
 	or a;								// last entry?
 	jr z, last_entry;					// jump if so
 	ld hl, (buffer);					// file item buffer
-	ld a, (hl);							// attibutes to A
-	and %00010000;						// folder?
+	ld a, %00010000;					// attibutes to A
+	and (hl);							// folder?
 	jr nz, read_files_2;				// skip folders
 	inc hl;								// next location
 	ld b, 12;							// count (12 characters)
@@ -829,7 +829,8 @@ load_4:
 
 nextln:
 	call set_min;						// clear all work areas and calculator stack
-	ld a, $ff;							// channel W
+	xor a;								// channel W
+	dec a;								// LD A, 255
 	call chan_open;						// select channel
 
 copyln:

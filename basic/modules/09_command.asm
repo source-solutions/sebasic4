@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2023 Source Solutions, Inc.
+;	// Copyright (c) 1999-2024 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -152,8 +152,8 @@ line_new:
 	jr z, line_use;						// jump if line found
 	and a;								// valid statement number?
 	jr nz, report_stmt_msng;			// error if not
-	ld a, (hl);							// is first line after
-	and %11000000;						// end of program?
+	ld a, %11000000;					// is first line after
+	and (hl);							// end of program?
 	jr z, line_use;						// jump if not
 
 ;;
@@ -190,7 +190,7 @@ c_rem:
 line_end:
 	call unstack_z;						// return if checking syntax
 	ld hl, (nxtlin);					// get address
-	ld a, 192;							// address after
+	ld a, %11000000;					// address after
 	and (hl);							// end of program?
 	ret nz;								// return if so
 	xor a;								// signal statement zero
@@ -389,8 +389,8 @@ val_fet_2:
 class_04:
 	call look_vars;						// find variable
 	push af;							// stack AF
-	ld a, c;							// test
-	or %10011111;						// discriminator byte
+	ld a, %10011111;					// test
+	or c;								// discriminator byte
 	inc a;								// for FOR-NEXT
 	jr nz, report_syntax_err;			// error if not
 	pop af;								// unstack AF
@@ -595,7 +595,8 @@ f_loop:
 
 f_found:
 	rst next_char;						// advance ch_add
-	ld a, 1;							// subtract statement
+	xor a;								// subtract statement
+	inc a;								// LD A, 1
 	sub d;								// counter from one
 	ld (nsppc), a;						// store result
 	ret;								// indirect jump to stmt_ret
@@ -614,8 +615,8 @@ look_prog:
 
 look_p_1:
 	inc hl;								// most significant byte of line number
-	ld a, (hl);							// copy to A
-	and %11000000;						// end of program?
+	ld a, %11000000;					// end of
+	and (hl);							// program?
 	scf;								// set carry flag
 	ret nz;								// return if no more lines
 	ld b, (hl);							// line
@@ -1009,8 +1010,8 @@ test_room:
 	ld hl, (stkend);					// stack end to HL
 	add hl, bc;							// add value in BC
 	jr c, report_oo_mem;				// error if greater than 65535
+	ld de, 80;							// allow for additional 80 bytes
 	ex de, hl;							// swap pointers
-	ld hl, 80;							// allow for additional 80 bytes
 	add hl, de;							// try again
 	jr c, report_oo_mem;				// jump with error 
 	sbc hl, sp;							// subtract stack
@@ -1137,8 +1138,8 @@ def_fn_4:
 	rst next_char;						// next character
 
 def_fn_5:
-	ex de, hl;							// swap pointer
 	ld bc, 6;							// six locations required
+	ex de, hl;							// swap pointer
 	call make_room;						// make space
 	inc hl;								// point to first new location
 	inc hl;								// new location
@@ -1405,7 +1406,8 @@ str_alter_1:
 c_input:
 	call syntax_z;						// checking syntax?
 	jr z, input_1;						// jump if so
-	ld a, 1;							// channel K
+	xor a;								// channel K
+	inc a;								// LD A, 1
 	call chan_open;						// select channel
 	call cls_lower;						// clear lower display
 
@@ -1819,8 +1821,8 @@ renum_line_5:
 	call line_addr;						// get line address
 	jr c, renum_line_6;					// jump if line number too large
 	jr z, renum_line_7;					// jump if line exists
-	ld a, (hl);							// end of
-	and %11000000;						// of BASIC?
+	ld a, %11000000;					// end of
+	and (hl);							// BASIC?
 	jr z, renum_line_7;					// jump if not
 
 renum_line_6:

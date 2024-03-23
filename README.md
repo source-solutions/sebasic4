@@ -26,7 +26,7 @@
 # SE Basic IV Cordelia 4.2.0
 A classic BASIC interpreter for the Z80 architecture
 
-Copyright © 1999-2023 Source Solutions, Inc.
+Copyright © 1999-2024 Source Solutions, Inc.
 
 ## Build tools
 Building this software locally requires:

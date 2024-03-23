@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2023 Source Solutions, Inc.
+;	// Copyright (c) 1999-2024 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -694,7 +694,8 @@ po_char_2:
 
 po_char_3:
 	ld l, a;							// character code
-	ld h, 0;							// to HL
+	xor a;								// to
+	ld h, a;							// HL
 	add hl, hl;							// multiply
 	add hl, hl;							// character
 	add hl, hl;							// code
@@ -907,8 +908,8 @@ po_step:
 	jr z, po_step;						// jump if not
 	dec a;								// reduce count
 	jr nz, po_step;						// loop until entry found 
-	ex de, hl;							// DE points to initial character
 	pop af;								// unstack entry number
+	ex de, hl;							// DE points to initial character
 	cp 31;								// one of the first 31 entries?
 	ret c;								// return with carry set if so
 	ld a, (de);							// get initial character
@@ -1254,24 +1255,24 @@ cl_scroll:
 cl_scr_1:
 	push bc;							// stack both
 	push hl;							// counters
-	ld a, b;							// B to A
-	and %00000111;						// dealing with third of display?
+	ld a, %00000111;					// dealing with
+	and b;								// third of display?
 	ld a, b;							// restore A
 	jr nz, cl_scr_3;					// jump if not
 
 cl_scr_2:
+	ld de, $f8e0;						// set destination
 	ex de, hl;							// swap pointers
-	ld hl, $f8e0;						// set DE to
-	add hl, de;							// destination
+	add hl, de;							// add
 	ex de, hl;							// swap pointers
 	ld bc, 31;							// 31 bytes per half row
 	dec a;								// reduce count
 	call ldir2;							// clear half row
 
 cl_scr_3:
+	ld de, $ffe0;						// set destination
 	ex de, hl;							// swap pointers
-	ld hl, $ffe0;						// set DE to
-	add hl, de;							// destination
+	add hl, de;							// add
 	ex de, hl;							// swap pointers
 	ld b, a;							// row to B
 	and %00000111;						// number
@@ -1423,8 +1424,8 @@ cl_addr:
 	rrca;								// 8
 	and %11100000;						// first line
 	ld l, a;							// least significant byte to L
-	ld a, d;							// get real line number
-	and %00011000;						// 64 + 8 * INT (A / 8)
+	ld a, %00011000;					// get real line number
+	and d;								// 64 + 8 * INT (A / 8)
 	or $c0;								// top 16K of RAM
 	ld h, a;							// most significant byte to H
 	inc hl;								// skip first 16 pixels

@@ -1,5 +1,5 @@
 ;	// SE/OS 1.0.0
-;	// Copyright (c) 2023 Source Solutions, Inc.
+;	// Copyright (c) 2024 Source Solutions, Inc.
 
 ;	// SE/OS is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by

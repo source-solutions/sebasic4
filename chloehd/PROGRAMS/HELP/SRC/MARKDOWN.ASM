@@ -1,5 +1,5 @@
 ;	// MARKDOWN - A file viewer for a subset of Markdown features
-;	// Copyright (c) 2022-2023 Source Solutions, Inc.
+;	// Copyright (c) 2022-2024 Source Solutions, Inc.
 
 ;	// constants
 	print_a equ $10;					// print a character

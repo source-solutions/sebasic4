@@ -1,5 +1,5 @@
 ;	// SoftPLAY 2 - TurboSound-AY MML Edition
-;	// Copyright (c) 2013-2023 Source Solutions, Inc.
+;	// Copyright (c) 2013-2024 Source Solutions, Inc.
 
 ;	// SoftPLAY 2 is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by

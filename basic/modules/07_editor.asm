@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2023 Source Solutions, Inc.
+;	// Copyright (c) 1999-2024 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -552,7 +552,8 @@ edit_1:
 	ld hl, (curchl);					// get current channel
 	ex (sp), hl;						// swap with address of line
 	push hl;							// stack it
-	ld a, $ff;							// channel W
+	xor a;								// channel W
+	dec a;								// LD A, 255
 	call chan_open;						// select channel
 	pop hl;								// address of line
 	dec hl;								// suppress cursor

@@ -2,7 +2,7 @@
 ***
 ## SE BASIC interpreter
 
-Copyright (C) 1981-2022 Source Solutions, Inc.
+Copyright (C) 1981-2024 Source Solutions, Inc.
 
 Source code available at [https://github.com/source-solutions/sebasic4](https://github.com/source-solutions/sebasic4).
 
@@ -25,7 +25,7 @@ Vickers and "SAM BASIC" by Andy Wright.
 
 Copyright (C) 2014-2019 Rob Hagemans.
 
-Copyright (C) 2012-2023 Source Solutions, Inc.
+Copyright (C) 2012-2024 Source Solutions, Inc.
 
 This work is licensed under a
 [Creative Commons Attribution-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-sa/4.0/legalcode).

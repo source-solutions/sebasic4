@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2023 Source Solutions, Inc.
+;	// Copyright (c) 1999-2024 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -406,7 +406,7 @@ endif
 
 	defb ctrl_cr;
 	defb "SE BASIC 4.2.0 (GPL-3.0 License)", ctrl_cr;
-	defb "Copyright (C) 2023 Source Solutions Inc.", ctrl_cr;
+	defb "Copyright (C) 2024 Source Solutions Inc.", ctrl_cr;
 ;	timestamp 'YY-MM-DD h:m';			// RASM directive
 	defb ctrl_cr, 0;
 

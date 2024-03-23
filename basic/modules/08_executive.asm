@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2023 Source Solutions, Inc.
+;	// Copyright (c) 1999-2024 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -451,8 +451,8 @@ close_all_lp:
 
 close_valid:
 	call close_2;						// perform channel specific actions
-	ld bc, 0;							// signal stream not in use
 	ld de, - strms - 10;				// handle streams 0 to 2
+	ld bc, 0;							// signal stream not in use
 	ex de, hl;							// swap pointers
 	add hl, de;							// set carry with streams 3 to 15
 	jr c, close_1;						// jump if carry set
@@ -799,8 +799,8 @@ ptr_done:
 	inc hl;								// point to next system variable
 	dec a;								// reduce count
 	jr nz, ptr_next;					// loop until done
+	pop hl;								// unstack HL
 	ex de, hl;							// old stkend to HL
-	pop de;								// unstack DE
 	pop af;								// unstack AF
 	and a;								// prepare for subtraction
 	sbc hl, de;							// difference of old stkend and position
@@ -822,8 +822,8 @@ line_no_a:
 	ld de, line_zero;					// point to line-zero
 
 line_no:
-	ld a, (hl);							// most significant byte to A
-	and %11000000;						// test it
+	ld a, %11000000;					// test most 
+	and (hl);							// significant byte
 	jr nz, line_no_a;					// jump if not suitable
 	ld d, (hl);							// line
 	inc hl;								// number
@@ -842,8 +842,8 @@ reserve:
 	pop bc;								// unstack old worksp
 	ld (worksp), bc;					// restore it
 	pop bc;								// unstack number of spaces
+	inc de;								// DE points to first displaced byte
 	ex de, hl;							// swap pointers
-	inc hl;								// HL points to first displaced byte
 	ret;								// end of subroutine
 
 ;	// trace
@@ -1204,8 +1204,8 @@ ln_fetch:
 	inc hl;								// number
 	ld d, (hl);							// to DE
 	push hl;							// stack pointer (to s_top or e_ppc)
+	inc de;								// increase line number
 	ex de, hl;							// line number to HL
-	inc hl;								// increase line number
 	call line_addr;						// get address of line number
 	call line_no;						// get line number
 	pop hl;								// unstack pointer to system variable
@@ -1525,8 +1525,8 @@ reclaim_2:
 	ld c, a;							// A to C
 	inc bc;								// two's complement
 	call pointers;						// get pointers
+	pop de;								// unstack bytes to reclaim
 	ex de, hl;							// swap pointers
-	pop hl;								// unstack bytes to reclaim
 	add hl, de;							// address to HL
 	push de;							// stack first location
 	ldir;								// reclaim bytes
@@ -1573,8 +1573,8 @@ out_num_2:
 	ld d, (hl);							// number
 	inc hl;								// to
 	ld e, (hl);							// DE
-	push hl;							// stack HL
 	ex de, hl;							// number to HL
+	push de;							// stack it
 ;	ld e, ' ';							// leading space
 	ld e, $ff;							// don't print leading spaces
 
