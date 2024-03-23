@@ -924,7 +924,7 @@ fp_read_in:
 	push hl;							// stack it
 	call str_alter_1;					// open new channel if valid
 	call in_chan_k;						// keyboard?
-	jr fp_read_in_1;					// jump if not
+	jr nz, fp_read_in_1;				// jump if not
 	halt;								// read keyboard
 
 fp_read_in_1:
