@@ -7,7 +7,7 @@
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/source-solutions/sebasic4)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/source-solutions/sebasic4)
 
-# SE Basic IV
+# SE BASIC
 
 [SE Basic IV](https://source-solutions.github.io/sebasic4/) is a free open-source BASIC interpreter for the Z80 architecture. Although it aims for a high degree of compatibility with Microsoft BASIC, there are some differences. SE Basic IV is designed to run on the [Chloe 280SE](https://www.patreon.com/chloe280se) but it is also compatible with Timex Sinclair models with 128K of RAM, esxDOS, Timex video modes and ULAplus. SE Basic IV runs plain text `.BAS` files. It implements floating-point arithmetic in the extended [Microsoft Binary Format](https://github.com/source-solutions/sebasic4/wiki/Technical-reference#microsoft-binary-format-extended) (MBF) and can therefore read and write binary data files created by 6502 versions of Microsoft BASIC.  
 
