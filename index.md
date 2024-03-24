@@ -2,7 +2,7 @@
 
 ![SE Basic 4.2.0](/images/sebasic4-2.png)
 
-[SE Basic IV](https://source-solutions.github.io/sebasic4/) is a free open-source BASIC interpreter for the Z80 architecture. Although it aims for a high degree of compatibility with Microsoft BASIC, there are some differences. It is developed as part of the firmware for the [Chloe 280SE](https://www.patreon.com/chloe280se), an open source hardware/software project as defined by the [Open Source Hardware Association](https://www.oshwa.org/) and the [Open Source Initiative](https://opensource.org/). Localization is carried out in partnership with [Translation Commons](https://translationcommons.org/) and [Weblate](https://hosted.weblate.org/engage/sebasic4/). SE Basic IV runs plain text `.BAS` files. It implements floating-point arithmetic in the extended [Microsoft Binary Format](https://github.com/source-solutions/sebasic4/wiki/Technical-reference#microsoft-binary-format-extended) (MBF) and can therefore read and write binary data files created by 6502 versions of Microsoft BASIC.  
+[SE BASIC](https://source-solutions.github.io/sebasic4/) is a free open-source BASIC interpreter for the Z80 architecture. Although it aims for a high degree of compatibility with Microsoft BASIC, there are some differences. It is developed as part of the firmware for the [Chloe 280SE](https://www.patreon.com/chloe280se), an open source hardware/software project as defined by the [Open Source Hardware Association](https://www.oshwa.org/) and the [Open Source Initiative](https://opensource.org/). Localization is carried out in partnership with [Translation Commons](https://translationcommons.org/) and [Weblate](https://hosted.weblate.org/engage/sebasic4/). SE BASIC runs plain text `.BAS` files. It implements floating-point arithmetic in the extended [Microsoft Binary Format](https://github.com/source-solutions/sebasic4/wiki/Technical-reference#microsoft-binary-format-extended) (MBF) and can therefore read and write binary data files created by 6502 versions of Microsoft BASIC.  
 
 <img src="images/oshw-logo-800-px.png" style="width:112px"/>&nbsp;&nbsp;<img src="images/osi_standard_logo_0.png" style="width:100px"/>&nbsp;&nbsp;<img src="images/TC-logo.png" style="width:200px"/>&nbsp;&nbsp;<img src="images/weblate_logo.png" style="height:100px"/> 
 
@@ -12,6 +12,7 @@ Features include:
 * Always-on expression evaluation (use variables as filenames).
 * Application package format with support for turning BASIC programs into apps.
 * Automatic typing of integer and floating point numbers.
+* BIOS with DOS and high level OS (API) integration.
 * Bitwise logic (`AND`, `NOT`, `OR`, `XOR`).
 * Built-in help system.
 * Choice of Microsoft (`LEFT$`, `MID$` and `RIGHT$`) or Sinclair (`TO`) string slicing.
