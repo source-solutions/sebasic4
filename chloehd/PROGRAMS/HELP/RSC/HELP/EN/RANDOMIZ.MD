@@ -8,7 +8,7 @@ Seeds the random number generator with <code><var>expr</var></code>.
 <code><var>expr</var></code> is a numeric expression.
 
 #### Notes
-* For the same seed, SE Basic IV produces different pseudorandom numbers from
+* For the same seed, SE BASIC produces different pseudorandom numbers from
   Microsoft BASIC.
 * The random number generator is very poor and should not be used for serious
   purposes. See [`RND`](RND) for details.

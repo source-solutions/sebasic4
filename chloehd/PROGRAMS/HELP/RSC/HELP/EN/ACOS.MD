@@ -9,3 +9,6 @@ Returns the inverse cosine of <code><var>x</var></code>.
 
 #### Errors
 <code><var>x</var></code> has a string value: <samp>Type mismatch</samp>.
+
+#### Note
+This function is not present in Microsoft BASIC.

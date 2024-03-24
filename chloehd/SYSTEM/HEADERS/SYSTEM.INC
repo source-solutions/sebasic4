@@ -1,4 +1,4 @@
-;	// SE Basic IV 4.2 Cordelia
+;	// SE BASIC 4.2 Cordelia
 ;	// Copyright (c) 1999-2024 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify

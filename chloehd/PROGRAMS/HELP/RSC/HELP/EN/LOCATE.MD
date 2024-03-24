@@ -5,7 +5,7 @@
 Set the next print position to <code><var>row</var></code>, <code><var>col</var></code> on the screen. 
 
 #### Notes
-In Microsoft BASIC, the cursor can be displayed or made invisible and its shape can be changed. This is not supported in SE Basic IV.
+In Microsoft BASIC, the cursor can be displayed or made invisible and its shape can be changed. This is not supported in SE BASIC.
 
 #### Errors
 * Any parameter has a string value: <samp>Type mismatch</samp>.

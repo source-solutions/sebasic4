@@ -8,7 +8,7 @@ Returns a pseudorandom number.
 <code><var>x</var></code> is a numeric expression. This value is ignored.
 
 #### Notes
-* SE Basic IV's `RND` function produces different random numbers from 
+* SE BASIC's `RND` function produces different random numbers from 
   Microsoft BASIC.
 * It is a very poor random number generator. `RND` should not be used for 
   cryptography, scientific simulations or anything else remotely serious.

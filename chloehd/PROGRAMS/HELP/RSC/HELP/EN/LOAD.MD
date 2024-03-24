@@ -12,10 +12,10 @@ The string expression <var>file_spec</var> is a valid [filespec](FILESPEC) indic
 file to read the program from.
 
 #### Notes
-* Unlike Microsoft BASIC, SE Basic IV always expects BASIC programs to be in
+* Unlike Microsoft BASIC, SE BASIC always expects BASIC programs to be in
   plain text format.
-* Unlike Microsoft BASIC, the `R` directive must be in quotes. Otherwise SE Basic 
-  IV would treat it as a variable.
+* Unlike Microsoft BASIC, the `R` directive must be in quotes. Otherwise SE BASIC 
+  would treat it as a variable.
 
 #### Errors
 * <code><var>file_spec</var></code> has a numeric value: <samp>Type mismatch</samp>.

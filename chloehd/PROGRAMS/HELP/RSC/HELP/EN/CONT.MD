@@ -11,10 +11,10 @@ Resumes execution of a program that has been halted by [`STOP`](STOP), [`END`](E
   line (for example, `GOSUB 100:PRINT A$`), `CONT` will overwrite the running direct  line. As the subroutine [`RETURN`](RETURN)s to the position after the `GOSUB` in the old
   direct line, strange things may happen if commands are given after `CONT`. In
   Microsoft BASIC, this can lead to strange errors in non-existing program lines
-  as the parser executes bytes that are not part of a program line. In SE Basic
-  IV, if the new direct line is shorter, execution stops after `RETURN`; but if
-  the direct line is extended beyond the old return position, the parser tries
-  to resume at that return position, with strange effects.
+  as the parser executes bytes that are not part of a program line. In SE BASIC,
+  if the new direct line is shorter, execution stops after `RETURN`; but if the
+  direct line is extended beyond the old return position, the parser tries to
+  resume at that return position, with strange effects.
 
 #### Errors
 * No program is loaded, a program has not been run, after a program line has

@@ -11,7 +11,7 @@ Spaces between `FN` and <code><var>name</var></code> are required.
 
 #### Notes
 * In Microsoft BASIC, spaces between `FN` and <code><var>name</var></code> are optional.
-* Unlike Microsoft BASIC, in SE Basic IV, functions can be called recursively,
+* Unlike Microsoft BASIC, in SE BASIC, functions can be called recursively,
   albeit without tail call optimization.
 
 #### Errors

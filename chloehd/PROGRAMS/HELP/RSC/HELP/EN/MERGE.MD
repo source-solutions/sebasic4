@@ -9,7 +9,7 @@ The string expression <code><var>file_spec</var></code> is a valid [filespec](FI
 file to read the program from.
 
 #### Notes
-Unlike Microsoft BASIC, SE Basic IV always expects BASIC programs to be in plain
+Unlike Microsoft BASIC, SE BASIC always expects BASIC programs to be in plain
 text format.
 
 #### Errors

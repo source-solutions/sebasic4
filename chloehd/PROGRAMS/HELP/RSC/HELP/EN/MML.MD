@@ -1,6 +1,6 @@
 ### Music Macro Language
 ***
-The [`PLAY`](PLAY) command in SE Basic IV uses a version of Music Macro Language (MML). Other than note names (`c`, `d`, `e`, `f`, `g`, `a`, `b`), instructions are case-insensitive. Upper case notes (`C`, `D`, `E`, `F`, `G`, `A`, `B`) are one octave higher than the current octave. Phrases in square brackets ( `[`, `]` ) are played twice. Brackets can be nested up to four levels. A closing bracket without a matching opening bracket loops the preceding phrase indefinitely. Comments can be enclosed between single quote marks ( `'` ). The other instructions are:
+The [`PLAY`](PLAY) command in SE BASIC uses a version of Music Macro Language (MML). Other than note names (`c`, `d`, `e`, `f`, `g`, `a`, `b`), instructions are case-insensitive. Upper case notes (`C`, `D`, `E`, `F`, `G`, `A`, `B`) are one octave higher than the current octave. Phrases in square brackets ( `[`, `]` ) are played twice. Brackets can be nested up to four levels. A closing bracket without a matching opening bracket loops the preceding phrase indefinitely. Comments can be enclosed between single quote marks ( `'` ). The other instructions are:
 
 * `r` is a rest.
 * `-` before a note flattens it.

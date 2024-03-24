@@ -24,7 +24,7 @@ Code | Chr | Effect
 `$1E`  | `RS`  | Move the cursor one row up.
 `$1F`  | `US`  | Move the cursor one row down.
 
-<b>Note</b>: In SE Basic IV, anything after `PRINT CHR$(12)` is not printed.
+<b>Note</b>: In SE BASIC, anything after `PRINT CHR$(12)` is not printed.
 
 Expressions can optionally be separated by one or more keywords:
 

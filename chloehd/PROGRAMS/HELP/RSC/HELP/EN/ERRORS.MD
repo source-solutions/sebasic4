@@ -1,4 +1,4 @@
-### Errors
+### Run-time error codes
 ***
  1. `NEXT without FOR`  
     A `NEXT` statement was encountered for which no matching `FOR` could be found.
@@ -99,16 +99,3 @@
 25. `Path not found`  
     An `OPEN`, `MKDIR`, `RMDIR`, or `CHDIR` statement is executed referring to a
     (parent) path that does not exist on the disk device.
-
-
-
-
-
-
-
-
-
-
-
-
-

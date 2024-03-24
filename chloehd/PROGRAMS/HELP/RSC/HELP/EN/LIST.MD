@@ -11,7 +11,7 @@ When listing to the screen, the same control characters are recognised as in the
 
 #### Notes
 * In Microsoft BASIC, `LIST` will not show line numbers `65531` to `65535` inclusive.
-* SE Basic IV's line range is currently `[0 to 16383]`.
+* SE BASIC's line range is currently `[0 to 16383]`.
 * There is no `LLIST` command. Instead, `LIST` can be directed to the printer stream  using `LIST #`.
 
 #### Parameters

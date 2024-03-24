@@ -1,4 +1,4 @@
-# Developer's guide
+# Application developer's guide
 ***
 Applications are stored as a collection of files and folders within a folder in a top-level folder called `PROGRAMS`. Application names can be any length and
 contain any valid FAT-32 filename character (including space). In SE BASIC,
@@ -25,7 +25,7 @@ For example, with multi-lingual software, only the selected language resources
 need to be loaded. It is also easy to customize the app without the need to
 recompile it.
 
-Apps can use [`SEOS`](SEOS) system calls to perform common tasks that would ordinarily
+Apps can use SE/OS [`API`](API) system calls to perform common tasks that would ordinarily
 require boiler-plate code.
 
 Apps can also make use of the internal software floating point unit using the

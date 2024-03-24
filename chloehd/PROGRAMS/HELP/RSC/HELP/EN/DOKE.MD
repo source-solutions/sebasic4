@@ -11,7 +11,7 @@ Sets the 16-bit value of the memory byte pair at <code><var>segment</var> \* 16 
 * <code><var>value</var></code> is a numeric expression in `[0 to 65535]`.
 
 #### Notes
-* `DEF SEG` is not yet implemented in SE Basic IV.
+* `DEF SEG` is not yet implemented in SE BASIC.
 
 #### Errors
 * <code><var>address</var></code> or <code><var>value</var></code> has a string value: <samp>Type mismatch</samp>.

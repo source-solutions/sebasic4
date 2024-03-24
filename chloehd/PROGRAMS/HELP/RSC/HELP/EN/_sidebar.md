@@ -1,4 +1,4 @@
-# Welcome to the SE BASIC wiki
+# Welcome to the SE BASIC online help
 ***
 * Press `RETURN` to return to this menu.
 * Enter the name of a `TOPIC` to display it.
@@ -6,12 +6,15 @@
 
 Choose from the following topics:
 
-1. Quick start guide: [`QUICK`](QUICK)
-2. User's guide: [`USER`](USER)
-3. Configuration guide: [`CONFIG`](CONFIG)
-4. Language guide: [`LANGUAGE`](LANGUAGE)
-5. Language reference: [`BASIC`](BASIC)
-6. Technical reference: [`TECH`](TECH)
-7. Developer's guide: [`DEV`](DEV)
-8. Acknowledgemets: [`CREDITS`](CREDITS)
-9. Licenses: [`LICENSE`](LICENSE)
+## Using SE BASIC
+* Functions: [`FUNC`](FUNC)
+* Statements: [`STAT`](STAT)
+* Miscellaneous: [`MISC`](MISC)
+
+## Quick reference
+* Installing apps [`APPS`](APPS)
+* ASCII character codes [`ASCII`](ASCII)
+* Matrix keyboards [`MATRIX`](MATRIX)
+* Run-time error codes [`ERRORS`](ERRORS)
+* Acknowledgements [`CREDITS`](CREDITS)
+* Licenses [`LICENSE`](LICENSE)

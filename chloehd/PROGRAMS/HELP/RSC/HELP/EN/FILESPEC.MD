@@ -10,7 +10,8 @@ names are separated with forward slashes (`/`). SE BASIC adds syntactic sugar
 to the short filename format. File names consist of an 8-character name and
 3-character extension. Folder names consist of an 11-character name. Permissible
 characters are the printable ASCII characters in the range `[$20 to $7E]`
-excluding the characters <code>" \* + . , / : ; < = > ? \ [ ] |</code>. Spaces are allowed but are converted to underscores. 
+excluding the characters <code>" \* + . , / : ; < = > ? \ [ ] |</code>. Spaces are allowed but
+are converted to underscores. 
 
 A path starting with a forward slash is interpreted as an absolute path,
 starting at the root of the specified disk device. Otherwise, the path is
@@ -19,3 +20,26 @@ special folder name <code><b>..</b></code> refers to the parent folder of a prec
 parent folder of the current folder if no path is given. The special folder name
 <code><b>.</b></code> refers to the same folder as given by the preceding path, or the current
 folder if no preceding path is given.
+#### Compatibility notes 
+
+UnoDOS 3 allows certain characters in the range `$7F to $FF`. However, their
+permissibility and interpretation depends on the console code page, which may be
+different from the display code page currently in use. Therefore you should
+avoid using these characters.
+
+#### Errors
+
+* <var>file_num</var> is a non-existent stream: <samp>Undefined stream</samp>.
+* <var>file_num</var> is not in range `[0 to 15]`: <samp>Bad I/O device</samp>.
+* <var>mode_char</var> is a non-existent channel: <samp>Undefined channel</samp>.
+* <var>file_spec</var> is non-existent in input or append mode: <samp>File not found</samp>.
+
+
+
+
+
+
+
+
+
+

@@ -13,7 +13,7 @@ Create the recursive function `FN F(n)` to calculate the factorial for `n`:
 
 #### Notes
 * This statement may only be used on a program line.
-* As the function must be a single expression and SE Basic IV does not have a
+* As the function must be a single expression and SE BASIC does not have a
   ternary operator, the only way to define a recursive function that actually
   terminates is by using [VAL](VAL) or [VAL$](VALS).
 
@@ -22,7 +22,7 @@ Create the recursive function `FN F(n)` to calculate the factorial for `n`:
 * <code><var>arg_0</var>, <var>arg_1</var>, ...</code> must be legal variable names. These are the parameters of
   the function. Variables of the same name may or may not exist in the program;
   their value is not affected or used by the defined function.
-* <code><var>expression</var></code> must be a legal SE Basic IV expression.
+* <code><var>expression</var></code> must be a legal SE BASIC expression.
 
 #### Errors
 * The statement is executed directly instead of in a program line: <samp>Illegal        direct</samp>.

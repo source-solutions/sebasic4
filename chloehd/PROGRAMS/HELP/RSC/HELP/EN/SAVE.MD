@@ -13,7 +13,7 @@ file to store to.
 #### Notes
 In Microsofr BASIC you can append `, A` to save the file in plain text or `, P` to
 save a protected listing, otherwise the file is saved in tokenized format. In SE
-Basic IV the file is saved in plain text format unless you append `, "T"`.
+BASIC the file is saved in plain text format unless you append `, "T"`.
 
 #### Errors
 * <code><var>file_spec</var></code> has a number value: <samp>Type mismatch</samp>.
