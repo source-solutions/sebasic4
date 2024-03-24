@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2023 Source Solutions, Inc.
+;	// Copyright (c) 1999-2024 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 
 ;	slam equ 1;							// uncomment to build SLAM+128/divMMC version
 
-	messages equ $58a0;					// check against symbol table before building
+	messages equ $58a8;					// check against symbol table before building
 
 ;	// restarts
 	divmmc equ $08;
@@ -1088,7 +1088,7 @@ cf_end:
 ;	// code page 437 font
 	org $2a00
 font:
-	incbin "0437-IBM.CP"
+	incbin "../chloehd/SYSTEM/FONTS/0437-IBM.CP"
 
 ;	// entry point from OS ROM
 	org $3200

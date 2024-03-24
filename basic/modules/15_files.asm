@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2023 Source Solutions, Inc.
+;	// Copyright (c) 1999-2024 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -57,10 +57,7 @@
 	buffer		equ handle_1 + 1;		// (iy + $68)
 	buffer_1	equ buffer + 2;			// (iy + $6a)
 
-
-;	// CP/M emulation layer:
-bdos:
-	ret
+	org $4b70
 
 ;	// vectored file system routines
 
@@ -616,8 +613,8 @@ read_folders:
 	or a;								// last entry?
 	jr z, read_files;					// jump if so
 	ld hl, (buffer);					// folder item buffer
-	ld a, (hl);							// attibutes to A
-	and %00010000;						// folder?
+	ld a, %00010000;					// attibutes to A
+	and (hl);							// folder?
 	jr z, read_folders;					// skip files
 	inc hl;								// next location
 	ld b, 12;							// count (12 characters)
@@ -678,8 +675,8 @@ read_files_2:
 	or a;								// last entry?
 	jr z, last_entry;					// jump if so
 	ld hl, (buffer);					// file item buffer
-	ld a, (hl);							// attibutes to A
-	and %00010000;						// folder?
+	ld a, %00010000;					// attibutes to A
+	and (hl);							// folder?
 	jr nz, read_files_2;				// skip folders
 	inc hl;								// next location
 	ld b, 12;							// count (12 characters)
@@ -832,7 +829,8 @@ load_4:
 
 nextln:
 	call set_min;						// clear all work areas and calculator stack
-	ld a, $ff;							// channel W
+	xor a;								// channel W
+	dec a;								// LD A, 255
 	call chan_open;						// select channel
 
 copyln:
@@ -1103,6 +1101,36 @@ save_1:
 	ld ix, (curchl);					// current channel to IX
 	call close_file;					// it is, in fact, a jump, as the return address will be popped
 
-;	// FIXME - SEEK takes a stream number and a floating point value to set the pointer in a currently open file
+;;
+; <code>SEEK</code> command
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#SEEK" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws Stream not found.
+;;
 c_seek:
-	ret;
+	call fp_to_bcde;					// get 32-bit integer
+	push bc;							// stack seek address
+	push de;							// 
+	call str_data1;						// get channel
+	jr nz, seek_valid;					// jump if stream open
+	pop af;								// unstack
+	pop af;								// registers
+	rst error;							// and 
+	defb undefined_stream;				// error
+
+seek_valid:
+	ld hl, (chans);						// base address of channel to HL
+	add hl, bc;							// channel address 
+	inc hl;								// advance to file handle
+	inc hl;								// 
+	inc hl;								// 
+	inc hl;								// 
+	ld a, (hl);							// get it in A
+	pop de;								// 32-bit unsigned integer
+	pop bc;								// BCDE
+	ld ixl, 0;							// read from start of file
+	rst divmmc;							// issue a hookcode
+	defb f_seek;						// seek to BCDE
+	ret;								// end of subroutine
+
+;	// RESERVED
+	defs 1, $ff;							// spare byte

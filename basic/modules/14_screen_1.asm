@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2023 Source Solutions, Inc.
+;	// Copyright (c) 1999-2024 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -355,23 +355,6 @@ s1_po_bel:
 ;;
 s1_po_tab:
 	jp po_tab;							// screen 0 code
-;	ld a, c;							// current column
-;	dec a;								// move right
-;	dec a;								// twice
-;	and %00010000;						// test
-;	call s1_po_fetch;					// current position
-;	add a, c;							// add column
-;	dec a;								// number of spaces
-;	and %00000111;						// modulo 8 (gives 5/10 tabs in 40/80 column mode)
-;	ret z;								// return if zero
-;	set 0, (iy + _flags);				// no leading space
-;	ld d, a;							// use 0 as counter
-;
-;s1_po_space:
-;	call s1_po_sv_sp;					// space recursively
-;	dec d;								// print
-;	jr nz, s1_po_space;					// until
-;	ret;								// end of subroutine
 
 ;;
 ; print home
@@ -398,13 +381,6 @@ s1_jp_cl_set:
 ; print cursor right
 ;;
 s1_po_right:
-;	ld hl, p_flag;						// point to sysvar
-;	ld d, (hl);							// sysvar to D
-;	ld (hl), 1;							// set printing to OVER
-;	call s1_po_sv_sp;					// print a space with alt regs
-;	call po_sv_sp;						// print a space with alt regs (screen 0 code)
-;	ld (hl), d;							// restore sysvar
-;	ret;								// end of subroutine
 	jp po_right;						// screen 0 code
 
 ;;
@@ -462,34 +438,6 @@ s1_po_able:
 	jp po_store;						// screen 0 code
 
 ;;
-; position store
-;;
-;s1_po_store:
-;	bit 0, (iy + _vdu_flag);			// test for lower screen
-;	jr nz, s1_po_st_e;					// jump if so
-;	ld (s_posn), bc;					// store values for
-;	ld (df_cc), hl;						// upper screen
-;	ret;								// end of subroutine
-;
-;s1_po_st_e:
-;	ld (df_ccl), hl;					// store values
-;	ld (sposnl), bc;					// for lower
-;	ld (echo_e), bc;					// screen
-;	ret;								// end of subroutine
-
-;;
-; position fetch
-;;
-;s1_po_fetch:
-;	ld hl, (df_cc);						// get main
-;	ld bc, (s_posn);					// screen values
-;	bit 0, (iy + _vdu_flag);			// main screen?
-;	ret z;								// return if so
-;	ld bc, (sposnl);					// get lower
-;	ld hl, (df_ccl);					// screen values
-;	ret;								// and return
-
-;;
 ; print any character
 ;;
 s1_po_any:
@@ -520,15 +468,6 @@ s1_add_columns:
 	jr z, s1_write_char;				// jump if not
 
 	jr s1_no_write_char;				// BUG PATCH - lower screen was not updating character map correctly
-
-;	ld b, (iy + _df_sz);				// number of rows in lower display
-;	ld de, 40;							// 40 characters per row
-;	ld hl, $df80 + 40;					// end of character map + 80 (line 0)
-
-;sbc_lines:
-;	sbc hl, de;							// subtract 80 characters for each row
-;	djnz sbc_lines;						// B holds line count (zero on loop exit)
-;	add hl, bc;							// add column offset
 	
 s1_write_char:
 	ld bc, paging;						// paging address
@@ -637,8 +576,8 @@ s1_pr_all_f:
 	pop bc;								// get original row/col
 	dec c;								// move right
 
-	ld a, c;							// column position to A
-	and %00000111;						// mask bits 0 to 2
+	ld a, %00000111;					// column position to A
+	and c;								// and mask bits 0 to 2
 	cp %00000101;						// 37, 29, 21, 13 or 5?
 	ret z;								// return if so
 	cp %00000001;						// 33, 25, 17, 9 or 1?
@@ -651,128 +590,6 @@ s1_backpos:
 	dec hl;								// back three
 	dec hl;								// cells
 	ret;								// end of subroutine
-
-;	// message printing subroutine
-;;
-; print first message
-;;
-;s1_po_asciiz_0:
-;	xor a;								// select first message
-;	set 2, (iy + _flags2);				// signal do not print tokens (for example, scroll during LIST)
-;	set 5, (iy + _vdu_flag);			// signal lower screen to be cleared
-
-;	// message number in A, start of table in DE
-;;
-; message printing
-;;
-;s1_po_asciiz:
-;	and a;								// message zero?
-;	call nz, s1_po_srch_asciiz;			// if not, locate message
-;	ld a, (de);							// get character
-;
-;s1_po_asciiz_chr:
-;	cp 2;								// composable character pair?
-;	jr z, s1_po_asciiz_composable;		// jump if so
-;	call s1_po_save;					// print with alternate register set
-;
-;s1_po_asciiz_next:
-;	inc de;								// next character
-;	ld a, (de);							// get character
-;	and a;								// null terminator?
-;	jr nz, s1_po_asciiz_chr;			// loop until done
-;	ret;								// end of subroutine
-;
-;s1_po_asciiz_composable:
-;	ld hl, sposnl;						// cursor
-;	inc (hl);							// left
-;	inc de;								// next character
-;	ld a, (de);							// get character
-;	set 0, (iy + _p_flag);				// set over flag
-;	call s1_po_save;					// print with alternate register set
-;	res 0, (iy + _p_flag);				// clear flag
-;	jr s1_po_asciiz_next;				// immediate jump
-;
-;s1_po_srch_asciiz:
-;	ld b, a;							// count to B
-;
-;s1_po_stp_asciiz:
-;	ld a, (de);							// contents in table pointer to A
-;	inc de;								// point to next address
-;	and a;								// terminator found?
-;	jr nz, s1_po_stp_asciiz;			// loop until found
-;	djnz s1_po_stp_asciiz;				// loop until correct entry found
-;	ret;								// return with pointer to message in DE
-;	// end of ASCIIZ printing
-
-;	// token printing subroutine
-;s1_po_token:
-;	sub first_tk;						// modify token code
-;
-;s1_po_tokens:
-;	ld de, token_table;					// address token table
-;	push af;							// stack code
-;;	call s1_po_search;					// locate required entry
-;	call po_search;						// locate required entry
-;	jr c, s1_po_each;					// print message or token
-;	bit 0, (iy + _flags);				// print a space
-;	call z, s1_po_sv_sp;				// if required
-;
-;s1_po_each:
-;	ld a, (de);							// get code
-;	and %01111111;						// cancel inverted bit
-;	call s1_po_save;					// print the character
-;	ld a, (de);							// get code again
-;	inc de;								// increment pointer
-;	add a, a;							// inverted bit to carry flag
-;	jr nc, s1_po_each;					// loop until done
-;	pop de;								// D = 0 to 127 for tokens, 0 for messages
-;;	cp 72;								// last character a $?
-;;	jr z, s1_po_tr_sp;					// jump if so
-;	cp 130;								// last character less than A?
-;	ret c;								// return if so
-;
-;s1_po_tr_sp:
-;	ld a, d;							// offset to A
-;	cp 1;								// FN?
-;	jr z, s1_po_sv_sp;					// jump if so
-;	cp 7;								// EOF #, INKEY$, LOC #, LOF#, PI, RND
-;	ret c;								// return if so
-;
-;s1_po_sv_sp:
-;	ld a, ' ';							// print trailing space
-;
-;;;
-;; print save
-;;;
-;s1_po_save:
-;	push de;							// stack DE
-;	exx;								// preserve HL and BC
-;	call out_ch_2;						// print one character with leading space suppression
-;	exx;								// restore HL and BC
-;	pop de;								// unstack DE
-;	ret;								// end of subroutine
-
-;;
-; table search
-;;
-;s1_po_search:
-;	ex de, hl;							// base address to HL
-;	push af;							// stack entry number
-;	inc a;								// increase range
-
-;s1_po_step:
-;	bit 7, (hl);						// last character?
-;	inc hl;								// next character
-;	jr z, s1_po_step;						// jump if not
-;	dec a;								// reduce count
-;	jr nz, s1_po_step;						// loop until entry found 
-;	ex de, hl;							// DE points to initial character
-;	pop af;								// unstack entry number
-;	cp 31;								// one of the first 31 entries?
-;	ret c;								// return with carry set if so
-;	ld a, (de);							// get initial character
-;	sub 'A';							// test against letter, leading space if so
-;	ret;								// end of subroutine
 
 ;;
 ; test for scroll
@@ -797,10 +614,6 @@ s1_po_scr:
 	ld sp, (list_sp);					// restore stack pointer
 	res 4, (iy + _vdu_flag);			// flag automatic listing finished
 	ret;								// return using s1_cl_set
-
-;s1_report_oo_scr:
-;	rst error;							// throw
-;	defb out_of_screen;					// error
 
 s1_po_scr_2:
 	dec (iy + _scr_ct);					// reduce scroll count
@@ -833,9 +646,6 @@ s1_po_scr_3:
 	inc b;								// for start of line
 	ld c, 41;							// first column
 	ret;								// end of subroutine
-
-;s1_report_break:
-;	jp report_break;					// FIXME
 
 s1_po_scr_4:
 	cp 2;								// lower part fits?
@@ -872,20 +682,6 @@ s1_po_scr_4b:
 	pop bc;								// unstack line and column numbers
 	ret;								// end of subroutine
 
-get_reg:
-	ld b, e;							// register port
-	out (c), a;							// select register
-	ld b, d;							// data port
-	in a, (c)							// read register value
-	ret;								// end of subroutine
-
-set_reg:
-	ld b, e;							// register port
-	out (c), l;							// select register
-	ld b, d;							// data port
-	out (c), a;							// select register
-	ret;								// end of subroutine
-
 s1_init:
 	ld a, %00001111;					// light gray foreground, dark blue background
 	ld (bordcr), a;						// set border color
@@ -894,7 +690,7 @@ s1_init:
 	ld c, $3b;							// palette port
 	ld de, $ffbf;						// d = data, e = register
 
-	ld a, 6;							// register to read
+	ld a, 46;							// register to read
 	call get_reg;						// get it
 	ld l, 22;							// register to write
 	call set_reg;						// set it
@@ -904,7 +700,7 @@ s1_init:
 	ld l, 25;							// register to write
 	call set_reg;						// set it
 
-	ld a, 14;							// register to read
+	ld a, 6;							// register to read
 	call get_reg;						// get it
 	ld l, 30;							// register to write
 	call set_reg;						// set it
@@ -1011,32 +807,30 @@ s1_cl_scroll:
 	pop bc;								// counters
 
 	ei;									// interrupts on
-;	call s1_cl_addr;					// get start address of row
 	call cl_addr;						// get start address of row (screen 0 code)
 	ld c, 8;							// eight pixels per row
 
 s1_cl_scr_1:
 	push bc;							// stack both
 	push hl;							// counters
-	ld a, b;							// B to A
-	and %00000111;						// dealing with third of display?
+	ld a, %00000111;					// dealing with 
+	and b;								// third of display?
 	ld a, b;							// restore A
 	jr nz, s1_cl_scr_3;					// jump if not
 
 s1_cl_scr_2:
+	ld de, $f8e0;						// set destination
 	ex de, hl;							// swap pointers
-	ld hl, $f8e0;						// set DE to
-	add hl, de;							// destination
+	add hl, de;							// add
 	ex de, hl;							// swap pointers
 	ld bc, 31;							// 31 bytes per half row
 	dec a;								// reduce count
-;	call s1_ldir2;						// clear half row
 	call ldir2;							// clear half row (screen 0 code)
 
 s1_cl_scr_3:
+	ld de, $ffe0;						// set destination
 	ex de, hl;							// swap pointers
-	ld hl, $ffe0;						// set DE to
-	add hl, de;							// destination
+	add hl, de;							// add
 	ex de, hl;							// swap pointers
 	ld b, a;							// row to B
 	and %00000111;						// number
@@ -1046,7 +840,6 @@ s1_cl_scr_3:
 	ld c, a;							// total to C
 	ld a, b;							// row to A
 	ld b, 0;							// BC holds total
-;	call s1_ldir2;						// scroll pixel line
 	call ldir2;							// scroll pixel line (screen 0 code)
 	ld b, 7;							// prepare to cross screen third boundary
 	add hl, bc;							// increase HL by 1792
@@ -1102,7 +895,6 @@ s1_total_chars:
 
 	pop bc;								// restore count
 
-;	call s1_cl_addr;					// start address for row to HL
 	call cl_addr;						// start address for row to HL (screen 0 code)
 	ld c, 8;							// eight pixel rows
 
@@ -1152,19 +944,6 @@ s1_cl_line_2:
 	pop bc;								// unstack BC
 	ret;								// end of subroutine
 
-;s1_ldir2:
-;	push hl;							// stack source
-;	push de;							// stack destination
-;	push bc;							// stack byte count
-;	set 5, h;							// add 8192 byte offset to source
-;	set 5, d;							// add 8192 byte offset to destination
-;	ldir;								// clear odd columns
-;	pop bc;								// unstack original source
-;	pop de;								// unstack original destination
-;	pop hl;								// unstack original byte count
-;	ldir;								// clear even columns
-;	ret;								// end of subroutine
-
 s1_set_border;
 	ex af, af';							// use alternate register set
 	ld a, (bordcr);						// get border color
@@ -1206,25 +985,6 @@ s1_cls_all:
 	ex af, af';							// restore original register set
 	ret;								// end of subroutine
 
-;;
-; clear address
-;;
-;s1_cl_addr:
-;	ld a, 24;							// reverse line
-;	sub b;								// number
-;	ld d, a;							// result to D
-;	rrca;								// A
-;	rrca;								// mod
-;	rrca;								// 8
-;	and %11100000;						// first line
-;	ld l, a;							// least significant byte to L
-;	ld a, d;							// get real line number
-;	and %00011000;						// 64 + 8 * INT (A / 8)
-;	or $c0;								// top 16K of RAM
-;	ld h, a;							// most significant byte to H
-;	call cl_addr;						// call screen 0 code
-;	inc hl;								// (not needed in 80 column mode) skip first 16 pixels
-;	ret;								// end of subroutine
 ;	jp cl_addr;
 
 ;	// entered with PEN and PAPER on calculator stack
@@ -1431,8 +1191,8 @@ pixel_add:
 	rlca;								// shift left
 	rlca;								// twice
 	ld l, a;							// low byte of pixel address to L
-	ld a, c;							// x to A
-	and %00000111;						// x mod 8
+	ld a, %00000111;					// x to A
+	and c;								// x mod 8
 	inc l;								// offset by one byte to skip first column
 	ret;								// end of subroutine
 

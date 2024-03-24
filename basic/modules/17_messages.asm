@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2023 Source Solutions, Inc.
+;	// Copyright (c) 1999-2024 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -22,9 +22,9 @@
 ;;
 :
 
-;	// A total of 608 bytes are allocated for localized messages
+;	// A total of 600 bytes are allocated for localized messages
 
-    org $58a0
+    org $58a8
 
 ;	// used in 06_screen_80
 scrl_mssg:
@@ -35,12 +35,6 @@ scrl_mssg:
 
 sp_in_sp:
 	defb " in ", 0;
-
-ready:
-	defb "Ready", 0;
-
-;	// padding for localization
-	org ready + 13
 
 ;	// used in 08_executive
 rpt_mesgs:
@@ -98,3 +92,5 @@ rpt_mesgs:
 	defb "Input past end", 0;			// code 62
 	path_not_found equ $19;
 	defb "Path not found", 0;			// code 76
+
+	defs 325, $ff;						// space for longer translations

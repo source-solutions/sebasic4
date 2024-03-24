@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2023 Source Solutions, Inc.
+;	// Copyright (c) 1999-2024 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@
 
 ;	// FIXME - further optimization is possible
 
-	org $124a;
+	org $124b;
 
 ;;
 ; <code>NEW</code> command
@@ -56,7 +56,7 @@ c_new:
 	ld de, (ramtop);					// get sysvar
 	exx;								// alternate register set
 	ld bc, (p_ramt);					// store
-	ld de, (rasp);						// system
+	ld de, (flags2);					// system
 	ld hl, (nmiadd);					// variables
 	exx;								// main register set
 
@@ -65,18 +65,11 @@ c_new:
 ;;
 start_new:
 	ex af, af';							// store A
-
-;	ld a, %00110110;					// yellow on blue (with no ULAplus), hi-res mode
-;	ld a, %00110010;					// yellow on blue (with no ULAplus), hi-col mode
-;	out (scld), a;						// set it
-
 	ld bc, paging;						// HOME bank paging
 	ld a, %00011000;					// ROM 1, FBUFF 1, HOME 0
 	out (c), a;							// set it
-
 	xor a;								// set I
 	ld i, a;							// to $00(ff)
-
 	ld iyh, d;							// ramtop
 	ld iyl, e;							// to IY
 	ex de, hl;							// swap pointers
@@ -91,14 +84,14 @@ start_new:
 	ldir;								// wipe bytes
 	exx;								// alternate register set
 	ld (p_ramt), bc;					// restore p_ramt
-	ld (rasp), de;						// restore rasp
+	ld (flags2), de;					// restore flags2 (screen mode / CAPS lock)
 	ld (nmiadd), hl;					// restore nmiadd
 	exx;								// main resister set
 	ex af, af';							// restore A
 	inc a;								// NEW command?
 	jr z, ram_set;						// jump if sp
-	ld bc, $ff40;						// set RASP to $40
-	ld (rasp), bc;						// set PIP to $ff
+	ld a, %00001000;					// CAPS LOCK / screen 0
+	ld (flags2), a;						// set FLAGS2
 	ld (p_ramt), iy;					// set top of RAM
 	ld hl, (p_ramt);					// p-ramt to HL
 
@@ -111,7 +104,7 @@ ram_set:
 initial:
 	ld hl, (ramtop);					// ramtop to HL
 	ld (hl), $3e;						// set it to the GOSUB end marker
-	dec hl;
+	dec hl;								// reduce HL
 	ld sp, hl;							// point stack to same location
 	dec hl;								// (pointer moves down during PUSH)
 	dec hl;								// skip two locations
@@ -150,15 +143,17 @@ initial:
 	ld hl, init_strm;					// source
 	ldir;								// copy initial streams table
 	ld (iy + _df_sz), 1;				// set lower display size
-	call mute_psg_midi;					// mute PSG and MIDI
 	call init_path;						// initialize path
-	call screen_0;						// initialize screen
+	bit 1, (iy + _flags2);				// test screen mode
+	push af;							// stack result
+	call z, screen_0;					// initialize screen 0
+	pop af;								// unstack result
+	call nz, v_s1_init;					// initialize screen 1
 	call set_min;						// clear all work areas and calculator stack
 	ld a, 2;							// channel S
 	call chan_open;						// select channel
 	ld de, copyright;					// copyright message
 	call po_asciiz_0;					// print it
-
 	ld hl, (ramtop);					// get top of BASIC RAM
 	ld de, (prog);						// start of program to DE
 	sbc hl, de;							// subtract bottom from top
@@ -166,27 +161,19 @@ initial:
 	ld c, l;							// to BC
 	call stack_bc;						// stack free RAM
 	call print_fp;						// output value
-
 	ld de, bytes_free;					// bytes free message
 	call po_asciiz_0;					// print it
-
 	xor a;								// LD A, 0; channel K
 	call chan_open;						// select channel
-;	ld de, ready;						// ready message
-;	call po_asciiz_0;					// print it
 	call out_curs_ready;				// display cursor
 	call msg_pause;						// pause in case of NEW
-
-	set 3, (iy + _flags2);				// enable CAPS LOCK
 	call flush_kb;						// flush the keyboard buffer
-
 	ld hl, pip;							// address PIP
 	ld a, (hl);							// get PIP ($ff on cold start)
 	ld (hl), 0;							// zero PIP
 	inc a;								// test PIP ($00 on cold start)
 	jr nz, main_1;						// immediate jump with warm start
 	call autoexec;						// test for AUTOEXEC.BAS
-
 	jr main_1;							// immediate jump
 
 ;;
@@ -387,6 +374,7 @@ out_code:
 	ld e, '0';							// convert number
 	add a, e;							// value to ASCII
 
+v_pr_chr:
 print_a_2:
 	exx;								// alternate register set
 	push hl;							// stack HL'
@@ -397,7 +385,7 @@ call_sub:
 	inc hl;								// to
 	ld d, (hl);							// DE
 	ex de, hl;							// swap pointers
-	call call_jump;						// call subroutine
+	call call_jump;						// CALL HL
 	pop hl;								// unstack HL'
 	exx;								// main register set
 	ret;								// end of subroutine
@@ -463,8 +451,8 @@ close_all_lp:
 
 close_valid:
 	call close_2;						// perform channel specific actions
-	ld bc, 0;							// signal stream not in use
 	ld de, - strms - 10;				// handle streams 0 to 2
+	ld bc, 0;							// signal stream not in use
 	ex de, hl;							// swap pointers
 	add hl, de;							// set carry with streams 3 to 15
 	jr c, close_1;						// jump if carry set
@@ -811,8 +799,8 @@ ptr_done:
 	inc hl;								// point to next system variable
 	dec a;								// reduce count
 	jr nz, ptr_next;					// loop until done
+	pop hl;								// unstack HL
 	ex de, hl;							// old stkend to HL
-	pop de;								// unstack DE
 	pop af;								// unstack AF
 	and a;								// prepare for subtraction
 	sbc hl, de;							// difference of old stkend and position
@@ -834,8 +822,8 @@ line_no_a:
 	ld de, line_zero;					// point to line-zero
 
 line_no:
-	ld a, (hl);							// most significant byte to A
-	and %11000000;						// test it
+	ld a, %11000000;					// test most 
+	and (hl);							// significant byte
 	jr nz, line_no_a;					// jump if not suitable
 	ld d, (hl);							// line
 	inc hl;								// number
@@ -854,8 +842,8 @@ reserve:
 	pop bc;								// unstack old worksp
 	ld (worksp), bc;					// restore it
 	pop bc;								// unstack number of spaces
+	inc de;								// DE points to first displaced byte
 	ex de, hl;							// swap pointers
-	inc hl;								// HL points to first displaced byte
 	ret;								// end of subroutine
 
 ;	// trace
@@ -885,7 +873,7 @@ trace_off:
 	ret;								// end of routine
 
 ;	// 2 unused bytes
-;	defs 2, $ff;						// 
+	defs 2, $ff;						// 
 
 	org $16b0;
 ;;
@@ -1216,8 +1204,8 @@ ln_fetch:
 	inc hl;								// number
 	ld d, (hl);							// to DE
 	push hl;							// stack pointer (to s_top or e_ppc)
+	inc de;								// increase line number
 	ex de, hl;							// line number to HL
-	inc hl;								// increase line number
 	call line_addr;						// get address of line number
 	call line_no;						// get line number
 	pop hl;								// unstack pointer to system variable
@@ -1329,7 +1317,7 @@ skip_while_0:
 	add hl, de;							// 
 	inc hl;								// HL = next line pointer
 	ld (nxtlin), hl;					// set next line
-	ex hl, de;							// HL = pointer before the first character in the line
+	ex de, hl;							// HL = pointer before the first character in the line
 	ld (ch_add), hl;					// set character address
 
 skip_while_1:
@@ -1388,7 +1376,7 @@ c_delete:
 	jp reclaim_1;						// immediate jump
 
 ;	// 5 unused bytes
-;	defs 5, $ff;						// 
+	defs 5, $ff;						// 
 
 	org $196e;
 ;;
@@ -1537,8 +1525,8 @@ reclaim_2:
 	ld c, a;							// A to C
 	inc bc;								// two's complement
 	call pointers;						// get pointers
+	pop de;								// unstack bytes to reclaim
 	ex de, hl;							// swap pointers
-	pop hl;								// unstack bytes to reclaim
 	add hl, de;							// address to HL
 	push de;							// stack first location
 	ldir;								// reclaim bytes
@@ -1585,8 +1573,8 @@ out_num_2:
 	ld d, (hl);							// number
 	inc hl;								// to
 	ld e, (hl);							// DE
-	push hl;							// stack HL
 	ex de, hl;							// number to HL
+	push de;							// stack it
 ;	ld e, ' ';							// leading space
 	ld e, $ff;							// don't print leading spaces
 

@@ -1,6 +1,9 @@
 # exclude macOS meta files
 .DS_Store
 
+# exclude SE/OS temporary files
+*.$$$
+
 # exclude Windows local Perl instance
 /api/perl
 
@@ -16,7 +19,7 @@ symbols.txt
 /api/*.css
 
 # exclude generated fonts
-/chloehd/SYSTEM/FONTS/0437-IBM.CP
+#/chloehd/SYSTEM/FONTS/0437-IBM.CP
 /chloehd/SYSTEM/FONTS/1250-EUC.CP
 /chloehd/SYSTEM/FONTS/1251-CYR.CP
 /chloehd/SYSTEM/FONTS/1252-EUW.CP
@@ -36,23 +39,27 @@ symbols.txt
 /chloehd/SYSTEM/FONTS/PETSCII.CP
 /chloehd/SYSTEM/FONTS/RISC-OS.CP
 
-# exclyde generated keymaps
-/chloehd/SYSTEM/KEYBOARD.S/*.KB
+# exclyde generated keymaps (currently not building)
+#/chloehd/SYSTEM/KEYBOARD.S/*.KB
 
 # exclude compiled languages
 #/chloehd/SYSTEM/LANGUAGE.S/*.LN
 
 # exclude optional programs
-/chloehd/PROGRAMS/2019
-/chloehd/PROGRAMS/BOING
-/chloehd/PROGRAMS/JUGGLER
-/chloehd/PROGRAMS/KAYAHARA
-/chloehd/PROGRAMS/LASTV8
-/chloehd/PROGRAMS/RUNBASIC
-/chloehd/PROGRAMS/SCRSHOW
-/chloehd/PROGRAMS/SKYFALL
-/chloehd/PROGRAMS/TC2048
-/chloehd/PROGRAMS/VDPTEST
+#/chloehd/PROGRAMS/2019
+#/chloehd/PROGRAMS/AARDMAN
+#/chloehd/PROGRAMS/ANIMSCR
+#/chloehd/PROGRAMS/BADAPPLE
+#/chloehd/PROGRAMS/BOING
+#/chloehd/PROGRAMS/JUGGLER
+#/chloehd/PROGRAMS/KAYAHARA
+#/chloehd/PROGRAMS/LASTV8
+#/chloehd/PROGRAMS/RUNBASIC
+#/chloehd/PROGRAMS/SCRSHOW
+#/chloehd/PROGRAMS/SKYFALL
+#/chloehd/PROGRAMS/TAKEONME
+#/chloehd/PROGRAMS/TC2048
+#/chloehd/PROGRAMS/VDPTEST
 
 # exclude temporary files
 #/chloehd/SYSTEM/TEMPORAR.Y/*

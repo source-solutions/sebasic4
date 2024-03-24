@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2023 Source Solutions, Inc.
+;	// Copyright (c) 1999-2024 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -35,9 +35,78 @@
 ;	//       | even columns  |
 ;	// $C000 +---------------+ 49152
 
-;	// LOCATE command <row>,<column> (counts from 1)
-	org $0861
+	org $0800
 
+;	// reserved to extend screen 0 code
+	defs 26, $ff;						// RESERVED
+
+v_pr_str_lo:
+	push af;							// stack AF
+	ld a, 1;							// set lower screen
+	jr v_pr_any;						// immedaite jump
+
+v_pr_str
+	push af;							// stack AF
+	ld a, 2;							// set upper screen
+
+v_pr_any:
+	push bc;							// stack BC
+	push de;							// stack DE
+	push hl;							// stack HL
+	call chan_open;						// open the channel
+	ld e, ixl;							// IX
+	ld d, ixh;							// to DE
+	call po_asciiz_0;					// print string
+	jr s0_API_return;					// unstack and exit
+
+;	// write 64 palette entries at IX to registers 
+v_write_pal:
+	push af;							// stack AF
+	push bc;							// stack BC
+	push de;							// stack DE
+	push hl;							// stack HL
+	push ix;							// IX points to palette data
+	pop hl;								// no LD HL, IX instruction
+	ld bc, 63;							// offeset to last entry
+	add hl, bc;							// HL points to entry
+	ld c, $3b;							// palette port
+	ld de, $00bf;						// d = data, e = register
+	ld a, 64;							// becomes 63
+	halt;								// wait for vblank
+
+write_pal:
+	dec a;								// next register
+	ld b, e;							// register port
+	out (c), a;							// select register
+	ld b, d;							// data port
+	outd;								// dec b; out bc, (hl); dec hl
+	and a;								// was that the last register?
+	jr nz, write_pal;					// set all 64 entries (API exit when done)
+
+s0_API_return:
+	pop hl;								// unstack HL
+	pop de;								// usntack DE
+	pop bc;								// unstack BC
+	pop af;								// unstack AF
+	ret;								// end of subroutine
+
+	org $0853
+
+get_reg:
+	ld b, e;							// register port
+	out (c), a;							// select register
+	ld b, d;							// data port
+	in a, (c)							// read register value
+	ret;								// end of subroutine
+
+set_reg:
+	ld b, e;							// register port
+	out (c), l;							// select register
+	ld b, d;							// data port
+	out (c), a;							// select register
+	ret;								// end of subroutine
+
+;	// LOCATE command <row>,<column> (counts from 1)
 ;;
 ; <code>LOCATE</code> command
 ; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#LOCATE" target="_blank" rel="noopener noreferrer">Language reference</a>
@@ -625,7 +694,8 @@ po_char_2:
 
 po_char_3:
 	ld l, a;							// character code
-	ld h, 0;							// to HL
+	xor a;								// to
+	ld h, a;							// HL
 	add hl, hl;							// multiply
 	add hl, hl;							// character
 	add hl, hl;							// code
@@ -838,8 +908,8 @@ po_step:
 	jr z, po_step;						// jump if not
 	dec a;								// reduce count
 	jr nz, po_step;						// loop until entry found 
-	ex de, hl;							// DE points to initial character
 	pop af;								// unstack entry number
+	ex de, hl;							// DE points to initial character
 	cp 31;								// one of the first 31 entries?
 	ret c;								// return with carry set if so
 	ld a, (de);							// get initial character
@@ -1009,7 +1079,7 @@ read_pal:
 	bit 1, (iy + _flags2);				// test for screen 1 (40 column mode)
 	ret nz;								// return if so
 
-	jp, set_color;						// set color in 80 column mode
+	jp set_color;						// set color in 80 column mode
 
 set_pal:
 	ld bc, $bf3b;						// address I/O register
@@ -1019,11 +1089,6 @@ set_pal:
 	ret;								// end of routine
 
 ;;	// stubs for line drawning commands (not supported in text mode)
-
-;c_arc:
-;	bit 1, (iy + _flags2);				// test for screen 1 (user defined video mode)
-;	jp nz, v_s1_arc;					// jump if so
-;	jr no_draw;							// immediate jump
 
 c_circle:
 	bit 1, (iy + _flags2);				// test for screen 1 (user defined video mode)
@@ -1053,6 +1118,8 @@ no_draw:
 ;;
 c_screen:
 	call test_0_or_1;					// get variable
+
+v_scr_mode:
 	and a;								// test for zero
 	jp nz, v_s1_init;					// jump if not to initialize screen 1
 
@@ -1065,11 +1132,15 @@ screen_0:
 	call set_color;						// set colors
 	jp c_cls;							// exit via CLS 80
 
+;	// reserved to extend screen 0 code
+	defs 11, $ff;						// RESERVED
+
 	org $0d60;
 ;;
 ; <code>CLS</code> command
 ; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#CLS" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
+v_cls:
 c_cls:
 	bit 1, (iy + _flags2);				// test for screen 1 (user defined video mode)
 	jp nz, v_s1_cls;	    			// jump if so
@@ -1184,24 +1255,24 @@ cl_scroll:
 cl_scr_1:
 	push bc;							// stack both
 	push hl;							// counters
-	ld a, b;							// B to A
-	and %00000111;						// dealing with third of display?
+	ld a, %00000111;					// dealing with
+	and b;								// third of display?
 	ld a, b;							// restore A
 	jr nz, cl_scr_3;					// jump if not
 
 cl_scr_2:
+	ld de, $f8e0;						// set destination
 	ex de, hl;							// swap pointers
-	ld hl, $f8e0;						// set DE to
-	add hl, de;							// destination
+	add hl, de;							// add
 	ex de, hl;							// swap pointers
 	ld bc, 31;							// 31 bytes per half row
 	dec a;								// reduce count
 	call ldir2;							// clear half row
 
 cl_scr_3:
+	ld de, $ffe0;						// set destination
 	ex de, hl;							// swap pointers
-	ld hl, $ffe0;						// set DE to
-	add hl, de;							// destination
+	add hl, de;							// add
 	ex de, hl;							// swap pointers
 	ld b, a;							// row to B
 	and %00000111;						// number
@@ -1353,8 +1424,8 @@ cl_addr:
 	rrca;								// 8
 	and %11100000;						// first line
 	ld l, a;							// least significant byte to L
-	ld a, d;							// get real line number
-	and %00011000;						// 64 + 8 * INT (A / 8)
+	ld a, %00011000;					// get real line number
+	and d;								// 64 + 8 * INT (A / 8)
 	or $c0;								// top 16K of RAM
 	ld h, a;							// most significant byte to H
 	inc hl;								// skip first 16 pixels

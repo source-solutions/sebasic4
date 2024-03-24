@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2023 Source Solutions, Inc.
+;	// Copyright (c) 1999-2024 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -70,8 +70,8 @@ scan_ent:
 	rrca;								// bit 1 and 2
 	add a, tbl_offs;					// offsets 64 to 68
 	ld l, a;							// L holds doubled offset
-	ld a, d;							// get parameter
-	and %00011111;						// from bits 0 to 4
+	ld a, %00011111;					// get parameter
+	and d;								// from bits 0 to 4
 	jr ent_table;						// address routine
 
 first_3f:
@@ -156,14 +156,14 @@ stk_const:
 	push hl;							// stack pointer to next literal
 	exx;								// main register set
 	ex (sp), hl;						// swap result and next literal pointers
-	ld a, (hl);							// first literal to A
-	and %11000000;						// divide by 64
+	ld a, %11000000;					// first literal to A
+	and (hl);							// divided by 64
 	rlca;								// to give values
 	rlca;								// 0 to 3
 	ld c, a;							// value to C
 	inc c;								// incremented (1 to 4)
-	ld a, (hl);							// get literal again
-	and %00111111;						// modulo 64
+	ld a, %00111111;					// get literal again
+	and (hl);							// modulo 64
 	jr nz, form_exp;					// jump if remainder not zero
 	inc hl;								// else get next literal
 	ld a, (hl);							// and leave unreduced
@@ -309,8 +309,8 @@ neg_test:
 	and a;								// zero?
 	jr z, int_case;						// jump if so
 	inc hl;								// next byte
-	ld a, b;							// $ff = abs, $00 = negate
-	and %10000000;						// $80 = abs, $00 = negate
+	ld a, %10000000;					// $ff = abs, $00 = negate
+	and b;								// $80 = abs, $00 = negate
 	or (hl);							// set bit 7 if abs
 	rla;								// reset
 	ccf;								// bit 7 of second byte
@@ -899,7 +899,8 @@ fp_str_str:
 	push hl;							// stack it
 	ld hl, (curchl);					// get current channel
 	push hl;							// stack it
-	ld a, $ff;							// channel W
+	xor a;								// channel W
+	dec a;								// LD A, 255
 	call chan_open;						// select channel
 	call print_fp;						// print last value
 	pop hl;								// unstack current channel
@@ -924,7 +925,7 @@ fp_read_in:
 	push hl;							// stack it
 	call str_alter_1;					// open new channel if valid
 	call in_chan_k;						// keyboard?
-	jr fp_read_in_1;					// jump if not
+	jr nz, fp_read_in_1;				// jump if not
 	halt;								// read keyboard
 
 fp_read_in_1:
@@ -1548,7 +1549,6 @@ one:
 last:
 	fce;								// exit calculator
 	ret;								// end of subroutine
-
 
 fp_quot:
 	fwait;								// enter calculator

@@ -1,2 +1,0 @@
-prg:
-	pasmo LOCALE.ASM ../PRG/LOCALE.PRG

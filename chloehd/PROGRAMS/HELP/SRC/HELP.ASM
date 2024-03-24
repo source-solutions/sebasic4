@@ -1,5 +1,5 @@
 ;	// RUNBASIC - A wrapper for launching BASIC programs as apps
-;	// Copyright (c) 2022-2023 Source Solutions, Inc.
+;	// Copyright (c) 2022-2024 Source Solutions, Inc.
 
 ;	// change all instances of RUNBASIC in the source and folder names to the name of your app
 

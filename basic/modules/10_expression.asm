@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2023 Source Solutions, Inc.
+;	// Copyright (c) 1999-2024 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -306,8 +306,8 @@ s_decimal:
 	sbc hl, bc;							// new stkend is one less than old stkend
 	ld (stkend), hl;					// fp number from stack to line
 	ldir;								// copy it
+	dec de;								// last byte added
 	ex de, hl;							// pointer to HL
-	dec hl;								// last byte added
 	call temp_ptr1;						// set ch_add
 	jr s_numeric;						// immediate jump
 
@@ -502,8 +502,8 @@ s_stk_lst:
 	push de;							// stack last values
 	call syntax_z;						// checking syntax?
 	jr z, s_syntest;					// jump if so
-	ld a, e;							// last op-code to A
-	and %00111111;						// clear bits 6 and 7
+	ld a, %00111111;					// last op-code to A
+	and e;								// with bits 6 and 7 cleared
 	ld b, a;							// store in B
 	fwait;								// perform
 	fsgl;								// calculator
@@ -856,10 +856,9 @@ v_run_syn:
 	ld b, c;							// flags to B
 	call syntax_z;						// checking syntax?
 	jr nz, v_run;						// jump if not
-	ld a, c;							// flags to A
-	and %11100000;						// drop character code
-	set 7, a;							// set bit 7
-;	or %10000000;						// set bit 7 FIXME - safe to use this version?
+	ld a, %11100000;					// flags to A but
+	and c;								// drop character code
+	or %10000000;						// set bit 7
 	ld c, a;							// flags to C
 	jr v_syntax;						// immediate jump
 
@@ -973,8 +972,8 @@ stk_f_arg:
 	jp z, v_run_syn;					// jump if so to search variables
 
 sfa_loop:
-	ld a, (hl);							// next argument
-	or %01100000;						// set bits 5 and 6
+	ld a, %01100000;					// next argument
+	or (hl);							// set bits 5 and 6
 	inc hl;								// next code
 	ld b, a;							// variable to B
 	ld a, (hl);							// code to A
@@ -1406,7 +1405,7 @@ onerr_test_1:
 	jp stmt_r_1;						// immediate jump
 
 ; 	// 5 unused bytes;
-;	defs 5, $ff;						// 
+	defs 5, $ff;						// 
 
 	org $2bf1
 ;;
@@ -1634,8 +1633,8 @@ var_end_hl:
 ; DE, (DE + 1)
 ;;
 de_plus_1_to_de:
+	inc de;								// point to DE + 1
 	ex de, hl;							// use HL
-	inc hl;								// point to DE + 1
 	ld e, (hl);							// LD E, (DE + 1)
 	inc hl;								// point to DE + 2
 	ld d, (hl);							// LD D, (DE + 2)
@@ -1927,8 +1926,8 @@ hex_digit:
 hex_end:
 	and %00001111;						// discard high nibble
 	ld c, a;							// store in C
-	ld a, d;							// D to A
-	and %11110000;						// discard low nibble
+	ld a, %11110000;					// D to A but
+	and d;								// discard low nibble
 	jr nz, report_overflow_1;			// jump if error
 	ld a, c;							// low nibble to A
 	ex de, hl;							// swap pointers
@@ -2262,7 +2261,8 @@ s_str_multi2:
 	push hl;							// save start address
 	ld hl, (curchl);					// 
 	push hl;							// save current channel
-	ld a, $ff;							// channel W
+	xor a;								// channel W
+	dec a;								// LD A, 255
 	call chan_open;						// select channel
 	fwait;								// n, x
 	fst 3;								// save base

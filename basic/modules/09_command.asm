@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2023 Source Solutions, Inc.
+;	// Copyright (c) 1999-2024 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 ;;
 :
 
-;	org $1ae9
+	org $1a7d
 
 ;;
 ; BASIC main parser
@@ -118,7 +118,7 @@ separator:
 ; statement return
 ;;
 stmt_ret:
-	call break_key;						// break?
+	call esc_key;						// break?
 	jr c, stmt_r_1;						// jump if not
 	call msg_loop;
 	jp report_break;					// clear keyboard buffer and report break
@@ -152,8 +152,8 @@ line_new:
 	jr z, line_use;						// jump if line found
 	and a;								// valid statement number?
 	jr nz, report_stmt_msng;			// error if not
-	ld a, (hl);							// is first line after
-	and %11000000;						// end of program?
+	ld a, %11000000;					// is first line after
+	and (hl);							// end of program?
 	jr z, line_use;						// jump if not
 
 ;;
@@ -190,7 +190,7 @@ c_rem:
 line_end:
 	call unstack_z;						// return if checking syntax
 	ld hl, (nxtlin);					// get address
-	ld a, 192;							// address after
+	ld a, %11000000;					// address after
 	and (hl);							// end of program?
 	ret nz;								// return if so
 	xor a;								// signal statement zero
@@ -389,8 +389,8 @@ val_fet_2:
 class_04:
 	call look_vars;						// find variable
 	push af;							// stack AF
-	ld a, c;							// test
-	or %10011111;						// discriminator byte
+	ld a, %10011111;					// test
+	or c;								// discriminator byte
 	inc a;								// for FOR-NEXT
 	jr nz, report_syntax_err;			// error if not
 	pop af;								// unstack AF
@@ -595,7 +595,8 @@ f_loop:
 
 f_found:
 	rst next_char;						// advance ch_add
-	ld a, 1;							// subtract statement
+	xor a;								// subtract statement
+	inc a;								// LD A, 1
 	sub d;								// counter from one
 	ld (nsppc), a;						// store result
 	ret;								// indirect jump to stmt_ret
@@ -614,8 +615,8 @@ look_prog:
 
 look_p_1:
 	inc hl;								// most significant byte of line number
-	ld a, (hl);							// copy to A
-	and %11000000;						// end of program?
+	ld a, %11000000;					// end of
+	and (hl);							// program?
 	scf;								// set carry flag
 	ret nz;								// return if no more lines
 	ld b, (hl);							// line
@@ -944,7 +945,7 @@ clear_run:
 
 clear_1:
 	push bc;							// stack value
-;	call mute_psg_midi;					// mute PSG and MIDI - FIXME (borks CLEAR)
+;	call mute_psg;						// mute PSG [FIXME: For some reason this kills the Help app if enabled]
 	call close_all;						// close all streams
 	xor a;								// LD A, $ff
 	dec a;								// sets
@@ -1009,8 +1010,8 @@ test_room:
 	ld hl, (stkend);					// stack end to HL
 	add hl, bc;							// add value in BC
 	jr c, report_oo_mem;				// error if greater than 65535
+	ld de, 80;							// allow for additional 80 bytes
 	ex de, hl;							// swap pointers
-	ld hl, 80;							// allow for additional 80 bytes
 	add hl, de;							// try again
 	jr c, report_oo_mem;				// jump with error 
 	sbc hl, sp;							// subtract stack
@@ -1084,8 +1085,8 @@ wait_end:
 	call flush_kb;						// signal no key
 	ret;								// end of routine
 
-;	break key subroutine
-break_key:
+;	<Esc> key subroutine
+esc_key:
 	ld a, $7f;							// high byte of I/O address
 	in a, (ula);						// read byte
 	rra;								// set carry if space pressed
@@ -1137,8 +1138,8 @@ def_fn_4:
 	rst next_char;						// next character
 
 def_fn_5:
-	ex de, hl;							// swap pointer
 	ld bc, 6;							// six locations required
+	ex de, hl;							// swap pointer
 	call make_room;						// make space
 	inc hl;								// point to first new location
 	inc hl;								// new location
@@ -1273,9 +1274,71 @@ pr_string:
 pr_end_z:
 	cp ')';								// closing parenthesis
 	ret z;								// return if so
+	jr pr_st_end;						// immediate jump
 
-;	// 82 unused bytes
-;	defs 82, $ff;						// 
+bell:
+;;
+; <code>BEEP</code> command
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#BEEP" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws Syntax error.
+;;
+c_beep:
+	ld de, $bfff;						// D = data port, E = register port
+	ld c, $fd;							// low byte of PSG port
+	ld l, 5;							// channel C coarse
+	ld a, 128;							// 800 Hz (ish)
+	call psg_out;						// write it
+	ld l, 7;							// mixer
+	ld a, %11111011;					// channel C on (tone)
+	call psg_out;						// write it
+	ld l, 10;							// volume
+	ld a, 15;							// 100%
+	call psg_out;						// write it
+	ld b, a;							// 15 frames to wait
+
+bell_loop:
+	halt;								// wait for v-blank
+	djnz, bell_loop;					// loop for 0.25 seconds
+
+mute_psg:
+	ld hl, $fe07;						// H = chip-0 ($fe), L = Volume register (7)
+	ld de, $bfff;						// D = data port, E = register port / mute
+	ld c, $fd;							// low byte of PSG port
+	ld a, e;							// LD A, $ff
+	call psg_chip;						// mute chip-0
+	inc h;								// chip-1 ($fe)
+
+psg_chip:
+	out (c), h;							// select chip (255/254)
+
+psg_out:
+	ld b, e;							// PSG register port
+	out (c), l;							// select register
+	ld b, d;							// PSG data port
+	out (c), a;							// chip off;
+	ret;								// end of subroutine
+
+;	// SOUND <PSG register>, <PSG value>
+;;
+; <code>SOUND</code> command
+; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#SOUND" target="_blank" rel="noopener noreferrer">Language reference</a>
+; @throws Syntax error.
+;;
+c_sound:
+	call fp_to_a;						// data to A
+	ex af, af';							// store data
+	call fp_to_a;						// register to A
+	cp 17;								// 0 to 16?
+	jp nc, play_error;					// error if not
+	dec a;								// is it zero?
+	inc a;								// restore value
+	jp m, play_error;					// error if zero
+	ld bc, psg_128reg;					// register select
+	out (c), a;							// write it
+	ex af, af';							// restore data
+	ld b, $bf;							// LD BC, psg_128dat
+	out (c), a;							// write it
+	ret									// and return
 
 ;	// UnoDOS 3 entry point
 	org $2048;
@@ -1343,7 +1406,8 @@ str_alter_1:
 c_input:
 	call syntax_z;						// checking syntax?
 	jr z, input_1;						// jump if so
-	ld a, 1;							// channel K
+	xor a;								// channel K
+	inc a;								// LD A, 1
 	call chan_open;						// select channel
 	call cls_lower;						// clear lower display
 
@@ -1757,8 +1821,8 @@ renum_line_5:
 	call line_addr;						// get line address
 	jr c, renum_line_6;					// jump if line number too large
 	jr z, renum_line_7;					// jump if line exists
-	ld a, (hl);							// end of
-	and %11000000;						// of BASIC?
+	ld a, %11000000;					// end of
+	and (hl);							// BASIC?
 	jr z, renum_line_7;					// jump if not
 
 renum_line_6:

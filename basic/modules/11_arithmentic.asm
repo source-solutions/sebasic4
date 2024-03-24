@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2023 Source Solutions, Inc.
+;	// Copyright (c) 1999-2024 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -149,46 +149,26 @@ fp_to_bc_delete:
 	pop de;								// pointers
 	ret;								// end of subroutine
 
-; ------------------------------------------------------------------------------
-
 ;;
-; floating point to BCDE (32-bit integer) FIXME - work in progress
+; floating point to BCDE (32-bit integer) FIXME: numbers above 2^32 − 1 are not trapped
 ;;
 fp_to_bcde:
-	fwait;								// round to
-	fstkhalf;							// nearest integer
-	fadd;								// and then
+	fwait;								// calculate timing loop counter	x
+	fmove;								// copy last number					x, x
+	fstk;								// stack a value
+	defb $00, $41, $00;					// 65536							x, x, 65536
+	fst 0;								// store it in mem_0
+	fdiv;								// high 16 bits						x, x/65536
+	fint;								// to integer						x, int (x/65536)
+	fxch;								// swap with float					int (x/65536), x
+	fgt 0;								// get value						int (x/65536), x, 65536
+	fmod;								// modulo 65536 					int (x/65536), x mod 65536
 	fce;								// exit calculator
-	call stk_fetch;						// 40-bit floating point value to AEDCB
-	bit 7, b;							// 
-	jp nz, report_overflow_2;			// jump if out of range
-	set 7, b;							// 
-	cp $a0;								// maximum exponent
-	jp nc, report_overflow_2;			// jump if out of range
-	sub $80;							// minimum exponent
-	jr c, zero;							// jump if zero
-	jr z, zero;							// jump if zero
-	cpl;								// one's complement
-	add a, 33;							// adjust
-	ret z;								// 
-
-norm_loop:
-	srl b;								// shift B right logical
-	rr c;								// shift C right
-	rr d;								// shift D right
-	rr e;								// shift E right
-	dec a;								// decrement A
-	jr nz, norm_loop;					// loop until normalized
-	ret;								// done
-
-zero:
-	ld b, 0;							// set
-	ld c, b;							// 32-bit
-	ld d, b;							// value
-	ld e, b;							// to zero
-	ret;								// and return
-
-; ------------------------------------------------------------------------------
+	call fp_to_bc;						// get low word to BC				BC = low word
+	push bc;							// stack it
+	call fp_to_bc;						// get high word to BC				BC   = hi word
+	pop de;								// low word to DE;					DE   = low word
+	ret;								// end of subroutine				BCDE = long
 
 ;;
 ; log (2^A)
@@ -823,8 +803,8 @@ shift_len:
 
 test_neg:
 	exx;								// swap register set
-	ld a, l;							// sign bit to A
-	and %10000000;						// set sign
+	ld a, %10000000;					// sign bit to A
+	and l;								// and set sign
 	exx;								// alternate register set
 	inc hl;								// point to second byte
 	ld (hl), a;							// store sign

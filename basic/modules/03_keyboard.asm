@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2023 Source Solutions, Inc.
+;	// Copyright (c) 1999-2024 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -216,8 +216,8 @@ k_ch_set:
 	ret z;								// return if not free
 
 k_new:
-	ld e, a;							// code to kstate
 	ld (hl), a;							// code to E
+	ld e, a;							// code to kstate
 	inc hl;								// 5 call counter
 	ld (hl), 5;							// reset to 5
 	ld a, (repdel);						// repeat delay to A
@@ -370,11 +370,56 @@ flush_kb:
 	ld a, (hl);							// pointer to A
 	inc l;								// point to k_tail
 	ld (hl), a;							// signal no key
-
 	ld bc, uno_reg;						// Uno register port
 	ld a, 5;							// Key state
 	out (c), a;							// Select key state
 	inc b;								// Uno data port
 	in a, (c);							// clear key state
-
 	ret;								// end of subroutine
+
+;	// wait for a keypress (return it in A)
+v_key_wait:
+	push bc;							// stack BC
+	push hl;							// stack HL
+	call flush_kb;						// clear buffer
+
+v_key_wait_lp:
+	ld a, (k_head);						// pointer to head of buffer to A
+	ld l, a;							// to L
+	ld a, (k_tail);						// pointer to tail of buffer to A
+	cp l;								// compare pointers
+	jr z, v_key_wait_lp;				// loop with match (no key)
+	ld hl, k_tail;						// get address of tail pointer
+	ld l, (hl);							// to HL
+	ld a, (hl);							// code to A
+	push af;							// stack code
+	call flush_kb;						// clear buffer
+	pop af;;							// restore code
+	pop hl;								// unstack HL
+	pop bc;								// unstack BC
+	ret;								// end of subroutine
+
+;	// read one character from the buffer (returns 0 if empty)
+v_get_chr:
+	push hl;							// stack HL
+	ld a, (k_head);						// pointer to head of buffer to A
+	ld l, a;							// to L
+	ld a, (k_tail);						// pointer to tail of buffer to A
+	cp l;								// compare pointers
+	scf;								// set carry flag and
+	ret z;								// return with match (no key)
+	ld hl, k_tail;						// get address of tail pointer
+	ld l, (hl);							// to HL
+	ld a, (hl);							// code to A
+	push af;							// stack code
+	inc l;								// HL contains next addres in buffer
+	ld a, l;							// low byte to A
+	and k_buff_sz;						// 128 bytes in circular buffer
+	ld (iy - _k_tail), a;				// new tail pointer to sysvar
+	pop af;								// unstack code
+	and a;								// clear carry flag
+	pop hl;								// unstack HL
+	ret;								// end of subroutine
+
+;	// unused bytes
+	defs 168, $ff;						// RESERVED for full keyboard implementation

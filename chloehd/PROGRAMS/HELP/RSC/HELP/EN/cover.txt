@@ -1,0 +1,18 @@
+---
+ titlepage: true
+ title: "Programming SE BASIC"
+ author: "Rob Hagemans"
+ date: \today
+ subtitle: "Cordelia 4.2.0"
+ subject: "Classic BASIC Programming"
+ keywords: "BASIC"
+ toc: true
+ numbersections: true
+ geometry: margin=2cm
+ urlcolor: blue
+ header-includes: |
+    \usepackage{fancyhdr}
+    \pagestyle{fancy}
+    \lfoot{SE BASIC}
+    \rfoot{Cordelia 4.2.0}
+---

@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia - A classic BASIC interpreter for the Z80 architecture.
-;	// Copyright (c) 1999-2023 Source Solutions, Inc.
+;	// Copyright (c) 1999-2024 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -628,7 +628,7 @@ ENDM
 
 	stick			equ   $1f
 	mmu				equ	  $f4
-	ay_tmxdat		equ	  $f6
+	psg_tmxdat		equ	  $f6
 	ula				equ	  $fe
 	scld			equ	  $ff
 	ulaplus_reg		equ	$bf3b
@@ -636,10 +636,10 @@ ENDM
 	mouse_b			equ $fadf
 	mouse_x			equ $fbdf
 	mouse_y			equ $ffdf
-	ay_reg			equ	$c0f5
+	psg_anyreg		equ	$c0f5
 	paging			equ	$7ffd
-	ay_128reg		equ $fffd
-	ay_128dat		equ	$bffd
+	psg_128reg		equ $fffd
+	psg_128dat		equ	$bffd
 
 
 ;	// restarts
@@ -726,8 +726,8 @@ ENDM
 	strms_14	equ	strms + 34;		// (iy - $08)
 	strms_15	equ	strms + 36;		// (iy - $06)
 	seg			equ	strms + 38;		// (iy - $04)	RESERVED (word)
-	rasp		equ	seg + 2;		// (iy - $02)	length of error sound in 60ths of a second; normally 60
-	pip			equ	rasp + 1;		// (iy - $01)	length of keyboard click (normally zero)
+	rasp		equ	seg + 2;		// (iy - $02)	RESERVED
+	pip			equ	rasp + 1;		// (iy - $01)	RESERVED
 	err_nr		equ	pip + 1;		// (iy + $00)	error number
 
 	flags		equ	err_nr + 1;		// (iy + $01)	first flags byte
@@ -784,8 +784,8 @@ ENDM
 	flg_colon	equ 2;				// set if a ':' is within quotes
 	flg_caps	equ 3;				// set if caps lock on
 	flg_kchan	equ 4;				// set if 'K' channel is use
-;									// 5: NOT USED
-;									// 6: NOT USED
+;									// 5: RESERVED
+;									// 6: RESERVED
 	flg_trace	equ 7;				// set if trace enabled
 
 	df_sz		equ	flags2 + 1;		// (iy + $31)	number of lines (including one blank line) in the lower part of the screen
@@ -796,11 +796,11 @@ ENDM
 	flagx		equ	osppc + 1;		// (iy + $37)	flags for INPUT command and editor
 	flg_str		equ 0;				// set if handling a simple string
 	flg_var		equ 1;				// set if handling a new variable
-;									// 2: NOT USED
-;									// 3: NOT USED
-;									// 4: NOT USED
+;									// 2: RESERVED
+;									// 3: RESERVED
+;									// 4: RESERVED
 	flg_inp		equ 5;				// set if in input mode
-;									// 6: NOT USED
+;									// 6: RESERVED
 	flg_line	equ 7;				// set if handling INPUT LINE
 
 	strlen		equ	flagx + 1;		// (iy + $38)	length of string type destination in assignment
@@ -821,19 +821,19 @@ ENDM
 	sposnl_h	equ	sposnl + 1;		// (iy + $51)	
 	scr_ct		equ	sposnl + 2;		// (iy + $52)	counter used to give “Scroll?” prompt
 	attr_p		equ	scr_ct + 1;		// (iy + $53)	attributes (foregorund and background in screen 0 or attribute byte in screen 1)
-	mask_p		equ	attr_p + 1;		// (iy + $54)	NOT USED
-	attr_t		equ	mask_p + 1;		// (iy + $55)	NOT USED
-	mask_t		equ	attr_t + 1;		// (iy + $56)	NOT USED
+	mask_p		equ	attr_p + 1;		// (iy + $54)	RESERVED
+	attr_t		equ	mask_p + 1;		// (iy + $55)	RESERVED
+	mask_t		equ	attr_t + 1;		// (iy + $56)	RESERVED
 
 	p_flag		equ	mask_t + 1;		// (iy + $57)	print flag
 	flg_over	equ 0;				// set if OVER in use
-;									// 1: NOT USED
+;									// 1: RESERVED
 	flg_inv		equ 2;				// set if INVERSE in use
-;									// 3: NOT USED
-;									// 4: NOT USED
-;									// 5: NOT USED
-;									// 6: NOT USED
-;									// 7: NOT USED
+;									// 3: RESERVED
+;									// 4: RESERVED
+;									// 5: RESERVED
+;									// 6: RESERVED
+;									// 7: RESERVED
 
 	membot		equ	p_flag + 1;		// (iy + $58)	calculator’s memory area
 	mem_0_1		equ	membot + 1;		// (iy + $59)	

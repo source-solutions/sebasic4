@@ -1,5 +1,5 @@
 ;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2023 Source Solutions, Inc.
+;	// Copyright (c) 1999-2024 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -495,7 +495,7 @@ call_1:
 	call find_int2;						// get address
 	ld l, c;							// address to
 	ld h, b;							// HL
-	call call_jump;						// call address
+	call call_jump;						// CALL HL
 	exx;								// alternate register set
 	ld hl, $2758;						// restore value of HL'
 	exx;								// main register set
@@ -552,7 +552,8 @@ edit_1:
 	ld hl, (curchl);					// get current channel
 	ex (sp), hl;						// swap with address of line
 	push hl;							// stack it
-	ld a, $ff;							// channel W
+	xor a;								// channel W
+	dec a;								// LD A, 255
 	call chan_open;						// select channel
 	pop hl;								// address of line
 	dec hl;								// suppress cursor
@@ -567,22 +568,5 @@ edit_1:
 	pop af;								// drop address
 	jp main_2;							// immediate jump
 
-;	// 60 unused bytes
-;	defs 60, $ff;						// 
-
-;	// temp
-
-;	// used in 16_audio
-semi_tone:
-	deff 261.625565300599;				// C
-	deff 277.182630976872;				// C#
-	deff 293.664767917408;				// D
-	deff 311.126983722081;				// D#
-	deff 329.627556912870;				// E
-	deff 349.228231433004;				// F
-	deff 369.994422711634;				// F#
-	deff 391.995435981749;				// G
-	deff 415.304697579945;				// G#
-	deff 440.000000000000;				// A
-	deff 466.163761518090;				// A#
-	deff 493.883301256124;				// B
+;	// 61 unused bytes
+	defs 61, $ff;						// RESERVED
