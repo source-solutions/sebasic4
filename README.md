@@ -9,7 +9,7 @@
 
 # SE BASIC
 
-[SE Basic IV](https://source-solutions.github.io/sebasic4/) is a free open-source BASIC interpreter for the Z80 architecture. Although it aims for a high degree of compatibility with Microsoft BASIC, there are some differences. SE Basic IV is designed to run on the [Chloe 280SE](https://www.patreon.com/chloe280se) but it is also compatible with Timex Sinclair models with 128K of RAM, esxDOS, Timex video modes and ULAplus. SE Basic IV runs plain text `.BAS` files. It implements floating-point arithmetic in the extended [Microsoft Binary Format](https://github.com/source-solutions/sebasic4/wiki/Technical-reference#microsoft-binary-format-extended) (MBF) and can therefore read and write binary data files created by 6502 versions of Microsoft BASIC.  
+[SE BASIC](https://source-solutions.github.io/sebasic4/) is a free open-source BASIC interpreter for the Z80 architecture. Although it aims for a high degree of compatibility with Microsoft BASIC, there are some differences. SE BASIC is designed to run on the [Chloe 280SE](https://www.patreon.com/chloe280se) but it is also compatible with Timex Sinclair models with 128K of RAM, esxDOS, Timex video modes and ULAplus. SE BASIC runs plain text `.BAS` files. It implements floating-point arithmetic in the extended [Microsoft Binary Format](https://github.com/source-solutions/sebasic4/wiki/Technical-reference#microsoft-binary-format-extended) (MBF) and can therefore read and write binary data files created by 6502 versions of Microsoft BASIC.  
 
 * [Quick start guide](https://github.com/source-solutions/sebasic4/wiki/Quick-start-guide), the essentials needed to get started.
 * [User's guide](https://github.com/source-solutions/sebasic4/wiki/User's-guide), in-depth guide to using BASIC.
@@ -17,13 +17,13 @@
 * [Language guide](https://github.com/source-solutions/sebasic4/wiki/Language-guide), overview of the BASIC language by topic.
 * [Language reference](https://github.com/source-solutions/sebasic4/wiki/Language-reference), comprehensive reference to BASIC.
 * [Technical reference](https://github.com/source-solutions/sebasic4/wiki/Technical-reference), file formats and internals.
-* [Developer's guide](https://github.com/source-solutions/sebasic4/wiki/Developer-guide), building SE basic IV from source.
+* [Developer's guide](https://github.com/source-solutions/sebasic4/wiki/Developer-guide), building SE BASIC from source.
 * [Acknowledgments](https://github.com/source-solutions/sebasic4/wiki/Acknowledgments)
 * [License](https://github.com/source-solutions/sebasic4/wiki/License)
 
 ![SE Basic 4.2.0](https://github.com/source-solutions/sebasic4/raw/gh-pages/images/sebasic4-2.png)
 
-# SE Basic IV Cordelia 4.2.0
+# SE BASIC
 A classic BASIC interpreter for the Z80 architecture
 
 Copyright © 1999-2024 Source Solutions, Inc.
