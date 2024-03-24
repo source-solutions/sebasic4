@@ -44,16 +44,6 @@ DETAILS:&nbsp;<A HREF="#var_detail">VARIABLE</A>&nbsp;|&nbsp;<A HREF="#str_detai
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="06_screen_0-asm.html#c_circle">c_circle</A></B></CODE><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;	// stubs for line drawning commands (not supported in text mode)
-c_arc:
-	bit 1, (iy + _flags2);				// test for screen 1 (user defined video mode)
-	jp nz, v_s1_arc;					// jump if so
-	jr no_draw;							// immediate jump
-</TD></TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE><B><A HREF="06_screen_0-asm.html#c_cls">c_cls</A></B></CODE><BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
- <code>CLS</code> command
- 
 </TD></TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD><CODE><B><A HREF="06_screen_0-asm.html#c_color">c_color</A></B></CODE><BR>
@@ -195,6 +185,12 @@ c_arc:
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  print out
 </TD></TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="06_screen_0-asm.html#v_cls">v_cls</A></B></CODE><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ <code>CLS</code> command
+ 
+</TD></TR>
 </TABLE><BR>
 
 <A NAME="function_detail" ID="function_detail"><!-- --></A>
@@ -204,18 +200,6 @@ c_arc:
 <B>Function detail</B></TH></TR></TABLE>
 <A NAME="c_circle" ID="c_circle"><!-- --></A><H3>c_circle</H3>
 <DL><DD>	// stubs for line drawning commands (not supported in text mode)
-c_arc:
-	bit 1, (iy + _flags2);				// test for screen 1 (user defined video mode)
-	jp nz, v_s1_arc;					// jump if so
-	jr no_draw;							// immediate jump
-
-</DD></DL><HR>
-
-<A NAME="c_cls" ID="c_cls"><!-- --></A><H3>c_cls</H3>
-<DL><DD>
- <code>CLS</code> command
- 
-<DT><B>See Also: </B><DD> <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#CLS" target="_blank" rel="noopener noreferrer">Language reference</a>
 
 </DD></DL><HR>
 
@@ -387,6 +371,14 @@ c_arc:
 <A NAME="print_out" ID="print_out"><!-- --></A><H3>print_out</H3>
 <DL><DD>
  print out
+
+</DD></DL><HR>
+
+<A NAME="v_cls" ID="v_cls"><!-- --></A><H3>v_cls</H3>
+<DL><DD>
+ <code>CLS</code> command
+ 
+<DT><B>See Also: </B><DD> <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#CLS" target="_blank" rel="noopener noreferrer">Language reference</a>
 
 </DD></DL><HR>
 

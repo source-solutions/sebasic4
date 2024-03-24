@@ -57,11 +57,6 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DL><DT><A HREF="01_restarts-asm.html#bc_1_space"><B>bc_1_space</B></A> - function in file <A HREF="01_restarts-asm.html">01_restarts.asm</A>
 <DD>
  make one space
-<DT><A HREF="04_vectors-asm.html#beeper"><B>beeper</B></A> - function in file <A HREF="04_vectors-asm.html">04_vectors.asm</A>
-<DD>
-<DT><A HREF="04_vectors-asm.html#bell"><B>bell</B></A> - function in file <A HREF="04_vectors-asm.html">04_vectors.asm</A>
-<DD>
- play bell
 <DT><A HREF="10_expression-asm.html#bin_digit"><B>bin_digit</B></A> - function in file <A HREF="10_expression-asm.html">10_expression.asm</A>
 <DD>
  binary digit
@@ -74,20 +69,8 @@ PREVIOUS FILE&nbsp;&nbsp;&nbsp;&nbsp;NEXT FILE</TD>
 <DT><A HREF="01_restarts-asm.html#ch_add_plus_1"><B>ch_add_plus_1</B></A> - function in file <A HREF="01_restarts-asm.html">01_restarts.asm</A>
 <DD>
  increment CH-ADD
-<DT><A HREF="04_vectors-asm.html#c_sound"><B>c_sound</B></A> - function in file <A HREF="04_vectors-asm.html">04_vectors.asm</A>
-<DD>
- <code>SOUND</code> command
- 
 <DT><A HREF="06_screen_0-asm.html#c_circle"><B>c_circle</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>	// stubs for line drawning commands (not supported in text mode)
-c_arc:
-	bit 1, (iy + _flags2);				// test for screen 1 (user defined video mode)
-	jp nz, v_s1_arc;					// jump if so
-	jr no_draw;							// immediate jump
-<DT><A HREF="06_screen_0-asm.html#c_cls"><B>c_cls</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
-<DD>
- <code>CLS</code> command
- 
 <DT><A HREF="06_screen_0-asm.html#c_color"><B>c_color</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
 <DD>
  <code>COLOR</code> command
@@ -171,6 +154,11 @@ c_arc:
 <DT><A HREF="08_executive-asm.html#chan_s"><B>chan_s</B></A> - function in file <A HREF="08_executive-asm.html">08_executive.asm</A>
 <DD>
  channel S flag
+<DT><A HREF="09_command-asm.html#c_beep"><B>c_beep</B></A> - function in file <A HREF="09_command-asm.html">09_command.asm</A>
+<DD>
+ <code>BEEP</code> command
+ 
+ 
 <DT><A HREF="09_command-asm.html#c_clear"><B>c_clear</B></A> - function in file <A HREF="09_command-asm.html">09_command.asm</A>
 <DD>
  <code>CLEAR</code> command
@@ -266,6 +254,11 @@ c_arc:
 <DT><A HREF="09_command-asm.html#c_run"><B>c_run</B></A> - function in file <A HREF="09_command-asm.html">09_command.asm</A>
 <DD>
  <code>RUN</code> command
+ 
+<DT><A HREF="09_command-asm.html#c_sound"><B>c_sound</B></A> - function in file <A HREF="09_command-asm.html">09_command.asm</A>
+<DD>
+ <code>SOUND</code> command
+ 
  
 <DT><A HREF="09_command-asm.html#c_stop"><B>c_stop</B></A> - function in file <A HREF="09_command-asm.html">09_command.asm</A>
 <DD>
@@ -399,6 +392,11 @@ c_arc:
 <DT><A HREF="15_files-asm.html#c_save"><B>c_save</B></A> - function in file <A HREF="15_files-asm.html">15_files.asm</A>
 <DD>
  <code>SAVE</code> command
+ 
+ 
+<DT><A HREF="15_files-asm.html#c_seek"><B>c_seek</B></A> - function in file <A HREF="15_files-asm.html">15_files.asm</A>
+<DD>
+ <code>SEEK</code> command
  
  
 <DT><A HREF="16_audio-asm.html#c_play"><B>c_play</B></A> - function in file <A HREF="16_audio-asm.html">16_audio.asm</A>
@@ -737,7 +735,7 @@ c_arc:
  floating point to BC
 <DT><A HREF="11_arithmentic-asm.html#fp_to_bcde"><B>fp_to_bcde</B></A> - function in file <A HREF="11_arithmentic-asm.html">11_arithmentic.asm</A>
 <DD>
- floating point to BCDE (32-bit integer) FIXME - work in progress
+ floating point to BCDE (32-bit integer) FIXME: numbers above 2^32 â 1 are not trapped
 <DT><A HREF="11_arithmentic-asm.html#fp_truncate"><B>fp_truncate</B></A> - function in file <A HREF="11_arithmentic-asm.html">11_arithmentic.asm</A>
 <DD>
  integer truncation towards zero
@@ -1217,109 +1215,135 @@ c_arc:
 <DL><DT><A HREF="01_restarts-asm.html#skip_over"><B>skip_over</B></A> - function in file <A HREF="01_restarts-asm.html">01_restarts.asm</A>
 <DD>
  skip over
-<DT><A HREF="04_vectors-asm.html#SEFileAppend"><B>SEFileAppend</B></A> - function in file <A HREF="04_vectors-asm.html">04_vectors.asm</A>
+<DT><A HREF="04_se-os-asm.html#SEFileAppend"><B>SEFileAppend</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
 <DD>
  open a file for appending if it exists
  
  
-<DT><A HREF="04_vectors-asm.html#SEFileClose"><B>SEFileClose</B></A> - function in file <A HREF="04_vectors-asm.html">04_vectors.asm</A>
+<DT><A HREF="04_se-os-asm.html#SEFileClose"><B>SEFileClose</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
 <DD>
  close a file
  
  
-<DT><A HREF="04_vectors-asm.html#SEFileCreate"><B>SEFileCreate</B></A> - function in file <A HREF="04_vectors-asm.html">04_vectors.asm</A>
+<DT><A HREF="04_se-os-asm.html#SEFileCreate"><B>SEFileCreate</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
 <DD>
  create a file for writing or open a file for writing if it exists
  
  
-<DT><A HREF="04_vectors-asm.html#SEFileLoad"><B>SEFileLoad</B></A> - function in file <A HREF="04_vectors-asm.html">04_vectors.asm</A>
+<DT><A HREF="04_se-os-asm.html#SEFileLoad"><B>SEFileLoad</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
 <DD>
  load a file from disk to memory
  
  
  
-<DT><A HREF="04_vectors-asm.html#SEFileOpen"><B>SEFileOpen</B></A> - function in file <A HREF="04_vectors-asm.html">04_vectors.asm</A>
+<DT><A HREF="04_se-os-asm.html#SEFileOpen"><B>SEFileOpen</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
 <DD>
  open a file from disk
  
  
  
-<DT><A HREF="04_vectors-asm.html#SEFileOpenExists"><B>SEFileOpenExists</B></A> - function in file <A HREF="04_vectors-asm.html">04_vectors.asm</A>
+<DT><A HREF="04_se-os-asm.html#SEFileOpenExists"><B>SEFileOpenExists</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
 <DD>
  open a file from disk for reading if it exists
  
  
  
-<DT><A HREF="04_vectors-asm.html#SEFileRead"><B>SEFileRead</B></A> - function in file <A HREF="04_vectors-asm.html">04_vectors.asm</A>
+<DT><A HREF="04_se-os-asm.html#SEFileRead"><B>SEFileRead</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
 <DD>
  read bytes from a file to memory
  
  
  
  
-<DT><A HREF="04_vectors-asm.html#SEFileReadOne"><B>SEFileReadOne</B></A> - function in file <A HREF="04_vectors-asm.html">04_vectors.asm</A>
+<DT><A HREF="04_se-os-asm.html#SEFileReadOne"><B>SEFileReadOne</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
 <DD>
  read one byte from a file to memory
  
  
  
-<DT><A HREF="04_vectors-asm.html#SEFileRemove"><B>SEFileRemove</B></A> - function in file <A HREF="04_vectors-asm.html">04_vectors.asm</A>
+<DT><A HREF="04_se-os-asm.html#SEFileRemove"><B>SEFileRemove</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
 <DD>
  remove a file
  
  
-<DT><A HREF="04_vectors-asm.html#SEFileRename"><B>SEFileRename</B></A> - function in file <A HREF="04_vectors-asm.html">04_vectors.asm</A>
+<DT><A HREF="04_se-os-asm.html#SEFileRename"><B>SEFileRename</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
 <DD>
  rename a file or folder
  
  
  
-<DT><A HREF="04_vectors-asm.html#SEFileSave"><B>SEFileSave</B></A> - function in file <A HREF="04_vectors-asm.html">04_vectors.asm</A>
+<DT><A HREF="04_se-os-asm.html#SEFileSave"><B>SEFileSave</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
 <DD>
  save a file from memory to disk
  
  
  
  
-<DT><A HREF="04_vectors-asm.html#SEFileWrite"><B>SEFileWrite</B></A> - function in file <A HREF="04_vectors-asm.html">04_vectors.asm</A>
+<DT><A HREF="04_se-os-asm.html#SEFileWrite"><B>SEFileWrite</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
 <DD>
  write bytes from memory to a file
  
  
  
  
-<DT><A HREF="04_vectors-asm.html#SEFileWriteOne"><B>SEFileWriteOne</B></A> - function in file <A HREF="04_vectors-asm.html">04_vectors.asm</A>
+<DT><A HREF="04_se-os-asm.html#SEFileWriteOne"><B>SEFileWriteOne</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
 <DD>
  write one byte from memory to a file
  
  
  
-<DT><A HREF="04_vectors-asm.html#SEFolderCreate"><B>SEFolderCreate</B></A> - function in file <A HREF="04_vectors-asm.html">04_vectors.asm</A>
+<DT><A HREF="04_se-os-asm.html#SEFolderCreate"><B>SEFolderCreate</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
 <DD>
  create a folder
  
  
-<DT><A HREF="04_vectors-asm.html#SEFolderOpen"><B>SEFolderOpen</B></A> - function in file <A HREF="04_vectors-asm.html">04_vectors.asm</A>
+<DT><A HREF="04_se-os-asm.html#SEFolderOpen"><B>SEFolderOpen</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
 <DD>
  open a folder for reading
  
  
  
-<DT><A HREF="04_vectors-asm.html#SEFolderRead"><B>SEFolderRead</B></A> - function in file <A HREF="04_vectors-asm.html">04_vectors.asm</A>
+<DT><A HREF="04_se-os-asm.html#SEFolderRead"><B>SEFolderRead</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
 <DD>
  read a folder entry
  
  
  
-<DT><A HREF="04_vectors-asm.html#SEFolderRemove"><B>SEFolderRemove</B></A> - function in file <A HREF="04_vectors-asm.html">04_vectors.asm</A>
+<DT><A HREF="04_se-os-asm.html#SEFolderRemove"><B>SEFolderRemove</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
 <DD>
  remove a folder
  
  
-<DT><A HREF="04_vectors-asm.html#SEFolderSet"><B>SEFolderSet</B></A> - function in file <A HREF="04_vectors-asm.html">04_vectors.asm</A>
+<DT><A HREF="04_se-os-asm.html#SEFolderSet"><B>SEFolderSet</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
 <DD>
  set current working folder
  
+ 
+<DT><A HREF="04_se-os-asm.html#SEGraphicsPaletteSet"><B>SEGraphicsPaletteSet</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
+<DD>
+ set the 64 palette registers (during vblank)
+ 
+<DT><A HREF="04_se-os-asm.html#SEKeyboardFlushBuffer"><B>SEKeyboardFlushBuffer</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
+<DD>
+ flush keyboard buffer
+<DT><A HREF="04_se-os-asm.html#SEScreenClear"><B>SEScreenClear</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
+<DD>
+ clear the screen
+<DT><A HREF="04_se-os-asm.html#SEScreenLowerPrintString"><B>SEScreenLowerPrintString</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
+<DD>
+ print an ASCIIZ string to the lower display
+ 
+<DT><A HREF="04_se-os-asm.html#SEScreenMode"><B>SEScreenMode</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
+<DD>
+ set the screen mode
+ 
+<DT><A HREF="04_se-os-asm.html#SEScreenPrintCharacter"><B>SEScreenPrintCharacter</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
+<DD>
+ print an ASCII character to the main display
+ 
+<DT><A HREF="04_se-os-asm.html#SEScreenPrintString"><B>SEScreenPrintString</B></A> - function in file <A HREF="04_se-os-asm.html">04_se-os.asm</A>
+<DD>
+ print an ASCIIZ string to the main display
  
 <DT><A HREF="07_editor-asm.html#set_hl"><B>set_hl</B></A> - function in file <A HREF="07_editor-asm.html">07_editor.asm</A>
 <DD>
@@ -1461,6 +1485,7 @@ c_arc:
  print cursor right
 <DT><A HREF="14_screen_1-asm.html#s1_po_scr"><B>s1_po_scr</B></A> - function in file <A HREF="14_screen_1-asm.html">14_screen_1.asm</A>
 <DD>
+ test for scroll
 <DT><A HREF="14_screen_1-asm.html#s1_po_tab"><B>s1_po_tab</B></A> - function in file <A HREF="14_screen_1-asm.html">14_screen_1.asm</A>
 <DD>
  print tab
@@ -1501,7 +1526,11 @@ c_arc:
  use zero
 </DL><HR>
 <A NAME="V__" ID="V__"><!-- --></A><H2><B>V</B></H2>
-<DL><DT><A HREF="09_command-asm.html#val_fet_1"><B>val_fet_1</B></A> - function in file <A HREF="09_command-asm.html">09_command.asm</A>
+<DL><DT><A HREF="06_screen_0-asm.html#v_cls"><B>v_cls</B></A> - function in file <A HREF="06_screen_0-asm.html">06_screen_0.asm</A>
+<DD>
+ <code>CLS</code> command
+ 
+<DT><A HREF="09_command-asm.html#val_fet_1"><B>val_fet_1</B></A> - function in file <A HREF="09_command-asm.html">09_command.asm</A>
 <DD>
  fetch a value
 <DT><A HREF="09_command-asm.html#var_a_1"><B>var_a_1</B></A> - function in file <A HREF="09_command-asm.html">09_command.asm</A>
