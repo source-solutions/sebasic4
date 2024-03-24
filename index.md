@@ -40,6 +40,6 @@ Features include:
 
 <img src="images/ssi.png"/>
 
-Copyright © 1981-2023 Source Solutions, Inc.
+Copyright © 1981-2024 Source Solutions, Inc.
 
 <a rel="me" href="https://hachyderm.io/@aowendev"></a>
