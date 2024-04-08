@@ -1034,6 +1034,7 @@ fp_n_mod_m:
 	fst 0;								// store div in mem0
 	fmul;								// n, m * int (n / m)
 	fsub;								// n - m * int (n / m)
+	fgt 0;								// n - m * int (n / m), int (n / m)
 	fce;								// exit calculator
 	ret;								// end of subroutine
 
