@@ -57,7 +57,7 @@ c_new:
 	exx;								// alternate register set
 	ld bc, (p_ramt);					// store
 	ld de, (flags2);					// system
-	ld hl, (nmiadd);					// variables
+	ld hl, (pip);						// variables
 	exx;								// main register set
 
 ;;
@@ -85,7 +85,7 @@ start_new:
 	exx;								// alternate register set
 	ld (p_ramt), bc;					// restore p_ramt
 	ld (flags2), de;					// restore flags2 (screen mode / CAPS lock)
-	ld (nmiadd), hl;					// restore nmiadd
+	ld (pip), hl;						// restore nmiadd
 	exx;								// main resister set
 	ex af, af';							// restore A
 	inc a;								// NEW command?

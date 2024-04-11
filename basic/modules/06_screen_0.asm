@@ -1160,7 +1160,7 @@ cls_lower:
 	ld hl, vdu_flag;					// address sysvar
 	ld b, (iy + _df_sz);				// get address
 ;	set 0, (hl);						// signal lower part
-	res 5, (hl);					v_s1_print_out	// signal no lower screen clear after key
+	res 5, (hl);						// signal no lower screen clear after key
 	call cl_line;						// clear lower part of screen
 	dec b;								// reduce counter
 	ld (iy + _df_sz), 1;				// two lines
