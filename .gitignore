@@ -46,6 +46,8 @@ symbols.txt
 #/chloehd/SYSTEM/LANGUAGE.S/*.LN
 
 # exclude optional programs
+/chloehd/BASIC
+/chloehd/DOS
 /chloehd/PROGRAMS/2019
 /chloehd/PROGRAMS/AAFALL
 /chloehd/PROGRAMS/AARDMAN
@@ -57,6 +59,7 @@ symbols.txt
 /chloehd/PROGRAMS/KAYAHARA
 /chloehd/PROGRAMS/LASTV8
 /chloehd/PROGRAMS/LOCALE
+/chloehd/PROGRAMS/MPAGD
 /chloehd/PROGRAMS/RUNBASIC
 /chloehd/PROGRAMS/SCRSHOW
 /chloehd/PROGRAMS/SKYFALL
@@ -66,4 +69,4 @@ symbols.txt
 /chloehd/PROGRAMS/VDPTEST
 
 # exclude temporary files
-#/chloehd/SYSTEM/TEMPORAR.Y/*
+#/chloehd/SYSTEM/TEMPORAR.Y
