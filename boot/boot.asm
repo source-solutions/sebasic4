@@ -97,7 +97,9 @@ mute_ay:
 
 ;	// start bootstrap
 init:
-	xor a;								// LD A, 0
+	ld a, $ff;							// set bit 7
+	ld r, a;							// indicate coming from cold boot
+	inc a;								// LD A, 0
 	out (ula), a;						// black border
 	ld hl, 23295;						// source
 	ld de, 23294;						// destination
