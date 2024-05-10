@@ -41,13 +41,8 @@
                     MAMELoader.emulatorJS("mame.js"),
                     MAMELoader.emulatorWASM("mame.wasm"),
                     MAMELoader.mountFile("chloe.zip", MAMELoader.fetchFile("Bios", "roms/chloe.zip")),
-                    //MAMELoader.mountFile("chloe.chd", MAMELoader.fetchFile("Disk", "software/chloe240se.chd")),
-                    //MAMELoader.mountFile("chloe.chd", MAMELoader.fetchFile("Disk", "software/2019.chd")),
-                    //MAMELoader.peripheral("hard1", "chloe.chd"),
-
-                    MAMELoader.mountFile("chloe.img", MAMELoader.fetchFile("Disk", "software/chloe.img")),
-                    MAMELoader.peripheral("hard1", "chloe.img"),
-
+                    MAMELoader.mountFile("chloe.chd", MAMELoader.fetchFile("Disk", "software/chloe.chd")),
+                    MAMELoader.peripheral("hard1", "chloe.chd"),
                     MAMELoader.extraArgs([]));
       var emulator = new Emulator(document.querySelector("#canvas"), null, loader);
       emulator.start({ waitAfterDownloading: true });
