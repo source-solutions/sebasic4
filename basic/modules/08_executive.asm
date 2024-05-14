@@ -57,7 +57,7 @@ c_new:
 	exx;								// alternate register set
 	ld bc, (p_ramt);					// store
 	ld de, (flags2);					// system
-	ld hl, (pip);						// variables
+	ld hl, (nmiadd);					// variables
 	exx;								// main register set
 
 ;;
@@ -85,7 +85,7 @@ start_new:
 	exx;								// alternate register set
 	ld (p_ramt), bc;					// restore p_ramt
 	ld (flags2), de;					// restore flags2 (screen mode / CAPS lock)
-	ld (pip), hl;						// restore nmiadd
+	ld (nmiadd), hl;					// restore nmiadd
 	exx;								// main resister set
 	ex af, af';							// restore A
 	inc a;								// NEW command?
@@ -168,12 +168,11 @@ initial:
 	call out_curs_ready;				// display cursor
 	call msg_pause;						// pause in case of NEW
 	call flush_kb;						// flush the keyboard buffer
-	ld hl, pip;							// address PIP
-	ld a, (hl);							// get PIP ($ff on cold start)
-	ld (hl), 0;							// zero PIP
-	inc a;								// test PIP ($00 on cold start)
-	jr nz, main_1;						// immediate jump with warm start
-	call autoexec;						// test for AUTOEXEC.BAS
+	ld a, r;							// value of refresh register to A
+	bit 7, a;							// bit 7 set (by boot ROM)?
+	ld a, 0;							// set A without upsetting flags
+	ld r, a;							// clear bit 7 of R
+	jp nz, autoexec;					// if so, load AUTOEXEC.BAS
 	jr main_1;							// immediate jump
 
 ;;

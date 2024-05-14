@@ -97,6 +97,8 @@ mute_ay:
 
 ;	// start bootstrap
 init:
+	ld a, %10000000;					// indicate coming
+	ld r, a;							// from boot
 	xor a;								// LD A, 0
 	out (ula), a;						// black border
 	ld hl, 23295;						// source
