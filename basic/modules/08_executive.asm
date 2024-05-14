@@ -172,7 +172,7 @@ initial:
 	bit 7, a;							// bit 7 set (by boot ROM)?
 	ld a, 0;							// set A without upsetting flags
 	ld r, a;							// clear bit 7 of R
-	jp nz, autoexec;					// if so, load AUTOEXEC.BAS
+	call nz, autoexec;					// if so, load AUTOEXEC.BAS
 	jr main_1;							// immediate jump
 
 ;;
