@@ -36,16 +36,29 @@
     <script type="text/javascript" src="browserfs.min.js"></script>
     <script type="text/javascript" src="loader.js"></script>
     <script type="text/javascript">
+      const queryString = window.location.search;
+      const urlParams = new URLSearchParams(queryString);
+      var image = urlParams.get('image');
+      var waitAfterDownloading = false;
+      if (image == undefined) {
+        image = "chloe";
+        waitAfterDownloading = true;
+      }
+
       var loader = new MAMELoader(MAMELoader.driver("chloe"),
-                    MAMELoader.nativeResolution(640, 480),
-                    MAMELoader.emulatorJS("mame.js"),
-                    MAMELoader.emulatorWASM("mame.wasm"),
-                    MAMELoader.mountFile("chloe.zip", MAMELoader.fetchFile("Bios", "roms/chloe.zip")),
-                    MAMELoader.mountFile("chloe.img", MAMELoader.fetchFile("Disk", "software/chloe.img")),
-                    MAMELoader.peripheral("hard1", "chloe.img"),
-                    MAMELoader.extraArgs([]));
+                  MAMELoader.nativeResolution(640, 480),
+                  MAMELoader.emulatorJS("mame.js"),
+                  MAMELoader.emulatorWASM("mame.wasm"),
+                  MAMELoader.mountFile("kb_ms_natural.zip", MAMELoader.fetchFile("Keyboard", "roms/kb_ms_natural.zip")),
+                  MAMELoader.mountFile("cfg/chloe.cfg", MAMELoader.fetchFile("Cfg", "cfg/chloe.cfg")),
+                  MAMELoader.mountFile("chloe.zip", MAMELoader.fetchFile("Bios", "roms/chloe.zip")),
+                  MAMELoader.mountFile(image + ".img", MAMELoader.fetchFile("Disk IMG: " + image, "software/" + image + ".img")),
+                  MAMELoader.peripheral("cfg_directory", "cfg"),
+                  MAMELoader.peripheral("hard1", image + ".img"),
+                  MAMELoader.extraArgs([]));
+
       var emulator = new Emulator(document.querySelector("#canvas"), null, loader);
-      emulator.start({ waitAfterDownloading: true });
+      emulator.start({ waitAfterDownloading: waitAfterDownloading });
     </script>
   </body>
 </html>
