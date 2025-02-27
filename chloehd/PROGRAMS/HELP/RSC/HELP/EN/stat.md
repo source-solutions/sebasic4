@@ -14,7 +14,7 @@ commands in the category of statements.
 [`BEEP`](BEEP), [`BLOAD`](BLOAD), [`BSAVE`](BSAVE), [`CALL`](CALL), [`CHDIR`](CHDIR), [`CIRCLE`](CIRCLE), [`CLEAR`](CLEAR), [`CLOSE`](CLOSE), [`CLS`](CLS),
 [`COLOR`](COLOR), [`CONT`](CONT), [`COPY`](COPY), [`DATA`](DATA), [`DEF FN`](DEF_FN), [`DELETE`](DELETE), [`DIM`](DIM), [`DOKE`](DOKE), [`DRAW`](DRAW),
 [`EDIT`](EDIT), [`ELSE`](ELSE), [`END`](END), [`ERROR`](ERROR), [`FILES`](FILES), [`FOR`](FOR), [`GOSUB`](GOSUB), [`GOTO`](GOTO), [`IF`](IF), [`INPUT`](INPUT),
-[]`KEY`](KEY), [`KILL`](KILL), [`LET`](LET), [`LINE`](LINE), [`LIST`](LIST), [`LOAD`](LOAD), [`LOCATE`](LOCATE), [`MERGE`](MERGE), [`MKDIR`](MKDIR),
-[`NAME`](NAME), [`NEW`](NEW), [`NEXT`](NEXT), [`OLD`](OLD), [`ON`](ON), [`ON ERROR`](ON_ERROR), [`OPEN`](OPEN), [`OUT`](OUT, [`PALETTE`](PALETTE), [`PLAY`](PLAY), [`PLOT`](PLOT),
+[`KEY`](KEY), [`KILL`](KILL), [`LET`](LET), [`LINE`](LINE), [`LIST`](LIST), [`LOAD`](LOAD), [`LOCATE`](LOCATE), [`MERGE`](MERGE), [`MKDIR`](MKDIR),
+[`NAME`](NAME), [`NEW`](NEW), [`NEXT`](NEXT), [`OLD`](OLD), [`ON`](ON), [`ON ERROR`](ON_ERROR), [`OPEN`](OPEN), [`OUT`](OUT), [`PALETTE`](PALETTE), [`PLAY`](PLAY), [`PLOT`](PLOT),
 [`POKE`](POKE), [`PRINT`](PRINT), [`RANDOMIZE`](RANDOMIZE), [`READ`](READ), [`REM`](REM), [`RENUM`](RENUM), [`RMDIR`](RMDIR), [`RUN`](RUN), [`SAVE`](SAVE),
 [`SCREEN`](SCREEN), [`SEEK`](SEEK), [`SOUND`](SOUND), [`STOP`](STOP), [`TRACE`](TRACE), [`WAIT`](WAIT), [`WEND`](WEND), [`WHILE`](WHILE)
