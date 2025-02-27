@@ -1,6 +1,6 @@
 # Miscellaneous information
 ***
-* The workding environment [`ENV`](ENV)
+* The working environment [`ENV`](ENV)
 * Special keys [`KEYS`](KEYS)
 * Function key macros: [`MACROS`](MACROS)
 * Operators [`OPS`](OPS)
