@@ -45,7 +45,9 @@
 	include "modules/14_screen_1.asm"
 	include "modules/15_files.asm"
 	include "modules/16_audio.asm"
+	include "modules/standard_mml.asm"
 	include "modules/17_messages.asm"
+	include "modules/riff_support.asm"
 
 ;	// last byte
 org $5bb9;

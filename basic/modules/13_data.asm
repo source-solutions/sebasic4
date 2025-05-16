@@ -1106,7 +1106,7 @@ p_palette:
 
 p_play:
 	defb var_syn;
-	defw c_play;
+	defw c_std_play;
 
 p_plot:
 	defb two_c_s_num_no_f_ops;

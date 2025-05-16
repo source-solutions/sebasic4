@@ -261,80 +261,113 @@ SEGraphicsPaletteSet:
 ;	// --- SE/OS API 1.1 --------------------------------------------------------
 ;;
 
-; $1b
-	jp $ffff;							// 
+;	// --- RIFF Format Support ------------------------------------------------------
 
-; $1c
-	jp $ffff;							// 
+;;
+; open a RIFF file and validate its header
+; @param IX - pointer to ASCIIZ file path
+; @return A - file handle
+; @return Z flag set if valid RIFF file, clear otherwise
+; @throws sets carry flag on error
+;;
+SERIFFOpen:
+	jp RIFFOpen;						// $1b
 
-; $1d
-	jp $ffff;							// 
+;;
+; find and read a specific chunk in a RIFF file
+; @param A - file handle
+; @param IX - Buffer for chunk data
+; @param DE - Chunk ID to find (e.g. "fmt " or "data")
+; @return BC - chunk size in bytes
+; @return Z flag set if chunk found, clear otherwise
+; @throws sets carry flag on error
+;;
+SERIFFReadChunk:
+	jp RIFFReadChunk;					// $1c
 
-; $1e
-	jp $ffff;							// 
+;;
+; create a new RIFF file
+; @param IX - pointer to ASCIIZ file path
+; @param DE - RIFF type (e.g. "WAVE")
+; @return A - file handle
+; @throws sets carry flag on error
+;;
+SERIFFCreate:
+	jp RIFFCreate;						// $1d
+
+;;
+; write a chunk to a RIFF file
+; @param A - file handle
+; @param DE - Chunk ID (e.g. "fmt " or "data")
+; @param HL - Pointer to chunk data
+; @param BC - Chunk data size
+; @throws sets carry flag on error
+;;
+SERIFFWriteChunk:
+	jp RIFFWriteChunk;					// $1e
 
 ; $1f
-	jp $ffff;							// 
+	jp $ffff;							//
 
 ; $20
-	jp $ffff;							// 
+	jp $ffff;							//
 
 ; $21
-	jp $ffff;							// 
+	jp $ffff;							//
 
 ; $22
-	jp $ffff;							// 
+	jp $ffff;							//
 
 ; $23
-	jp $ffff;							// 
+	jp $ffff;							//
 
 ; $24
-	jp $ffff;							// 
+	jp $ffff;							//
 
 ; $25
 	jp $ffff;							//
 
 ; $26
-	jp $ffff;							// 
+	jp $ffff;							//
 
 ; $27
-	jp $ffff;							// 
+	jp $ffff;							//
 
 ; $28
-	jp $ffff;							// 
+	jp $ffff;							//
 
 ; $29
-	jp $ffff;							// 
+	jp $ffff;							//
 
 ; $2a
-	jp $ffff;							// 
+	jp $ffff;							//
 
 ; $2b
-	jp $ffff;							// 
+	jp $ffff;							//
 
 ; $2c
-	jp $ffff;							// 
+	jp $ffff;							//
 
 ; $2d
-	jp $ffff;							// 
+	jp $ffff;							//
 
 ; $2e
-	jp $ffff;							// 
+	jp $ffff;							//
 
 ; $2f
-	jp $ffff;							// 
+	jp $ffff;							//
 
 ; $30
-	jp $ffff;							// 
+	jp $ffff;							//
 
 ; $31
-	jp $ffff;							// 
+	jp $ffff;							//
 
 ; $32
-	jp $ffff;							// 
+	jp $ffff;							//
 
 ; $33
-	jp $ffff;							// 
+	jp $ffff;							//
 
 ; $34
 	jp $ffff;							// ($0562 must never be called)

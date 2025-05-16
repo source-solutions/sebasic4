@@ -164,6 +164,7 @@ c_end:
 	call close_all;						// close all files
 	ld bc, -2;							// line zero
 	ld (ppc), bc;						// set line number
+	call flush_kb;						// clear keyboard buffer RIGHT before ending
 	ld l, ok;							// error to A
 	jp error_3;							// generate error message
 
