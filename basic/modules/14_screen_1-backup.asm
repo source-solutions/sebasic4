@@ -27,49 +27,55 @@
 	org $4500
 
 v_s1_init:
-	jp s2_init;							// initialize screen
+	jp s1_init;							// initialize screen
 
 v_s1_cls:
-	jp s2_cls;							// CLS
+	jp s1_cls;							// CLS
 
 v_s1_cls_lower:
-	jp s2_cls_lower;					// CLS LOWER
+	jp s1_cls_lower;					// CLS LOWER
 
 v_s1_cl_all:
-	jp s2_cl_all;						// CL ALL
+	jp s1_cl_all;						// CL ALL
 
 v_s1_cl_set:
-	jp s2_cl_set;						// CL SET
+	jp s1_cl_set;						// CL SET
 
 v_s1_cl_line:
-	jp s2_cl_line;						// CL LINE
+	jp s1_cl_line;						// CL LINE
 
 v_s1_print_out:
-	jp s2_print_out;					// PRINT OUT
+	jp s1_print_out;					// PRINT OUT
 
 v_s1_arc:
-	jp s2_arc;							// ARC command
+	jp s1_arc;							// ARC command
 
 v_s1_circle:
-	jp s2_circle;						// CIRCLE command
+	jp s1_circle;						// CIRCLE command
 
 v_s1_draw:
-	jp s2_draw;							// DRAW command
+	jp s1_draw;							// DRAW command
 
 v_s1_plot;
-	jp s2_plot;							// PLOT command
+	jp s1_plot;							// PLOT command
 
 v_s1_get_cols:
-	jp s2_get_cols;						// GET COLS
+	jp s1_get_cols;						// GET COLS
 
 v_s1_input_1:
-	jp s2_input_1;						// INPUT 1
+	jp s1_input_1;						// INPUT 1
 
 v_s1_locate:
-	jp s2_locate;						// LOCATE
+	jp s1_locate;						// LOCATE
+
+s1_table:
+	defw s1_pos_0;
+	defw s1_pos_1;
+	defw s1_pos_2;
+	defw s1_pos_3;
 
 ;;
-;	// --- 32 COLUMN SCREEN HANDLING ROUTINES ----------------------------------
+;	// --- 40 COLUMN SCREEN HANDLING ROUTINES ----------------------------------
 ;;
 :
 
@@ -78,13 +84,13 @@ v_s1_locate:
 ;	// $FFFF +---------------+ 65535
 ;	//       | font          |
 ;	// $F800 +---------------+ 63488
-;	//       | not used      |
+;	//       | attributes    |
 ;	// $E000 +---------------+ 57344
 ;	//       | palette       |
 ;	// $DFC0 +---------------+ 57280
 ;	//       | temp stack    |
 ;	// $DF80 +---------------+ 57216
-;	//       | attributes    | TO-DO: make character map a stack that grows down.
+;	//       | character map |
 ;	// $D800 +---------------+ 55296
 ;	//       | bitmap        |
 ;	// $C000 +---------------+ 49152
@@ -96,221 +102,392 @@ v_s1_locate:
 ;	// HL points to the first byte of a character in FONT_1
 ;	// DE points to the first byte of the block of screen addresses
 
-s2_chr_str_1:
+s1_pos_0:
+	ld b, 8;							// 8 bytes to write
+
+s1_pos_0a:
+	ld a, (de);							// read byte at destination
+	bit 0, (iy + _p_flag);				// over?
+	jr nz, s1_over_0;					// jump if so
+	and %00000011;						// mask area used by new character
+
+s1_over_0:
+	bit 2, (iy + _p_flag);				// inverse?
+	jr z, s1_inverse_0;					// jump if not
+	xor %11111100;						// invert
+
+s1_inverse_0:
+	ld c, (hl);							// get character from font
+	sla c;								// shift left one bit
+	xor c;								// combine with character from font
+	ld (de), a;							// write it back
+	set 5, d;							// DE now points to attributes
+	ld a, (attr_p);						// get current attribute
+	ld (de), a;							// write it
+	res 5, d;							// restore pointer
+	inc d;								// point to next screen location
+	inc l;								// point to next font data
+	djnz s1_pos_0a;						// loop 8 times
+	jp s1_pr_all_f;						// immedaite jump
+
+s1_pos_1:
+	ld b, 8;							// 8 bytes to write
+
+s1_pos_1a:
+	dec e;								// previous screen address
+	ld a, (de);							// read byte at destination
+	bit 0, (iy + _p_flag);				// over?
+	jr nz, s1_over_1;					// jump if so
+	and %11111100;						// mask area used by new character
+
+s1_over_1:
+	bit 2, (iy + _p_flag);				// inverse?
+	jr z, s1_inverse_1;					// jump if not
+	xor %00000011;						// invert
+
+s1_inverse_1:
+	ld c, (hl);							// get character from font
+	srl c;								// shift left five bits
+	srl c;								//
+	srl c;								//
+	srl c;								//
+	srl c;								//
+	xor c;								// combine with character from font
+	ld (de), a;							// write it back
+	set 5, d;							// DE now points to attributes
+	ld a, (attr_p);						// get current attribute
+	ld (de), a;							// write it
+	res 5, d;							// restore pointer
+	inc e;								// next screen address
+	ld a, (de);							// read byte at destination
+	bit 0, (iy + _p_flag);				// over?
+	jr nz, s1_over_1a;					// jump if so
+	and %00001111;						// mask area used by new character
+
+s1_over_1a:
+	bit 2, (iy + _p_flag);				// inverse?
+	jr z, s1_inverse_1a;				// jump if not
+	xor %11110000;						// invert
+
+s1_inverse_1a:
+	ld c, (hl);							// get character from font
+	sla c;								// shift left three bits
+	sla c;								//
+	sla c;								//
+	xor c;								// combine with character from font
+	ld (de), a;							// write it back
+	set 5, d;							// DE now points to attributes
+	ld a, (attr_p);						// get current attribute
+	ld (de), a;							// write it
+	res 5, d;							// restore pointer
+	inc d;								// point to next screen location
+	inc l;								// point to next font data
+	djnz s1_pos_1a;						// loop 8 times
+	jp s1_pr_all_f;						// immedaite jump
+
+s1_pos_2:
+	ld b, 8;							// 8 bytes to write
+
+s1_pos_2a:
+	dec e;								// reduce screen pointer
+	ld a, (de);							// read byte at destination
+	bit 0, (iy + _p_flag);				// over?
+	jr nz, s1_over_2;					// jump if so
+	and %11110000;						// mask area used by new character
+
+s1_over_2:
+	bit 2, (iy + _p_flag);				// inverse?
+	jr z, s1_inverse_2;					// jump if not
+	xor %00001111;						// invert
+
+s1_inverse_2:
+	ld c, (hl);							// get character from font
+	srl c;								// shift right three bits
+	srl c;								//
+	srl c;								//
+	xor c;								// combine with character from font
+	ld (de), a;							// write it back
+	set 5, d;							// DE now points to attributes
+	ld a, (attr_p);						// get current attribute
+	ld (de), a;							// write it
+	res 5, d;							// restore pointer
+	inc e;								// increase screen pointer
+	ld a, (de);							// read byte at destination
+	bit 0, (iy + _p_flag);				// over?
+	jr nz, s1_over_2a;					// jump if so
+	and %00111111;						// mask area used by new character
+
+s1_over_2a:
+	bit 2, (iy + _p_flag);				// inverse?
+	jr z, s1_inverse_2a;				// jump if not
+	xor %11000000;						// invert
+
+s1_inverse_2a:
+	ld c, (hl);							// get character from font
+	sla c;								// shift left five bits
+	sla c;								//
+	sla c;								//
+	sla c;								//
+	sla c;								//
+	xor c;								// combine with character from font
+	ld (de), a;							// write it back
+	set 5, d;							// DE now points to attributes
+	ld a, (attr_p);						// get current attribute
+	ld (de), a;							// write it
+	res 5, d;							// restore pointer
+	inc d;								// point to next screen location
+	inc l;								// point to next font data
+	djnz s1_pos_2a;						// loop 8 times
+	jp s1_pr_all_f;						// immedaite jump
+
+s1_pos_3:
+	dec e;								// back one character
+	ld b, 8;							// 8 bytes to write
+
+s1_pos_3a:
+	ld a, (de);							// read byte at destination
+	bit 0, (iy + _p_flag);				// over?
+	jr nz, s1_over_3;					// jump if so
+	and %11000000;						// mask area used by new character
+
+s1_over_3:
+	bit 2, (iy + _p_flag);				// inverse?
+	jr z, s1_inverse_3;					// jump if not
+	xor %00111111;						// invert
+
+s1_inverse_3:
+	ld c, (hl);							// get character from font
+	sra c;								// shift right one bit
+	xor c;								// combine with character from font
+	ld (de), a;							// write it back
+	set 5, d;							// DE now points to attributes
+	ld a, (attr_p);						// get current attribute
+	ld (de), a;							// write it
+	res 5, d;							// restore pointer
+	inc d;								// point to next screen location
+	inc l;								// point to next font data
+	djnz s1_pos_3a;						// loop 8 times
+	jp s1_pr_all_f;						// immediate jump
+
+;---
+
+s1_chr_str_1:
 	set 5, (iy + _flags2);				// set force printable flag
 	ret;								// done
 
-s2_force_poable:
+s1_force_poable:
 	res 5, (iy + _flags2);				// clear force printable flag
-	jp s2_po_able;						//
+	jp s1_po_able;						//
 
-s2_chr_str_2:
+s1_chr_str_2:
 	set 6, (iy + _flags2);				// set composable flag
 	ret;								// done
 
-s2_po_compose:
+s1_po_compose:
 	res 6, (iy + _flags2);				// clear composable flag
 	push af;							// stack character
-	call s2_po_left;					// move cursor left
+	call s1_po_left;					// move cursor left
 	set 0, (iy + _p_flag);				// set over flag
 	pop af;								// unstack character
-	call s2_po_able;					// overprint character
+	call s1_po_able;					// overprint character
 	res 0, (iy + _p_flag);				// clear flag
 	ret;								// done
 
 ;;
 ; print out
 ;;
-s2_print_out:
+s1_print_out:
+;	call s1_po_fetch;					// current print position
 	call po_fetch;						// current print position (screen 0 code)
 
 	bit 5, (iy + _flags2);				// treat next character as printable?
-	jr nz, s2_force_poable;				// jump if so
+	jr nz, s1_force_poable;				// jump if so
 
 	bit 6, (iy + _flags2);				// is next character composable?
-	jr nz, s2_po_compose;				// jump if so
+	jr nz, s1_po_compose;				// jump if so
 
 	cp 1;								// CHR$ (1)?
-	jr z, s2_chr_str_1;					// make next character printable
+	jr z, s1_chr_str_1;					// make next character printable
 
 	cp 2;								// CHR$ (2)?
-	jr z, s2_chr_str_2;					// make next character composable
+	jr z, s1_chr_str_2;					// make next character composable
 
 	cp ' ';								// space or higher?
-	jp nc, s2_po_able;					// jump if so
+	jp nc, s1_po_able;					// jump if so
 	cp 7;								// character in the range 0 - 6?
-	jp c, s2_po_able;					// jump if so
+	jp c, s1_po_able;					// jump if so
 	cp 14;								// character in the range 7 to 13?
-	jr c, s2_po_ctrl;					// jump if so
+	jr c, s1_po_ctrl;					// jump if so
 	cp 28;								// characters in the range 14 to 27?
-	jr c, s2_po_able;					// jump if so
+	jr c, s1_po_able;					// jump if so
 	sub 14;								// reduce range
 
-s2_po_ctrl:
+s1_po_ctrl:
 	ld e, a;							// move character
 	ld d, 0;							// to DE
-	ld hl, s2_ctlchrtab - 7;			// base of control table
+	ld hl, s1_ctlchrtab - 7;			// base of control table
 	add hl, de;							// index into table
 	ld e, (hl);							// get offset
 	add hl, de;							// add offset
 	push hl;							// stack it
+;	jp s1_po_fetch;						// indirect return
 	jp po_fetch;						// indirect return (screen 0 code)
 
-s2_ctlchrtab:
-	defb s2_po_bel - $;					// 07, BEL
-	defb s2_po_able - $;				// 08, BS
-	defb s2_po_tab - $;					// 09, HT
-	defb s2_po_cr - $;					// 10, LF
-	defb s2_po_vt - $;					// 11, VT
-	defb s2_po_clr - $;					// 12, FF
-	defb s2_po_cr - $;					// 13, CR
-	defb s2_po_right - $;				// 28, FS
-	defb s2_po_left - $;				// 29, GS
-	defb s2_po_up - $;					// 30, RS
-	defb s2_po_down - $;				// 31, US
+s1_ctlchrtab:
+	defb s1_po_bel - $;					// 07, BEL
+	defb s1_po_able - $;				// 08, BS
+	defb s1_po_tab - $;					// 09, HT
+	defb s1_po_cr - $;					// 10, LF
+	defb s1_po_vt - $;					// 11, VT
+	defb s1_po_clr - $;					// 12, FF
+	defb s1_po_cr - $;					// 13, CR
+	defb s1_po_right - $;				// 28, FS
+	defb s1_po_left - $;				// 29, GS
+	defb s1_po_up - $;					// 30, RS
+	defb s1_po_down - $;				// 31, US
 
 ;	// sound bell subroutine
-s2_po_bel:
+s1_po_bel:
 	jp bell;							// immediate jump
 
 ;;
 ; print tab
 ;;
-s2_po_tab:
+s1_po_tab:
 	jp po_tab;							// screen 0 code
 
 ;;
 ; print home
 ;;
-s2_po_vt:
-	jp s2_cl_home;						// indirect return
+s1_po_vt:
+	jp s1_cl_home;						// indirect return
 
 ;	// print clr subroutine
-s2_po_clr:
-	jp s2_cls;							// immediate jump
+s1_po_clr:
+	jp s1_cls;							// immediate jump
 
 ;;
 ; print carriage return
 ;;
-s2_po_cr:
-	ld c, 33;							// left column
-	call s2_po_scr;						// scroll if required
+s1_po_cr:
+	ld c, 41;							// left column
+	call s1_po_scr;						// scroll if required
 	dec b;								// down a line
 
-s2_jp_cl_set:
-	jp s2_cl_set;						// indirect return
+s1_jp_cl_set:
+	jp s1_cl_set;						// indirect return
 
 ;;
 ; print cursor right
 ;;
-s2_po_right:
+s1_po_right:
 	jp po_right;						// screen 0 code
 
 ;;
 ; print cursor left
 ;;
-s2_po_left:
+s1_po_left:
 	inc c;								// move column left
-	ld a, 34;							// left side
+	ld a, 42;							// left side
 	cp c;								// against left side?
-	jr nz, s2_po_left_1;				// jump if so
+	jr nz, s1_po_left_1;				// jump if so
 	dec c;								// down one line
 	ld a, 25;							// top line
 	cp b;								// is it?
-	jr nz, s2_po_left_1;				// jump if so
+	jr nz, s1_po_left_1;				// jump if so
 	ld c, 33;							// set column value
 	inc b;								// up one line
 
-s2_po_left_1:
-	jr s2_jp_cl_set;					// indirect return
+s1_po_left_1:
+	jr s1_jp_cl_set;					// indirect return
 
 ;;
 ; print cursor up
 ;;
-s2_po_up:
+s1_po_up:
 	inc b;								// move one line up
 	ld a, 25;							// screen has 24 lines
 	cp b;								// top of screen reached?
-	jr nz, s2_jp_cl_set;				// set position, if not
+	jr nz, s1_jp_cl_set;				// set position, if not
 	dec b;								// do nothing
 	ret;								// end of subroutine
 
 ;;
 ; print cursor down
 ;;
-s2_po_down:
+s1_po_down:
 	ld a, c;							// column to A
 	push af;							// stack it
-	call s2_po_cr;						// down one row
+	call s1_po_cr;						// down one row
 	pop af;								// unstack A
 	cp c;								// compare against current column
 	ret z;								// return if nothing to do
 	ld c, a;							// restore old column 
 
-s2_cl_scrl:
-	call s2_po_scr;						// test for scroll
+s1_cl_scrl:
+	call s1_po_scr;						// test for scroll
 
-s2_cl_set2:
-	jr s2_jp_cl_set;					// indirect return
+s1_cl_set2:
+	jr s1_jp_cl_set;					// indirect return
 
 ;;
 ; printable character codes
 ;;
-s2_po_able:
-	call s2_po_any;						// print character and continue
+s1_po_able:
+	call s1_po_any;						// print character and continue
 	jp po_store;						// screen 0 code
 
 ;;
 ; print any character
 ;;
-s2_po_any:
+s1_po_any:
 	push bc;							// stack current position
 
 ;	// write to character map
-;	push hl;							// stack print address
-;	ex af, af';							// save character
-;	ld a, 25;							// reverse row and add one
-;	sub b;								// range 1 to 24
-;	ld b, a;							// put it back in B
-;	ld a, 33;							// reverse column
-;	sub c;								// range 0 to 39
-;	ld c, a;							// put it back in C
-;	ex af, af';							// restore character
-;	ld hl, char_map;					// base address of character map
-;	ld de, 40;							// 40 characters per row
-;	dec b;								// reduce range (0 to 23)
-;	jr z, s2_add_columns;				// jump if row zero
+	push hl;							// stack print address
+	ex af, af';							// save character
+	ld a, 25;							// reverse row and add one
+	sub b;								// range 1 to 24
+	ld b, a;							// put it back in B
+	ld a, 41;							// reverse column
+	sub c;								// range 0 to 39
+	ld c, a;							// put it back in C
+	ex af, af';							// restore character
+	ld hl, char_map;					// base address of character map
+	ld de, 40;							// 40 characters per row
+	dec b;								// reduce range (0 to 23)
+	jr z, s1_add_columns;				// jump if row zero
 	
-;s2_add_lines:
-;	add hl, de;							// add 80 characters for each row
-;	djnz s2_add_lines;					// B holds line count (zero on loop exit)
+s1_add_lines:
+	add hl, de;							// add 80 characters for each row
+	djnz s1_add_lines;					// B holds line count (zero on loop exit)
 
-;s2_add_columns:
-;	add hl, bc;							// Add offset in character map to HL
-;	bit 0, (iy + _vdu_flag);			// lower screen?
-;	jr z, s2_write_char;				// jump if not
+s1_add_columns:
+	add hl, bc;							// Add offset in character map to HL
+	bit 0, (iy + _vdu_flag);			// lower screen?
+	jr z, s1_write_char;				// jump if not
 
-;	jr s2_no_write_char;				// BUG PATCH - lower screen was not updating character map correctly
+	jr s1_no_write_char;				// BUG PATCH - lower screen was not updating character map correctly
 	
-;s2_write_char:
-;	ld bc, paging;						// paging address
-;	ld de, $181f;						// ROM 1, VRAM 1, D = HOME 0, E = HOME 7 
-;	di;									// interrupts off
-;	out (c), e;							// page framebuffer in
-;	ld (hl), a;							// write character to map
-;	out (c), d;							// page framebuffer out
-;	ei;									// interrupts on
+s1_write_char:
+	ld bc, paging;						// paging address
+	ld de, $181f;						// ROM 1, VRAM 1, D = HOME 0, E = HOME 7 
+	di;									// interrupts off
+	out (c), e;							// page framebuffer in
+	ld (hl), a;							// write character to map
+	out (c), d;							// page framebuffer out
+	ei;									// interrupts on
 
-;s2_no_write_char:
-;	pop hl;								// restore screen address
+s1_no_write_char:
+	pop hl;								// restore screen address
 ;	// character map code ends
 
 	ld bc, font;						// font stored in framebuffer at $f800
 
-s2_po_char_2:
+s1_po_char_2:
 	ex de, hl;							// store print address in DE
 
-s2_po_char_3:
+s1_po_char_3:
 	ld l, a;							// character code
 	ld h, 0;							// to HL
 	add hl, hl;							// multiply
@@ -321,119 +498,74 @@ s2_po_char_3:
 	pop bc;								// unstack current position
 
 ;;
-; print all characters (from Token SE)
+; print all characters
 ;;
-s2_pr_all:
+s1_pr_all:
 	ld a, c;							// get column number
 	dec a;								// move it right one position
-	ld a, 33;							// new column?
-	jr nz, s2_pr_all_1;					// jump if not
+	ld a, 41;							// new column?
+	jr nz, s1_pr_all_1;					// jump if not
 	dec b;								// move down
 	ld c, a;							// one line
 
-s2_pr_all_1:
+s1_pr_all_1:
 	cp c;								// new line?
 	push de;							// stack DE
-	call z, s2_po_scr;					// scrolling required?
+	call z, s1_po_scr;					// scrolling required?
 	pop de;								// unstack DE
 	push bc;							// stack position
 	push hl;							// stack destination
+	ld a, 41;							// 40 columns
 
-	ld a, (p_flag)						// overprint flag set?
-	ld b, 255;							// prepare to test
-	rra;								// rotate right
-	jr c, s2_pr_all_common;				// jump if not set
-	inc b;								// clear B to zero
+s1_pr_all_common:
+	sub c;								// get position
+	ld b, a;							// save it
 
-s2_pr_all_common:
-	rra;								// test for composable flag
-	rra;								// rotate right
-	sbc a, a;							// set A to 0 or -1	
-	ld c, a;							// store in C
-	ld a, 8;							// get bits 3-6
+	and %00000011;						// mask off bit 0-2
+
+	ld c, a;							// store number of routine to use
+	ld a, b;							// retrieve it
+	and $78;							// mask off bit 3-6
+	rrca;								// shift three
+	rrca;								// bits to
+	rrca;								// the right
 	and a;								// test for zero
+	push de;							// save font address
+	jr z, s1_pr_all_2;					// to next part if so
+	ld e, a;							// put A in E
+	ld d, 0;							// clear D
+	add hl, de;							// add three times
+	add hl, de;							// contents of a
+	add hl, de;							// to hl
 
-s2_pr_all_2:
+s1_pr_all_2:
 	ex de, hl;							// put the result back in DE
 
 ;	// HL now points to the location of the first byte of char data in FONT_1
 ;	// DE points to the first screen byte in SCREEN_1
 ;	// C holds the offset to the routine
 
+	ld b, 0;							// prepare to add
+	rlc c;								// double the value in C
+	ld hl, s1_table;					// base address of table
+	add hl, bc;							// add C
+	ld c, (hl);							// fetch low byte of routine
+	inc hl;								// increment HL
+	ld b, (hl);							// fetch high byte of routine
+	pop hl;								// restore font address
+	ld (oldsp), bc;						// save the address to jump to in sysvar
 	ld bc, paging;						// page in VRAM
 	ld a, %00011111;					// ROM 1, VRAM 1, HOME 7
 	di;									// interrupts off
 	out (c), a;							// do paging
+	ld bc, (oldsp);						// restore BC
 	ld (oldsp), sp;						// store SP
 	ld sp, tstack;						// point to temporary stack
 	ei;									// interrupts on
+	push bc;							// push the address on machine stack
+	ret;								// make an indirect jump forward to routine
 
-pr_all_4:
-	ex af, af';
-	ld a, (de);
-	and b;
-	xor (hl);
-	xor c;
-	ld (de), a;
-	ex af, af';
-	jr c, pr_all_6;
-	inc d;
-
-pr_all_5:
-	inc hl;
-	dec a;
-	jr nz, pr_all_4;
-	dec d; tse
-	ex de, hl; tse
-	call po_attr; tse
-	pop hl;
-	pop bc;
-	dec c;
-	inc hl;
-
-	jp s2_pr_all_f;
-
-pr_all_6:
-	ex af, af';
-	ld a, 32;
-	add a, e;
-	ld e, a;
-	ex af, af';
-	jr pr_all_5;
-
-po_attr:
-	ld a, h;
-	rrca;
-	rrca;
-	rrca;
-	and %00000011;
-	or %01011000;
-	ld h, a;
-	ld de, (attr_t);
-	ld a, (hl);
-	xor e;
-	and d;
-	xor e;
-	bit 6, (iy + _p_flag);
-	jr z, $0bfa;
-	and %11000111;
-	bit 2, a;
-	jr nz, po_attr_1;
-	xor %00111000;
-
-po_attr_1:
-	bit 4, (iy + _p_flag);
-	jr z, po_attr_2;
-	and %11111000;
-	bit 5, a;
-	jr nz, po_attr_2;
-	xor %00000111;
-
-po_attr_2:
-	ld (hl), a;
-	ret;
-
-s2_pr_all_f:
+s1_pr_all_f:
 	ld bc, paging;						// page out VRAM
 	ld a, %00011000;					// ROM 1, VRAM 1, HOME 0
 	di;									// interrupts off
@@ -444,67 +576,80 @@ s2_pr_all_f:
 	pop bc;								// get original row/col
 	dec c;								// move right
 
+	ld a, %00000111;					// column position to A
+	and c;								// and mask bits 0 to 2
+	cp %00000101;						// 37, 29, 21, 13 or 5?
+	ret z;								// return if so
+	cp %00000001;						// 33, 25, 17, 9 or 1?
+	jr z, s1_backpos;					// jump if so
+	inc hl;								// advance screen position
+	ret;								// return using po_store
+
+s1_backpos:
+	dec hl;								// move screen posistion
+	dec hl;								// back three
+	dec hl;								// cells
 	ret;								// end of subroutine
 
 ;;
 ; test for scroll
 ;;
-s2_po_scr:
-	ld de, s2_cl_set;					// put sysvar
+s1_po_scr:
+	ld de, s1_cl_set;					// put sysvar
 	push de;							// on the stack
 	ld a, b;							// line number to B
 	bit 0, (iy + _vdu_flag);			// INPUT or AT?
-	jp nz, s2_po_scr_4;					// jump if so
+	jp nz, s1_po_scr_4;					// jump if so
 	cp (iy + _df_sz);					// line number less than sysvar?
-;	jr c, s2_report_oo_scr;				// jump if so
+;	jr c, s1_report_oo_scr;				// jump if so
 	jp c, report_oo_scr;				// error if not
-	ret nz;								// return using s2_cl_set if greater
+	ret nz;								// return using s1_cl_set if greater
 	bit 4, (iy + _vdu_flag);			// automatic listing?
-	jr z, s2_po_scr_2;					// jump if not
+	jr z, s1_po_scr_2;					// jump if not
 	ld e, (iy + _breg);					// get line counter
 	dec e;								// reduce it
-	jr z, s2_po_scr_3;					// jump if listing scroll required
+	jr z, s1_po_scr_3;					// jump if listing scroll required
 	xor a;								// LD A, 0; channel K
 	call chan_open;						// select channel
 	ld sp, (list_sp);					// restore stack pointer
 	res 4, (iy + _vdu_flag);			// flag automatic listing finished
-	ret;								// return using s2_cl_set
+	ret;								// return using s1_cl_set
 
-s2_po_scr_2:
+s1_po_scr_2:
 	dec (iy + _scr_ct);					// reduce scroll count
-	jr nz, s2_po_scr_3;					// jump unless zero
+	jr nz, s1_po_scr_3;					// jump unless zero
 	ld a, 24;							// reset
 	sub b;								// counter
 	ld (scr_ct), a;						// store scroll count
 	ld a, 253;							// channel K
 	call chan_open;						// select channel
 	ld de, scrl_mssg;					// message address
-;	call s2_po_asciiz_0;				// print it
+;	call s1_po_asciiz_0;				// print it
 	call po_asciiz_0;					// print it
 
-s2_wait_msg_loop:
+s1_wait_msg_loop:
 	ld hl, vdu_flag;					// address sysvar
 	set 5, (hl);						// lower screen requires clearing
 	res 3, (hl);						// no echo
 	exx;								// alternate register set
 	call input_ad;						// get a single key code
 	exx;								// main resgister set
-	jr nc, s2_wait_msg_loop				// loop, if no key has been pressed
+	jr nc, s1_wait_msg_loop				// loop, if no key has been pressed
 	cp ' ';								// space?
-;	jr z, s2_report_break;				// treat as BREAK and jump if so
+;	jr z, s1_report_break;				// treat as BREAK and jump if so
 	jp z, report_break;					// treat as BREAK and jump if so
 	call chan_open_fe;					// open channel S
 
-s2_po_scr_3:
-	call s2_cl_sc_all;					// scroll whole display
+s1_po_scr_3:
+	call s1_cl_sc_all;					// scroll whole display
 	ld b, (iy + _df_sz);				// get line number
 	inc b;								// for start of line
-	ld c, 33;							// first column
+	ld c, 41;							// first column
 	ret;								// end of subroutine
 
-s2_po_scr_4:
+s1_po_scr_4:
 	cp 2;								// lower part fits?
-;	jr c, s2_report_oo_scr;				// error if not
+;	jr c, s1_report_oo_scr;				// error if not
 	jp c, report_oo_scr;				// error if not
 	add a, (iy + _df_sz);				// number of scrolls to A
 	sub 25;								// scroll required?
@@ -512,7 +657,7 @@ s2_po_scr_4:
 	neg;								// make number positive
 	push bc;							// stack line and column numbers
 
-s2_po_scr_4a:
+s1_po_scr_4a:
 	push af;							// stack number
 	ld hl, df_sz;						// address of sysvar
 	ld a, (hl);							// df_sz to a
@@ -521,23 +666,23 @@ s2_po_scr_4a:
 	ld (hl), a;							// store it
 	ld l, lo(s_posn_h);					// address sysvar
 	cp (hl);							// lower scrolling only required?
-	jr c, s2_po_scr_4b;					// jump if so
+	jr c, s1_po_scr_4b;					// jump if so
 	inc (hl);							// increment s-posn-h
 	ld b, 23;							// scroll whole display
 
-s2_po_scr_4b:
-	call s2_cl_scroll;					// scroll number of lines in B
+s1_po_scr_4b:
+	call s1_cl_scroll;					// scroll number of lines in B
 	pop af;								// unstack scroll number
 	dec a;								// reduce it
-	jr nz, s2_po_scr_4a;				// loop until done
+	jr nz, s1_po_scr_4a;				// loop until done
 	ld bc, (s_posn);					// get sysvar
 	res 0, (iy + _vdu_flag);			// in case changed
-	call s2_cl_set;						// give matching value to df_cc
+	call s1_cl_set;						// give matching value to df_cc
 	set 0, (iy + _vdu_flag);			// set lower screen in use
 	pop bc;								// unstack line and column numbers
 	ret;								// end of subroutine
 
-s2_init:
+s1_init:
 	ld a, %00001111;					// light gray foreground, dark blue background
 	ld (bordcr), a;						// set border color
 	ld (attr_p), a;						// set permanent attribute
@@ -560,89 +705,89 @@ s2_init:
 	ld l, 30;							// register to write
 	call set_reg;						// set it
 
-	set 1, (iy + _flags2);				// signal screen 2 (32 columns)
-	xor a;								// 8x8 cell mode
+	set 1, (iy + _flags2);				// signal screen 1 (40 columns)
+	ld a, %00000010;					// lo-res mode
 	out (scld), a;						// set it and continue into CLS
 
 ; <code>CLS</code> command
 ; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#CLS" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
-s2_cls:
+s1_cls:
 	set 0, (iy + _flags);				// suppress leading space
-	call s2_cl_all;						// clear whole display
+	call s1_cl_all;						// clear whole display
 
-s2_cls_lower:
+s1_cls_lower:
 	ld hl, vdu_flag;					// address sysvar
 	ld b, (iy + _df_sz);				// get address
 ;	set 0, (hl);						// signal lower part
 	res 5, (hl);						// signal no lower screen clear after key
-	call s2_cl_line;					// clear lower part of screen
+	call s1_cl_line;					// clear lower part of screen
 	dec b;								// reduce counter
 	ld (iy + _df_sz), 1;				// two lines
 
-s2_cl_chan:
+s1_cl_chan:
 	ld a, 253;							// channel K
 	call chan_open;						// select channel
 	ld hl, (curchl);					// current channel address
-	ld de, s2_print_out;				// output address
+	ld de, s1_print_out;				// output address
 	and a;								// clear carry flag
 
-s2_cl_chan_a:
+s1_cl_chan_a:
 	ld (hl), e;							// set
 	inc hl;								// address
 	ld (hl), d;							// and advance
 	inc hl;								// pointer
 	ld de, key_input;					// input address
 	ccf;								// complement carry flag
-	jr c, s2_cl_chan_a;					// loop until both addresses set
-	ld bc, $1821;						// row 24, column 33
-	jr s2_cl_set;						// immediate jump
+	jr c, s1_cl_chan_a;					// loop until both addresses set
+	ld bc, $1829;						// row 24, column 41
+	jr s1_cl_set;						// immediate jump
 
 ;;
 ; clear whole display area
 ;;
-s2_cl_all:
+s1_cl_all:
 	res 0, (iy + _flags2);				// signal screen is clear
-	call s2_cl_chan;					// house keeping tasks
+	call s1_cl_chan;					// house keeping tasks
 	call chan_open_fe;					// open channel S
 	ld b, 24;							// 24 lines
-	call s2_cl_line;					// clear them
+	call s1_cl_line;					// clear them
 	ld hl, (curchl);					// current channel
-	ld de, s2_print_out;				// output address
+	ld de, s1_print_out;				// output address
 	ld (hl), e;							// set
 	inc hl;								// output
 	ld (hl), d;							// address
 
-s2_cl_home:
+s1_cl_home:
 	ld (iy + _scr_ct), 1;				// reset scroll count
-	ld bc, $1821;						// row 24, column 33
+	ld bc, $1829;						// row 24, column 41
 
 ;;
 ; clear set
 ;;
-s2_cl_set:
+s1_cl_set:
 	ld a, b;							// row to A
 	bit 0, (iy + _vdu_flag);			// main display?
-	jr z, s2_cl_set_1;					// jump if so
+	jr z, s1_cl_set_1;					// jump if so
 	add a, (iy + _df_sz);				// top row of lower display
 	sub 24;								// convert to real line
 
-s2_cl_set_1:
+s1_cl_set_1:
 	push bc;							// stack row and column
 	ld b, a;							// row to B
-;	call s2_cl_addr;					// address for start of row to HL
+;	call s1_cl_addr;					// address for start of row to HL
 	call cl_addr;						// address for start of row to HL (screen 0 code)
 	pop bc;								// unstack row and column
-;	jp s2_po_store;						// immediate jump
+;	jp s1_po_store;						// immediate jump
 	jp po_store;						// immediate jump (screen 0 code)
 
 ;;
 ; scrolling
 ;;
-s2_cl_sc_all:
+s1_cl_sc_all:
 	ld b, 23;							// entry point after scroll message
 
-s2_cl_scroll:
+s1_cl_scroll:
 	ld (oldsp), bc;						// temporarily store the counter
 	ld bc, paging;						// page in VRAM
 	ld a, %00011111;					// ROM 1, VRAM 1, HOME 7
@@ -665,15 +810,15 @@ s2_cl_scroll:
 	call cl_addr;						// get start address of row (screen 0 code)
 	ld c, 8;							// eight pixels per row
 
-s2_cl_scr_1:
+s1_cl_scr_1:
 	push bc;							// stack both
 	push hl;							// counters
 	ld a, %00000111;					// dealing with 
 	and b;								// third of display?
 	ld a, b;							// restore A
-	jr nz, s2_cl_scr_3;					// jump if not
+	jr nz, s1_cl_scr_3;					// jump if not
 
-s2_cl_scr_2:
+s1_cl_scr_2:
 	ld de, $f8e0;						// set destination
 	ex de, hl;							// swap pointers
 	add hl, de;							// add
@@ -682,7 +827,7 @@ s2_cl_scr_2:
 	dec a;								// reduce count
 	call ldir2;							// clear half row (screen 0 code)
 
-s2_cl_scr_3:
+s1_cl_scr_3:
 	ld de, $ffe0;						// set destination
 	ex de, hl;							// swap pointers
 	add hl, de;							// add
@@ -699,12 +844,12 @@ s2_cl_scr_3:
 	ld b, 7;							// prepare to cross screen third boundary
 	add hl, bc;							// increase HL by 1792
 	and %11111000;						// more thirds to consider?
-	jr nz, s2_cl_scr_2;					// jump if so
+	jr nz, s1_cl_scr_2;					// jump if so
 	pop hl;								// unstack original address
 	inc h;								// address next pixel row
 	pop bc;								// unstack counters
 	dec c;								// reduce pixel row counter
-	jr nz, s2_cl_scr_1;					// loop until done
+	jr nz, s1_cl_scr_1;					// loop until done
 	ld b, 1;							// one line
 
 	ld a, %00011000;					// ROM 1, VRAM 1, HOME 0
@@ -719,7 +864,7 @@ s2_cl_scr_3:
 ;;
 ; clear lines
 ;;
-s2_cl_line:
+s1_cl_line:
 	push bc;
 	ld (oldsp), bc;						// temporarily store BC
 	ld bc, paging;						// page in VRAM
@@ -735,9 +880,9 @@ s2_cl_line:
 	ld hl, 0;							// zero character count
 	ld de, 40;							// 40 characters per line
 
-s2_total_chars:
+s1_total_chars:
 	add hl, de;							// add 40 to count per line
-	djnz s2_total_chars;				// loop until done
+	djnz s1_total_chars;				// loop until done
 
 	dec hl;								// reduce count by one
 	ld c, l;							// HL
@@ -753,13 +898,13 @@ s2_total_chars:
 	call cl_addr;						// start address for row to HL (screen 0 code)
 	ld c, 8;							// eight pixel rows
 
-s2_cl_line_1:
+s1_cl_line_1:
 	push bc;							// stack line row and pixel row counter
 	push hl;							// stack address
 	ld a, b;							// row number to A
 
 
-s2_cl_line_2:
+s1_cl_line_2:
 	and %00000111;						// number of characters
 	rrca;								// there are
 	rrca;								// B mod 8
@@ -771,22 +916,22 @@ s2_cl_line_2:
 	push hl;							// stack address
 	push bc;							// stack line row and pixel row counter
 	set 5, h;							// alter address for attribute area
-	call s2_cls_attr;					// clear attribute area
-	call s2_set_border;					// set border
+	call s1_cls_attr;					// clear attribute area
+	call s1_set_border;					// set border
 	pop bc;								// unstack address
 	pop hl;								// unstack line row and pixel row
-	call s2_cls_2nd;					// clear bitmap area
+	call s1_cls_2nd;					// clear bitmap area
 	ld de, $0701;						// increment HL by 1793 bytes
 	add hl, de;							// for each screen third
 	dec a;								// reduce row number
 	and %11111000;						// discard extra rows
 	ld b, a;							// screen third count to B
-	jr nz, s2_cl_line_2;				// loop until done
+	jr nz, s1_cl_line_2;				// loop until done
 	pop hl;								// unstack address for pixel row
 	inc h;								// and increase pixel row
 	pop bc;								// unstack counters
 	dec c;								// decrease pixel row count
-	jr nz, s2_cl_line_1;				// loop until done
+	jr nz, s1_cl_line_1;				// loop until done
 	ld l, e;							// HL to
 	ld h, d;							// DE
 	inc de;								// increment DE
@@ -799,23 +944,39 @@ s2_cl_line_2:
 	pop bc;								// unstack BC
 	ret;								// end of subroutine
 
-s2_set_border;
+s1_set_border;
 	ex af, af';							// use alternate register set
 	ld a, (bordcr);						// get border color
+	ld b, 192;							// total lines to set
+	ld hl, $e000;						// start of attibutes
+	ld de, 31;							// jump to next attribute
+
+s1_border_loop:
+	ld (hl), a;							// cell 0
+	add hl, de;;						// increment 31 cells
+	ld (hl), a;							// cell 31
+	inc hl;								// next row
+	djnz, s1_border_loop;				// loop until done
+
+	and %00111000;						// discard unwanted bits
+	rrca;								// rotate
+	rrca;								// into
+	rrca;								// place
 	out (ula), a;						// set border
+
 	ex af, af';							// restore register set
 	ret;								// end of subroutine
 
-s2_cls_attr:
+s1_cls_attr:
 	ex af, af';							// use alternate register set
 	ld a, (attr_p);						// get permanent attribute
-	jr s2_cls_all;						// clear screen
+	jr s1_cls_all;						// clear screen
 
-s2_cls_2nd:
+s1_cls_2nd:
 	ex af, af';							// use alternate register set
 	xor a ;								// LD A, 0
 
-s2_cls_all:
+s1_cls_all:
 	ld d, h;							// copy HL
 	ld e, l;							// to DE
 	ld (hl), a;							// zero byte addressed by HL
@@ -834,11 +995,11 @@ s2_cls_all:
 s1_color:
 	rst get_char;						// get character
 	cp ',';								// comma?
-	jr z, s2_cr_3_prms;					// includes border value
+	jr z, s1_cr_3_prms;					// includes border value
 	call check_end;						// check end of statement
-	jr s2_set_attrs;					// set attributes
+	jr s1_set_attrs;					// set attributes
 
-s2_cr_3_prms:
+s1_cr_3_prms:
 	rst next_char;						// get next character
 	call expt_1num;						// expect one number
 	call check_end;						// check end of statement
@@ -862,12 +1023,12 @@ s2_cr_3_prms:
 	ld hl, $e000;						// start of attibutes
 	ld de, 31;							// jump to next attribute
 
-s2_cr_3_prms_loop:
+s1_cr_3_prms_loop:
 	ld (hl), a;							// cell 0
 	add hl, de;;						// increment 31 cells
 	ld (hl), a;							// cell 31
 	inc hl;								// next row
-	djnz, s2_cr_3_prms_loop;			// loop until done
+	djnz, s1_cr_3_prms_loop;			// loop until done
 
 	and %00111000;						// discard unwanted bits
 	rrca;								// rotate
@@ -880,16 +1041,16 @@ s2_cr_3_prms_loop:
 	out (c), a;							// do paging
 	ei;									// enable interrupts
 
-s2_set_attrs:
+s1_set_attrs:
 	call fp_to_a;						// background color to A
 	cp 16;								// higher than 15?
-	jr nc, s2_color_err;				// jump if out of range
+	jr nc, s1_color_err;				// jump if out of range
 	push af;							// stack background
 	call fp_to_a;						// foreground color to A
 	pop bc;								// unstack background
 	cp 16;								// higher than 15?
 
-s2_color_err:
+s1_color_err:
 	jp nc, report_bad_fn_call;			// jump if out of range
 	rlca;								// move low
 	rlca;								// nibble
@@ -904,35 +1065,35 @@ s2_color_err:
 	ld (attr_p), a;						// store it
 	ret;								// end of subroutine
 
-s2_get_cols:
+s1_get_cols:
 	ld b, 40;							// 40 columns
 	ret;								// end of subroutine
 
-s2_input_1:
-	ld c, 33;							// leftmost position
+s1_input_1:
+	ld c, 41;							// leftmost position
 	ret;								// end of subroutine
 
-s2_locate:
-	cp 33;								// in range?
-	jr nc, s2_loc_err;					// error if not
+s1_locate:
+	cp 41;								// in range?
+	jr nc, s1_loc_err;					// error if not
 	ld a, b;							// get row
 	or a;								// test for zero
-	jr z, s2_loc_err;					// jump if so
+	jr z, s1_loc_err;					// jump if so
 	cp 24;								// upper screen?
-	jr nc, s2_loc_err;					// jump if not
-	ld a, 34;							// leftmost
+	jr nc, s1_loc_err;					// jump if not
+	ld a, 42;							// leftmost
 	sub c;								// calculate column
-	jr c, s2_loc_err;					// jump if error
+	jr c, s1_loc_err;					// jump if error
 	ld c, a;							// else store it
 	ld a, 25;							// bottom row
 	sub b;								// calculate row
-	jr c, s2_loc_err;					// jump if error
+	jr c, s1_loc_err;					// jump if error
 	ld b, a;							// else store it
 	push bc;							// save values
-	ld c, 33;							// leftmost position
+	ld c, 41;							// leftmost position
 	call cl_set;						// store it
 	pop bc;								// restore value of C
-	ld a, 33;							// column 0
+	ld a, 41;							// column 0
 	sub c;								// get number to advance
 	and a;								// test for zero
 	ret z;								// return if so
@@ -940,7 +1101,7 @@ s2_locate:
 	ld hl, p_flag;						// point to sysvar
 	ld e, (hl);							// sysvar to D
 	ld (hl), 1;							// set printing to OVER
-;	call s2_po_space;					// print a space with alt regs
+;	call s1_po_space;					// print a space with alt regs
 	call po_space;						// print a space with alt regs (screen 0 code)
 	ld (hl), e;							// restore sysvar
 	ret;								// end of subroutine
@@ -952,7 +1113,7 @@ stk_pos_to_bc:
 	inc a;								// increment A
 	ret nz;								// return if both positive 
 
-s2_loc_err:
+s1_loc_err:
 	rst error;							// throw
 	defb out_of_screen;					// error
 
@@ -960,7 +1121,7 @@ s2_loc_err:
 ; <code>PLOT</code> command
 ; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#PLOT" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
-s2_plot:
+s1_plot:
 	call stk_pos_to_bc;					// reject negative co-ords, else stack to BC
 
 plot_sub:
@@ -1039,7 +1200,7 @@ pixel_add:
 ; <code>CIRCLE</code> command
 ; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#CIRCLE" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
-s2_circle:
+s1_circle:
 	fwait;								// enter calculator
 	fabs;								// x, y, z
 	frstk;								// z to full floating point for
@@ -1050,7 +1211,7 @@ s2_circle:
 	fwait;								// enter calculator
 	fdel;								// remove last item
 	fce;								// exit calculator
-	jp s2_plot;							// immediate jump
+	jp s1_plot;							// immediate jump
 
 c_r_gre_1:
 	call stk_to_a;						// get y from calculator stack
@@ -1121,7 +1282,7 @@ circle_nc:
 ; <code>DRAW</code> command
 ; @see <a href="https://github.com/source-solutions/sebasic4/wiki/Language-reference#DRAW" target="_blank" rel="noopener noreferrer">Language reference</a>
 ;;
-s2_draw:
+s1_draw:
 	call stk_to_bc;						// B: abs y, C: abs x, D: sgn y, E: sgn x
 	ld a, c;							// abs x
 	cp b;								// >= abs y?
@@ -1193,5 +1354,5 @@ d_error:
 	rst error;							// throw
 	defb out_of_screen;					// error
 
-s2_arc:
+s1_arc:
 	jp no_draw;							// FIX ME

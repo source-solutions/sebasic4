@@ -406,8 +406,8 @@ endif
 
 	defb ctrl_cr;
 	defb "SE BASIC 4.2.0 (GPL-3.0 License)", ctrl_cr;
-	defb "Copyright (C) 2024 Source Solutions Inc.", ctrl_cr;
-;	timestamp 'YY-MM-DD h:m';			// RASM directive
+;	defb "Copyright (C) 2024 Source Solutions Inc.", ctrl_cr;
+	timestamp 'YY-MM-DD h:m';			// RASM directive
 	defb ctrl_cr, 0;
 
 bytes_free:

@@ -562,7 +562,7 @@ po_left:
 	ld a, 25;							// top line
 	cp b;								// is it?
 	jr nz, po_left_1;					// jump if so
-	ld c, 2;							// set column value
+	ld c, 81;							// set column value
 	inc b;								// up one line
 
 po_left_1:
