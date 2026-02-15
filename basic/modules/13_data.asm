@@ -614,7 +614,7 @@ token_table:
 ;	// exceptional functions (no arguments, and so on)
 	first_tk		equ $80
 	tk_eof			equ $80;
-	str "EOF";
+	str "EOF #";
 	tk_fn			equ $81;
 tk_ptr_fn:
 	str "FN";

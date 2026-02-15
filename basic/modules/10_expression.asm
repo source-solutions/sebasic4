@@ -2432,9 +2432,6 @@ report_syntax_err_nz:
 
 s_eof:
 	rst next_char;						// next character
-	cp '#';								// hash expected?
-	jp nz, report_syntax_err;			// error if not
-	rst next_char;						// next character
 	call expt_1num;						// file handle number
 	call syntax_z;						// checking syntax?
 	jr z, s_eof_end;					// jump if so
@@ -2452,4 +2449,4 @@ s_eof_end:
 
 s_eof_error:
 	rst error;
-	defb syntax_error;
+	defb undefined_stream;				// error
