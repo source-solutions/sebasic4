@@ -2036,14 +2036,14 @@ stk_digit:
 	sub '0';							// convert code to real number
 
 ;;
-; stack A
+; stack 8-bit value A
 ;;
 stack_a:
 	ld c, a;							// value to
 	ld b, 0;							// BC
 
 ;;
-; stack BC
+; stack 16-bit value BC
 ;;
 stack_bc:
 	xor a;								// LD A, 0
@@ -2052,6 +2052,37 @@ stack_bc:
 	ld c, b;							// most significant byte to C
 	ld b, e;							// LD B, 0
 	call stk_store;						// stack it in floating point form
+	and a;								// clear carry flag
+	jp stk_pntrs;						// immediate jump
+
+;;
+; stack 32-bit value BCDE (BC = high word, DE = low word)
+;;
+stack_bcde:
+	push bc;							// save high word
+	push de;							// save low word
+	
+	; Stack the low word (DE) first
+	pop bc;								// get low word into BC
+	call stack_bc;						// stack low word
+	
+	; Stack the high word (BC) and multiply by 65536
+	pop bc;								// get high word into BC
+	ld a, b;							// check if high word is zero
+	or c;
+	jr z, stack_bcde_end;				// if high word is 0, we're done
+	
+	call stack_bc;						// stack high word
+	
+	; Use calculator to compute: low_word + (high_word * 65536)
+	fwait;								// enter calculator
+	fstk;								// stack 65536
+	defb $00, $41, $00;					// 65536 constant
+	fmul;								// high_word * 65536
+	fadd;								// low_word + (high_word * 65536)
+	fce;								// exit calculator
+	
+stack_bcde_end:
 	and a;								// clear carry flag
 	jp stk_pntrs;						// immediate jump
 
@@ -2430,31 +2461,31 @@ report_syntax_err_nz:
 
 ; // Add new functinos here to prevent overruns
 
-s_file_handle
-	rst next_char;						// next character
-	call expt_1num;						// file handle number
-	call unstack_z;						// checking syntax?
-	call fp_to_a;						// file handle to A
-	jp find_file_handle;				// return with file structure or error if not found
+;s_file_handle
+;	rst next_char;						// next character
+;	call expt_1num;						// file handle number
+;	call unstack_z;						// checking syntax?
+;	call fp_to_a;						// file handle to A
+;	jp find_file_handle;				// return with file structure or error if not found
 
-s_eof:
-	call s_file_handle;					// get file handle
-	jr z, s_file_end;					// jump if checking syntax
+;s_eof:
+;	call s_file_handle;					// get file handle
+;	jr z, s_file_end;					// jump if checking syntax
+;
+;	jr c, s_stream_error;				// jump if file not open
+;
+;	call check_eof;						// check if at end of file
+;	jr c, s_eof_true;					// jump if at EOF
+;	fwait;								// enter calculator
+;	fstk0;								// stack zero (not at EOF)
+;	fce;								// exit calculator
+;	jr s_file_end;						// jump to end
 
-	jr c, s_stream_error;				// jump if file not open
-
-	call check_eof;						// check if at end of file
-	jr c, s_eof_true;					// jump if at EOF
-	fwait;								// enter calculator
-	fstk0;								// stack zero (not at EOF)
-	fce;								// exit calculator
-	jr s_file_end;						// jump to end
-
-s_eof_true:
-	fwait;								// enter calculator
-	fstk1;								// stack one
-	fneg;								// negate to get -1
-	fce;								// exit calculator
+;s_eof_true:
+;	fwait;								// enter calculator
+;	fstk1;								// stack one
+;	fneg;								// negate to get -1
+;	fce;								// exit calculator
 
 s_file_end:
 	jp s_cont_2r;						// continue expression evaluation
@@ -2463,38 +2494,36 @@ s_stream_error:
 	rst error;
 	defb undefined_stream;				// error
 
-s_loc:
-	call s_file_handle;					// get file handle
-	jr z, s_file_end;					// jump if checking syntax
-
-	call fp_to_a;						// file handle to A
-	call find_file_handle;				// find file structure
-
-	jr c, s_stream_error;				// jump if file not open
-
-	rst divmmc;
-	defb f_fgetpos;						// get current file position to BCDE
-	jr c, s_stream_error;					// jump if error
-	ld b, d;							// move position to HL (using low 16 bits)
-	ld c, e;
-	call stack_bc;						// stack file position
-	jr s_file_end;						// jump to end
-
-
+s_eof:
 s_lof:
-	call s_file_handle;					// get file handle
-	jr z, s_file_end;					// jump if checking syntax
 
+
+s_loc:
+	rst next_char;						// next character
+	call expt_1num;						// file handle number
+	call syntax_z;						// checking syntax?
+	jr z, s_file_end;					// jump if so
 	call fp_to_a;						// file handle to A
-	call find_file_handle;				// find file structure
-
-	jr c, s_stream_error;				// jump if file not open
-
-	ld ix, f_stats;						// buffer for file stats
-	rst divmmc;
-	defb f_fstat;						// get file statistics
-	jr c, s_stream_error;				// jump if error
-	ld bc, (f_size);					// get file size (16-bit)
-	call stack_bc;						// stack file size
+	
+	; Return the channel number properly as floating point
+	call stack_a;						// stack file handle number in floating point format
 	jr s_file_end;						// jump to end
+
+
+;s_lof:
+;	rst next_char;						// next character
+;	call expt_1num;						// file handle number
+;	call syntax_z;						// checking syntax?
+;	jr z, s_file_end;					// jump if so
+;	call fp_to_a;						// file handle to A
+;	call find_file_handle;				// find file structure
+;	jr c, s_stream_error;				// jump if file not open
+;
+;	ld ix, f_stats;						// buffer for file stats
+;	rst divmmc;
+;	defb f_fstat;						// get file statistics
+;	jr c, s_stream_error;				// jump if error
+;	ld bc, (f_size);					// get file size (16-bit)
+;	call stack_bc;						// stack file size
+;	jr s_file_end;						// jump to end
 
