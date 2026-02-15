@@ -1,0 +1,9 @@
+
+v0.02
+
+- Performance improvement for games that access the disk / file frequently (more noticeable on larger story files). Curses is now playable and Heroes now starts up much faster.
+
+v0.01
+
+- Initial release.
+

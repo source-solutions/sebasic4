@@ -1,0 +1,44 @@
+
+Notes on building ZXZVM
+=======================
+
+  The source files are divided into four groups:
+
+vm*.zsm    - Machine-independent code to build ZXZVM.BIN
+zx*.zsm,resi*.zsm - Machine-dependent code for the Spectrum, to build ZXIO.BIN
+anne*.zsm  - Machine-dependent code for the PCW16, to build ANNEIO.PRG
+joy*.zsm   - Machine-dependent code for the PCW10, to build JOYCEIO.COM
+             (this gets packed as PCWZVM.COM).
+
+             (For brevity, I use PCW10 to mean PCW8000 series, PCW9000 series
+             and PCW10 series).
+
+  The ZSM files are fairly standard Z80 assembly code, and most assemblers
+should be able to handle them with no difficulty.
+
+This version of ZXZVM was developed under Unix.
+
+The following tools were used:
+
+* Julian Albo's "pasmo" assembler (v0.5.2).
+[Garry Lancaster: previously, Udo Monk's "z80asm" assembler was used, but
+ this generated unspecified errors when trying to build with my modifications,
+ even though the actual binary files appeared to have been correctly built.]
+
+* "tapeconv" is a utility from the FUSE utils package. It is only required
+  to convert the Spectrum .TAP files to .TZX format (which can be more
+  convenient for outputting to cassette tape).
+
+* A build utility ("xbm2zsm") is compiled using gcc; any ANSI C compiler
+  should be able to compile them.
+
+* "annelint" is a Bourne shell script designed to stop me from doing stupid
+  things when writing PCW16 code. It is not necessary to use it to build
+  the PCW16 file.
+
+* "make run" runs the +3 version in an emulator; "make pcwrun" starts
+  the PCW10 version in an emulator. "make pcw16run" copies the PCW16 version 
+  to a directory where my PCW16 emulator can find it, and launches the 
+  emulator. Some or all of these require additional build tools - plus,
+  of course, the emulators themselves.
+

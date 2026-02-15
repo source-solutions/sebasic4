@@ -1,0 +1,158 @@
+;    ZXZVM: Z-Code interpreter for the Z80 processor
+;    Copyright (C) 1998-9,2006,2016  John Elliott <seasip.webmaster@gmail.com>
+;
+;    This program is free software; you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation; either version 2 of the License, or
+;    (at your option) any later version.
+;
+;    This program is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with this program; if not, write to the Free Software
+;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Code to create a PCW16 menu and to handle events from it.
+;
+makemenu:
+	ld	hl,2000h
+	call	expand_addr
+	ld	a,os_ddm_get_tasks
+	call	ANNE		;Get the Tasks menu at 2000h
+	ld	a,h
+	and	3Fh	
+	ld	d,a		;DE = address to write our menu to
+	ld	e,l
+	ld	hl,zvmenu
+	ld	bc,zvmenue-zvmenu
+	ldir
+	ld	hl,2000h
+	call	expand_addr
+	ld	b,3		;<< v1.01 >> Add greyed-out Help option.
+	ld	a,os_ddm_define	;
+	call	ANNE		;
+	ld	a,os_ddm_display
+	call	ANNE
+	ld	a,0FFh		;<< v1.01 "Save and continue" is active
+	ld	(s_and_c),a
+	call	menuopt		;>> v1.01 Deactivate it.
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;<< v1.01
+; If we are at the start of a line input, allow the "Save and Continue"
+;option. 
+;
+menuopt:
+	call	pusha
+	ld	a,(inputting)	;Doing a "line input"?
+	or	a
+	jp	z,nosc
+	ld	a,(actl)	;Text in the buffer?
+	or	a
+	jr	nz,nosc
+yessc:	ld	a,(s_and_c)
+	cp	1
+	jp	z,popa
+	ld	a,1
+	ld	(s_and_c),a
+	ld	bc,0800h
+	ld	e,80h		;Enabled
+	ld	a,os_ddm_put_entry_status
+	call	ANNE
+	ld	c,0FFh		;Help
+	ld	e,80h		;On
+	ld	a,os_ddm_put_title_status
+	call	ANNE
+	ld	a,os_ddm_display
+	call	ANNE
+	jp	popa
+;
+nosc:	ld	a,(s_and_c)
+	or	a
+	jp	z,popa
+	xor	a
+	ld	(s_and_c),a
+        ld      bc,0800h        ;Disable "Save and Continue"
+        ld      e,88h
+        ld      a,os_ddm_put_entry_status
+        call    ANNE
+	ld	c,0FFh
+	ld	e,88h
+	ld	a,os_ddm_put_title_status
+	call	ANNE
+	ld	a,os_ddm_display
+	call	ANNE
+	jp	popa
+;
+s_and_c:
+	defb	1		;Is the "Save & Continue" menu option active?
+;
+; >> v1.01
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Set the PCW16 cursor...
+;
+ibeam:	push	de
+	ld	e,2
+	jr	wcur1
+
+arrowcur:
+	push	de
+	ld	e,0
+	jr	wcur1
+
+waitcur:
+	push	de
+	ld	e,1
+wcur1:	push	af
+	push	hl
+	ld	a,os_set_mouse_pointer
+	call	ANNE
+	pop	hl
+	pop	af	
+	pop	de	
+	ret
+;
+alert:	push	hl
+	push	de
+	ld	a,os_get_mouse_pointer
+	call	ANNE
+	pop	de
+	pop	hl
+	push	af	;Old mouse pointer
+	call	expand_addr
+	ld	a,os_alert
+	call	ANNE
+	or	a
+	jp	nz,quit
+	pop	af
+	ld	e,a
+	ld	a,os_set_mouse_pointer
+	jp	ANNE
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;The actual menu structure
+;
+zvmenu:	defb	80h		;Title status
+	defw	0		;Unused
+	defb	31,'Game|'
+	defb	80h, 0, 0, 1Fh,'Information|'
+	defb	80h,'_|'	
+	defb	80h, 0, 0, 1Fh,'About this program',0
+	defb	0,0
+zvmenue:
+;
+;
+
+
+

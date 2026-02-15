@@ -1,0 +1,60 @@
+
+ZXZVM for esxDOS v0.02
+----------------------
+
+ZXZVM lets you play Z-Machine compatible adventure game story files (e.g. .z3, .z5) on your ZX Spectrum.
+
+
+Requirements
+------------
+
+- ZX Spectrum with 128k of memory, e.g. 128k, +2, +2A
+- esxDOS hardware, e.g. divMMC Future and esxDOS v0.8.9
+- some story files to play - http://mirror.ifarchive.org/indexes/if-archive/
+
+
+Installation
+------------
+
+Copy the contents of the BIN folder to your SD card / drive.
+
+
+Usage
+-----
+
+From BASIC type:
+
+.zxzvm
+
+to get some simple usage instructions.
+
+To launch a game:
+
+.zxzvm <path to story file>
+
+Text display defaults to the standard 32 character display. To start ZXZVM with 64 character display:
+
+.zxzvm -c2 <path to story file>
+
+
+Long File Name Browser Integration
+----------------------------------
+
+You can launch z3 and z5 story files from my Long Filename Browser for esxDOS via the supplied plugins. You can copy the supplied Z3 and Z5 plugins to different names to get the browser to launch other story files.
+
+
+Known issues
+------------
+
+- Code to verify a story file and handle transcripts is not currently implemented.
+
+- Browser plugins always start games with 32 character display.
+
+
+Credits
+-------
+
+ZXZVM written by John Elliott - https://www.seasip.info/ZX/zxzvm.html
+
+esxDOS modifications by bob_fossil, 2022
+

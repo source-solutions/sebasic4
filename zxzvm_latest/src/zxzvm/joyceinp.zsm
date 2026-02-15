@@ -1,0 +1,707 @@
+;    ZXZVM: Z-Code interpreter for the Z80 processor
+;    Copyright (C) 1998-9,2006,2016  John Elliott <seasip.webmaster@gmail.com>
+;
+;    This program is free software; you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation; either version 2 of the License, or
+;    (at your option) any later version.
+;
+;    This program is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with this program; if not, write to the Free Software
+;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+INPBUF	equ	04E00h
+;
+;Read a character, with timeout
+;
+rchar:	call	set_timer
+	call	curson
+	call	rchr1
+	call	cursoff
+	push	af
+	call	res_more
+	pop	af
+;
+;Translate cursor keys...
+;
+xltinp:	ld	b,a	;Translate incoming character
+	ld	hl,xlti
+xltilp:	ld	a,(hl)
+	inc	hl
+	inc	hl
+	or	a
+	jr	z,xltiend
+	cp	b 
+	jr	nz,xltilp
+	dec	hl
+	ld	a,(hl)
+	ret
+;
+xltiend:
+	ld	a,b
+	ret
+;
+;Translation table: CP/M control codes to Z-machine
+;
+xlti:	defb	127,8	;Delete
+	defb	1,131	;Left
+	defb	6,132	;Right
+	defb	31,129	;Up
+	defb	30,130	;Down
+	defb	0	;End of table
+;
+rchr1:	ld	c,6
+	ld	e,0FFh
+	call	FDOS	;Check for keypress
+	or	a
+	scf
+	ret	nz	;Key pressed
+	call	check_timer
+	scf
+	ret	z	;Timed out
+	jr	rchr1
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Give the 10Hz timer a value
+;
+set_timer:
+;<< v0.04    Hooking the interrupts to do timing causes problems. Instead
+;            use the "seconds" count of the clock.
+;
+	ld	hl,9	;Add 9 for rounding purposes
+	add	hl,de	;HL = count of ticks
+	ld	(tick10),hl
+	ld	a,d
+	or	e
+	ld	(timed),a
+	ld	a,(iy+5ch)
+	ld	(secs),a
+	ret
+;
+tick10:	defw	0	
+secs:	defb	0
+;
+;>> v0.04    Original 0.03 code below
+	ld	hl,(intbase)	
+	di
+	ld	(hl),e
+	inc	hl
+	ld	(hl),d
+	ei
+	ld	a,d
+	or	e
+	ld	(timed),a
+	ret
+;
+;See if the 10Hz timer has reached 0
+;
+check_timer:
+	ld	a,(timed)
+	or	a
+	jr	nz,cktime1
+notime:	ld	a,1
+	and	a	;If not timed input, return NZ - no timeout
+	scf
+	ret
+;
+cktime1:
+;<< v0.04 now using seconds timer, not interrupt
+
+	ld	a,(secs)
+	cp	(iy+5ch)
+	jr	z,notime
+	ld	a,(iy+5ch)
+	ld	(secs),a
+
+	ld	hl,(tick10)
+	ld	a,h
+	or	l	
+	scf
+	ret	z
+	ld	de,10
+	and	a
+	sbc	hl,de
+	ld	(tick10),hl	;Carry set if timeout
+	jr	nc,notime
+	xor	a		;A=0, Z set if timeout
+	scf
+	ret
+;
+; >> v0.04
+	ld	hl,(intbase)
+	di
+	ld	e,(hl)
+	inc	hl
+	ld	d,(hl)
+	ei
+	ld	a,d
+	or	e	;Returns A=0 and Z set if timer has timed out
+	scf
+	ret
+;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Hook the 300Hz timer interrupt, and step it down to a 10Hz timer for
+;use in the timed input
+;
+inthook:
+	ld	hl,(BDOS+1)
+	dec	h
+	ld	l,0		;A free page, above 0C000h
+	ld	(intbase),hl
+	ex	de,hl
+	ld	hl,isr
+	ld	bc,isre-isr	;Copy the ISR in
+	ldir
+	ld	hl,(intbase)
+	push	hl	
+	pop	ix		;Relocate it - make all its references
+	ld	(ix+19),l	;to memory use addresses within it.
+	ld	(ix+20),h
+	ld	(ix+27),l
+	ld	(ix+28),h
+	inc	hl
+	inc	hl
+	ld	(ix+4),l
+	ld	(ix+5),h
+	ld	(ix+8),l
+	ld	(ix+9),h
+	ld	(ix+16),l
+	ld	(ix+17),h
+	push	iy
+	ld	iy,(39h)	;The current interrupt service routine
+	ld	a,(iy+13)
+	ld	e,(iy+14)	;Take one instruction from it
+	ld	d,(iy+15)
+	ld	(ix+29),a	
+	ld	(ix+30),e	;and copy it to our ISR
+	ld	(ix+31),d
+	
+	inc	hl	
+	di			;Put a call to the hook code in the 
+	ld	(iy+13),0CDh	;standard ISR.
+	ld	(iy+14),l
+	ld	(iy+15),h
+	ei
+	pop	iy
+	ret	
+;
+intoff:	push	iy		;Remove the timer interupt
+	ld	ix,(intbase)
+	ld	iy,(39h)
+	di
+	ld	e,(ix+29)
+	ld	l,(ix+30)
+	ld	h,(ix+31)
+	ld	(iy+13),e
+	ld	(iy+14),l
+	ld	(iy+15),h
+	ei
+	pop	iy
+	ret	
+;
+intbase:
+	defw	0
+
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;This code is relocated to high memory. Note: When this code is called, 
+;AF and HL have already been pushed on the stack, so we don't have to 
+;worry about preserving them.
+;
+isr:	defw	0	;+0 10Hz ticker
+	defb	0	;+2 300Hz ticker
+	
+	ld	a,(2)	;+3
+	inc	a	;+6
+	ld	(2),a	;+7
+	cp	10	;+10
+	jr	c,isr1	;+12
+	xor	a	;+14
+	ld	(2),a	;+15
+
+	ld	hl,(0)	;+18
+	ld	a,h	;+21
+	or	l	;+22
+	jr	z,isr1	;+23
+	dec	hl	;+25
+	ld	(0),hl	;+26
+isr1:	ld	hl,(0)	;+29
+	ret		;+32
+isre:
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Input a line of text, with timeout
+;
+lineinp:
+	push	de	;Timeout
+	ld	(inptr),hl
+	call	curson
+
+;;	call	getxy	;HL = Y,X
+	ld	hl,(lwx)
+	xor	a	;Reset any pending wrap flag
+	ld	(wrapped),a
+	ld	a,(cwin)
+	or	a
+	jr	nz,lii1
+	ld	hl,(uwx)
+lii1:	ld	a,h
+	ld	h,l
+	ld	l,a
+	ld	(inpxy),hl
+	ld	hl,(inptr)
+	ld	de,INPBUF
+	call	ZXPK64	;Max length of buffer
+	ld	(de),a
+	inc	de
+	inc	hl
+	ld	b,a
+	inc	b	;+1 for "actual length" byte
+lilp:	call	ZXPK64
+	ld	(de),a	;Copy data into our buffer
+	inc	hl
+	inc	de
+	djnz	lilp
+	pop	de
+	call	set_timer
+	ld	a,(INPBUF+1)
+	ld	(ptr),a	;Set the initial cursor position
+	ld	hl,(inpxy)
+	ld	d,a	;Set INPXY to where the start of the line should be.
+	ld	e,0
+	and	a
+	sbc	hl,de
+	ld	(inpxy),hl
+	jp	input
+;
+inptr:	defw	0	;Address in Z-machine memory of data
+ptr:	defb	0	;Position in the line
+inpxy:	defw	0
+timed:	defb	0	;Is input timed?
+
+comtab:	defw	finish	;^@, ie timeout
+	defw	movlt	;^A
+	defw	lineol	;^B
+	defw	input3 	;^C
+	defw	input3	;^D
+	defw	input3	;^E
+	defw	movrt	;^F
+	defw	rdel	;^G
+	defw	delete	;^H
+	defw	input3	;^I
+	defw	finish	;^J
+	defw	del2eol	;^K
+	defw	input3	;^L
+	defw	finish	;^M
+	defw	input3	;^N
+	defw	input3	;^O
+	defw	input3	;^P
+	defw	input3	;^Q
+	defw	input3	;^R
+	defw	input3	;^S
+	defw	input3	;^T
+	defw	cut	;^U
+	defw	input3	;^V
+	defw	input3	;^W
+	defw	del2bol	;^X
+	defw	input3	;^Y
+	defw	input3	;^Z
+	defw	input3	;^[
+	defw	del2eol	;^\ ([-])
+	defw	input3	;^]
+	defw	input3 	;^^
+	defw	input3 	;^_
+;
+input:	call	rchr1
+input2:	call	movxy	;Move cursor to the right place
+	cp	20h
+	jp	nc,input3
+;
+	ld	l,a	;Interpret control characters
+	ld	h,0
+	add	hl,hl
+	ld	de,comtab
+	add	hl,de
+	ld	d,(hl)
+	inc	hl
+	ld	h,(hl)
+	ld	l,d
+	jp	(hl)
+;
+finish:	push	af	;Finishing char
+	call	res_more
+	call	cursoff
+	ld	hl,(inpxy)
+	ld	a,h
+	ld	h,l
+	ld	l,a
+	ld	a,(cwin)
+	or	a
+	jr	z,fin1
+	ld	(lwx),hl	
+	jr	fin2
+;
+fin1:	ld	(uwx),hl
+fin2:	call	movcur
+
+	ld	de,INPBUF
+	ld	hl,(inptr)
+	ld	a,(de)
+	ld	b,a
+	inc	b
+	inc	b
+	ld	c,0
+flilp:	ld	a,c	;Do not make the 1st two bytes lowercase, they
+	cp	2	;are numbers!
+	ld	a,(de)
+	jr	c,fli1
+	call	tolower	;Make the rest of the line lowercase.
+	push	af	;<< v1.00 Transcribe player input
+	push	bc
+	push	de
+	push	hl
+	ld	l,a
+	ld	h,0
+	ld	a,(inpbuf+1)	;No. of characters in line
+	inc	a
+	cp	c		;If A >= C, transcribe char
+	call	nc,ts_char
+	pop	hl
+	pop	de
+	pop	bc
+	pop	af	;>> v1.00
+fli1:	call	ZXPOKE
+	inc	de
+	inc	hl
+	inc	c
+	djnz	flilp
+	pop	af
+	or	a
+	scf
+	ret	z	;Timer ran out. B is 0, because a djnz loop has just ended
+	ld	b,10
+	ret
+;
+delete:	ld	a,(ptr)
+	or	a		;DEL LEFT/^H. AT THE LH END OF THE LINE?
+	call	z,bleep
+	jp	z,input
+;
+	ld	hl,INPBUF+1
+	cp	(hl)		;LAST CHARACTER SPECIAL CASE
+	jp	z,dellast
+;
+	call	getppos		;DE=NEXT CHARACTER
+	ld	d,h
+	ld	e,l
+	dec	hl		;HL=THIS CHARACTER
+del1:	ld	a,(de)
+	ld	(hl),a
+	or	a
+	inc	hl
+	inc	de
+	jr	nz,del1
+	ld	hl,ptr
+	dec	(hl)
+	ld	hl,INPBUF+1
+	dec	(hl)
+	call	updln		;UPDATE LINE
+	call	movxy
+	jp	input
+;
+dellast:
+	call	getlpos
+	ld	(hl),0
+	ld	hl,INPBUF+1
+	dec	(hl)
+	ld	hl,ptr
+	dec	(hl)
+	call	updln
+	call	movxy
+	jp	input
+;
+rdel:	ld	a,(ptr)
+	ld	hl,INPBUF+1
+	cp	(hl)
+	call	z,bleep
+	jp	z,input
+	call	getppos
+	ld	d,h
+	ld	e,l
+	inc	de		;HL=THIS CHARACTER
+rdel1:	ld	a,(de)
+	ld	(hl),A
+	or	a
+	inc	hl
+	inc	de
+	jr	nz,rdel1
+	ld	hl,INPBUF+1
+	dec	(hl)
+	call	updln		;UPDATE LINE
+	call	movxy
+	jp	input
+;
+cut:	call	del2e
+	jp	del2bol
+;
+del2eol:
+	call	del2e
+	jp	input
+;
+del2e:	call	getppos
+	ld	a,(ptr)
+	ld	(INPBUF+1),a
+del3e:	ld	a,(hl)
+	ld	(hl),0
+	inc	hl
+	or	a
+	jr	nz,del3e
+	call	updln
+	call	movxy
+	jp	input
+;
+del2bol:
+	call	getppos
+	ld	de,INPBUF+2
+	ld	b,0
+del3b:	ld	a,(hl)
+	ld	(de),A
+	inc	hl
+	inc	de
+	inc	b
+	or	a
+	jr	nz,del3b
+	dec	b
+	ld	a,b
+	ld	(INPBUF+1),a
+	xor	a
+	ld	(ptr),a
+	call	updln
+	call	movxy
+	jp	input
+;
+input3:	cp	127		;<-DEL?
+	jp	z,delete
+	call	insert
+	call	updln
+	call	movxy
+	JP	INPUT
+;
+char:	defb	0
+;
+insert:	ld	(char),a	;Insert a character
+	ld	a,(INPBUF+1)
+	ld	hl,INPBUF
+	cp	(hl)		;Is length=maximum?
+	call	z,bleep		;If yes, bleep and disallow it
+	ret	z
+;
+	ld	hl,ptr
+	cp	(hl)		;Is this the last character?
+	jr	nz,insert1	;special-case code for the last character
+	call	getlpos
+	ld	a,(char)
+	ld	(hl),a
+	inc	hl
+	ld	(hl),0
+	ld	a,(INPBUF+1)
+	inc	a
+	ld	(INPBUF+1),a
+	ld	(ptr),a
+	ret
+;
+insert1:
+	call	getppos		;HL=current position
+	ld	c,(hl)
+insert2:
+	ld	a,(hl)
+	ld	(hl),c
+	ld	c,a
+	inc	hl
+	or	a
+	or	c
+	jr	nz,insert2
+	call	getppos
+	ld	a,(char)
+	ld	(hl),a		;STORE NEW CHARACTER
+	ld	hl,ptr
+	inc	(hl)
+	ld	hl,INPBUF+1
+	inc	(hl)
+	ret
+;
+getppos:
+	push	de
+	ld	de,INPBUF+2
+	ld	hl,(ptr)
+	ld	h,0
+	add	hl,de	;HL=CURSOR POS.
+	pop	de
+	ret
+;
+movlt:	ld	a,(ptr)
+	or	a
+	jp	z,input
+	dec	a
+	ld	(ptr),a
+	call	movxy
+	jp	input
+;
+movrt:	ld	a,(ptr)
+	ld	hl,INPBUF+1
+	cp	(hl)
+	jp	z,input
+	inc	a
+	ld	(ptr),a
+	call	movxy
+	jp	input
+;
+getlpos:
+	push	de
+	ld	de,INPBUF+2
+	ld	hl,(INPBUF+1)
+	ld	h,0
+	add	hl,de
+	pop	de
+	ret
+;
+movxy:	push	af
+	push	de
+	push	hl
+	ld	hl,(inpxy)
+	ld	a,(ptr)
+	add	a,h	
+	ld	h,a
+	ld	de,2020h
+	add	hl,de
+	ld	a,h
+	cp	89
+	jr	c,movxy1
+	ld	h,89
+movxy1:	ld	(curpos),hl
+	ld	de,curpostr
+	call	printff
+	pop	hl
+	pop	de
+	pop	af
+	ret
+;
+updln:	call	pusha
+	ld	hl,(inpxy)
+	ld	de,2020h
+	add	hl,de
+	ld	(curpos),hl
+	ld	de,curpostr
+	call	printff
+	ld	hl,INPBUF+2
+	ld	a,(INPBUF+1)
+	or	a
+	jr	z,updln3
+	ld	b,a
+updln1:	ld	a,(hl)
+	or	a		;Print the input string.
+	jr	z,updln3
+	ld	e,a
+	inc	hl
+	call	anychar
+	djnz	updln1
+updln3:	ld	a,(INPBUF)
+	ld	hl,INPBUF+1
+	sub	(hl)		;A=no. of unused characters
+	or	a
+	jp	z,popa
+	ld	b,a
+	ld	e,' '
+	ld	c,2
+updln4:	push	bc
+	push	de
+	call	FDOS
+	pop	de
+	pop	bc
+	djnz	updln4
+	jp	popa
+;
+lineol:	ld	a,(ptr)
+	or	a
+	jr	z,eol
+	xor	a
+	ld	(ptr),a
+	call	movxy
+	jp	input
+;
+eol:	ld	a,(INPBUF+1)
+	ld	(ptr),A
+	call	movxy
+	jp	input
+;
+tolower:
+	cp	'A'
+	ret	c
+	cp	'Z'+1
+	ret	nc
+	add	a,20h
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Input a filename. This is done using CP/M's line input functions, since
+;timeout support is not required.
+;
+gname:	call	movcur
+	ld	de,fnistr
+	ld	c,9
+	call	FDOS
+	call	curson
+	ld	de,fnbuf
+	ld	c,10
+	call	FDOS	;Input the filename.
+	call	cursoff
+	ld	a,(fnbuf+1)
+	or	a
+	ret	z	;Return NC, user abandoned.
+	ld	de,fnbuf+1
+	ld	a,(de)
+	inc	a
+	ld	l,a
+	ld	h,0	
+	add	hl,de
+	ld	(hl),0	;Zero-terminate the filename.
+	ld	de,pfcb
+	ld	c,152
+	call	FDOS
+	ld	a,h
+	and	l
+	inc	a	;Invalid filename?
+	jr	nz,fnok
+	ld	de,fnbstr
+	ld	c,9
+	call	FDOS
+	xor	a
+	ret
+;
+fnok:	ld	hl,fnfcb
+	scf
+	ret
+;
+fnistr:	defb	'Filename >$'
+fnbstr:	defb	13,10,'Not a valid filename.$'
+
+pfcb:	defw	fname
+	defw	fnfcb
+fnbuf:	defb	14,0
+fname:	defs	16
+fnfcb:	defs	36
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+

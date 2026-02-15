@@ -1,0 +1,282 @@
+
+;    ZXZVM: Z-Code interpreter for the Z80 processor
+;    Copyright (C) 1998-9,2006,2016  John Elliott <seasip.webmaster@gmail.com>
+;
+;    This program is free software; you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation; either version 2 of the License, or
+;    (at your option) any later version.
+;
+;    This program is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with this program; if not, write to the Free Software
+;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+;
+;+3DOS function addresses
+;
+DOS_INIT equ	0100h	;Completely reinitialise +3DOS
+DOS_VERS equ	0103h	;Get +3DOS version
+DOS_OPEN equ	0106h	;Open file
+DOS_CLOSE equ	0109h	;Close file
+DOS_ABAND equ	010Ch	;Abandon file (force it closed)
+DOS_READ equ	0112h	;Read data
+DOS_WRITE equ	0115h	;Write data
+GETBYT	 equ	0118h	;Read one byte
+PUTBYT	 equ	011Bh	;Write one byte
+SETPOS	 equ	0136h	;Seek
+GET_1346 equ	013Ch	;Get memory allocation in 1,3,4,6
+SET_1346 equ	013Fh	;Set memory allocation in 1,3,4,6
+DOS_MAPB equ	0154h	;<< v1.03 >> Map drive B: to unit 0 or unit 1
+
+FILENO	equ	0Ch	;Arbitrary number from 0 to 15 for Z-code file.
+			;+3 BASIC uses 0-2 
+SAVENO	equ	0Bh	;File number for save file
+
+OPENCHN	equ	1601h	;ROM open channel to stream routine
+
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Open & close savefile
+;
+p3opn:	ld	a,b
+	or	a	;0=open 1=creat
+	ld	b,SAVENO
+	jr	z,p3opnr
+	ld	de,0204h	;Create new
+	ld	c,2		;Write mode
+	jr	p3opnc
+;
+p3opnr: ld	c,1	;Read mode
+	ld	de,2	;Open if it exists
+p3opnc:	call	dodos
+	defw	DOS_OPEN
+	ret	nc
+	ld	hl,SAVENO
+	ret
+;
+p3clse:	ld	b,SAVENO
+	call	dodos
+	defw	DOS_CLOSE
+	ret	c
+	call	dodos
+	defw	DOS_ABAND
+	and	a
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Read/write savefile
+;
+p3read:	ld	a,b
+	or	c
+	scf
+	ret	z
+	ld	d,b
+	ld	e,c	;DE = length
+	ld	b,SAVENO
+	ld	c,SAVEPG
+	call	dodos
+	defw	DOS_READ
+	ret
+
+p3write:
+	ld	a,b
+	or	c
+	scf
+	ret	z
+	ld	d,b
+	ld	e,c	;DE = length
+	ld	b,SAVENO
+	ld	c,SAVEPG	
+	call	dodos
+	defw	DOS_WRITE
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Transcript functions
+;
+ts_open:scf			;nothing to do (VM sets FLAGS2)
+	ret
+;
+ts_close:
+	scf			;nothing to do (VM sets FLAGS2)
+	ret
+;
+cktschar:
+	push	hl
+	ld	hl,11h		;FLAGS2 bit 0
+	call	ZXPK64
+	pop	hl
+	bit	0,a		;check transcript flag
+	scf
+	ret	z
+ts_char:
+	ld	a,(cwin)
+	or	a
+	scf
+	ret	z
+	push	hl
+	ld	a,3
+	call	OPENCHN		; open channel to stream 3 (printer)
+	pop	hl
+	ld	a,l
+	rst	10h		; print character
+	ld	a,2
+	call	OPENCHN		; open channel to stream 2 (screen)
+	scf
+	ret
+
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+st_close:
+	ld	a,(STORY_FILE)
+	and	a
+	scf
+	ret	z
+	xor	a
+	ld	(STORY_FILE),a
+	ld	b,FILENO
+	call	dodos
+	defw	DOS_CLOSE
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+st_peek:
+	push	hl
+	push	de
+	push	ix
+	push	bc
+	ld	b,FILENO
+	ld	d,0
+	call	dodos
+	defw	SETPOS
+	jr	nc,st_err
+	ld	b,FILENO
+	call	dodos
+	defw	GETBYT
+
+st_err:	pop	bc
+st_err2:pop	ix
+	pop	de
+	pop	hl
+	ret
+
+st_peekw:
+	push	hl
+	push	de
+	push	ix
+	ld	b,FILENO
+	ld	d,0
+	call	dodos
+	defw	SETPOS
+	jr	nc,st_err2
+	ld	b,FILENO
+	call	dodos
+	defw	GETBYT
+	ld	b,a
+	jr	nc,st_err2
+	push	bc
+	ld	b,FILENO
+	call	dodos
+	defw	GETBYT
+	pop	bc
+	ld	c,a
+	jr	st_err2
+
+
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Verify the game file
+;
+p3vrfy:
+	xor	a		;<< v0.02 - border colour cycling
+	ld	(activea),a	;>> v0.02
+
+	push	de
+	push	bc
+	ld	b,FILENO
+	ld	hl,40h
+	ld	e,h	;Set position just after header
+	call	dodos
+	defw	SETPOS
+	ld	hl,0
+	pop	bc	
+	pop	de
+vloop:	push	bc
+	push	de
+	push	hl
+	ld	b,FILENO
+	call	dodos
+	defw	GETBYT
+	ld	e,a
+	ld	d,0	;DE = byte just read
+	pop	hl
+	add	hl,de
+	pop	de
+	pop	bc
+	dec	bc
+	call	activity
+	ld	a,b	
+	or	c
+	jr	nz,vloop
+	dec	d
+	ld	a,d
+	cp	0ffh
+	jr	nz,vloop
+
+        ld      a,(BORDCR)	; << v0.02 - remove traces of the
+        rrca			;activity checker
+        rrca
+        rrca
+        and     7
+        out     (254),a
+
+	scf
+	ret	
+;
+;DEBUG
+
+hbuf:	defb	'000000',13,10,'$'
+
+;
+;<< v0.02 - cycle the border while verify is happening.
+;
+activity:	;Do something every 1k
+	ld	a,c
+	or	a
+	ret	nz
+	ld	a,b
+	and	3
+	ret	nz
+
+	ld	a,(activea)
+	out	(254),a
+	inc	a
+	cp	8
+	jr	c,activ1
+	xor	a
+activ1:	ld	(activea),a
+	ret
+;
+activea:
+	defb	0	;>> v0.02
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Numeric data
+;
+tsflag:	defb	0	;Transcripting on or off?
+STORY_FILE:
+	defb	0	; story file open
+;
+;

@@ -1,0 +1,92 @@
+
+;    ZXZVM: Z-Code interpreter for the Z80 processor
+;    Copyright (C) 1998-9,2006,2016  John Elliott <seasip.webmaster@gmail.com>
+;
+;    This program is free software; you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation; either version 2 of the License, or
+;    (at your option) any later version.
+;
+;    This program is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with this program; if not, write to the Free Software
+;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+;
+;Adapted from my ISCRTP.Z80
+;
+;This subroutine checks for the presence of CRT+, an extended terminal driver
+;for the PCW which allows boldface and italic text.
+;Entry conditions: Stack must be above 0C010h.
+;Exit conditions:  If CRTPLUS present: Carry set, A corrupt.
+;                  If CRTPLUS absent:  Carry clear, A=error number.
+;                  Always:             Other flags corrupt, all other registers
+;                                      preserved.
+;
+;Error numbers: 0 => Running on CPC6128, CRT+ not supported.
+;               1 => Running on PCW & CP/M is too old, CRT+ not supported.
+;               2 => CRT+ is not present.
+;               3 => Stack is below 0C010h.
+;
+ISCRT:	PUSH	BC	  ;Save registers.
+	PUSH	DE
+	PUSH	HL
+	CALL	USERF
+	DEFW	00E3h	  ;Get BIOS version.
+	OR	A
+	JR	Z,NOFID0  ;A=0 => CPC. CPCs don't have FIDs.
+	DEC	A
+	JR	NZ,CHKFID ;A<>1 => +3. +3s always have FIDs.
+	LD	A,C
+	CP	7	  ;Assume that PCW CP/M versions 1.7 / 2.7 up
+	JR	C,NOFID1  ;support the XBIOS call we are about to use.
+CHKFID:	LD	HL,0
+	ADD	HL,SP
+	LD	A,H	  ;See if the stack is in the right place.
+	CP	0C0h
+	JR	C,NOFID3
+	JR	NZ,CHKFD1
+	LD	A,L
+	CP	8
+	JR	C,NOFID3
+CHKFD1:	PUSH	DE	  ;We need 8 bytes in common memory (above 0C000h)
+	PUSH	DE	  ;so we reserve an area on the stack.
+	PUSH	DE
+	PUSH	DE
+	LD	DE,CRTPL$ ;Move the name of the FID to common memory.
+	LD	HL,0
+	ADD	HL,SP	  ;HL=address of reserved area.
+	EX	DE,HL	  ;DE=address of reserved area.
+	PUSH	DE
+	LD	BC,8
+	LDIR		  ;Parameter moved to common memory.
+	POP	DE
+	CALL	USERF
+	DEFW	00ECh	  ;Search for FID. Returns carry set if the FID
+	POP	DE	  ;is present.
+	POP	DE
+	POP	DE	  ;Free up the stack.
+	POP	DE
+	LD	A,2	  ;If no carry, return with error 2.
+EFID:	POP	HL
+	POP	DE
+	POP	BC
+	RET
+;
+NOFID0:	XOR	A
+	JR	EFID
+;
+NOFID1:	XOR	A
+	LD	A,1
+	JR	EFID
+;
+NOFID3:	XOR	A
+	LD	A,3
+	JR	EFID
+;
+CRTPL$:	DEFB	'CRTPLUS '	;The FID filename.
+

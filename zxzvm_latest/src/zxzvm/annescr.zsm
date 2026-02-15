@@ -1,0 +1,1729 @@
+;    ZXZVM: Z-Code interpreter for the Z80 processor
+;    Copyright (C) 1998-9,2006,2016  John Elliott <seasip.webmaster@gmail.com>
+;
+;    This program is free software; you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation; either version 2 of the License, or
+;    (at your option) any later version.
+;
+;    This program is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with this program; if not, write to the Free Software
+;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+;
+;Dialog font numbers...
+;
+FONT_FIXED	equ	2
+FONT_PROP	equ	3
+;
+;Character size in pixels (fixed font)
+;
+CHAR_H		equ	12
+CHAR_W		equ	6
+;
+SCRL_TOP	equ	467
+
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+cls1:	call	init_scrl	;<< v0.04 >> Initialise fast scrolling
+	ld	hl,termrc
+	call	expand_local
+	ld	a,os_def_evrect
+	call	ANNE
+	ld	hl,zap_desk
+	call	gfxop
+	ld	hl,termwnd
+	call	gfxop
+	ld	a,1
+	ld	(fixbit),a
+	ld	hl,(xorg)
+	ld	(txt_x),hl	;Initial x
+	ld	hl,(yorg)
+	ld	(txt_y),hl	;Initial y	
+	ld	hl,(horg)
+	ld	(rv_h),hl	;Text height
+	ld	hl,0
+	ld	(lwtop),hl	;Split line
+	xor	a
+	ld	(tsplit),a
+	ld	hl,txt_bf
+	ld	(bufptr),hl
+	ld	(bufct),a
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Initialise the screen I/O settings
+;
+;ZXZVM calls this (via erase_window) before the game proper begins
+;
+initscr:
+        ld      a,34
+        ld      (scrls),a
+	xor	a
+	ld	(tsplit),a
+	ld	hl,0
+        ld      (lwtop),hl
+	ld	hl,(xorg)
+        ld      (lwx),hl
+	ld	(uwx),hl
+	ld	hl,(yorg)
+	ld	(lwy),hl
+	ld	(uwy),hl
+        ld      a,1
+        ld      (cwin),a
+        ld      a,(zver)
+        cp      5
+        jr      nc,erall1
+        ld     	hl,443-CHAR_H 	;<< v1.03 >> Proper positioning of text
+        ld      (lwy),hl
+erall1:	ld	a,34
+	ld	(scrls),a
+	ld      hl,txt_bf
+        ld      (bufptr),hl
+        xor     a
+        ld      (bufct),a
+        scf
+	ret	
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;ERASE_WINDOW opcode
+;
+eraw1:	cp	0FEh
+	jr	z,erase_fe
+	cp	0FFh
+	jr	z,erase_ff
+        or      a
+        jr      z,erabot
+        dec     a
+        jr      z,eratop
+	scf
+        ret
+;
+eratop: ld      bc,(lwtop)
+	ld	de,0
+        jr      erablk
+;
+erabot: ld      de,(lwtop)
+        ld      bc,440
+erablk:	ld	hl,(yorg)
+	add	hl,de
+erabl2:	ld	(zs_y0),hl	;Top of box to erase
+	ld	hl,8
+	ld	(zs_x0),hl
+	ld	hl,624
+	ld	(zs_w0),hl
+	ld	(zs_h0),bc	;Height of box to erase
+	ld	a,b
+	or	c
+	ld	hl,zap_seg
+	call	nz,gfxop
+	scf
+	ret
+;
+erase_ff:	
+	call	initscr
+erase_fe:
+	ld	hl,zapterm
+	call	gfxop
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Erase current line to EOL
+;
+eral1:	ld	hl,(lwx)
+	ld	de,(lwy)
+	ld	a,(cwin)
+	or	a
+	jr	nz,eral2
+	ld	hl,(uwx)
+	ld	de,(uwy)
+eral2:	ld	(zs_x0),hl
+	ld	(zs_y0),de
+	ld	bc,CHAR_H
+	ld	(zs_h0),bc
+	ld	hl,636
+	ld	de,(zs_x0)
+	and	a
+	sbc	hl,de
+	ld	(zs_w0),hl
+        ld      a,h
+        or      l
+        ld      hl,zap_seg
+        call    nz,gfxop
+        scf
+        ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Graphics operation, call os_scr_direct expanding passed address to 24 bits
+;
+gfxop:	push	af
+	push	bc
+	call	expand_addr
+	ld	a,os_scr_direct
+	call	ANNE
+	pop	bc
+	pop	af
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Data for graphics operations
+;
+zap_desk:
+	defb	dg_blk_grey	;Grey box over the desktop area
+	defw	0,20,640,460
+	defb	4
+termwnd:	
+	defb	dg_multi_box	;Terminal window
+termrc:	defw	4, 19, 632, 457
+	defb	8	;Colour
+	defb	055h	;Shaded outline
+	defb	3	;No. of outlines
+	defb	2	;Shadow depth
+;
+zapterm:			;Clear the terminal window
+	defb	dg_blk_white
+	defw	8,23,624,449
+;
+zap_seg:
+	defb	dg_blk_white
+zs_x0:	defw	4
+zs_y0:	defw	0
+zs_w0:	defw	632
+zs_h0:	defw	0	
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+printing:
+	defb	0	;<< v1.00 >> Transcribing?
+tsplit:	defb	0	;Split line, in characters
+lwtop:	defw	0	;Split line
+cwin:	defb	0	;Current window, 0 for upper, 1 for lower
+lwx:	defw	0	;Lower window X,Y
+lwy:	defw	0
+uwx:	defw	0	;Upper window X,Y
+uwy:	defw	0
+scrls:	defb	0	;Scrolls to a [More]
+bufopt:	defb	1	;Buffer text for speed?
+bufptr:	defw	0	;Buffer pointer
+bufct:	defb	0	;Buffer count
+;
+rvbuf:	defb	dg_blk_grey_xor
+rv_x:	defw	0		;XORed over text to make it reverse video
+rv_y:	defw	0
+rv_w:	defw	0
+rv_h:	defw	CHAR_H
+rv_col:	defw	0	;Colour
+;
+tvbuf:	defb	dg_blk_white	;White block, drawn before text
+tv_x:	defw	0
+tv_y:	defw	0
+tv_w:	defw	0
+tv_h:	defw	CHAR_H
+;
+ulbuf:	defb	dg_blk_black	;Black block, drawn under text as an underline
+ul_x:	defw	0
+ul_y:	defw	0
+ul_w:	defw	0
+ul_h:	defw	1
+;
+rev_v:	defb	0	;nonzero for reversed video
+uline:	defb	0	;nonzero for underline
+bold:	defb	0	;nonzero for bold
+fixed:	defb	0	;nonzero for fixed-pitch
+fixbit:	defb	0	;Set to 2 if Flags 2 is forcing fixed-pitch font
+;
+scrlb:	defb	dg_blk_scroll
+s_xorg:	defw	0
+s_yorg:	defw	0
+	defw	640
+s_h:	defw	450
+s_dx:	defw	0
+s_dy:	defw	0
+;
+sc_zap:	defb	dg_blk_white
+z_xorg:	defw	0
+z_yorg:	defw	0
+	defw	624
+z_h:	defw	0
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+cfont:	defb	0
+xorg:	defw	8
+yorg:	defw	23
+horg:	defw	CHAR_H
+;
+more_bl:
+      defb    2       ;Font
+      defb    0       ;Alignment
+      defb    0       ;Style
+      defb    3       ;Draw in XOR, so the second [More] overwrites the first
+      defw    8       ;X
+      defw    460     ;Y
+      defb    '[More]',0
+
+
+txt_bl:	defb	2	;Font
+	defb	0	;Alignment
+	defb	0	;Style
+txt_xr:	defb	0	;XOR mode?
+txt_x:	defw	0	;X
+txt_y:	defw	0	;Y
+txt_bf:	defs	259
+;
+txt_b2:	defb	2	;Font
+	defb	0,0,0	;Styles
+txt_x2:	defw	0
+txt_y2:	defw	0
+	defs	259	;A copy of txt_bl
+;
+llprt:	ld	hl,txt_bf
+	ld	b,104
+llprt1:	ld	a,(de)
+	cp	0dh
+	jr	z,llprt9
+	or	a
+	jr	z,llprt9
+	call	sanehl
+	ld	(hl),a
+	inc	hl
+	inc	de
+	djnz	llprt1
+	dec	de
+llprt9:	call	sanehl
+	ld	(hl),0
+	push	de
+	ld	hl,txt_bl
+	call	expand_local
+	call	text_with_spfx
+llprt8: ld	de,(txt_x)
+	add	hl,de
+	ld	(txt_x),hl
+	pop	de
+	ld	a,(de)
+	or	a
+	ret	z
+	cp	0dh	
+	jr	nz,llprt
+	ld	hl,(xorg)
+	ld	(txt_x),hl
+	ld	hl,(txt_y)
+	ld	bc,(rv_h)
+	add	hl,bc
+	ld	(txt_y),hl
+	inc	de
+	ld	bc,462
+	and	a
+	sbc	hl,bc
+	jr	c,llprt
+	ld	hl,(txt_y)
+	ld	bc,(rv_h)
+	and	a
+	sbc	hl,bc
+	ld	(txt_y),hl
+	push	de
+	ld	hl,0
+	ld	(s_xorg),hl	;Scroll full screen width
+	ld	hl,(yorg)
+	ld	(s_yorg),hl
+	ld	de,(rv_h)
+	ld	hl,0
+	and	a
+	sbc	hl,de
+	ld	(s_dy),hl
+;;	ld	hl,scrlb	;<< v0.04 fast scrolling.
+;;	call	gfxop
+	call	scrl_fast	;>> v0.04
+	ld	hl,(xorg)
+	ld	(z_xorg),hl
+	ld	hl,SCRL_TOP
+	ld	bc,(s_dy)
+	add	hl,bc
+	ld	(z_yorg),hl
+	ld	hl,CHAR_H + 6
+	ld	(z_h),hl
+	ld	hl,sc_zap
+	call	gfxop	
+	pop	de
+	jp	llprt
+;
+;Select the printing font
+;
+sfont1:	cp	1		;Proportional
+	jr	z,sfont2
+	cp	4		;Fixed
+	jr	z,sfont5
+	xor	a
+	ret
+;
+sfont2:	call	print_buf
+	ld	a,FONT_PROP
+	call	set_font
+	jr	sfontc
+;
+sfont5:	call	print_buf
+	ld	a,FONT_FIXED	
+	call	set_font	
+sfontc:	ld	hl,(cfont)
+	ld	(cfont),a
+	ld	a,l
+	scf
+	ret
+;
+;Set the output font to dialog font 1-12
+;
+set_font:
+	ld	(txt_bl),a
+	ld	e,a
+	ld	d,0
+	ld	hl,txths
+	add	hl,de
+	ld	a,(hl)
+	ld	(rv_h),a
+	ret
+;
+txths:	defb	0,9,10,12,12,12,12,12,12,12,12,12,12
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; As os_dialog_string, but it also does special effects:
+;
+; Bold
+; Underline
+; Reversed
+; Fixed pitch
+;
+;Returns width in HL.
+;
+text_with_spfx:
+	ld	a,(hl)
+	push	af
+	ld	a,(cwin)
+	or	a
+	jr	z,spfix		;Upper window text is always fixed-pitch
+	ld	a,(fixbit)
+	bit	1,a
+	jr	nz,spfix	;Printing in fixed font?
+	ld	a,(fixed)
+	or	a
+	jr	z,spfx0
+spfix:	ld	(hl),FONT_FIXED
+spfx0: 	call	clip_r 
+	ld	a,(txt_bf)
+	or	a	
+	ret	z		;Nothing to print
+	push	hl
+	push	bc
+        ld      a,os_dialog_string_width
+        call    ANNE   		;Measure the space that the text will occupy
+	ld	a,(bold)
+	or	a
+	jr	z,spfx01
+	inc	hl		;One more if it's bold
+spfx01:	ld	(rv_w),hl	
+	ld	(tv_w),hl
+;
+;Clear a space to draw the text into. Normally this would be done by the
+;call to Rosanne, but we are spacing the lines further apart than normal.
+;Hence, we need to blank a larger area.
+;
+        ld      hl,(txt_x)
+        ld      (tv_x),hl
+        ld      hl,(txt_y)
+        ld      (tv_y),hl
+        ld      hl,tvbuf
+        call    gfxop
+	pop	bc
+	pop	hl
+
+	ld      a,os_dialog_string
+        push    hl
+        push    bc
+        call    ANNE    ;Draw the text
+        pop     bc
+        pop     hl
+	ld	a,(bold)
+	or	a
+	jr	z,spfx1
+	push	hl
+	push	bc
+	ld	de,(txt_x)
+	inc	de
+	ld	(txt_x),de
+	ld	a,1
+	ld	(txt_xr),a
+	ld	a,os_dialog_string
+	call	ANNE
+	xor	a
+	ld	(txt_xr),a
+	ld	de,(txt_x)
+	dec	de
+	ld	(txt_x),de
+	pop	bc
+	pop	hl
+spfx1:	pop	af
+	ld	(hl),a	;Original font setting
+	ld	hl,(rv_w)
+        ld      a,(rev_v)
+        or      a
+        jr      z,not_rv	;In reversed video?
+        ld      hl,(txt_x)
+        ld      (rv_x),hl
+        ld      hl,(txt_y)
+        ld      (rv_y),hl
+        ld      hl,rvbuf
+        call    gfxop
+        ld      hl,(rv_w)
+not_rv:	ld	a,(uline)
+	or	a
+	jr	z,not_ul
+	ld	(ul_w),hl
+	ld	hl,(txt_x)
+	ld	(ul_x),hl
+	ld	hl,(txt_y)
+	ld	de,CHAR_H - 2
+	add	hl,de
+	ld	(ul_y),hl
+	ld	hl,ulbuf
+	call	gfxop
+	ld	hl,(rv_w)
+not_ul: ret
+;
+;If text extends over the end of the buffer, clip it.
+;
+clip_r:	push	hl
+	push	bc
+	ld	a,os_dialog_string_width
+	call	ANNE
+	ld	a,(bold)
+	or	a
+	jr	z,clip_r1
+	inc	hl		;HL = width of the text
+clip_r1:ld	de,(txt_x)
+	add	hl,de		;HL = new X position. If it is >632, complain
+	ld	de,632
+	and	a
+	sbc	hl,de		;Carry set if HL < 632
+	jr	c,clip_r3
+	ld	hl,txt_bf
+	ld	a,(hl)
+	or	a
+	jr	z,clip_r3	;No text at all!
+clip_r4:
+	inc	hl		;Go to the end of the text
+	ld	a,(hl)
+	or	a
+	jr	nz,clip_r4
+	dec	hl		;Chop off the last character
+	ld	(hl),0
+clip_r2:
+	pop	bc
+	pop	hl
+	jr	clip_r
+
+clip_r3:
+	pop	bc
+	pop	hl
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; << v1.00 monitor when printing is enabled
+;
+strm1:	cp	2
+	jr	z,printon
+	cp	0FEh
+	jr	z,printoff
+	scf
+	ret
+;
+printon:			;A trick to save some bytes. If PRINTON:
+	defb	03Eh		;is called, this translates as 3E AF, ie
+printoff:			;load A with 0AFh (nonzero).
+	xor	a		;If PRINTOFF is called, this loads A with zero
+	ld	(printing),a
+	scf
+	ret
+;
+; >> v1.00
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Output a character to the screen.
+;
+scrchr:	push	hl
+	ld	hl,(uwx)
+	ld	a,(cwin)
+	or	a
+	jr	z,scrch1
+	ld	hl,(lwx)
+scrch1:	ld	bc,630
+	and	a
+	sbc	hl,bc
+	pop	hl
+	jr	c,scrch2
+	ret		;Off the right-hand edge.
+
+zchr1:	cp	1	;We currently only support streams 1 & 2
+	jr	z,scrch2 ;<< v0.03 support printer output
+	cp	2	
+	scf
+	ret	nz
+	ld	a,(cwin) ;<< v1.00 don't transcribe the status line each go
+	or	a	;  (printing code rewritten in v1.00)
+	scf
+	ret	z
+ts_char:
+	ld	a,(printing)
+	or	a	;This flag can be set to 0 if printing is cancelled
+	scf
+	ret	z
+	ld	a,l	;Append LFs to CRs
+	cp	0Dh
+	jr	nz,nolcr
+	call	bprintbyte
+	ccf
+	jr	nc,prnc
+	ld	a,0Ah
+nolcr:	call	bprintbyte
+	ccf
+	ret	c
+prnc:	ld	a,0
+	ld	(printing),a	;>> v1.00
+	ret
+;
+scrch2:	ld	a,(fixbit) ;>> v0.03
+	and	2
+	ld	c,a
+	push    hl	;Check if the "fixed pitch" bit has changed
+        ld      hl,11h
+        call    ZXPK64
+        pop     hl	
+	and	2
+	cp	c	;If the "fixed pitch" bit has changed, print out
+	call	nz,print_buf ;pending text using the old "fixbit" setting
+	ld	(fixbit),a
+
+	ld	a,l
+	cp	0Dh
+	jp	nz,notlf
+	call	print_buf
+	ld	a,(cwin)
+	or	a
+	jp	z,ulf
+;
+;Lower screen line feed
+;
+	ld	hl,(xorg)
+	ld	(lwx),hl	;Reset X
+
+	ld	hl,(lwy)
+	ld	de,CHAR_H
+	add	hl,de		;HL = new Y
+        ld      (lwy),hl
+        ld      bc,475-CHAR_H	;Off limits?
+        and     a
+        sbc     hl,bc
+;;;	ret	c		;No scrolling needed
+	jr	c,noscrl
+        ld      hl,(lwy)
+        ld      bc,CHAR_H	;Move up one line
+        and     a
+        sbc     hl,bc
+        ld      (lwy),hl
+	ld	hl,0	;;;        ld      hl,(xorg)
+        ld      (s_xorg),hl	;X origin
+        ld      hl,(yorg)
+	ld	de,(lwtop)
+	add	hl,de
+	ld	(s_yorg),hl	;Y origin
+	ld	hl,(lwy)
+	ld	de,CHAR_H	;LWY + CHAR_H - Y origin = height
+	add	hl,de
+	ld	de,(s_yorg)
+	and	a
+	sbc	hl,de
+	ld	(s_h),hl	;Height
+	
+        ld      de,CHAR_H
+        ld      hl,0
+        and     a
+        sbc     hl,de
+        ld      (s_dy),hl	;Delta Y
+;;	ld      hl,scrlb	;<< v0.04 use faster scrolling
+;;	call    gfxop		;         (if possible)
+	call	scrl_fast	;>> v0.04
+        ld      hl,(xorg)
+        ld      (z_xorg),hl
+        ld      hl,SCRL_TOP
+        ld      bc,(s_dy)
+        add     hl,bc
+        ld      (z_yorg),hl
+        ld      hl,CHAR_H + 6
+        ld      (z_h),hl
+        ld      hl,sc_zap
+        call    gfxop
+noscrl:	push	af
+        ld      a,(scrls)     ;<< v0.04 [More] support
+        or      a
+        call    z,more        ;Wait for keypress before proceeding
+        dec     a
+        ld      (scrls),a     ;>> v0.04
+	pop     af
+	scf
+	ret
+;
+ulf:	ld	hl,(xorg)
+	ld	(uwx),hl	
+	ld	hl,(uwy)
+	ld	de,CHAR_H
+	add	hl,de
+	ld	(uwy),hl
+	scf
+	ret
+;
+notlf:	ld	a,(bufopt)	;Append the character to the buffer
+	or	a
+	jr	z,notbf
+	ld	a,(bufct)
+	cp	250
+	call	nc,print_buf
+	ex	de,hl
+	call	appendc
+	ld	hl,bufct
+	inc	(hl)
+	scf
+	ret	
+;
+notbf:	ld	hl,txt_bf
+	ld	(bufptr),hl
+	ld	e,l
+	call	appendc
+	ld	e,0
+	call	appendc
+	scf			;Fall through to...
+print_buf:
+	call	pusha
+	ld	hl,(bufptr)
+	call	sanehl
+	ld	(hl),0		;Zero-terminate the string to print
+	ld	a,(bufct)
+	or	a
+	jp	z,popa		;Nothing to print!
+	ld	hl,(lwx)
+	ld	(txt_x),hl
+	ld	hl,(lwy)
+	ld	(txt_y),hl
+	ld	a,(cwin)
+	or	a
+	jr	nz,wbuf1	
+	ld	hl,(uwx)
+	ld	(txt_x),hl
+	ld	hl,(uwy)
+	ld	(txt_y),hl
+wbuf1:	ld	hl,(txt_x)
+	ld	hl,(txt_y)
+	ld      hl,txt_bl
+        call    expand_local
+	call	text_with_spfx
+	ld      de,(txt_x)
+	add	hl,de	;HL = new X
+	call	set_x
+	ld	hl,txt_bf
+	ld	(bufptr),hl
+	xor	a
+	ld	(bufct),a
+	jp	popa
+;
+more: push    hl              ;<< v0.04 print the [More] message
+      push    bc
+      push    de
+      ld      hl,more_bl
+      call    expand_local
+      ld      a,os_dialog_string
+      call    ANNE
+      call    getkey
+      ld      hl,more_bl      
+      call    expand_local
+      ld      a,os_dialog_string
+      call    ANNE
+      call    res_more
+      ld      a,(scrls)
+      inc     a
+      pop     de
+      pop     bc
+      pop     hl
+      ret  
+;
+;Reset [More] counter
+;
+res_more:
+      push    af
+      push    bc
+      ld      a,(tsplit)	;Split line, in characters
+      ld      b,a
+      ld      a,34
+      sub     b
+      ld      (scrls),a
+      pop     bc
+      pop     af
+      ret
+;
+;>> v0.04
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;A mini-FDOS, for debugging purposes. Implement functions 1,2,6,9
+;
+fdos1:	ld	a,c
+	cp	1
+	jr	z,fdosf1
+	cp	2
+	jr	z,fdchar
+	cp	6
+	jr	z,fdosf6
+	cp	9
+	jr	z,fdstr
+	ld	hl,fdos$
+	xor	a
+	ret
+;
+fdchar:	ld	a,e
+	cp	0Ah
+	ret	z
+	ld	l,e
+	ld	h,0
+	ld	a,1
+	call	ZXZCHR
+	call	print_buf
+	scf
+	ret
+;
+fdstr:	ld	a,(de)
+	cp	'$'
+	jr	z,fdstre
+	push	de
+	cp	0Ah
+	ld	l,a
+	ld	h,0
+	ld	a,1
+	call	nz,ZXZCHR
+	pop	de
+	inc	de
+	jr	fdstr
+;
+fdstre:	call	print_buf
+	scf
+	ret
+;
+fdosf1:	call	print_buf
+	call	getkey
+	push	af
+	ld	l,a
+	ld	h,0
+	ld	a,1
+	call	ZXZCHR
+	pop	af
+	ret
+;
+fdosf6:	call	print_buf
+	ld	a,e
+	cp	0FDh
+	jp	z,getkey
+	jp	c,fdchar	
+	cp	0FFh
+	jp	z,pollkey
+	call	pollkey
+	or	a
+	ret	z
+	ld	a,1
+	ret
+;
+fdos$:	defb	'Call to FDOS',0A1h
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;See if text will fit on the screen
+;
+bfit1:	call	print_buf	;Output all pending text, so screen X,Y are 
+	ld	a,(txt_bl)	;up to date.
+	ld	(txt_b2),a
+	ld	a,b
+	add	a,c
+	call	bfit2		;Check letters & separators
+	ld	a,0
+	ret	c		;OK
+	ld	a,b
+	call	bfit2		;Check just letters
+	ld	a,1
+	ret	c
+	ld	a,2
+	scf
+	ret
+;
+bfit2:	or	a	;No difficulty with a zero-length string.
+	scf
+	ret	z
+	push	hl	;Returns Carry set if A characters at HL will fit
+	push	bc	;in the lower window.
+	ld	de,(bufptr)
+	push	de	
+	ld	de,txt_b2+8
+	ld	(bufptr),de	;<< v1.01 >> appendc writes at bufptr.
+	ld	b,a		;No. of characters
+bfit2a:	ld	a,(hl)
+	ld	e,a
+	call	appendc		;Append them to the buffer, expanding
+	inc	hl		;characters as necessary
+	inc	hl
+	djnz	bfit2a
+	ld	e,0
+	call	appendc		;0-terminate the buffer
+	pop	de
+	ld	(bufptr),de
+	ld	hl,txt_b2
+	ld	a,(hl)		;Save font setting
+	push	af
+	ld	a,(fixed)	;Use the correct font for calculations
+	or	a
+	jr	z,bfit2c
+	ld	(hl),FONT_FIXED
+bfit2c: call	expand_addr
+        ld      a,os_dialog_string_width
+        call    ANNE   		;Measure the space the buffer would occupy
+	pop	af
+	ld	(txt_b2),a	;Restore the font
+	ld	a,(bold)
+	or	a		;If bold, text is 1 pixel wider
+	jr	z,bfit2g
+	inc	hl	
+bfit2g:	ld	de,(lwx)
+	add	hl,de		;DE = new position
+	ld	bc,632
+	and	a
+	sbc	hl,bc		;HL = overshoot
+	pop	bc		;(returns Carry set if the text will fit)
+	pop	hl		
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+getx1:	push	de	;<< v1.11 Don't trash DE
+	call	getx2
+	pop	de
+	ret		;>> v1.11
+
+getx2:	ld	a,(cwin)
+	or	a
+	ld	hl,(lwx)
+	jr	nz,getxu
+	ld	hl,(uwx)
+getxu:	ld	de,(xorg)
+	and	a
+	sbc	hl,de
+	ld	bc,CHAR_W
+	ld	de,0ffffh
+getxl:	inc	de	;DE = cursor X position
+	and	a
+	sbc	hl,bc
+	jr	nc,getxl
+	ld	a,104
+	sub	e
+	ld	h,a
+	ld	l,e	
+	ld	a,104
+	scf
+	ret
+;
+gety1:	push	de	;<< v1.11 don't trash DE
+	call	gety2
+	pop	de
+	ret		;>> v1.11
+;
+gety2:	ld	a,(cwin)
+	or	a
+	ld	hl,(uwy)
+	jr	z,getyu
+	ld	hl,(lwy)
+	ld	de,(lwtop)
+	and	a
+	sbc	hl,de
+getyu:	ld	de,(yorg)
+	and	a
+	sbc	hl,de
+	ld	bc,CHAR_H
+        ld      de,0ffffh
+getyl:	inc     de      ;DE = cursor X position
+	and	a
+        sbc     hl,bc
+        jr      nc,getyl
+        ld      a,40
+        sub     e
+        ld      h,a
+        ld      l,e
+        scf
+        ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; We do not use Rosanne's built-in line editor here. We use our own, so it
+; can do timed input.
+;
+;HL = byte address of buffer (DB max DB current DB data...)
+;DE = timeout, 0 if none
+;
+;Timer initialisation code
+;
+initime:
+	ld	a,d
+	or	e
+	ret	z
+	push	hl
+;
+;DE = time in 10ths of a second. We want to convert that to 16ths
+;
+;DE:= DE / 10 * 16
+;
+	ex	de,hl
+	add	hl,hl
+	add	hl,hl
+	add	hl,hl
+	add	hl,hl	;*16
+	ld	b,h
+	ld	c,l
+	ld	de,10	;/10
+	call	udiv16
+	ld	(timet),bc
+	ld	hl,timeblk
+	call	expand_addr
+	ld	a,os_set_timer
+	call	ANNE
+	pop	hl
+	ret
+;
+timeblk:
+	defw	0	;Event code
+	defb	3	;Timer no. 3
+	defb	0	;Once only
+timet:	defw	0
+;
+UPCASEA:
+	CP	'a'	;CONVERT THE CHARACTER IN A TO UPPERCASE.
+	RET	C
+	CP	'z'+1
+	RET	NC
+	RES	5,A
+	RET
+;
+LCASE:	CP	'A'	;convert the character in a to lowercase.
+	RET	C
+	CP	'Z'+1
+	RET	NC
+	SET	5,A
+	RET
+;
+ZIBUF:	DEFW	0	;Z-address of input buffer
+INPPOS:	DEFW	0,0	;X,Y of start of input buffer
+MAXL:	DEFB	0	;Max input length
+ACTL:	DEFB	0	;Actual input length
+CURP:	DEFB	0	;Cursor position
+inputting:
+	defb	0	;<< v1.01 >> Doing a line input?
+insert:	defb	0	;<< v1.01 >> Command string from menu?
+;
+;Initialise timed input
+;
+;Read character, with timeout
+;
+RCHAR:	call	print_buf
+	CALL	INITIME
+	CALL	TGETKEY		;Get key, with timeout
+	AND	A
+	RET	Z
+	PUSH	AF
+	CALL	RES_MORE
+	POP	AF
+XLTCHR:	LD	B,A		;Translate Anne control codes
+	LD	HL,XLTAB	;to Z-machine control codes. B=code to do.
+XLTLP:	LD	A,(HL)
+	INC	HL
+	INC	HL
+	OR	A
+	JR	Z,XLTEND
+	CP	B
+	JR	NZ,XLTLP
+	DEC	HL
+	LD	A,(HL)
+	RET
+;
+XLTEND:	LD	A,B
+	RET
+;
+;Translation table: Anne control codes to Z-machine codes
+;
+XLTAB:	DEFB	0E5h,8	;Delete
+	DEFB	0E2h,131	;Left
+	DEFB	0E3h,132	;Right
+	DEFB	0E0h,129	;Up
+	DEFB	0E1h,130	;Down
+	DEFB	0	;End of table
+;
+lineinp:
+	ld	a,(txt_bl)
+	push	af
+	ld	a,2
+	ld	(txt_bl),a
+	ld	a,1		;<< v1.01 say when we're at an input prompt
+	ld	(inputting),a	;>> v1.01
+	call	linein0
+	ld	l,a
+	pop	af
+	ld	(txt_bl),a
+	ld	a,0		;<< v1.01 as above
+	ld	(inputting),a	
+	call	menuopt		;>> v1.01
+	ld	a,l
+	ret
+;
+;Line input into buffer at HL, timeout DE (0 for none)
+;
+linein0:
+	call	print_buf
+	CALL	INITIME
+	LD	(ZIBUF),HL
+	xor	a		;<< v1.01 events injected by menu
+	ld	(insert),a	;>> v1.01
+	LD	HL,(LWX)
+	LD	DE,(LWY)
+	LD	A,(CWIN)
+	OR	A
+	JR	NZ,LINEI1
+	LD	HL,(UWX)
+	LD	DE,(UWY)
+LINEI1: LD	(INPPOS),HL
+	LD	(INPPOS+2),DE
+	LD	HL,(ZIBUF)
+	CALL	ZXPK64
+	LD	(MAXL),A
+	INC	HL
+	CALL	ZXPK64
+	LD	(ACTL),A
+	LD	(CURP),A
+;
+;If the game has printed text already, step back past it & reset our X,Y. 
+;
+	OR	A
+	JR	Z,INPUT
+	LD	B,A		;CURP
+	LD	HL,(INPPOS)
+	LD	DE,6		;Approximate! Pretend characters are all
+LILP2:	AND	A		;6 bytes wide.
+	SBC	HL,DE
+	DJNZ	LILP2
+	LD	(INPPOS),HL	;Input is now at correct coordinates.
+	JR	INPUT
+;
+INPUT:	call	menuopt
+	CALL	TGETKEY	;Get character with timer
+	CALL	MOVXY	;Move cursor to the right place
+	OR	A
+	JR	Z,TIMED0
+	CP	08h
+	JP	Z,DELETE
+	CP	0E2h
+	JP	Z,MOVLT
+	CP	0E3h
+	JP	Z,MOVRT
+	CP	0E5h
+	JP	Z,RDEL
+	CP	0Dh
+	JR	Z,FINISH
+	JP	INPUT3
+
+TIMED0:	LD	B,0		;Input timed out!
+	JR	CEND
+;
+FINISH:	LD	B,0Ah
+	JR	CEND
+;
+ABANDON:
+	LD	B,27
+	JR	CEND
+;
+CEND:	PUSH	BC	;B = terminating character
+	LD	HL,(INPPOS)
+	LD	DE,(INPPOS+2)
+	LD	A,(CWIN)
+	OR	A
+	JR	Z,CENDU
+	LD	(LWX),HL
+	LD	(LWY),DE
+	JR	CENDC
+
+CENDU:	LD	(UWX),HL
+	LD	(UWY),DE
+CENDC:		
+	LD	A,(ACTL)
+	LD	B,A
+	LD	HL,(ZIBUF)
+	INC	HL
+	CALL	ZXPOKE
+LCLP:	INC	HL		;Force it to lowercase
+	CALL	ZXPK64
+	PUSH	AF
+	PUSH	BC
+	PUSH	DE
+	PUSH	HL
+	LD	L,A
+	LD	H,0
+	CALL	ts_char	;<< v1.00 >> Transcribe character 
+	POP	HL
+	POP	DE
+	POP	BC	
+	POP	AF
+	CALL	LCASE
+	CALL	ZXPOKE
+	DJNZ	LCLP
+;;;	CALL	CUROFF
+	PUSH	AF
+	CALL	RES_MORE
+	xor	a		;<< v1.01 Automated command-inserter
+	ld	(insert),a	;>> v1.01 
+	POP	AF
+	POP	BC
+	SCF
+	RET
+;
+DELETE:	LD	A,(CURP)
+	OR	A		;DEL LEFT/^H. AT THE LH END OF THE LINE?
+	CALL	Z,CHIME
+	JP	Z,INPUT
+;
+	LD	D,A
+	LD	A,(ACTL)
+	CP	D		;LAST CHARACTER SPECIAL CASE
+	JP	Z,DELLAST
+;
+	CALL	GETPPOS		;DE=NEXT CHARACTER
+	LD	D,H
+	LD	E,L
+	DEC	HL		;HL=THIS CHARACTER
+	LD	A,(CURP)
+	LD	B,A
+	LD	A,(ACTL)
+	SUB	B		;Length of line - cursor pos = no. to shift
+	LD	B,A		;B = no, to shift
+DEL1:	EX	DE,HL
+	CALL	ZXPK64
+	EX	DE,HL
+	CALL	ZXPOKE
+	INC	HL
+	INC	DE
+	DJNZ	DEL1
+	LD	HL,ACTL
+	DEC	(HL)
+	LD	HL,CURP
+	DEC	(HL)
+	CALL	UPDLN		;UPDATE LINE
+	CALL	MOVXY
+	JP	INPUT
+;
+DELLAST:			;Delete last character
+	LD	HL,ACTL
+	DEC	(HL)
+	LD	HL,CURP
+	DEC	(HL)
+	CALL	UPDLN
+	CALL	MOVXY	
+	JP	INPUT
+;
+RDEL:	LD	A,(CURP)	;Delete right
+	LD	HL,ACTL
+	CP	(HL)
+	CALL	Z,CHIME
+	JP	Z,INPUT
+	CALL	GETPPOS
+	LD	D,H
+	LD	E,L
+	INC	DE		;HL=THIS CHARACTER
+	LD	A,(CURP)
+	LD	B,A
+	LD	A,(ACTL)
+	SUB	B		;No. of characters to swallow
+	DEC	A
+	JR	Z,RDEL2		;No characters need swallowing
+	LD	B,A
+RDEL1:	EX	DE,HL
+	CALL	ZXPK64	
+	EX	DE,HL
+	CALL	ZXPOKE
+	INC	HL
+	INC	DE
+	DJNZ	RDEL1
+RDEL2:	LD	HL,ACTL
+	DEC	(HL)
+	CALL	UPDLN		;UPDATE LINE
+	CALL	MOVXY
+	JP	INPUT
+;
+CUT:	CALL	DEL2E		;Delete line
+	JP	DEL2BOL
+;
+DEL2EOL:
+	CALL	DEL2E		;Delete to end of line
+	JP	INPUT
+;
+DEL2E:	CALL	GETPPOS
+	LD	A,(CURP)
+	LD	(ACTL),A
+	CALL	UPDLN
+	CALL	MOVXY
+	JP	INPUT
+;
+DEL2BOL:			;Delete to start of line
+	CALL	GETPPOS
+	LD	DE,(ZIBUF)
+	INC	DE
+	INC	DE
+	LD	A,(CURP)
+	LD	B,A
+	LD	A,(ACTL)
+	SUB	B
+	LD	C,0
+	LD	B,A		;B = no. of characters to move to start
+	OR	A
+	JR	Z,DEL4B
+DEL3B:	CALL	ZXPK64	
+	EX	DE,HL
+	CALL	ZXPOKE
+	EX	DE,HL
+	INC	HL
+	INC	DE
+	INC	C
+	DJNZ	DEL3B	
+DEL4B:	LD	A,C
+	LD	(ACTL),A
+	XOR	A
+	LD	(CURP),A
+	CALL	UPDLN
+	CALL	MOVXY
+	JP	INPUT
+;
+INPUTB:	LD	A,' '	;BREAK -> SPACE
+INPUT3:	CALL	INSCH	;Insert a simple character
+	CALL	UPDLN	
+	CALL	MOVXY
+	JP	INPUT
+;
+CHAR:	DEFB	0
+;
+INSCH:	LD	(CHAR),A	;INSERT A CHARACTER
+	LD	A,(ACTL)
+	LD	HL,MAXL
+	CP	(HL)		;IS LENGTH=MAXIMUM?
+	CALL	Z,CHIME		;IF YES, BLEEP; DISALLOW
+	RET	Z
+;
+	LD	HL,CURP
+	CP	(HL)		;IS THIS THE LAST CHARACTER?
+	JR	NZ,INSERT1	;SPECIAL CASE IF JUST ADDING THE LAST CHARACTER
+	CALL	GETLPOS
+	LD	A,(CHAR)
+	CALL	ZXPOKE
+	LD	A,(ACTL)
+	INC	A
+	LD	(ACTL),A
+	LD	(CURP),A
+	RET
+;
+INSERT1:
+	CALL	GETPPOS		;HL=CURRENT POSITION
+	CALL	ZXPK64		;Insert, and move up
+	LD	C,A
+	LD	A,(CURP)
+	LD	B,A
+	LD	A,(ACTL)
+	SUB	B
+	LD	B,A		;B = no. of chars to move up
+INSERT2:
+	CALL	ZXPK64
+	PUSH	AF
+	LD	A,C
+	CALL	ZXPOKE
+	POP	AF
+	LD	C,A
+	INC	HL
+	DJNZ	INSERT2
+	CALL	GETPPOS
+	LD	A,(CHAR)
+	CALL	ZXPOKE	 ;STORE NEW CHARACTER
+	LD	HL,CURP
+	INC	(HL)
+	LD	HL,ACTL
+	INC	(HL)
+	RET
+;
+GETPPOS:
+	PUSH	DE
+	LD	DE,(ZIBUF)
+	INC	DE
+	INC	DE
+	LD	HL,(CURP)
+	LD	H,0
+	ADD	HL,DE	;HL=CURSOR POS.
+	POP	DE
+	RET
+;
+MOVLT:	LD	A,(CURP)
+	OR	A
+	JP	Z,INPUT
+	DEC	A
+	LD	(CURP),A
+	CALL	MOVXY
+	JP	INPUT
+;
+MOVRT:	LD	A,(CURP)
+	LD	HL,ACTL
+	CP	(HL)
+	JP	Z,INPUT
+	INC	A
+	LD	(CURP),A
+	CALL	MOVXY
+	JP	INPUT
+;
+GETLPOS:
+	PUSH	DE
+	LD	DE,(ZIBUF)
+	INC	DE
+	INC	DE
+	LD	HL,(ACTL)
+	LD	H,0
+	ADD	HL,DE
+	POP	DE
+	RET
+;
+MOVXY:	CALL	PUSHA
+	LD	HL,(INPPOS)
+	LD	A,(CURP)
+	LD	DE,6
+MOVXL:	OR	A
+	JR	Z,MOVXL2
+	ADD	HL,DE
+	INC	A
+	JR	MOVXL
+
+MOVXL2:	LD	A,(CWIN)
+	OR	A
+	JR	NZ,MOVLX3
+	LD	(UWX),HL
+	JP	POPA
+;
+MOVLX3:	LD	(LWX),HL
+	JP	POPA
+;
+UPDLN:	CALL	PUSHA
+	LD	DE,(INPPOS)
+	LD	A,(CWIN)
+	OR	A
+	JR	Z,UPDL1
+	LD	(LWX),DE
+	JR	UPDL2
+;
+UPDL1:	LD	(UWX),DE
+UPDL2:	LD	HL,(ZIBUF)
+	INC	HL
+	INC	HL
+	LD	A,(ACTL)
+	OR	A
+	JR	Z,UPDLN3
+	LD	B,A
+UPDLN1:	CALL	ZXPK64
+	INC	HL
+	PUSH	HL
+	PUSH	DE
+	PUSH	BC
+	LD	L,A
+	CALL	scrchr
+	POP	BC
+	POP	DE
+	POP	HL
+	DJNZ	UPDLN1
+UPDLN3:	LD	A,(MAXL)
+	LD	HL,ACTL
+	SUB	(HL)		;A=UNUSED CHARS
+	OR	A
+	JP	Z,POPA
+	LD	B,A
+	LD	L,' '
+UPDLN4:	PUSH	HL
+	PUSH	BC
+	CALL	scrchr
+	POP	BC
+	POP	HL
+	DJNZ	UPDLN4
+	call	print_buf
+	JP	POPA
+;
+LINEOL:	LD	A,(CURP)
+	OR	A
+	JR	Z,EOL
+	XOR	A
+	LD	(CURP),A
+	CALL	MOVXY
+	JP	INPUT
+;
+EOL:	LD	A,(ACTL)
+	LD	(CURP),A
+	CALL	MOVXY
+	JP	INPUT
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+snd1:	scf
+chime:	call	pusha
+	ld	a,os_beep
+	call	ANNE
+	jp	popa
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Set text styles
+;
+styl1:	call	print_buf
+	ld	b,a
+	and	1
+	ld	(rev_v),a
+	ld	a,b
+	and	2
+	ld	(bold),a
+	ld	a,b
+	and	4
+	ld	(uline),a
+	ld	a,b
+	and	8
+	ld	(fixed),a
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Set split
+;
+swnd1:	ld	(tsplit),a
+	call	print_buf
+	ld	hl,0
+	ld	de,CHAR_H
+swndl:	or	a
+	jr	z,swnd1a
+	add	hl,de
+	dec	a
+	jr	nz,swndl
+;
+swnd1a:	ld	(lwtop),hl
+	call	res_more
+	ld	de,(yorg)
+	add	hl,de		;HL = dividing line. LWY must be >= this.
+	ld	d,h
+	ld	e,l		;DE = dividing line
+	ld	hl,(lwy)
+	and	a
+	sbc	hl,de		;Carry set if DE > HL (wrong)
+	jr	nc,swnd1b
+	ld	(lwy),de	
+swnd1b:	ld	hl,(uwy)
+	and	a
+	sbc	hl,de		;Carry set if DE > HL (correct)
+	ret	c
+	ld	hl,(yorg)
+	ld	(uwy),hl
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+swnd2:	call	print_buf
+	and	1
+	xor	1
+	ld	(cwin),a
+	scf
+	ret	nz
+	ld	hl,(xorg)
+	ld	(uwx),hl
+	ld	hl,(yorg)
+	ld	(uwy),hl
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Set cursor position
+;
+scur1:	call	print_buf
+
+;;; Debugging code	
+;;;	push	bc
+;;;	pop	hl
+;;;	ld	de,scxy
+;;;	call	sphex4	
+;;;	ld	de,scxy2
+;;;	call	sphex4	
+;;;	call	ilalert
+;;;	defb	'scur1: '
+;;;scxy:	defb	'0000 $'
+;;;	call	print_buf
+;;;	call	ilalert
+;;;	defb	'scur2: '
+;;;scxy2:	defb	'0000 $'
+
+	bit	7,c
+	jr	nz,cursw
+	dec	b
+	dec	c	;0-based
+	ld	a,c
+	cp	104
+	jr	c,scur1a
+	ld	a,103
+scur1a:	ld	hl,(xorg)
+	ld	de,CHAR_W	
+	or	a
+	jr	z,scur1c
+scur1b:	add	hl,de
+	dec	a
+	jr	nz,scur1b
+scur1c:	call	set_x
+	ld	a,(cwin)
+	or	a
+	jr	z,scur1e	;Setting cursor for upper window
+	ld	a,(tsplit)
+	add	a,b
+	cp	36
+	jr	c,scur1d
+	ld	a,35
+scur1d:	ld	b,a
+	ld	a,34
+	sub	b
+	ld	(scrls),a
+scur1e:	ld	a,b
+	ld	hl,(yorg)
+	ld	de,CHAR_H
+	or	a
+	jr	z,scur1g
+scur1f:	add	hl,de
+	dec	a
+	jr	nz,scur1f
+scur1g:	call	set_y
+	scf
+	ret
+;
+cursw:	cp	0ffh
+;;;	call	z,curoff
+;;;	call	nz,curon
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Set the cursor position in the upper or lower window
+;
+set_x:	push	af
+	ld	a,(cwin)
+	or	a
+	jr	z,setx1
+	ld	(lwx),hl
+	pop	af
+	ret
+;
+setx1:	ld	(uwx),hl
+	pop	af
+	ret
+;
+set_y:	push	af
+	ld	a,(cwin)
+	or	a
+	jr	z,sety1
+	ld	(lwy),hl
+	pop	af
+	ret
+;
+sety1:	ld	(uwy),hl
+	pop	af
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Convert a ZSCII character in E to a PCW16 character sequence
+;
+appendc:
+	ld	a,(TERPTYPE)
+	cp	6	;If we're pretending to be MS-DOS, no 
+	jr	z,appc1	;character translation at all (for the sake of
+	ld	a,e	;Beyond Zork).
+	cp	155	;Start of translation
+	jr	c,appc1
+	cp	223	;End of translation
+	jr	c,appc2
+	sub	64
+	jr	appc1
+
+appc2:	push	de
+	sub	155
+	ld	e,a
+	ld	hl,cxlt	;2-byte entry in the table for each character,
+	ld	d,0	
+	add	hl,de	;so add DE on twice
+	add	hl,de
+	ld	a,(hl)
+	ld	e,a
+	call	appc1	;Append 1st character
+	inc	hl
+	ld	a,(hl)
+	ld	e,a	;Is there a second character?
+	or	a
+	call	nz,appc1
+	pop	de
+	ret
+;
+appc1:	push	hl	;Append a single byte to the text buffer
+	ld	hl,(bufptr)
+	call	sanehl
+	ld	(hl),e
+	inc	hl
+	ld	(bufptr),hl
+	pop	hl
+	ret
+;
+;Translation of Z-machine characters to PCW16 characters.
+;
+;Each PCW16 character is, at most, a 2-byte sequence; so each pair of
+;bytes here corresponds to one Z-character. If the second byte of a pair
+;is 0, the PCW16 character is a single byte.
+;
+cxlt:	defb	0D2h,'a',0D2h,'o',0D2h,'u',0D2h,'A',0D2h,'O',0D2h,'U'	;Umlaut
+	defb	90h,0		;ss
+	defb	0AFh,0,0AEh,0	;<< >>
+	defb	0D2h,'e',0D2h,'i',0D2h,'y',0D2h,'E',0D2h,'I'		;Umlaut
+	defb	0D1h,'a',0D1h,'e',0D1h,'i',0D1h,'o',0D1h,'u',0D1h,'y'	;Acute
+	defb	0D1h,'A',0D1h,'E',0D1h,'I',0D1h,'O',0D1h,'U',0D1h,'Y'	;Acute
+        defb    0D0h,'a',0D0h,'e',0D0h,'i',0D0h,'o',0D0h,'u'		;Grave
+        defb    0D0h,'A',0D0h,'E',0D0h,'I',0D0h,'O',0D0h,'U'		;Grave
+        defb    0D6h,'a',0D6h,'e',0D6h,'i',0D6h,'o',0D6h,'u'		;Circ.
+        defb    0D6h,'A',0D6h,'E',0D6h,'I',0D6h,'O',0D6h,'U'		;Circ.
+	defb	0D5h,'a',0D5h,'A',09Bh, 0, 09Dh, 0			;Ring
+	defb	0D3h,'a',0D3h,'n',0D3h,'o',0D3h,'A',0D3h,'N',0D3h,'O'	;Tilde
+	defb	092h, 0, 091h, 0, 0DEh,'c',0DEh,'C'	;Ligature & cedilla
+	defb	't', 'h', 't','h', 'T','h', 'T','h'	;Thorn & eth
+	defb	09Ch, 0, 094h, 0, 093h, 0, 0ADh, 0, 0A8h,0	;Pound etc.
+

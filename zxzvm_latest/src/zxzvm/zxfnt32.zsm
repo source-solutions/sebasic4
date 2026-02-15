@@ -1,0 +1,5 @@
+	org	6D04h
+
+	; Font for 32-character set (any standard Speccy font will do)
+	incbin	zxfont32.bin
+

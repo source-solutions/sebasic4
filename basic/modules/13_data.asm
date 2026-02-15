@@ -233,27 +233,27 @@ attributes:
 
 ;	// used in 16_audio
 
-play_ttab:
+;play_ttab:
 ;	defb "<>XZHMSVNT][LO'";				// 15 characters
-	defb "<>XZHMSVT][LO'";				// 14 characters
-	ttab_chars equ 14;					// used by lookup
+;	defb "<>XZHMSVT][LO'";				// 14 characters
+;	ttab_chars equ 14;					// used by lookup
 
-play_tab:
-	defw play_other;					// 
-	defw play_comment;					// '
-	defw play_octave;					// O
-	defw play_scan;						// L
-	defw play_rep;						// [
-	defw play_rep_end;					// ]
-	defw play_tempo;					// T
-	defw play_volume;					// V
-	defw play_envelope;					// S
-	defw play_envdur;					// M
-	defw play_midi_chan;				// H
-	defw play_z;						// Z
-	defw play_ret;						// X
-	defw play_oct_inc;					// >
-	defw play_oct_dec;					// <
+;play_tab:
+;	defw play_other;					// 
+;	defw play_comment;					// '
+;	defw play_octave;					// O
+;	defw play_scan;						// L
+;	defw play_rep;						// [
+;	defw play_rep_end;					// ]
+;	defw play_tempo;					// T
+;	defw play_volume;					// V
+;	defw play_envelope;					// S
+;	defw play_envdur;					// M
+;	defw play_midi_chan;				// H
+;	defw play_z;						// Z
+;	defw play_ret;						// X
+;	defw play_oct_inc;					// >
+;	defw play_oct_dec;					// <
 
 ;	// used in 10_expression
 tbl_ops_priors:
@@ -350,45 +350,45 @@ init_chan:
 	defb end_marker;					// no more channels
 
 ;	// pseudo tokens
-tk_ptr_atn:
-	str "ATN("
-tk_ptr_colour:
-	str "COLOUR"
-tk_ptr_hex_str:
-	str "HEX$("
-tk_ptr_oct_str:
-	str "OCT$("
-tk_ptr_space_str:
-	str "SPACE$("
-tk_ptr_tron:
-	str "TRON"
-tk_ptr_troff:
-	str "TROFF"
-tk_ptr_ne:
-	str "><"
-tk_ptr_le:
-	str "=<"
-tk_ptr_ge:
-	str "=>"
-tk_ptr_hex:
-	str "&H"
-tk_ptr_oct:
-	str "&O"
+; tk_ptr_atn:
+; 	str "ATN("
+; tk_ptr_colour:
+; 	str "COLOUR"
+; tk_ptr_hex_str:
+; 	str "HEX$("
+; tk_ptr_oct_str:
+; 	str "OCT$("
+; tk_ptr_space_str:
+; 	str "SPACE$("
+; tk_ptr_tron:
+; 	str "TRON"
+; tk_ptr_troff:
+; 	str "TROFF"
+; tk_ptr_ne:
+; 	str "><"
+; tk_ptr_le:
+; 	str "=<"
+; tk_ptr_ge:
+; 	str "=>"
+; tk_ptr_hex:
+; 	str "&H"
+; tk_ptr_oct:
+; 	str "&O"
 
 ;	// FIXME, add shortcut for disk command CD (and perhaps others)
 
 ;	// substitute characters
-sbst_chr_tbl:
-	defb '[', '(';						// (
-	defb ']', ')';						// )
-	defb '?', tk_print;					// PRINT
-	defb '&', tk_and;					// AND
-	defb '~', tk_not;					// NOT
-	defb '|', tk_or;					// OR
-	defb 0;								// null end marker
+; sbst_chr_tbl:
+; 	defb '[', '(';						// (
+; 	defb ']', ')';						// )
+; 	defb '?', tk_print;					// PRINT
+; 	defb '&', tk_and;					// AND
+; 	defb '~', tk_not;					// NOT
+; 	defb '|', tk_or;					// OR
+; 	defb 0;								// null end marker
 
-;	// 2 unused bytes
-	defs 2, $ff;						// reserved to modify copyright message
+; ;	// 2 unused bytes
+; 	defs 2, $ff;						// reserved to modify copyright message
 
 ;	// copyright message
 ifndef slam
@@ -405,9 +405,11 @@ copyright:
 endif
 
 	defb ctrl_cr;
-	defb "SE BASIC 4.2.0 (GPL-3.0 License)", ctrl_cr;
-	defb "Copyright (C) 2024 Source Solutions Inc.", ctrl_cr;
-;	timestamp 'YY-MM-DD h:m';			// RASM directive
+	defb "SE BASIC 4.3.0 build "
+	timestamp 'YYMMDD-hm';			// RASM directive
+	defb ctrl_cr,
+;	defb "SE BASIC IV 4.3.0 (GPL-3.0 License)", ctrl_cr;
+    defb "Copyright (C) 2026 Source Solutions Inc.", ctrl_cr;
 	defb ctrl_cr, 0;
 
 bytes_free:
@@ -1106,7 +1108,7 @@ p_palette:
 
 p_play:
 	defb var_syn;
-	defw c_play;
+	defw c_rem;
 
 p_plot:
 	defb two_c_s_num_no_f_ops;
@@ -1166,7 +1168,7 @@ p_seek:
 
 p_sound:
 	defb two_c_s_num_no_f_ops;
-	defw c_sound;
+	defw c_rem;
 
 p_stop:
 	defb no_f_ops;

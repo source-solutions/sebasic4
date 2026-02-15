@@ -94,95 +94,95 @@ tokenizer_3:
 	pop de;								// position to DE
 
 ;	// trim spaces (should only be used with a fast CPU)
-ifndef slam
-	push hl;							// stack pointer
+;ifndef slam
+;	push hl;							// stack pointer
+;
+;trim_spaces:
+;	ld a, (hl);							// get character
+;
+;trim_spaces_1:
+;	inc hl;								// next character
+;	cp ctrl_cr;							// carraige return?
+;	jr z, trim_done;					// jump if so
+;	cp '"';								// opening quote?
+;	jr nz, not_quote;					// jump if not
+;	dec hl;								// current character
+;
+;loop_quote:
+;	inc hl;								// next character
+;	ld a, (hl);							// get next character
+;	cp ctrl_cr;							// carraige return?
+;	jr z, trim_done;					// jump if so
+;	cp '"';								// closing quote?
+;	jr nz, loop_quote;					// loop until done
 
-trim_spaces:
-	ld a, (hl);							// get character
+;not_quote:
+;	cp ' ';								// space?
+;	jr nz, trim_spaces;					// jump if not
+;	ld a, (hl);							// get next character
+;	cp ' ';								// space?
+;	jr nz, trim_spaces_1;				// loop if not
+;	call ed_backspace;					// remove second space;
+;	dec hl;								// previous character
+;	jr trim_spaces;						// loop
 
-trim_spaces_1:
-	inc hl;								// next character
-	cp ctrl_cr;							// carraige return?
-	jr z, trim_done;					// jump if so
-	cp '"';								// opening quote?
-	jr nz, not_quote;					// jump if not
-	dec hl;								// current character
-
-loop_quote:
-	inc hl;								// next character
-	ld a, (hl);							// get next character
-	cp ctrl_cr;							// carraige return?
-	jr z, trim_done;					// jump if so
-	cp '"';								// closing quote?
-	jr nz, loop_quote;					// loop until done
-
-not_quote:
-	cp ' ';								// space?
-	jr nz, trim_spaces;					// jump if not
-	ld a, (hl);							// get next character
-	cp ' ';								// space?
-	jr nz, trim_spaces_1;				// loop if not
-	call ed_backspace;					// remove second space;
-	dec hl;								// previous character
-	jr trim_spaces;						// loop
-
-trim_done:
-	pop hl;								// restore pointer
-endif
+;trim_done:
+;	pop hl;								// restore pointer
+;endif
 
 tokenizer_4:
 	ld a, (hl);							// get character
 	bit 0, c;							// in quotes?
-	jp nz, in_q;						// jump if so
+;	jp nz, in_q;						// jump if so
 
-sbst_lookup:
-	ld (mem_5_1), hl;					// store position
+;sbst_lookup:
+;	ld (mem_5_1), hl;					// store position
 
 ;	// pre-process ampersand (should only be used with fast CPU)
-ifndef slam
-	call hex;							// check for &H
-	call oct;							// check for &O
-endif
+;ifndef slam
+;	call hex;							// check for &H
+;	call oct;							// check for &O
+;endif
 
-	ld b, a;							// store code point
-	ld hl, sbst_chr_tbl;				// address table
+;	ld b, a;							// store code point
+;	ld hl, sbst_chr_tbl;				// address table
 
-sbst_lk_loop:
-	ld a, (hl);							// code in table
-	and a;								// null terminator?
-	jr z, sbst_not_found;				// jump if so
-	inc hl;								// advance
-	inc hl;								// pointer
-	cp b;								// match?
-	jr nz, sbst_lk_loop;				// loop until done
-	dec hl;								// back one position
-	ld a, (hl);							// get substitute value;
-	ld hl, (mem_5_1);					// restore HL
-	ld (hl), a;							// substitute value
-	inc hl;								// next character
-	jr tokenizer_4;						// immediate jump
+;sbst_lk_loop:
+;	ld a, (hl);							// code in table
+;	and a;								// null terminator?
+;	jr z, sbst_not_found;				// jump if so
+;	inc hl;								// advance
+;	inc hl;								// pointer
+;	cp b;								// match?
+;	jr nz, sbst_lk_loop;				// loop until done
+;	dec hl;								// back one position
+;	ld a, (hl);							// get substitute value;
+;	ld hl, (mem_5_1);					// restore HL
+;	ld (hl), a;							// substitute value
+;	inc hl;								// next character
+;	jr tokenizer_4;						// immediate jump
 
-sbst_not_found:
-	ld hl, (mem_5_1);					// restore HL
-	ld a, (hl);							// restore character
+;sbst_not_found:
+;	ld hl, (mem_5_1);					// restore HL
+;	ld a, (hl);							// restore character
 
 ;	//pre-processor tasks (should only be used with a fast CPU)
-ifndef slam
-	call atn;							// check for ATN()
-	call colon_else;					// check for ELSE without leading colon
-	call colour;						// check for British spelling
-	call fn_alpha;						// check for FN without trailing space
-	call hex_str;						// check for HEX$()
-	call oct_str;						// check for OCT$()
-	call rnd_param;						// check for RND with trailing parameter
-	call space_str;						// check for SPACE$(n)
-	call then_number;					// check for THEN followed by a number
-	call troff;							// check for TROFF
-	call tron;							// check for TRON
-	call sbst_ne;						// check for ><
-	call sbst_le;						// check for =<
-	call sbst_ge;						// check for =>
-endif
+;ifndef slam
+;	call atn;							// check for ATN()
+;	call colon_else;					// check for ELSE without leading colon
+;	call colour;						// check for British spelling
+;	call fn_alpha;						// check for FN without trailing space
+;	call hex_str;						// check for HEX$()
+;	call oct_str;						// check for OCT$()
+;	call rnd_param;						// check for RND with trailing parameter
+;	call space_str;						// check for SPACE$(n)
+;	call then_number;					// check for THEN followed by a number
+;	call troff;							// check for TROFF
+;	call tron;							// check for TRON
+;	call sbst_ne;						// check for ><
+;	call sbst_le;						// check for =<
+;	call sbst_ge;						// check for =>
+;endif
 
 in_q:
 	cp "'";								// substitute REM token?

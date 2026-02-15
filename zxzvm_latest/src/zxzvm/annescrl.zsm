@@ -1,0 +1,116 @@
+;    ZXZVM: Z-Code interpreter for the Z80 processor
+;    Copyright (C) 1998-9,2006,2016  John Elliott <seasip.webmaster@gmail.com>
+;
+;    This program is free software; you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation; either version 2 of the License, or
+;    (at your option) any later version.
+;
+;    This program is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with this program; if not, write to the Free Software
+;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+;
+; << v0.03
+;
+;PCW16 fast scrolling
+;
+;NOTE: This makes certain assumptions about the PCW16's screen layout; in
+;particular, that its screen is laid out in memory banks 81h, 82h and 83h
+;one line at a time. As far as I can tell from examining the roller RAM, this
+;appears to be its normal state.
+;
+;To have all these memory banks paged in at once requires the code to be 
+;located in the bottom quarter, so I'm using 2F00h for it.
+;
+SCRCODE	equ	2F00h
+
+
+init_scrl:
+	ld	hl,scrlc
+	ld	bc,scrle-scrlc
+	ld	de,SCRCODE
+	ldir
+	ret
+;
+scrlc:
+;
+;This code will be executed at 2F00h. In the absence of a .PHASE directive,
+;do this by not using absolute calls, jumps or memory references. In fact,
+;since the scrolling parameters should have been calculated in advance,
+;just put the LDIR in here...
+;
+	call	bgetram1
+	push	af
+	call	bgetram2
+	push	af
+	call	bgetram3
+	push	af
+	ld	a,81h
+	call	bsetram1
+	ld	a,82h
+	call	bsetram2
+	ld	a,83h
+	call	bsetram3
+	ldir
+	pop	af
+	call	bsetram3
+	pop	af
+	call	bsetram2
+	pop	af
+	call	bsetram1
+	ret
+scrle:
+;
+;Entered with s_yorg = 1st line to scroll
+;             s_h    = no. of lines to scroll
+;             CHAR_H = gap
+scrl_fast:
+	ld	a,(SCRCODE)
+	cp	0CDh		;Start of scrolling code?
+	jp	nz,scrl_slow
+	ld	hl,(s_h)	;No. of lines
+	ld	bc,CHAR_H
+	and	a		;
+	sbc	hl,bc	
+	xor	a		;Don't add screen base
+	call	mult80
+	ld	b,h
+	ld	c,l		;BC = no. of bytes
+
+	ld	a,1		;Add screen base
+	ld	hl,(s_yorg)
+	call	mult80		;Destination for scrolling lines
+	ex	de,hl		;DE = dest
+	ld	hl,CHAR_H * 80
+	add	hl,de		;HL = source
+	rst	10h
+	defw	SCRCODE	
+	ret
+;
+mult80:	push	de
+	ld	d,h
+	ld	e,l	;DE = original
+	add	hl,hl	;*2
+	add	hl,hl	;*4
+	add	hl,de	;*5
+	add	hl,hl	;*10
+	add	hl,hl	;*20
+	add	hl,hl	;*40
+	add	hl,hl	;*80
+	or	a	;Add 16k?
+	jr	z,mult81
+	ld	de,4000h
+	add	hl,de	;+ screen base
+mult81:	pop	de
+	ret
+;
+scrl_slow:
+	ld	hl,scrlb
+	jp	gfxop
+;

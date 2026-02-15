@@ -1,0 +1,105 @@
+;    ZXZVM: Z-Code interpreter for the Z80 processor
+;    Copyright (C) 1998-9,2006,2016  John Elliott <seasip.webmaster@gmail.com>
+;
+;    This program is free software; you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation; either version 2 of the License, or
+;    (at your option) any later version.
+;
+;    This program is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with this program; if not, write to the Free Software
+;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Diagnostic code for the PCW16
+;
+;Print the hexadecimal values of AF, BC, DE and HL
+;
+hexreg:	ld	(dsp),bc
+	ld	(dsp+2),de
+	ld	(dsp+4),hl
+	call	pusha
+	push	af
+	ld	a,' '
+	jr	nc,hexr1
+	ld	a,'c'
+hexr1:	ld	(rbufcy),a
+	ld	a,' '
+	jr	nz,hexr2
+	ld	a,'z'
+hexr2:	ld	(rbufz),a
+	pop	hl
+	ld	de,rbufaf
+	call	sphex4
+	ld	hl,(dsp)
+	ld	de,rbufbc
+	call	sphex4
+	ld	hl,(dsp+2)
+	ld	de,rbufde
+	call	sphex4
+	ld	hl,(dsp+4)
+	ld	de,rbufhl
+	call	sphex4
+	ld	hl,rbuf	
+	call	do_alert
+	jp	popa
+;
+dumphl:	call	pusha	;Dump 16 bytes of memory at HL.
+	ld	de,dbuf
+	ld	b,16
+diag1:	ld	a,(hl)
+	push	hl
+	push	de
+	push	bc
+	call	sphex2
+	pop	bc
+	pop	de
+	pop	hl
+	inc	hl
+	inc	de
+	inc	de
+	djnz	diag1
+	ld	hl,dbuf
+	call	do_alert
+	jp	popa
+;
+dsp:	defw	0,0,0,0
+dbuf:	defs	34
+rbuf:	defb	'HL='
+rbufhl:	defb	'0000DE='
+rbufde:	defb	'0000BC='
+rbufbc:	defb	'0000AF='
+rbufaf:	defb	'0000'
+rbufcy:	defb	'c'
+rbufz:	defb	'z'
+	defb	0A0h
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Sanity checks...
+;
+sanehl:	push	af
+	ld	a,h
+	and	0C0h
+	cp	40h
+	jp	nz,insane
+	pop	af
+	ret
+;
+sanede:	ex	de,hl
+	call	sanehl
+	ex	de,hl
+	ret
+;
+insane: ld      hl,ins$
+        jp      diewith
+;
+ins$:   defb    'Sanity check failed', 0A1h
+
+
+

@@ -1,0 +1,838 @@
+;    ZXZVM: Z-Code interpreter for the Z80 processor
+;    Copyright (C) 1998-9,2006,2016  John Elliott <seasip.webmaster@gmail.com>
+;
+;    This program is free software; you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation; either version 2 of the License, or
+;    (at your option) any later version.
+;
+;    This program is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with this program; if not, write to the Free Software
+;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+	include	in_zxzvm.inc
+;
+; Spectrum I/O module. It should be possible to port ZXZVM to other 128k 
+;Spectrum systems by tinkering with this module.
+;
+
+;
+;Spectrum system variables:
+;
+CHARS	EQU	5C36h	;Character set address
+ERRNO	EQU	5C3Ah	;Spectrum BASIC error number
+ERRSP	EQU	5C3Dh	;Spectrum BASIC error stack pointer
+ATTR_P	EQU	5C8Dh	;Current screen colours set by BASIC
+BORDCR	EQU	5C48h	;Border colour
+RAMTOP  EQU     5CB2H	;Top of BASIC's memory (bottom of ZXZVM)
+;
+;Graphics characters used by the 64-column printing system
+;
+GTLC    EQU     142     ;Top left corner
+GTRC    EQU     130     ;Top right corner
+GBLC    EQU     133     ;Bottom left corner
+GBRC    EQU     134     ;Bottom right corner
+GTL     EQU     129     ;Top line
+GBL     EQU     135     ;Bottom line
+GLL     EQU     131     ;Left side
+GRL     EQU     132     ;Right side
+GLJ     EQU     136     ;Left side /internal line junction
+GRJ     EQU     137     ;Right side/internal line junction
+GIL     EQU     138     ;Internal line
+;
+;Cursor keys
+;
+LA      EQU     8       ;<-
+RA      EQU     9       ;->
+UA      EQU     11      ;^
+DA      EQU     10      ;DOWN ARROW
+;
+CR      EQU     0DH
+LF      EQU     0AH
+;
+
+;
+;Jump block for functions. 
+;
+	jp	init1	;Initialise, load story file
+	jp	exit1	;Deinitialise
+	jp	cls1	;Clear screen
+	jp	peek1	;Read byte from Z-machine memory
+	jp	poke1	;Write byte to Z-machine memory
+	jp	peek64	;Read byte from low 64k
+	jp	peekw	;Read word from Z-machine memory
+	jp	ipeekw	;Read word with auto increment
+	jp	fdos1	;CP/M-like I/O functions
+	jp	ihdr1	;Initialise the header
+	jp	tmem1	;Get top of available host memory
+	jp	eraw1	;Erase window
+	jp	zchr1	;Output a ZSCII letter in HL.
+	jp	swnd1	;Split window
+	jp	swnd2	;Select window
+	jp	styl1	;Set text style
+	jp	scur1	;Set cursor position
+	jp	LINEINP	;Line input
+	jp	RCHAR	;Read character
+	jp	scol1	;Set colours
+	jp	sfnt1	;Set font
+	jp	rndi1	;Get randomish number (eg, the computer's clock)
+	jp	getx1	;Get cursor X position
+	jp	gety1	;Get cursor Y position
+	jp	strm1	;Open or close stream in A
+	jp	eral1	;Erase to EOL
+	jp	snd1	;Make a sound
+	jp	rst1	;Restart
+	jp	gname	;Get filename
+	jp	p3opn	;Open file
+	jp	p3clse	;Close file
+	jp	p3read	;Read bytes
+	jp	p3write	;Write bytes
+	jp	p3rmem	;Read z-machine memory
+	jp	p3wmem	;Write z-machine memory
+	jp	p3vrfy	;Verify the game file
+			;<< v0.02
+	jp	bfit1	;Check if word in buffer will fit on screen.
+	ret	
+	nop
+	nop		;Relinquish the CPU, or rather don't.
+	jp	yes_i_live
+	ld	a,VMVER	;Return version
+	ret
+	ret		;Update the screen. Not necessary.
+	nop
+	nop	
+			;>> v0.02
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;
+;Restart
+;
+rst1:	ld	hl,10h	;Flags 2 is preserved through a restart
+	call	ZXPK64
+	ld	b,a
+	inc	hl
+	call	ZXPK64
+	ld	c,a
+	push	bc
+	ld	de,rest$
+	call	print
+	call	st_reload
+	pop	bc
+	ret	nc
+	ld	hl,10h
+	ld	a,b	;Restore Flags 2
+	call	ZXPOKE	
+	inc	hl
+	ld	a,c
+	call	ZXPOKE
+	call	erall
+	ld	a,1
+	ld	(cfont),a
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+cls1:	ld	a,7
+	call	selmem	
+	ld	hl,SCRADDR	;Clear the screen bitmap	
+	ld	d,h
+	ld	e,l
+	inc	de
+	ld	bc,17ffh
+	ld	(hl),l
+	ldir
+	inc	hl
+	inc	de
+	jr	clattr1
+;
+;Clear colours only
+;
+clattr:	ld	a,7
+	call	selmem
+	ld	hl,SCRADDR+1800h
+	ld	d,h
+	ld	e,l
+	inc	de
+clattr1:
+	ld	bc,2FFh
+	ld	a,(ATTR_P)
+	ld	(hl),a
+	ldir
+	rrca
+	rrca
+	rrca
+	and	7
+	out	(254),a
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Set screen colours
+;
+;Since this I/O model does not support colour (Spectrum colour clash
+;means the lines of text don't match the colours) this is disabled
+;pro tem. What it would normally do is set colours for the whole
+;screen...
+;
+scol1:	scf
+	ret
+;
+ibm2zx:	defb	0,2,4,6,1,3,5,7
+zx2ibm:	defb	0,4,1,6,2,3,5,7
+def_fg:	defb	0	;Default FG
+def_bg:	defb	0	;Default BG
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;<< v0.02
+;Work out whether a word will fit on the line. Since the +3 uses a
+;fixed-pitch font, we don't need to bother with what the text
+;actually says, only with its length. B=no. of letters and C=no. of
+;spaces. Return 0 to print everything, 1 to print letters only, 2
+;to print carriage return and then everything.
+;
+bfit1:	call    ZXGETX  ;H = amount of space on the line
+	ld	d,0	;D = value to return.
+        ld      a,c
+        add     a,b     ;A = total chars in line
+        cp      h
+	ld	a,d
+        ret	c	;The whole lot will fit.
+	scf
+	ret	z	;The whole lot will fit, but will cause a wrap.
+;
+;See if the word will fit.
+;
+	inc	d	;D is now 1
+        ld      a,b
+        cp      h
+	ld	a,d
+	ret	c	;Letters only will fit
+	scf
+	ret	z	;The whole lot will fit, but will cause a wrap.
+	inc	a	;Nothing will fit, return 2.
+	scf
+	ret
+;
+;>> v0.02
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Get X position in L, chars left in H, total screen width in A
+;
+getx1:	ld	hl,(uwx)	;<< v0.04 use UWX/LWX, not XPOS.
+	ld	a,(cwin)
+	or	a
+	jr	z,getx2
+	ld	hl,(lwx)
+getx2:	ld	a,(win_wc)	;>> v0.04
+	sub	l
+	ld	h,a
+	ld	a,(win_wc)
+	scf
+	ret
+;
+;Get Y position in L
+;
+gety1:	ld	hl,(uwx)
+	ld	a,(cwin)
+	or	a
+	jr	z,gety2
+	ld	hl,(lwx)
+gety2:	ld	l,h
+	ld	h,0
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+eral1:	ld	hl,(xpos)
+	push	hl
+	ld	a,(hvf)
+	push	af
+	ld	a,(ulf)
+	push	af
+	xor	a
+	ld	(hvf),a
+	ld	hl,(uwx)
+	ld	a,(cwin)
+	or	a
+	jr	z,eral2
+	ld	hl,(lwx)
+eral2:	ld	(xpos),hl
+	ld	a,(win_wc)
+	dec	a
+	sub	l
+	jr	z,eral9
+	ld	b,a
+eral3:	ld	e,' '
+	call	opchar
+	djnz	eral3
+eral9:	pop	af
+	ld	(ulf),a
+	pop	af
+	ld	(hvf),a
+	pop	hl
+	ld	(xpos),hl
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Set font. The Spectrum uses only one font, but it serves as no.1 
+;or no. 4
+;
+sfnt1:	cp	1		;Font is not valid
+	jr	z,sfnt2
+	cp	3
+	jr	z,sfnt2
+	cp	4
+	jr	z,sfnt2
+	xor	a
+	ret
+;
+sfnt2:	ld	hl,(cfont)	;Font is valid
+	ld	(cfont),a
+	ld	a,l
+	ret
+;
+cfont:	defb	0
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Set output stream
+;
+strm1:	cp	2	;Open a transcript
+	jp	z,ts_open
+	cp	0FEh	;Close a transcript
+	jp	z,ts_close
+	scf	
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;A Spectrum clone of CP/M's BDOS functions dealing with console I/O
+;These functions are mainly intended for diagnostic code
+;
+fdos1:	ld	a,c
+	cp	1
+	jr	z,ichr1
+	cp	2
+	jr	z,opc1
+	cp	6
+	jr	z,dcio1
+	cp	9
+	jr	z,print1
+	ld	a,c
+	ld	de,badfun
+	call	sphex2	;Write function number into error message
+	ld	hl,unimpl
+	xor	a
+	ret
+;
+ichr1:	call	con6	;1. Input character with echo
+	or	a
+	jr	z,ichr1
+	ld	e,a
+opc1:	call	opchar	;2. Output character
+	scf
+	ret
+;
+dcio1:	ld	a,e	;6. Direct console input/output
+	cp	0FDh
+	jr	c,opc1
+	jr	z,ichr2	;6/FD: Input character, no echo
+	cp	0FEh
+	jr	z,pkbd1	;6/FE: Poll keyboard, return 1 if char waiting
+	call	con6
+	scf		;6/FF: Poll keyboard, return char if char waiting
+	ret
+;
+pkbd1:	call	con6	;6/FE
+	or	a
+	scf
+	ret	z
+	ld	a,1
+	ret
+;
+ichr2:	call	con6	;6.FD
+	or	a
+	jr	z,ichr2
+	scf
+	ret
+;	
+print1:	ld	a,1
+	ld	(wrap),a
+print2:
+	ld	a,(de)
+	cp	'$'
+	jr	z,endpr
+	ld	l,a
+	ld	h,0
+	push	de
+	cp	0Ah
+	call	nz,out1
+	pop	de
+	inc	de
+	jr	print2
+
+;	call	print	;9. Print $-terminated string
+endpr:	xor	a
+	ld	(wrap),a
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+ihdr1:
+;
+;Page in header and access it directly.
+;
+	call	headerin
+	ld	a,(HDRADDR+0)	;Z-machine version
+	ld	(zver),a
+	ld	de,zvbuf
+	ld	l,a
+	ld	h,0		;Create the "invalid version" error
+	call	spdec3
+	ex	de,hl
+	dec	hl
+	set	7,(hl)		; terminate message
+	ld	hl,zvbad
+	ld	a,(zver)
+	cp	3		;<< v0.04 allow v3 games
+	jr	z,okver		;<< v0.04
+	cp	4		;<< v1.10 allow v4 games
+	jr	z,okver		;>> v1.10
+	cp	8
+	jr	z,okver
+	cp	5
+	jr	nz,ihdr8
+;
+;Version is acceptable
+;
+;nb: the Z-machine is big-endian, but the Spectrum is little-endian. So 
+;   the LSB of a word will be in H.
+;
+okver:	cp	4		;v3 flags or v4 flags?
+	ld	hl,(HDRADDR+1)	;Flags 1
+	ld	a,l
+	jr	nc,v4flag
+	and	09Fh		;Reset bits 5,6
+	jr	cflag
+
+v4flag: and	0FAh		;Reset bits 0,2 (ignore V6-specific bits)
+	or	98h		;Set bits 7,3 & 4
+cflag:	ld	l,a
+	ld	(HDRADDR+1),hl
+	ld	hl,(HDRADDR+10h)	;Flags 2
+	ld	a,h
+	and	43h		;No pictures, no mouse, no UNDO, no sound
+	ld	h,a
+	res	0,l		;"Menus" bit
+	ld	(HDRADDR+10h),hl
+	ld	hl,scrset5
+	ld	de,HDRADDR+20h
+	ld	bc,8
+	ldir
+
+	ld	a,(ATTR_P)
+	push	af
+	and	7	;Current ink
+	ld	hl,zx2ibm
+	call	xlat
+	ld	a,(hl)
+	ld	(HDRADDR+2Dh),a
+	ld	(def_fg),a
+	pop	af
+	rrca
+	rrca
+	rrca		;Current paper
+	and	7
+	ld	hl,zx2ibm
+	call	xlat
+	ld	(HDRADDR+2Ch),a
+	ld	(def_bg),a	
+
+	scf
+	defb	0Eh	;LD C, which will swallow the AND A
+ihdr8:	and	a
+ihdr9:	push	af
+	call	headerout
+	pop	af
+	ret
+
+;Screen settings for a v5 game (32 or 64 character typeset)
+;
+scrset5:			; copied from one of the two below
+win_hc:		defb	0	; window height in chars
+win_wc:		defb	0	; window width in chars
+win_wu:		defb	0,0	; window width in units
+win_hu:		defb	0,0	; window height in units
+win_cwu:	defb	0	; character width in units
+win_chu:	defb	0	; character height in units
+;
+; -- below this line settings are not used by Z-code, only by the I/O 
+;   wrapper --
+;
+win_ftype:	defb	0	; 0=64-character set, 1=32-character set
+win_cw:		defb	0	; character width in pixels
+win_ch:		defb	0	; character height in pixels
+win_hp:		defb	0	; window height in pixels
+;
+; << 1.11: Do not specify pixel sizes; they upset Beyond Zork, because
+;   it tries to position text using pixel coordinates. 
+;
+set532:
+		defb	24	; window height in chars
+		defb	32	; window width in chars
+		defb	0,32	; window width in units
+		defb	0,24	; window height in units
+		defb	1	; character width in units
+		defb	1	; character height in units
+		defb	1	; 0=64-character set, 1=32-character set
+		defb	8,8	; character dimensions
+		defb	192	; window height in pixels
+;
+set564:
+		defb	32	; window height in chars
+		defb	64	; window width in chars
+		defb	0,64	; window width in units
+		defb	0,32	; window height in units
+		defb	1	; character width in units
+		defb	1	; character height in units
+		defb	0	; 0=64-character set, 1=32-character set
+		defb	4,6	; character dimensions
+		defb	192	; window height in pixels
+;
+; >> 1.11
+;
+;Translate A -> HL[A]
+;
+xlat:	push	hl
+xlat1:	or	a
+	jr	z,xlat2
+	inc	hl
+	dec	a
+	jr	xlat1
+;
+xlat2:	ld	a,(hl)
+	pop	hl
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+rndi1:	ld	de,(frames)
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+eraw1:	cp	0FFh		;Erase screen?
+	jr	z,erall
+	cp	0FEh
+	jp	z,cls1	
+	or	a
+	jr	z,erabot
+	dec	a
+	jr	z,eratop
+erawi:	ld	hl,badera
+	xor	a
+	ret
+;
+eratop:	ld	a,7	;<< v1.02
+	call	SELMEM	;>> v1.02
+	ld	a,(lwtop)
+	ld	c,a
+	ld	b,0
+	jr	erablk
+;
+erabot:	ld	a,7	;<< v1.02
+	call	SELMEM	;>> v1.02
+	ld	a,(win_hc)
+	ld	c,a
+	ld	a,(lwtop)
+	ld	b,a
+	jr	erablk
+;
+erall:	call	ZXCLS
+	ld	a,6
+	call	selmem
+	ld	a,(win_hc)
+	dec	a
+	ld	(scrls),a
+	xor	a
+	ld	(lwtop),a
+	ld	(lwx),a
+	ld	(lwy),a
+	ld	(uwx),a
+	ld	(uwy),a
+	ld	(XPOS),a
+	ld	(YPOS),a
+	ld	a,1
+	ld	(cwin),a
+	ld	a,(zver)
+	cp	5
+	jr	nc,erall1
+	ld	a,(win_hc)
+	dec	a
+	ld	(lwy),a
+erall1:	scf
+	ret
+;
+erablk:	call	zapln
+	inc	b
+	ld	a,b
+	cp	c
+	jr	c,erablk
+        ld      a,6		;<< v1.02
+        call    selmem		;>> v1.02
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+scrls:	defb	1	;Number of scrolls to [MORE] prompt
+lwtop:	defb	0	;Top line of lower window
+lwx:	defb	0	;Lower window X,Y
+lwy:	defb	0
+uwx:	defb	0	;Upper window X,Y
+uwy:	defb	0
+cwin:	defb	1	;1 = lower
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+zchr1:	cp	1
+	jr	z,out1
+	cp	2
+	jp	z,ts_char	;Output to transcript
+	scf
+	ret	
+
+out1:	ld	a,l	;Output to stream 1 (screen)
+	cp	0dh
+	jr	nz,zchr2
+;
+; << v1.11 Swallow a LF immediately after an automatic wrap. This should allow
+; us to print right up to the edge of a page without vertical gaps appearing.
+;
+	ld	a,(wrapped)
+	or	a
+	jr	z,out1a
+	xor	a
+	ld	(wrapped),a
+	scf
+	ret
+;
+; >> v1.11
+;
+out1a:	ld	a,(cwin)
+	or	a
+	jr	z,ulf
+	jr	llf
+
+zchr2:	xor	a
+	ld	(wrapped),a
+	ld	a,(cwin)
+	or	a
+	ld	de,(uwx)
+	jr	z,pchr1
+	ld	de,(lwx)
+pchr1:	call	prinat
+	ld	e,l
+	call	opchar
+	ld	a,(cwin)
+	or	a
+	jr	z,stepcu
+	ld	a,(win_wc)
+	ld	l,a
+	ld	a,(lwx)
+	inc	a
+	ld	(lwx),a
+	cp	l
+	ret	c
+llf:	xor	a
+	ld	(lwx),a
+	ld	a,(lwy)
+	inc	a
+	ld	(lwy),a
+	push	af
+	ld	a,(scrls)
+	or	a
+	call	z,more
+	dec	a
+	ld	(scrls),a
+	ld	a,(win_hc)
+	ld	l,a
+	pop	af	
+	cp	l
+	ret	c
+	ld	a,l
+	dec	a
+	ld	(lwy),a
+	ld	a,(lwtop)
+	call	scrl_n
+	scf
+	ret
+;
+stepcu:	ld	a,(win_wc)
+	ld	l,a
+	ld	a,(uwx)
+	inc	a
+	ld	(uwx),a
+	cp	l
+	ret	c
+ulf:	xor	a
+	ld	(uwx),a
+	ld	a,(uwy)
+	inc	a	; <<v0.03>> LWTOP check removed
+			;it was causing trouble in the Curses help menu
+	ld	(uwy),a
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Split_window...
+;
+swnd1:	ld	(lwtop),a
+	ld	b,a
+	call	res_more
+	ld	a,(lwy)	;Ensure lower window y >= lwtop
+	cp	b
+	jr	nc,swnd1a
+	ld	a,b
+	ld	(lwy),a
+swnd1a: ld	a,(uwy)
+	cp	b
+	ret	c	;Ensure upper window y < lwtop
+	ld	hl,0
+	ld	(uwx),hl
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Set_window...
+;
+swnd2: and	1
+	xor	1	;set_window opcode uses 0 to mean lower window
+	ld	(cwin),a
+	scf
+	ret	nz
+	ld	hl,0
+	ld	(uwx),hl
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Set_text_style
+;
+styl1:	ld	c,a
+	and	1	;Reverse video?
+	ld	(HVF),a
+	ld	a,c
+	and	4	;Italic?
+	ld	(ITF),a
+	scf
+	ret	
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;set_cursor_position
+;
+scur1:	xor	a
+	ld	(wrapped),a
+	ld	hl,(win_hc)	;H=width, L=height
+	bit	7,c		;Negative => set cursor on/off
+	jr	nz,cursw
+	dec	b
+	dec	c		;0-based
+	ld	a,c
+	cp	h
+	jr	c,scur1a
+	ld	c,h
+	dec	c
+scur1a:	ld	a,(cwin)
+	or	a
+	jr	z,scur2
+	ld	a,(lwtop)
+	add	a,b
+	cp	l
+	jr	c,scur1b
+	ld	a,l
+	dec	a
+scur1b:	ld	b,a
+	ld	a,l
+	dec	a	;Reset the scroll counter
+	sub	b
+	ld	(scrls),a
+	ld	(lwx),bc
+	scf
+	ret
+;
+scur2:	ld	a,b		; << v0.02  Don't bother to check if
+	cp	l		;           this takes the cursor outside
+	jr	c,scur2b	;           the upper window.
+	ld	b,l
+	dec	b
+scur2b:	ld	(uwx),bc	; >> v0.02
+	scf
+	ret
+;
+cursw:	cp	0ffh
+	call	z,curoff
+	call	nz,curon
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+snd1:	ld	e,7	;Beep!
+	call	opchar
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Messages
+;
+badera:	defb	'Bad ERASE_WINDO'
+	defb	0D7h
+unimpl:	defb	'No ZXFDOS function '
+badfun:	defb	'00'
+	defb	0E8h	; 'h'+80h
+;
+zvbad:	defb	'Unsupported story version '
+zvbuf:	defb	'000'
+
+finished:
+	defb	'Story finishe'
+	defb	0E4h	; 'd'+80h
+;
+signon:	
+	include	in_ver.inc
+
+	defb	cr,lf,127,' 1998-9,2006,2016'
+	defb	cr,lf,'by John Elliott,'
+	defb	cr,lf,'with changes by Garry Lancaster'
+	defb	cr,lf,lf
+	defb  'Story file: $'
+
+sign1:	defb	cr,lf,'The story is loading...',cr,lf,'$'
+rest$:	defb	cr,lf,'ZXZVM is restarting...',cr,lf,'$'
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Numeric data
+;
+story:	defw	0	;Address of story filename
+zver:	defb	0	;Z-machine version no.
+;

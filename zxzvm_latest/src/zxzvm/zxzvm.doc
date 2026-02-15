@@ -1,0 +1,173 @@
+ZXZVM v1.12   Z-machine for the Spectrum +3 and PCW    John Elliott, 15-05-2016
+              parts by Garry Lancaster, 23-04-2006
+===============================================================================
+
+        I had played a few Infocom games in the late 1980s (running 
+        under CP/M on a ghastly Amstrad)
+
+                         -- Graham Nelson, in XYZZYnews 1
+
+  ZXZVM is an Infocom interpreter. Essentially, it allows you to play 
+adventure games in the Infocom format; these include those games produced
+by Infocom themselves, and games produced with Graham Nelson's compiler 
+Inform.
+  Versions 3, 4, 5 and 8 of the format are supported. Nearly all known games 
+(except the four "Graphical" games) are available in one of these formats.
+
+  Sections in this documentation will be marked:
+     [SP]    Applies only to Spectrum +3/+3e, or Spectrum with ResiDOS
+     [PCW10] Applies only to PCW8000/9000/10 series computers.
+     [PCW16] Applies only to PCW16 computers.
+     (unmarked sections apply to all computers).
+
+  If you manage to find a bug in ZXZVM, please let me know, giving me enough 
+information (possibly in the form of a savefile) to reproduce it.
+
+[SP] Loading ZXZVM
+==================
+
+  ZXZVM is supplied as a .TAP file or .TZX file containing an
+  installation program. Use zxzvm.tap (or zxzvm.tzx) for the +3/+3e,
+  and resizvm.tap (or resizvm.tzx) for Spectrums with ResiDOS.
+
+  Either:
+
++ Run the .TAP/.TZX file in an emulator with +3/+3e or ResiDOS support
+
+  Or:
+
++ Use a utility such as playtzx to write the .TAP/.TZX file to a cassette
+  tape for loading into a real Spectrum
+
+  Or:
+
++ Copy the zxzvm.tap file onto a +3 disc
++ Use the TAPROM utilities to extract the files onto a disc or tape
+
+The installation program is self-explanatory; if you wish you can modify
+the BASIC program to choose default colours, font and printer etc before
+installation. After installation, the program is loaded using:
+
++ LOAD "zxzvm.bas"      (+3/+3e)
++ LOAD %"resizvm.bas"   (ResiDOS)
+
+If you have a +3e with ResiDOS, you can install both versions to the same
+drive and use the appropriate one, depending upon which mode your Spectrum
+is in.
+  
+You can choose between a 64-character-per-line display and a normal
+32-character-per-line display. You may also replace the file zxzvm32.fnt
+with your preferred Spectrum font for the 32cpl mode (or use the built-in
+one). Note that some games do not display well in 32cpl mode, so if you
+have problems, try running in 64cpl mode to see if that helps.
+
+The colour scheme may be changed during play by pressing cursor up (CAPS+7)
+to change the paper, and cursor down (CAPS+6) to change the ink.
+
+If you turn on transcripting (usually with the command SCRIPT), the
+transcript will be sent to #3, which is normally the printer. You can set
+this stream up in the BASIC program. +3e users could even open the stream
+to a file to obtain a transcript on disk.
+
+Under ResiDOS, the program will attempt to load as much of the story
+as possible into free RAM banks in your hard disk interface. At least 4
+free RAM banks (64K) are required. If you wish, you can change the BASIC
+program to set a limit on the number of RAM banks that will be used, but
+this may slow down the operation of the program when playing large games.
+
+Do not remove the game disc while playing.
+
+[PCW10] Loading ZXZVM
+=====================
+
+  Place the files "pcwzvm.com" and "zxzvm.bin" somewhere on the search path
+(as set by SETDEF.COM) or on the current disc drive.
+  DO NOT USE THE RAMDISC (drive M:) when starting ZXZVM, because the first
+thing ZXZVM does is delete all the files on it (without asking!) and load
+the game into it.
+
+  To start it, type: PCWZVM <storyname>
+
+  Do not remove the game disc while playing.
+
+[PCW16] Loading ZXZVM
+=====================
+
+  ZXZVM is supplied as two files: ANNEIO.PRG and ZXZVM.BIN. These have to be
+put on a PCW16-format floppy as "Z-machine" and "Z-machine support"
+respectively, with the story file (or files) to play. The file "pcw16.doc" 
+explains how to do this.  
+  Once a suitable disc has been made, select "Run external program" from the
+PCW16's "Tasks" menu. Click on "Disc", and select "Z-machine". You will then
+be asked which game to play.
+  Do not remove the game disc while playing.
+
+Features (both positive and negative)
+=====================================
+
+  ZXZVM attempts to emulate a full v3/v4/v5/v8 Z-machine, except:
+
+* [SP] No bold text.
+* [PCW10] Bold text requires CRTPLUS.FID to be loaded.
+* No UNDO command (a memory constraint).
+* No sounds other than a beep.
+* No Unicode support.
+* [PCW16] No support for the graphics font (no. 3)
+
+  It does support:
+* [SP][PCW16] Timed input to within 1/10 second
+* [PCW10] Timed input to within 1 second 
+* [SP][PCW10] The graphics font (no. 3)
+* Accented characters for output. Accented characters cannot be entered.
+
+  The interpreter number is currently 7 [SP][PCW10] / 2 [PCW16]. That 
+is, ZXZVM is pretending to be a Commodore 128 on the Spectrum and PCW10, 
+and an Apple IIe on the PCW16. The difference on the PCW16 is to make sure
+that Beyond Zork does not try to use the (non-existent) graphics font.
+  The version is 'I'.
+
+  The save-file format is not compatible with Quetzal and does not compress
+the saved data.
+
+  ZXZVM was written to version 1.0 of the Z-Machine Standards Document. It 
+does not claim compliance with it, because it does not implement Unicode 
+support.
+
+Bug fixes and enhancements in v1.12
+===================================
+
+* [SP] Two 256-byte instruction and data caches have been added, rather 
+ than relying on +3DOS to access any byte outside the first 64k of the story 
+ file. This gives a modest performance improvement.
+
+* The @call_vn opcode with a zero argument would behave like @call_vs and 
+ attempt to return a value. This would cause the instruction stream to lose
+ synchronisation, leading to invalid opcode errors. 
+
+
+The Wish List (in approximate order of priority)
+================================================
+
+* Support for the "multiple discs" header bit; this would allow bigger games 
+to be squeezed into an unexpanded +3 or PCW8256.
+* Support for setting the Tandy bit and interpreter number.
+  (In fact, you can set the interpreter number already in the Spectrum 
+   version; the command is  POKE 28675,n  .  But this is not possible
+   in the PCW versions).
+* Support for v1 and v2 games.
+* Unicode support.
+* Support for v6 and v7 games. 
+
+Acknowledgements
+================
+
+  Thanks to: Graham Nelson and those who deduced the Z-machine specification.
+             John Holder and the authors of Jzip; several routines in ZXZVM
+             are hand-compiled from the Jzip source code. 
+             Erik Kunze and the authors of XZX, the Spectrum emulator under
+             which ZXZVM was developed.
+             Cliff Lawson and Richard Wildey, for PCW16 programming info.
+             Those on the Z-machine mailing list, for general advice.
+             Jacob Nevins, Garry Lancaster, Zeljko Juric and Matthew Logue, 
+	     for bringing bugs to my notice.
+

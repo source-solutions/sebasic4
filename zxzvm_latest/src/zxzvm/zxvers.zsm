@@ -1,0 +1,84 @@
+;    ZXZVM: Z-Code interpreter for the Z80 processor
+;    Copyright (C) 1998-9,2006,2016  John Elliott <seasip.webmaster@gmail.com>
+;
+;    This program is free software; you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation; either version 2 of the License, or
+;    (at your option) any later version.
+;
+;    This program is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with this program; if not, write to the Free Software
+;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+vers:
+;
+;Return Spectrum type by 48k ROM. Requires ROM 3 to be paged in.
+;
+;Returns H=0 for 16/48/+         L=0 for Sinclair, 2 for TK95, 3 for GROOT
+;				   4 for IMC
+;	   1 for 128/+2		 L=0 for Sinclair, 1 for Amstrad
+;          2 for +3		 L=1 for Amstrad, 4 for 48KDB
+;	0FFh for unknown
+;
+	PUSH	AF
+	LD	HL,0FFFFH
+	LD	A,(0B52H)	;Trap in 128k versions
+	CP	0C3H
+	JR	Z,NON48
+	CP	0D6H
+	JR	Z,IS48
+VRSRET:	POP	AF
+	RET			;Unknown - FFFFh
+;
+IS48:	LD	A,(04AAH)
+	INC	L		;0
+	CP	0CDH
+	JR	Z,VRSRET
+	INC	L
+	INC	L
+	CP	011H		;TK95
+	JR	Z,VRSRET
+	INC	L
+	CP      03EH		;GROOT
+	JR	Z,VRSRET
+	INC	L
+	CP	0CAH		;IMC
+	JR	Z,VRSRET
+	LD	L,0FFH
+	POP	AF
+	RET
+;
+NON48:	LD	A,(0B53H)
+	CP	09FH		;128/+2
+	JR	Z,TYP128
+	CP	07EH
+	JR	NZ,VRSRET	;+2a/+3
+	LD	H,2
+	LD	A,(004CH)
+	LD	L,1		;Amstrad
+	CP	38H
+	JR	Z,VRSRET
+	CP	3BH
+	LD	L,4
+	JR	Z,VRSRET
+	LD	L,0FFH
+	POP	AF
+	RET
+;
+TYP128:	LD	H,1
+	LD	A,(1540H)	;(c) message
+	CP	'A'
+	LD	L,1
+	JR	Z,VRSRET	;Amstrad
+	DEC	L
+	CP	'S'		;Sinclair
+	JR	Z,VRSRET
+	DEC	L
+	POP	AF
+	RET
+;

@@ -1,0 +1,28 @@
+Making discs for the PCW16
+==========================
+
+  The file "disc16.ufi" contains a sample 720k disc in PCW16 format. 
+This can be used to make PCW16 discs containing ZXZVM.
+
+1. Copy the disc image file to a floppy.
+  
+  If you use Linux:    Use 'dd': dd if=disc16.ufi of=/dev/fd0
+  If you use Windows:  Use 'dsktool' <http://www.seasip.info/Unix/LibDsk/#tools>
+		       or WinImage.
+  If you use DOS:      Use RAWRITE <http://www.tux.org/pub/dos/rawrite/>
+
+2. Copy the story file you want to use to A:\PCW\FOLDER01\PCW006.ZDT 
+  For example:
+
+  Under DOS:    COPY  CURSES.Z5 A:\PCW\FOLDER01\PCW006.ZDT
+  Under Linux:  mcopy curses.z5 a:/pcw/folder01/pcw006.zdt
+
+  (Under Linux, you can also do this before writing the disc image: 
+
+	mcopy -idisc16.ufi curses.z5 ::/pcw/folder01/pcw006.zdt
+        dd if=disc16.ufi of=/dev/fd0
+  )
+
+3. Using the PCW16 file manager, rename "Supplied story file" to the name
+  of the story you copied onto the disc - in the above example, "Curses".
+

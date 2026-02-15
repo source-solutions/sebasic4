@@ -1,0 +1,558 @@
+
+;    ZXZVM: Z-Code interpreter for the Z80 processor
+;    Copyright (C) 1998-9,2006,2016  John Elliott <seasip.webmaster@gmail.com>
+;
+;    This program is free software; you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation; either version 2 of the License, or
+;    (at your option) any later version.
+;
+;    This program is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with this program; if not, write to the Free Software
+;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+;
+;Note: In general, I like to page data in at 0C000h. However, since the 
+;      stack grows down from 0C100h, this means that the stack CANNOT be
+;      used while memory paging is happening.
+;
+;      If I want to use the stack, I page at 04000h.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Memory management code for the PCW.
+;
+; See if a story file will fit entirely in the RAMdisc.
+;
+willitfit:
+	ld	de,(story)
+	ld	c,23h
+	call	FDOS
+	inc	a
+	jr	z,wontfit	;If can't stat the file, assume the worst	
+	ld	hl,(story)
+	ld	de,21h
+	add	hl,de		;HL = size of file in 128-byte records.
+	ld	e,(hl)
+	inc	hl
+	ld	d,(hl)
+	inc	hl
+	ld	a,(hl)		;ADE = size of file in 128-byte records.
+				;No. of blocks = ((ADE + 127) / 128)
+	ld	hl,127		;No. of records in 16k (round up to next
+	add	hl,de		;16k boundary)
+	adc	a,0		;AHL = no. of records + rounding amount
+;
+;Divide by 127. It's quicker to multiply by 2 and divide by 256:
+;	
+	add	hl,hl
+	adc	a,a		;AH = (x*2) / 256.
+	ld	l,h
+	ld	h,a		;HL = no. of 16k blocks file would occupy
+	push	hl
+	call	getinfo		;B := no. of blocks in system
+	pop	hl
+	ld	a,h
+	or	a
+	jr	nz,wontfit	;If file is >4Mb, it definitely won't fit.
+	ld	a,b
+	sub	9		;9 banks used for the system
+	cp	l		;A = no. free. L = no. required
+	jr	c,wontfit
+willfit:
+	xor	a
+	scf			;Z C = will fit in memory
+	ret
+;
+wontfit:
+	xor	a 
+	inc	a		;NZ C = won't fit in memory
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+lbank:	defb	0	;Current bank to load
+zver:	defb	0	;Z-machine version
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+ldbank:	push	bc
+	ld	b,128		;128 records / bank...
+	ld	hl,0C000h	;Address within block
+ldblp:	push	bc
+	push	hl
+	ld	de,80h
+	call	setdma
+	ld	de,(story)
+	ld	c,14h
+	call	FDOS
+	pop	hl
+	pop	bc
+	cp	2
+	jr	nc,lberr	;Error
+	call	copy80		;Copy it into memory
+	cp	1
+	jr	z,lretz
+	ld	de,80h
+	add	hl,de		;Next place in bank
+	djnz	ldblp
+	pop	bc
+	ld	a,(lbank)
+	inc	a
+	ld	(lbank),a
+retnz:	xor	a	;NZ C = not eof
+	inc	a
+	scf
+	ret
+;
+lretz:	pop	bc
+	xor	a	;Z C = eof
+	scf
+	ret
+;
+lberr:	pop	bc
+	jp	xlterr
+;
+copy80:	call	pusha	;HL = address to write data
+	ld	a,(lbank)
+	add	a,89h	;First RAMdisc bank
+	di
+	out	(0F3h),a
+	ex	de,hl
+	ld	hl,80h
+	ld	b,h
+	ld	c,l
+	ldir		;Copy 80h bytes into high memory
+	ld	a,87h
+	out	(0F3h),a
+	ei
+	jp	popa
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+cleanram:
+	ld	a,(lbank)
+	add	a,89h
+zaplp:	push	af
+	di	
+	out	(0F3h),a
+	ld	hl,0C000h
+	ld	de,0C001h
+	ld	bc,03FFFh
+	ld	(hl),0E5h
+	ldir
+	ld	a,87h
+	out	(0F3h),a
+	ei
+	pop	af
+	cp	89h
+	ret	z
+	dec	a
+	jr	zaplp
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+peek64:	jr	peekl64
+
+peek1:	ld	a,e
+	or	a
+	jr	z,peekl64
+	ld	a,(allhere)
+	or	a
+	jr	nz,peekh64
+;
+;Get byte at EHL from the disc file.
+;
+;Convert 24-bit byte address in EHL to record number in the FCB.
+;
+	push	iy
+	push	hl
+	push	de
+	push	bc
+
+	push	hl
+	ld	iy,(story)
+	ld	d,0
+	sla	l
+	rl	h
+	rl	e	
+	rl	d	;DEH = record no.
+	ld	a,(iy+23h)
+	cp	d
+	jr	nz,ldrec
+	ld	a,(iy+22h)
+	cp	e
+	jr	nz,ldrec
+	ld	a,(iy+21h)
+	cp	h
+	jr	z,nldrec
+;
+;Record number is wrong. Load the correct one.
+;
+ldrec:	ld	(iy+23h),d
+	ld	(iy+22h),e
+	ld	(iy+21h),h
+	ld	de,recbuf
+	call	setdma
+	ld	c,21h
+	ld	de,(story)
+	call	FDOS	
+;
+;Record no. is correct
+;
+nldrec:	pop	hl
+	res	7,l
+	ld	h,0
+	ld	de,recbuf
+	add	hl,de
+	ld	a,(hl)
+	pop	bc
+	pop	de
+	pop	hl
+	pop	iy
+	scf
+	ret	
+;
+peekh64:
+	push	hl
+	push	de
+	ld	a,h
+	rla
+	rl	e
+	rla
+	rl	e
+	ld	a,e
+	jr	peekl1
+;
+peekl64:
+	push	hl
+	push	de
+	ld	a,h
+	rlca
+	rlca
+	and	3
+peekl1:	add	a,89h	;Equivalent memory bank
+	di
+	out	(0F3h),a
+	ld	a,h
+	or	0C0h	;Address within bank
+	ld	h,a
+	ld	d,(hl)	;D = byte required
+	ld	a,87h
+	out	(0F3h),a
+	ei
+	ld	a,d
+	pop	de
+	pop	hl
+	scf
+	ret
+;
+
+peekw64:
+	push	hl
+	push	de
+	ld	a,h
+	rla
+	rl	e
+	rla
+	rl	e
+	ld	a,e
+	add	a,89h	;Equivalent memory bank
+	di
+	out	(0F3h),a
+	ld	a,h
+	or	0C0h	;Address within bank
+	ld	h,a
+	ld	b,(hl)	;D = byte required
+	inc	hl
+	ld	c,(hl)
+	ld	a,87h
+	out	(0F3h),a
+	ei
+	pop	de
+	pop	hl
+	scf
+	ret
+;
+;Peek word, no auto-increment
+;
+peekw:	push	af
+	ld	a,l
+	cp	0ffh
+	jr	z,slowpkw
+	call	peekw64
+	pop	af
+	scf
+	ret
+;
+slowpkw:
+	push	hl
+	push	de
+	call	peek1
+	ld	b,a
+	inc	hl
+	ld	a,h
+	or	l
+	jr	nz,slowp1
+	inc	e
+slowp1:	call	peek1
+	ld	c,a
+	pop	de
+	pop	hl
+	pop	af
+	scf
+	ret
+;
+;Peek word, with auto-increment
+;
+ipeekw:	push	af
+	ld	a,l
+	cp	0ffh
+	jr	z,slowpiw
+	call	peekw64		;BC := word
+	inc	hl
+	ld	a,h
+	or	l
+	jr	nz,ipkw2
+	inc	e
+ipkw2:	inc	hl
+	ld	a,h
+	or	l
+	jr	nz,ipkw3
+	inc	e
+ipkw3:	pop	af
+	scf
+	ret
+;
+slowpiw:
+	call	peek1
+	ld	b,a	
+	inc	hl
+	ld	a,h
+	or	l
+	jr	nz,slowp2w
+	inc	e
+slowp2w:
+	call	peek1
+	ld	c,a
+	jr	ipkw2
+;
+; Low-64k poke. Easy.
+;
+poke1:	push	af
+	push	hl
+	push	de
+	ld	d,a	;D = byte to poke in
+	ld	a,h
+	rlca
+	rlca
+	and	3
+	add	a,89h	;Equivalent memory bank
+	di
+	out	(0F3h),a
+	ld	a,h
+	or	0C0h	;Address within bank
+	ld	h,a
+	ld	(hl),d	;D = byte required
+	ld	a,87h
+	out	(0F3h),a
+	ei
+	pop	de
+	pop	hl
+	pop	af
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+ihdr1:
+;
+;The header is at 0 in bank 89h. So page it in and access it directly.
+;
+	in	a,(0F8h)	;Using a 256-line screen or 200?
+	bit	4,a		;Set if using 256
+	jr	nz,ihdr1a
+	ld	a,25
+	ld	(scrh),a
+	ld	hl,0C800h	;Z-machine word, hence low & high byte swapped
+	ld	(scrhp+1),a
+ihdr1a:
+;
+;Since I want to use the stack, the header gets paged in at 4000h.
+;
+	ld	a,89h
+	di
+	out	(0F1h),a
+	ld	a,(4000h)	;Z-machine version
+	ld	(zver),a
+	ld	de,zvbuf
+	ld	l,a
+	ld	h,0		;Create the "invalid version" error
+	call	spdec3
+	ld	hl,zvbad
+	ld	a,(zver)
+	cp	3		;<< v0.04 allow v3 games
+	jr	z,okver		;>> v0.04
+	cp	4		;<< v1.10 allow v4 games
+	jr	z,okver		;>> v1.10
+	cp	8
+	jr	z,okver
+	cp	5
+	jr	nz,ihdr8
+;
+;Version is acceptable
+;
+;nb: the Z-machine is big-endian, but the PCW is little-endian. So 
+;   the LSB of a word will be in H.
+;
+okver:	cp	4		;v3 flags or v4 flags?
+	ld	hl,(04001h)	;Flags 1
+	ld	a,l
+	jr	nc,v4flag
+	and	09Fh		;Reset bits 5,6
+	jr	cflag
+
+v4flag: ld	d,a
+	ld	e,9Ch		;Bits 2, 3, 4, 7 - reverse, bold, italic
+	ld	a,(crtplus)	;                  and timer
+	or	a
+	jr	nz,v4flg1
+	res	2,e		;Reset the "bold" bit if CRT+ not present	
+v4flg1:	ld	a,d
+	and	0B8h		;Reset bits 0,1,2,5
+	or	e		;Set bits 3 & 4
+cflag:	ld	l,a
+	ld	(04001h),hl
+	ld	hl,(04010h)	;Flags 2
+	ld	a,h
+	and	43h		;No pictures, no mouse, no UNDO, no sound
+	ld	h,a
+	res	0,l		;"Menus" bit
+	ld	(04010h),hl
+	ld	hl,scrset5
+	ld	de,04020h
+	ld	bc,8
+	ldir
+
+	scf
+	defb	0Eh	;LD C, which will swallow the AND A
+ihdr8:	and	a
+ihdr9:	push	af
+	ld	a,85h
+	out	(0F1h),a
+	ei
+	pop	af
+	ret
+;
+;Screen settings for a v5 game
+;
+; << v1.11 make our 'pixels' one character in size, so as not to 
+;    upset Beyond Zork
+;
+scrset5:
+scrh:	defb	32,90,0,90
+scrhp:	defb	0, 32, 1,1	;32x90 chars
+;
+; >> v1.11
+;
+zvbad:	defb	'Unsupported Z-code version '
+zvbuf:	defb	'000. Only versions 5 and 8 are currently supported',0AEh
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+tmem1:	ld	hl,(BDOS+1)	;Top of memory. 
+	ld	l,0
+	dec	h		;Allow 512 bytes for our stack
+	dec	h
+	dec	h		;and 256 bytes for interrupt code
+	ret		
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+rndi1:	ld	e,(iy+5Bh)	;System time
+	ld	d,(iy+5Ch)
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Entered with DBC = length. Start checking at byte 40h.
+;
+fvrfy:	ld	a,40h
+	ld	(vptr),a
+	ld	hl,0
+	push	iy
+	ld	iy,(story)
+	ld	(iy+23h),l
+	ld	(iy+22h),l
+	ld	(iy+21h),l
+	call	vldrc1	;Load the initial record
+	call	vckbyt
+	pop	iy
+	scf
+	ret
+;
+vckbyt:	ld	a,d
+	or	b
+	or	c
+	ret	z
+	push	de
+	push	bc
+	push	hl
+	call	vrbyte	
+	pop	hl
+	ld	e,a
+	ld	d,0
+	add	hl,de
+	pop	bc
+	pop	de
+	dec	bc
+	ld	a,b
+	and	c
+	inc	a
+	jr	nz,vckbyt
+	dec	d
+	jr	vckbyt
+;
+vrbyte:	ld	a,(vptr)
+	cp	80h
+	call	nc,vldrec
+	ld	e,a
+	ld	d,0
+	ld	hl,recbuf
+	add	hl,de
+	inc	a
+	ld	(vptr),a
+	ld	a,(hl)
+	ret
+;
+vldrec:	ld	l,(iy+21h)
+	ld	h,(iy+22h)
+	inc	hl
+	ld	(iy+21h),l
+	ld	(iy+22h),h
+	ld	a,h
+	or	l
+	jr	nz,vldrc1
+	inc	(iy+23h)	
+vldrc1:	push	bc
+	push	de
+	push	hl
+	ld	de,recbuf
+	call	setdma
+	ld	c,21h
+	ld	de,(story)
+	call	FDOS
+	pop	hl
+	pop	de
+	pop	bc
+	xor	a
+	ret
+;
+vptr:	defb	0		
+

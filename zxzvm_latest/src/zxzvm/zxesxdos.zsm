@@ -1,0 +1,208 @@
+
+esxdos_file_handle:
+
+	defb 0
+
+esxdos_save_file_handle:
+
+	defb 0
+
+ESXDOS_SYS_CALL EQU 		8		; rst #8
+ESXDOS_CURRENT_DRIVE EQU 2ah			; *
+
+ESXDOS_MODE_READ EQU 		1
+ESXDOS_MODE_WRITE EQU		2
+ESXDOS_MODE_OPEN_CREATE EQU	8
+
+ESXDOS_SYS_F_OPEN EQU		154
+ESXDOS_SYS_F_CLOSE EQU		155
+ESXDOS_SYS_F_READ EQU		157
+ESXDOS_SYS_F_WRITE EQU		158
+ESXDOS_SYS_F_SEEK EQU		159
+
+ESXDOS_SEEK_SET EQU		0
+
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Open & close savefile
+;
+p3opn:
+	; hl is filename
+	push hl
+
+p3opna:
+	ld a, (hl)	; remove $ff marker
+	cp 255
+	jr z, p3opnb
+	inc hl
+	jr p3opna
+
+p3opnb:
+	xor a
+	ld (hl), a
+
+	ld (esxdos_save_file_handle), a
+	ld a, b
+	or a	;0=open 1=creat
+	jr	z,p3opnr
+
+	ld b, ESXDOS_MODE_WRITE|ESXDOS_MODE_OPEN_CREATE
+	jr p3opnc
+
+p3opnr:
+
+	ld b, ESXDOS_MODE_READ
+
+p3opnc:
+	ld a, ESXDOS_CURRENT_DRIVE	; *
+
+	pop ix
+
+	rst ESXDOS_SYS_CALL		; open filename in ix
+	defb ESXDOS_SYS_F_OPEN
+
+	jr nc, p3opnok
+	ccf
+	ret
+
+p3opnok:
+
+	ld (esxdos_save_file_handle), a
+	scf
+	ret
+
+
+p3clse:	ld	a, (esxdos_save_file_handle)
+	and a
+	ret z
+
+	rst ESXDOS_SYS_CALL
+	defb ESXDOS_SYS_F_CLOSE
+	ret
+
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Read/write savefile
+;
+p3read:	ld	a,b
+	or	c
+	scf
+	ret	z
+	
+	; hl address
+	; bc length
+	; c bank
+
+	xor a		; invalidate page cache is we're using bank 6
+	ld (peek_page1), a
+	ld (peek_page2), a
+
+	ld	a,SAVEPG
+	call	selmem	
+
+	push hl	
+	pop ix		; put hl into ix
+
+	ld a, (esxdos_save_file_handle)
+
+	rst ESXDOS_SYS_CALL
+	defb ESXDOS_SYS_F_READ
+
+	jr nc, p3read_ok
+	ccf
+	ret
+
+p3read_ok:
+
+	scf
+	ret
+
+
+p3write:
+
+	ld	a,b
+	or	c
+	scf
+	ret	z
+
+	; hl address
+	; bc length
+	; c bank
+
+	xor a		; invalidate page cache is we're using bank 6
+	ld (peek_page1), a
+	ld (peek_page2), a
+
+
+	ld	a,SAVEPG
+	call	selmem		
+	
+	push hl	
+	pop ix		; put hl into ix
+			; bc is the length
+
+	ld a, (esxdos_save_file_handle)
+
+	rst ESXDOS_SYS_CALL
+	defb ESXDOS_SYS_F_WRITE
+
+	jr nc, p3write_ok
+	ccf
+	ret
+
+p3write_ok:
+
+	scf
+	ret
+
+
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Verify the game file
+;
+p3vrfy:
+
+	; not implemented !!!
+	scf
+	ret
+
+;-------------------------
+;
+;Transcript functions - not implemented !!!
+;
+ts_open:scf			;nothing to do (VM sets FLAGS2)
+	ret
+;
+ts_close:
+	scf			;nothing to do (VM sets FLAGS2)
+	ret
+;
+cktschar:
+;	push	hl
+;	ld	hl,11h		;FLAGS2 bit 0
+;	call	ZXPK64
+;	pop	hl
+;	bit	0,a		;check transcript flag
+;	scf
+;	ret	z
+	ret
+
+ts_char:
+;	ld	a,(cwin)
+;	or	a
+;	scf
+;	ret	z
+;	push	hl
+;	ld	a,3
+;	call	OPENCHN		; open channel to stream 3 (printer)
+;	pop	hl
+;	ld	a,l
+;	rst	10h		; print character
+;	ld	a,2
+;	call	OPENCHN		; open channel to stream 2 (screen)
+;	scf
+	ret
+

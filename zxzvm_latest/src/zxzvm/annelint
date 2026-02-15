@@ -1,0 +1,20 @@
+#!/bin/sh
+#
+# annelint is a shell script that tries to find obvious errors in a PCW16
+# program. So far, the only errors it checks for are calls to OS function
+# numbers...
+#
+
+
+if 
+	grep -n "call	os_" anne*.zsm;
+then 
+	exit 1
+fi
+if 
+	grep -n "call    os_" anne*.zsm
+then 
+	exit 1	
+fi
+
+

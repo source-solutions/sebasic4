@@ -1,0 +1,811 @@
+
+;    ZXZVM: Z-Code interpreter for the Z80 processor
+;    Copyright (C) 1998-9,2006,2016  John Elliott <seasip.webmaster@gmail.com>
+;
+;    This program is free software; you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation; either version 2 of the License, or
+;    (at your option) any later version.
+;
+;    This program is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with this program; if not, write to the Free Software
+;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+; ResiDOS-specific routines.
+
+; Memory layout is as follows:
+; 0000h-3FFFh : BASIC ROM or 1 of 4x16K banks holding lower 64K of story
+; 4000h-6FFFh : Screen, system variables, BASIC program
+; 7000h-BFFFh : VM module code and stack
+; C000h-FFFFh : I/O module
+
+
+; ZJT is chosen so that ZJT-32 (and therefore bank0) is
+; aligned to a 256-byte boundary. This must not be broken, as it
+; is assumed in various routines!
+
+	org	ZJT-32
+
+bank0:	defs	32	;story bank IDs (max 32 for 512K v8 story)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Other source files
+;
+	include zxio.zsm	;ZX I/O - must come first
+	include zxp3dos.zsm	;+3DOS specific functions
+	include zx64.zsm	;64-column printing	
+	include in_wrhex.inc	;Render numbers into hex or decimal
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;ResiDOS system functions
+RST_HOOK	EQU	08h
+HOOK_VERSION	EQU	0FCh
+HOOK_PACKAGE	EQU	0FBh
+PKG_RESIDOS	EQU	00h
+PKG_IDEDOS	EQU	01h
+RESI_REPORT	EQU	0310h
+RESI_GETPAGER	EQU	031Ch
+RESI_FPKG	EQU	031Fh
+RESI_FBASIC	EQU	0322h
+RESI_ALLOC	EQU	0325h
+RESI_DEALLOC	EQU	0328h
+
+SAVEPG 		EQU	0 ; memory page for savefile (must be 0 for ResiDOS)
+HDRADDR		EQU	0000h
+SCRADDR		EQU	4000h
+
+banklimit	EQU	0fffeh	; POKEd by BASIC
+typeset:	EQU	0ffffh	; poked by BASIC to 0 or 1
+
+p3der:	defb	0	; +3DOS error code
+banks:	defb	0	;banks allocated
+bankB:	defb	0	;BASIC bank ID
+bankI:	defb	0	;IDEDOS/+3DOS bank ID
+
+pagert:	defs	32	;ResiDOS paging routine lives here
+
+
+;
+;Enter a filename
+;
+NAMEBUF:
+	DEFS	20
+FNBUF:	DEFS	20
+FNAME$:	DEFB	13,10,'Filename> $'
+
+GNAME:	
+	LD	DE,FNAME$
+	LD	C,9
+	CALL	ZXFDOS
+	di
+	ld	a,(bank0+1)	;Z-address 4000h
+	call	pagert
+	LD	DE,NAMEBUF
+	LD	HL,0000h
+	LD	BC,20
+	LDIR		;Backup Z-machine memory at 4000h
+	LD	HL,0000h
+	LD	(HL),16	;Max. 16 characters in name
+	INC	HL
+	LD	(HL),0	;None provided
+	ld	a,(bankB)
+	call	pagert
+	ei
+	LD	DE,0
+	LD	HL,4000h	;Filename buffer in Z-machine memory
+	CALL	LINEINP
+	di
+	ld	a,(bank0+1)	;Z-address 4000h
+	call	pagert
+	LD	DE,FNBUF
+	LD	HL,0000h
+	LD	BC,20
+	LDIR	
+	LD	HL,NAMEBUF
+	LD	DE,0000h
+	LD	BC,20
+	LDIR			;Original contents of buffer
+	LD	HL,FNBUF+1
+	LD	E,(HL)
+	LD	D,0
+	INC	HL
+	ADD	HL,DE
+	LD	(HL),0FFh	;FFh-terminated filename string
+	ld	a,(bankB)
+	call	pagert
+	ei
+	LD	HL,FNBUF+2
+	LD	A,E		;<< v1.01  A = length of input
+	OR	A
+	SCF			; If it's 0, then no name was input.
+	RET	NZ
+	CCF			;>> v1.01
+SELMEM:	RET
+
+;
+; Chime an error
+;
+RASP	EQU	5C38h
+BEEPER	EQU	03B5h
+
+;
+CHIME:	CALL	PUSHA
+        LD      A,(RASP)
+        LD      D,0
+	LD	E,A
+        LD      HL,1A90h        ; set the pitch - or tone period.
+        CALL    BEEPER          ; routine BEEPER emits a warning rasp.
+	JP	POPA
+
+;
+; Get version of ResiDOS in HL.
+;
+resivers:
+        ld      hl,(ERRSP)
+        push    hl                      ; save the existing ERR_SP
+        ld      hl,detect_error
+        push    hl                      ; stack error-handler return address
+        ld      hl,0
+        add     hl,sp
+        ld      (ERRSP),hl             ; set the error-handler SP
+        rst     RST_HOOK                ; invoke the version info hook code
+        defb    HOOK_VERSION
+	pop	hl			; ResiDOS doesn't return, so if we get
+        jr      noresidos               ; here, some other hardware is present
+detect_error:
+        ld      a,(ERRNO)
+        inc     a                       ; is the error code now "OK"?
+        jr      z,gotresidos            ; if so, ResiDOS version is in DE
+noresidos:
+	ld	de,0			; ResiDOS version=0 (not detected)
+gotresidos:
+        pop     hl
+        ld      (ERRSP),hl             ; restore the old ERR_SP
+        ex      de,hl                   ; get HL=ResiDOS version
+        ret
+
+
+;
+;Utility function to call +3DOS.
+;This takes an inline word parameter, the address within +3DOS
+;that should be called.
+;
+dodos:	exx
+	pop	hl
+	ld	e,(hl)
+	inc	hl
+	ld	d,(hl)
+	inc	hl
+	push	hl		; stack return address
+	call	dodos2		; make the call
+	push	af
+	ld	a,(bankB)
+	call	pagert		; page back BASIC
+	pop	af
+	ret	c
+	ld	hl,p3der
+	ld	(hl),a		; save error code
+	ret
+
+dodos2:	push	de		; stack +3DOS routine address
+	exx
+	push	af
+	ld	a,(bankI)
+	call	pagert		; page in IDEDOS
+	pop	af
+	ret			; execute routine then return to main dodos
+
+;
+;Read/write BC bytes of z-machine memory at HL.
+;
+p3rmem:	ld	a,b
+	or	c
+	scf
+	ret	z
+	ld	d,b
+	ld	e,c	;DE = no. of bytes to read
+p3rm1:	push	hl
+	push	de
+	call	blkadd	;Returns HL = block base, DE = block lenth, C=bank
+	push	de
+
+	push	hl
+	push	bc
+	ld	hl,secbuf
+	ld	b,SAVENO
+	ld	c,SAVEPG
+	call	dodos
+	defw	DOS_READ
+	pop	bc	;C=Z-machine bank
+	pop	de	;DE=destination in Z-machine block
+	jr	nc,p3rend
+	di			; must disable interrupts
+	ld	b,HIGH(bank0)
+	ld	a,(bc)
+	call	pagert
+	pop	bc
+	push	bc
+	ld	hl,secbuf
+	ldir		; copy bytes from sector buffer
+	ld	a,(bankB)
+	call	pagert
+	ei
+
+	pop	bc	;BC = no. of bytes read
+	pop	hl	;HL = total bytes to transfer
+	and	a
+	sbc	hl,bc	;HL = bytes left to transfer
+	jr	c,p3re2
+	jr	z,p3re2	;End of transfer
+	ex	de,hl	;DE = no. of bytes left to transfer
+	pop	hl
+	add	hl,bc	;HL = new base address
+	jr	p3rm1
+;
+p3wmem: ld	a,b
+	or	c
+	scf
+	ret	z
+	ld      d,b
+        ld      e,c     ;DE = no. of bytes to write
+p3wm1:  push    hl
+        push    de
+        call    blkadd  ;Returns HL = block base, DE = block lenth, C=bank
+        push    de
+
+	di			; must disable interrupts
+	ld	b,HIGH(bank0)
+	ld	a,(bc)
+	call	pagert
+	ld	b,d
+	ld	c,e
+	ld	de,secbuf
+	ldir		; copy Z-machine data to sector buffer
+	ld	a,(bankB)
+	call	pagert
+	ei
+
+	pop	de
+	push	de
+	ld	hl,secbuf
+        ld      b,SAVENO
+	ld	c,SAVEPG
+        call    dodos
+        defw    DOS_WRITE
+        jr      nc,p3rend
+        pop     bc      ;BC = no. of bytes read
+        pop     hl      ;HL = total bytes to transfer
+        and     a
+        sbc     hl,bc   ;HL = bytes left to transfer
+        jr      c,p3re2
+        jr      z,p3re2 ;End of transfer
+        ex      de,hl   ;DE = no. of bytes left to transfer
+        pop     hl
+        add     hl,bc   ;HL = new base address
+        jr      p3wm1
+;
+p3re2:	pop	de
+	scf
+	ret
+;
+p3rend:	pop	de	;Read failed
+	pop	de
+	pop	de
+	ret
+;
+blkadd:	ld	a,h	;Let HL = true address of block, C the bank it is in,
+	rlca		;    DE = amount of block within this bank, limited to
+			;         bufsize.
+	rlca
+	and	3	;A = 0 - 3, bank number
+	ld	c,a	;C is bank
+	ld	a,h
+	and	03Fh	;Limit HL to 14 bits
+	ld	h,a	;<< v0.02 >> arithmetic bug fix
+	push	hl
+	push	de	;DE = length of block
+	and	a
+	ld	de,4000h
+	ex	de,hl	;<< v0.02 >> arithmetic bug fix
+	sbc	hl,de	;HL = max length in this bank
+	pop	de	;DE = length of block
+	push	de
+	push	hl
+	and	a
+	sbc	hl,de
+	pop	hl
+	pop	de
+	jr	nc,blkad2	;if DE <= HL, return DE
+	ex	de,hl		;DE = length to read/write
+blkad2:	ld	a,d
+	cp	HIGH(bufsize)
+	jr	c,blkad3	;okay if will fit in buffer
+	ld	de,bufsize	;else limit size
+blkad3:	pop	hl		;HL = base address
+	ret	
+
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Open the story file
+;
+st_open:
+	ld	b,FILENO
+	ld	c,05h	;Open read-only
+	ld	de,2	;Open if exists, else complain
+	call	dodos
+	defw	DOS_OPEN
+	ret	nc
+	ld	a,1
+	ld	(STORY_FILE),a
+	call	st_reload	; load the first 64K
+	ret	nc
+	ret	z
+	ld	a,(banklimit)	; max banks to use
+	cp	5
+	ret	c		; no more than 4
+	sub	4
+	ld	b,a
+	cp	28		; the absolute max (another 448K=512K total)
+	jr	c,st_load512K
+	ld	b,28
+st_load512K:
+	call	allocbank
+	ccf
+	ret	c		; exit if out of banks (not an error)
+	push	bc
+	call	ldbank
+	pop	bc
+	ret	nc
+	ret	z
+	inc	c
+	djnz	st_load512K
+	ret
+;
+st_reload:
+        ld      b,FILENO
+        ld      de,0
+	ld	hl,0
+        call    dodos
+        defw    SETPOS
+	ret	nc
+	ld	bc,$0400	; (re)load to first 64K in pre-allocated banks
+st_load64K:
+	push	bc
+	call	ldbank
+	pop	bc
+	ret	nc
+	ret	z
+	inc	c
+	djnz	st_load64K
+	xor	a
+	inc	a		; Fz=1, didn't reach EOF
+	scf			; Fc=1, success
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Load 16k from the file into Z-machine bank C
+; Exits with Fc=1, Fz=0 if okay and didn't reach end of file
+;            Fc=1, Fz=1 if okay and end of file
+;            Fc=0       if error
+
+bufsize	EQU	200h
+secbuf:	defs bufsize
+;
+ldbank:	ld	b,4000h/bufsize
+	ld	de,0000h	; Z-machine bank address
+ldloop:	push bc
+	push de
+	ld	b,FILENO
+	ld	c,0
+	ld	de,bufsize
+	ld	hl,secbuf	; read to sector buffer
+	call dodos
+	defw DOS_READ
+	pop de
+	pop bc
+	push af			; save error condition
+	push bc
+	di			; must disable interrupts
+	ld	b,HIGH(bank0)
+	ld	a,(bc)
+	call	pagert
+	ld	hl,secbuf
+	ld	bc,bufsize
+	ldir			; copy to Z-machine bank
+	ld	a,(bankB)
+	call	pagert		; page back BASIC
+	ei
+	pop bc
+	pop af			; restore error condition
+	jr	c,rdok
+	cp	25
+	jr	z,rdend		; exit with Fz=1, EOF
+	and	a		; Fc=0, fail
+	ret
+;
+rdok:	djnz ldloop
+	xor	a
+	inc	a		; Fz=0, didn't reach EOF
+rdend:	scf			; Fc=1, success
+	ret
+	
+;
+; Initialisation.
+;
+init1:	ld	(story),de
+	ld	a,(typeset)	; choose typeset
+	and	a
+	ld	hl,set532
+	jr	z,type32
+	ld	hl,set564
+type32:	ld	de,scrset5
+	ld	bc,set564 - set532
+	ldir
+	call	resivers
+	ld	de,0184h	; need ResiDOS v1.84+
+	and	a
+	sbc	hl,de
+	jr	nc,init2
+	ld	hl,req184
+	xor	a
+	ret
+
+req184:	defb	'ResiDOS v1.84+ require'
+	defb	0E4h	; 'd'+80h
+outofmem:
+	defb	'4 free RAM banks require'
+	defb	0E4h	; 'd'+80h
+
+;
+init2:	xor	a
+	ld	(banks),a	; no banks reserved yet
+	ld	de,pagert	; address for paging routine
+	exx
+	ld	b,PKG_RESIDOS
+	ld	hl,RESI_GETPAGER
+	rst	RST_HOOK
+	defb	HOOK_PACKAGE
+	jr	nc,initerror	; couldn't get pager (unlikely!)
+	exx
+	ld	b,PKG_RESIDOS
+	ld	hl,RESI_FBASIC
+	rst	RST_HOOK
+	defb	HOOK_PACKAGE
+	jr	nc,initerror	; couldn't find BASIC bank (unlikely!)
+	ld	(bankB),a	; save BASIC bank ID
+	ld	a,PKG_IDEDOS
+	exx
+	ld	b,PKG_RESIDOS
+	ld	hl,RESI_FPKG
+	rst	RST_HOOK
+	defb	HOOK_PACKAGE
+	jr	nc,initerror	; couldn't find IDEDOS bank (unlikely!)
+	ld	(bankI),a	; save IDEDOS bank ID
+	ld	b,4		; 4 banks minimum requirement
+allocloop:
+	call	allocbank
+	jr	nc,initerror	; failed to allocate a bank
+	djnz	allocloop	; loop for other banks
+
+	call	erall		;Clear the screen
+	ld	a,1
+	ld	(cfont),a	;Set current font
+	ld	de,signon
+	call	print		;Sign on
+	ld	hl,(story)
+pslp:	ld	e,(hl)
+	inc	e		;Print story name (FF-terminated)
+	jr	z,pslend
+	dec	e
+	call	opchar
+	inc	hl
+	jr	pslp
+
+pslend:	ld	de,sign1	;Second part of sign-on message
+	call	print
+	ld	hl,(story)
+	call	st_open		;Load the story file
+	ret	nc
+	ld	a,(banks)
+	ld	(maxbnk1+1),a	;store loaded bank limit in routines
+	ld	(maxbnk2+1),a
+	ld	(maxbnk3+1),a
+	call	erall
+	scf
+	ret
+
+; Tidy up if initialisation failed.
+initerror:
+	call	freebanks
+	ld	hl,outofmem
+	xor	a
+	ret
+
+; Allocate another bank and store its ID in the array.
+; Also returns A=bank ID. If error, Fc=0.
+
+allocbank:
+	push	bc
+	push	de
+	push	hl
+	exx
+	ld	b,PKG_RESIDOS
+	ld	hl,RESI_ALLOC
+	rst	RST_HOOK
+	defb	HOOK_PACKAGE
+	jr	nc,noalloc
+	ld	b,a		; save bankID
+	ld	a,(banks)
+	ld	c,a
+	inc	a
+	ld	(banks),a
+	ld	a,b		; restore bankID
+	ld	b,HIGH(bank0)
+	ld	(bc),a
+	scf
+noalloc:
+	pop	hl
+	pop	de
+	pop	bc
+	ret
+
+; Free previously allocated banks
+freebanks:
+	ld	hl,bank0
+	ld	a,(banks)
+	and	a
+	ret	z		; exit if none allocated
+	ld	b,a
+freeloop:
+	ld	a,(hl)		; bank ID to free
+	push	bc
+	push	hl
+	exx
+	ld	b,PKG_RESIDOS
+	ld	hl,RESI_DEALLOC
+	rst	RST_HOOK
+	defb	HOOK_PACKAGE
+	pop	hl
+	pop	bc
+	inc	hl
+	djnz	freeloop	; loop for other banks
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+exit1:	push	af
+	push	hl
+	call	st_close
+	call	freebanks	; deallocate reserved banks
+	pop	hl
+	pop	af
+	jr	c,okfinish
+	ld	de,p3der	; is it a +3DOS error?
+	ex	de,hl
+	sbc	hl,de
+	ex	de,hl
+	jp	nz,zxerr	; nope
+	ld	a,(hl)
+	exx
+	ld	b,PKG_RESIDOS
+	ld	hl,RESI_REPORT	; use ResiDOS to generate report if so
+	rst	RST_HOOK
+	defb	HOOK_PACKAGE
+
+okfinish:
+	ld	hl,finished
+	jp	zxerr
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Peek byte, and peek byte in low 64K
+;
+peek1:	ld	a,h
+	and	0C0h
+	or	e
+	rlca
+	rlca		;A=bank
+maxbnk1:cp	0	;max bank loaded - filled in by init2
+	jp	c,peekm
+	jp	st_peek	;read file if not in memory
+peek64:	ld      a,h
+        rlca
+        rlca
+        and     3       ;A = Z-machine bank, 0-3
+peekm:	di		;must disable interrupts while RAM is paged in
+	push	bc
+	ld	b,HIGH(bank0)
+	ld	c,a
+	ld	a,(bc)	;A=bank ID
+	call	pagert
+	ld	b,h
+	ld	a,h
+	and	3Fh
+	ld	h,a	;HL &= 3FFFh
+	ld	c,(hl)	;get byte
+	ld	h,b
+	ld	a,(bankB)	; BASIC bank ID
+	call	pagert
+	ld	a,c
+	pop	bc
+	scf
+	ei		;safe to re-enable interrupts now
+	ret
+
+;
+; Peek word
+;
+; Memory-only (no bank cross) timings:
+;   Original cost: 233T + 2*pagert (assumes ld a,(NN)==13)
+;   Align bank0: saves 7T
+;   Use alt set, don't save A: saves 30T
+;   New cost: 196T + 2*pagert
+
+peekw:	ld	a,h
+	and	0C0h
+	or	e
+	rlca
+	rlca		;A=bank
+maxbnk2:cp	0	;max bank loaded - filled in by init2
+	jp	nc,st_peekw	; read both bytes from file if not in memory
+	push	hl
+	di		;must disable interrupts while RAM is paged in
+	exx
+	ld	b,HIGH(bank0)
+	ld	c,a
+	ld	a,(bc)	;A=bank ID
+	call	pagert
+	exx
+	ld	a,h
+	and	3Fh
+	ld	h,a	;HL &= 3FFFh
+	ld	b,(hl)	;get 1st byte
+	inc	hl
+	bit	6,h	;has HL crossed bank boundary?
+	jr	nz,pwcross
+	ld	a,(hl)	;get 2nd byte
+	ld	c,a	;BC=word
+	ld	a,(bankB)	; BASIC bank ID
+	call	pagert
+	ei		;safe to re-enable interrupts now
+	pop	hl
+	scf
+	ret
+
+pwcross:pop	hl	;restore EHL=original Z-machine address
+	push	de
+	push	hl	;save
+	inc	hl	;EHL=EHL+1
+	ld	a,h
+	or	l
+	jr	nz,pwcr1
+	inc	e
+pwcr1:	ld	a,h
+	and	0C0h
+	or	e
+	rlca
+	rlca		;A=bank
+maxbnk3:cp	0	;max bank loaded - filled in by init2
+	jr	nc,pwfile1	; read 2nd byte from file if not in memory
+	ld	d,HIGH(bank0)
+	ld	e,a
+	ld	a,(de)	;A=bank ID
+	call	pagert
+	ld	a,h
+	and	3Fh
+	ld	h,a	;HL &= 3FFFh
+	ld	c,(hl)	;get 2nd byte
+	ld	a,(bankB)	; BASIC bank ID
+	call	pagert
+	ei		;safe to re-enable interrupts now
+	pop	hl
+	pop	de
+	scf
+	ret
+
+pwfile1:ld	a,(bankB)
+	call	pagert	;page BASIC back in
+	ei		;safe to re-enable interrupts now
+	call	st_peek	;get 2nd byte from file
+	ld	c,a
+	pop	hl
+	pop	de
+	scf
+	ret
+
+;
+; Peek word with auto-increment
+; TBD: There may still be something to be gained by effectively
+;      inlining peekw.
+;
+ipeekw:	call	peekw
+	ret	nc	; exit if error
+	push	bc
+	ld	bc,2
+	add	hl,bc	; increment HL by 2
+	pop	bc
+	ccf
+	ret	c	; exit if no overflow of HL
+	inc	e
+	scf
+	ret
+
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Poke byte (always in low 64K)
+;
+poke1:
+	di		;must disable interrupts while RAM is paged in
+	ex	af,af'	;save byte
+	push	bc
+	ld      a,h
+        rlca
+        rlca
+        and     3       ;A = Z-machine bank, 0-3
+	ld	b,HIGH(bank0)
+	ld	c,a
+	ld	a,(bc)	;A=bank ID
+	call	pagert
+	ld	b,h
+	ld	a,h
+	and	3Fh
+	ld	h,a	;HL &= 3FFFh
+	ex	af,af'
+	ld	(hl),a	;store byte
+	ld	h,b
+	ld	a,(bankB)	; BASIC bank ID
+	call	pagert
+	pop	bc
+	scf
+	ei		;safe to re-enable interrupts now
+	ret
+
+;
+; Page header in and out.
+;
+headerin:
+	di
+	ld	a,(bank0)
+	jp	pagert
+
+headerout:
+	ld	a,(bankB)
+	call	pagert	;page BASIC back in
+	ei
+	ret
+
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+tmem1:	ld	hl,0dfffh	;Top of memory
+	ret
+
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+ZXERR:	push	hl
+	call	erall
+	pop	de
+	call	print7
+	LD	IY,5C3AH	;Spectrum system veriables
+	EI
+	ld	sp,(ERRSP)
+	ld	a,$ff
+	ld	(ERRNO),a
+	ret
+
+
+	end
+

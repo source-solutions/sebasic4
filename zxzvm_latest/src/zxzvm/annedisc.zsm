@@ -1,0 +1,1042 @@
+;    ZXZVM: Z-Code interpreter for the Z80 processor
+;    Copyright (C) 1998-9,2006,2016  John Elliott <seasip.webmaster@gmail.com>
+;
+;    This program is free software; you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation; either version 2 of the License, or
+;    (at your option) any later version.
+;
+;    This program is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with this program; if not, write to the Free Software
+;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Load the Z-machine itself. The OS's current "directory" should be the folder
+;from which this file was loaded...
+;
+load_zvm:
+	ld	hl,ldzvm
+	call	expand_local
+	ld	de,ldzvme - ldzvm
+	ld	a,os_report
+	call	ANNE
+;
+;Try to open the file
+;
+	ld	hl,zvmstr	;Copy the filename to 2000h
+	ld	de,2000h
+	ld	bc,zvmstre-zvmstr
+	ldir
+	ld	hl,2005h
+	ld	de,2000h
+	ld	b,0		;Read mode
+	call	xltopn
+	jr	nc,znofil
+	ld	hl,7000h	;Where ZXZVM.BIN likes to load
+	call	expand_local
+	ld	b,0
+	ld	de,1000h
+	ld	a,os_read_file
+	call	ANNE
+	jr	nc,zvmld1
+	cp	0A1h
+	jr	z,zvmld9
+	jr	zlderr
+	
+zvmld1:	ld	hl,8000h
+	call	expand_addr
+	ld	b,0
+	ld	de,4000h
+	ld	a,os_read_file
+	call	ANNE
+	jr	nc,zvmld2
+	cp	0A1h
+	jr	z,zvmld9
+	jr	zlderr
+;
+zvmld2:	ld	hl,0C000h
+	call	expand_addr
+	ld	b,0
+	ld	de,4000h
+	ld	a,os_read_file
+	call	ANNE
+	jr	nc,zvmld9
+	cp	0A1h
+	jr	nz,zlderr
+zvmld9:	ld	b,0
+	ld	a,os_close_file
+	call	ANNE
+	scf
+rmv_report:
+	call	pusha
+	ld	a,os_report_remove
+	call	ANNE
+	jp	popa
+;
+zlderr:	call	rmv_report
+	ld	hl,zlderstr
+	ld	de,zlderstre-zlderstr
+	call	alert
+	xor	a
+	ret	
+;
+znofil:	call	rmv_report
+	ld	hl,nzfilestr
+	call	expand_local
+	ld	de,zlderstre-zlderstr
+	call	alert
+	xor	a
+	ret	
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Ask for, and load, the story file
+;
+discinit:
+	ld	a,(ram1)
+	ld	(sele1a),a
+	ld	(sele1b),a
+	call	arrowcur
+	ld	hl,selec1
+	call	expand_local
+	ld	a,os_file_selector
+	call	ANNE
+	ccf
+	jr	nc,difail
+	push	hl
+	push	de
+	ld	de,gamename
+	ld	bc,33	;Keep a copy of the name
+	ldir
+	pop	hl
+	push	hl
+	ld	de,gametype
+	ld	bc,5	;Keep a copy of the type
+	ldir
+	pop	de
+	pop	hl
+	ld	b,0	;Read mode
+	ld	a,os_open_file
+	call	ANNE
+	ld	hl,grerr
+	ccf
+	jr	nc,diiend
+	ld	a,1
+	ld	(ofile),a
+;
+;The Z-code file is open...
+;
+	ld	a,os_file_selector_off
+	call	ANNE
+	call	waitcur
+loadlp:	call	ldbank
+	jp	z,rldend
+	jr	loadlp	
+;
+difail:	ld	hl,abandstr
+diiend:	push	hl
+	push	af
+	ld	a,os_file_selector_off
+	call	ANNE
+	pop	af
+	pop	hl
+	ret
+;
+ldbank:	call	annealloc
+	ld	hl,memer1	;Out of memory
+	ret	nc
+	push	af
+	ld	de,ldbnkstr	;Show the "progress" box with
+	call	sphex2		;the current memory bank
+        ld      hl,ldingstr
+        call    expand_local
+        ld      de,ldingstre-ldingstr
+        ld      a,os_report
+        call    ANNE
+	pop	af
+	ld	c,a
+	ld	hl,0
+	ld	de,4000h
+	ld	b,0
+	ld	a,os_read_file
+	call	ANNE
+	push	af
+	ld	a,os_report_remove
+	call	ANNE
+	pop	af
+	jr	nc,ldrnz
+	cp	0A1h	;EOF is fine.
+	scf
+	ret	z	;Z C  - EOF
+	ld	hl,grerr
+	xor	a	;Z NC - Error
+	ret
+;
+ldrnz:	xor	a
+	dec	a	;NZ C - OK
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+ofile:	defb	0	;Set to 1 if the game file is open.
+zver:	defb	0	;Version of the game, 1-8
+usezr:	defb	0	;Data transfer using ZXZVM address space or
+			;z-machine address space?
+
+gametype:
+	defs	5	;The "type" field of the game file (.ZDT)
+gamename:
+	defs	33	;The "name" field of the game file
+;
+savetype:
+	defs	5	;Type of the savefile
+savename:
+	defs	33	;Name of the savefile
+;
+abandstr:	defb	'Selection abandoned'
+	defb	0AEh		;'.'+80h
+;
+grerr:	defb	'Story file read error'
+	defb	0AEh		;'.'+80h
+;
+memer1:	defb	'This story file is too big'
+	defb	0AEh
+;
+ldingstr:	defb	'The story is loading...',0
+	defb	'(Memory bank '
+ldbnkstr:	defb	'00)',0,0,0
+ldingstre:
+
+rldingstr: defb    'The story is restarting...',0
+         defb    '(Memory bank '
+rldbnkstr: defb    '00)',0,0,0
+rldingstre:
+
+vringstr: defb    'Verifying the story',0
+        defb    '(File block '
+vrbnkstr: defb    '00)',0,0,0
+vringstre:
+
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;File selectors...
+;
+;Z-code file selector.
+;
+selec1:	defb	0C0h	;Load
+	defw	sel1ttl	;Title
+sele1a: defb	0	;Bank for title
+	defw	sel1prm	;Prompt
+sele1b: defb	0	;Bank for prompt
+	defb	1	;Assume game files on the floppy
+			;(they'd never fit in Flash!)
+	defb	0,0,0	;First legal folder
+	defb	0,0,0	;No suggested filename
+	defb	'ZDT'	;Extension. Since we're only allowed one,
+			;we can't use Z1-Z8 and DAT.
+	defb	0	;Only allow PCW discs
+	defb	0,0,0	;Use standard OS alerts
+;
+sel1ttl:
+	defb	'Select story file',0
+sel1prm:
+	defb	'Select the story file you want to play, and press '
+	defb	0A5h,0
+;
+;Savefile: Load 
+;
+lsavsel:defb    0C0h    ;Load
+        defw    sel2ttl ;Title
+sele2a: defb    0       ;Bank for title
+        defw    sel2prm ;Prompt
+sele2b: defb    0       ;Bank for prompt
+        defb    1       ;Assume save files on the floppy
+        defb    0,0,0   ;First legal folder
+	defb    0,0,0   ;No suggested filename
+        defb    'SAV'   ;Extension. Since we're only allowed one,
+                        ;we can't use Z1-Z8 and DAT.
+        defb    0       ;Only allow PCW discs
+        defb    0,0,0   ;Use standard OS alerts
+;
+sel2ttl:
+	defb	'Load saved position',0
+sel2prm:
+	defb	'Select the position you want to reload, and press '
+	defb	0A5h, 0
+;
+ssavsel:defb    0C1h    ;Save
+        defw    sel3ttl ;Title
+sele3a: defb    0       ;Bank for title
+        defw    sel3prm ;Prompt
+sele3b: defb    0       ;Bank for prompt
+        defb    1       ;Assume save files on the floppy
+        defb    0,0,0   ;First legal folder
+	defw	sel3name ;Suggested name
+sele3c:	defb	0	;Bank for suggested name
+        defb    'SAV'   ;Extension. Since we're only allowed one,
+                        ;we can't use Z1-Z8 and DAT.
+        defb    0       ;Only allow PCW discs
+        defb    0,0,0   ;Use standard OS alerts
+;
+sel3ttl:
+	defb	'Save your position',0
+sel3prm:
+	defb	'Type a name for this save file, and press '
+	defb	0A5h,0	
+sel3name:
+	defs	68
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+ldzvm:	defb	'Loading Z-machine support',0,0,0
+ldzvme:
+savstr:	defb	'.SAV',0
+zvmstr:	defb	'.BIN',0
+	defb	'Z-machine support',0
+zvmstre:
+
+nzfilestr:
+	defb    'I could not find the file "Z-machine support".',0
+	defb    'The Z-machine needs this file to run.',0,0
+	defb    1
+	defb    0FBh, 80h, 0Dh, 80h, 'o', 80h, ' ', 80h
+	defb    ' ',1Fh, 'OK ',0A5h,' ',0
+nzfilestre:
+
+zlderstr:	defb	'I could not load the file "Z-machine support".',0
+	defb	'The Z-machine needs this file to run.',0,0
+        defb	1
+        defb	0FBh, 80h, 0Dh, 80h, 'o', 80h, ' ', 80h
+        defb	' ',1Fh, 'OK ',0A5h,' ',0
+zlderstre:
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Initialise the Z-machine header
+;
+ihdr1:	call	bgetram3
+	ld	l,a
+	push	hl		;RAM 3, old value
+	ld	a,(zram)
+	call	bsetram3	;Page in the header at 0C000h
+;
+;This code is pretty much as in ZXIO.ZSM...
+;
+        ld      a,(0C000h)      ;Z-machine version
+        ld      (zver),a
+        ld      de,zvbuf
+        ld      l,a
+        ld      h,0             ;Create the "invalid version" error
+        call    spdec3
+        ex      de,hl
+        dec     hl
+        set     7,(hl)          ;Fatal error, so set bit 7 of last char
+        ld      hl,zvbad
+        ld      a,(zver)
+	cp	3		;<< v0.04 v3 acceptable
+	jr	z,okver		;>> v0.04
+	cp	4		;<< v1.10 v4 acceptable
+	jr	z,okver		;>> v1.10
+        cp      8
+        jr      z,okver
+        cp      5
+        jr      nz,ihdr8
+;
+;Version is acceptable
+;
+;nb: the Z-machine is big-endian, but Anne is little-endian. So
+;   the LSB of a word will be in H.
+;
+okver:  cp      4               ;v3 flags or v4 flags?
+        ld      hl,(0C001h)     ;Flags 1
+        ld      a,l
+        jr      nc,v4flag
+        and     09Fh            ;Reset bits 5,6
+        jr      cflag
+
+v4flag: and     0B8h            ;Reset bits 0,1,5
+        or	9Ch             ;Set bits 2,3,4 and 7.
+cflag:  ld      l,a
+        ld      (0C001h),hl
+        ld      hl,(0C010h)     ;Flags 2
+        ld      a,h
+        and     43h             ;No pictures, no mouse, no UNDO, no sound
+        ld      h,a
+        res     0,l             ;"Menus" bit
+        ld      (0C010h),hl
+        ld      hl,scrset5
+        ld      de,0C020h
+        ld      bc,8
+        ldir
+	scf
+	defb	0Eh
+ihdr8:	and	a
+ihdr9:	pop	de
+	push	af
+	push	hl
+	ld	a,e
+	call	bsetram3
+	pop	hl
+	pop	af
+	ret	
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Variables for header initialisation
+;
+scrset5:
+;;        defb    36,104,2,112,1,184,12,6     ;36x104 chars 440x624 pels
+	defb	36,104,0,104,0,36,1,1		;36x104 chars, unit=1 char
+zvbad:  defb    'Bad story format '
+zvbuf:  defb    '000'
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Restart the game - reload the first 64k
+; << v0.03 >> preserving Flags 2
+;
+discreset:
+	ld	hl,10h	;<< v0.03 
+	ld	e,0
+	call	ZXPKWD
+	push	bc	;>> v0.03 BC = Flags 2
+	ld	hl,gametype
+	ld	de,2000h
+	ld	bc,38
+	ldir
+	ld	hl,2005h
+	ld	de,2000h
+
+        ld      b,0     ;Read mode
+	call	xltopn
+	jr	c,res001
+	jp	diewith	;<< v0.04 >> Failing to restart is a fatal error
+;;	pop	bc	;<< v0.03 >> tidy up the stack
+;;	ret
+;
+res001:
+	ld      a,1
+        ld      (ofile),a
+;
+;The Z-code file is open...
+;
+        call    waitcur
+	ld	b,4
+	ld	de,zram
+reslp:	ld	a,(de)
+	push	de
+	push	bc
+	call    rldbank
+	pop	bc
+	pop	de
+	jr	z,rldfail
+	inc	de
+	djnz	reslp	
+	call	rldend	; << v0.03 Close the file
+	pop	bc	;   and restore the flags
+	ld	hl,10h
+	ld	a,b
+	call	ZXPOKE
+	inc	hl
+	ld	a,c
+	call	ZXPOKE	; >> v0.03
+	scf
+	ret
+;
+rldfail:		; << v0.03 rebalance the stack
+	call	rldend
+	pop	bc
+	ret		; >> v0.03
+;
+rldend:	push	af
+	push	hl
+	ld	a,os_close_file
+	ld	b,0
+	call	ANNE
+	xor	a
+	ld	(ofile),a
+	pop	hl
+	pop	af
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Reload a memory bank, A=bank to load into
+;
+rldbank:
+	push    af
+        ld      de,rldbnkstr       ;Show the "progress" box with
+        call    sphex2          ;the current memory bank
+        ld      hl,rldingstr
+        call    expand_local
+        ld      de,rldingstre-rldingstr
+        ld      a,os_report
+        call    ANNE
+        pop     af
+        ld      c,a
+        ld      hl,0
+        ld      de,4000h
+        ld      b,0
+        ld      a,os_read_file
+        call    ANNE
+        push    af
+        ld      a,os_report_remove
+        call    ANNE
+        pop     af
+        jp      nc,ldrnz
+        cp      0A1h    ;EOF is fine.
+        scf
+        ret     z       ;Z C  - EOF
+        ld      hl,grerr
+        xor     a       ;Z NC - Error
+        ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Get a filename. Enter with A=0 for "load", 1 for "save as". Currently 
+;used only for savefiles.
+;
+;Return a cookie in HL.
+;
+gname:	ld	hl,lsavsel	
+	or	a
+	jr	z,gname1
+	ld	a,os_get_timedate
+	call	ANNE		;HL -> time & date record
+	call	expand_addr
+	ld	b,0A4h
+	ld	a,os_time_to_ascii
+	call	ANNE		;HL -> ASCII string record
+	ld	c,(hl)
+	inc	hl
+	ld	b,0
+	ld	de,sel3name
+	ld	a,b
+	or	c
+	jr	z,ss3n1
+	ldir			;Copy to sel3name. Now append game name
+ss3n1:	ld	a,' '
+	ld	(de),a
+	inc	de
+	ld	hl,gamename	;Append 32 chars of game name
+	ld	bc,32
+	ldir
+	xor	a
+	ld	(sel3name+32),a	;Zero-terminate it if it's longer than 32 	
+	ld	hl,ssavsel
+gname1:	ld      a,(ram1)
+        ld      (sele2a),a
+        ld      (sele2b),a
+	ld	(sele3a),a
+	ld	(sele3b),a
+	ld	(sele3c),a
+	call	expand_addr
+	ld	a,os_file_selector
+	call	ANNE
+	ccf
+	jr	nc,gname2
+	push	de		;Filetype
+	ld	de,savename	;Grab the savefile name and type
+	ld	bc,32
+	ldir
+	pop	hl
+	ld	de,savetype	;for later
+	ld	bc,5
+	ldir
+	ld	hl,savetype	;Magic cookie
+	scf
+gname2:	push	af
+	push	hl
+	ld	a,os_file_selector_off
+	call	ANNE
+	pop	hl
+	pop	af
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Open file. B=mode (0=read 1=write) and HL = filename cookie
+;
+fopn:	ld	a,80h
+	ld	(rdptr),a
+	ld	a,b
+	ld	(fmode),a
+	push	bc
+	ld	de,2000h	;HL points at: type (5 bytes); name (33 bytes)
+	ld	bc,38
+	ldir			;Copied to 2000h
+	pop	bc
+	ld	de,2000h	;Filetype
+	ld	hl,2005h	;Filename
+xltopn:	ld	a,os_open_file	;Open a file; return HL->ASCIIZ error if failed
+	push	hl		;<< v0.04 Retry if "disk changed" error
+	push	de
+	push	bc
+	call	ANNE	
+	pop	bc
+	pop	de
+	pop	hl
+	ccf
+	ret	c
+	cp	22h		;Disk has been changed?
+	jr	nz,xlterr
+	push	hl
+	push	bc
+	push	de
+	ld	a,os_get_cwd
+	ld	hl,2040h
+	call	ANNE
+	push	af
+	ld	a,os_change_disk
+	call	ANNE		;Log new disk
+	pop	af
+	jr	c,gwd_fail
+	ld	a,os_set_cwd
+	ld	hl,2040h
+	call	ANNE
+gwd_fail:
+	pop	de
+	pop	bc
+	pop	hl
+	ld	a,os_open_file
+	call	ANNE
+	ccf
+	ret	c		;>> v0.04
+xlterr:	cp	7		;<< v0.03 >> Map unknown errors to "disc full"
+	jr	c,xlter1
+	ld	a,6
+xlter1: ld	e,a
+	ld	d,0
+	ld	hl,dkerrs
+	add	hl,de
+	add	hl,de	
+	ld	a,(hl)
+	inc	hl
+	ld	h,(hl)
+	ld	l,a
+	xor	a
+	ret
+;
+fclse:	ld	a,(fmode)
+	ld	b,a
+	ld	a,os_close_file
+	call	ANNE
+	ccf	
+	ret	c
+	jr	xlterr
+;
+fread:	ld	a,b
+	or	c
+	scf
+	ret	z
+	xor	a
+	ld	(usezr),a
+	jr	readcmn		
+;
+fwrite:	ld	a,b
+	or	c
+	scf
+	ret	z
+	xor	a
+	ld	(usezr),a
+	jr	writecmn
+
+frmem:	ld	a,b
+	or	c
+	scf
+	ret	z
+	ld	a,1
+	ld	(usezr),a
+readcmn:
+	call	waitcur
+	ld      d,b
+        ld      e,c     ;DE = no. of bytes to read
+rdmem1:	push    hl
+        push    de
+        call    blkad0  ;Returns HL = block base, DE = block length, C=bank
+        push    de
+	call	xread
+        jr      nc,rdmfail
+        pop     bc      ;BC = no. of bytes read
+        pop     hl      ;HL = total bytes to transfer
+        and     a
+        sbc     hl,bc   ;HL = bytes left to transfer
+        jr      c,rdmem2
+        jr      z,rdmem2 ;End of transfer
+        ex      de,hl   ;DE = no. of bytes left to transfer
+        pop     hl
+        add     hl,bc   ;HL = new base address
+        jr      rdmem1
+;
+fwmem:	ld	a,b
+	or	c
+	scf
+	ret	z
+	ld	a,1
+	ld	(usezr),a
+writecmn:
+	call	waitcur
+        ld      d,b
+        ld      e,c     ;DE = no. of bytes to write
+wrmem1:	push    hl
+        push    de
+        call    blkad0  ;Returns HL = block base, DE = block lenth, C=bank
+        push    de
+        ld      b,0	;BDE = length CHL=base
+	ld	a,os_write_file
+	call	ANNE 
+        jr     	c,rdmfail
+        pop     bc      ;BC = no. of bytes read
+        pop     hl      ;HL = total bytes to transfer
+        and     a
+        sbc     hl,bc   ;HL = bytes left to transfer
+        jr      c,rdmem2
+        jr      z,rdmem2 ;End of transfer
+        ex      de,hl   ;DE = no. of bytes left to transfer
+        pop     hl
+        add     hl,bc   ;HL = new base address
+        jr 	wrmem1
+;
+rdmem2:	call	ibeam
+	pop     de
+        scf
+        ret
+;
+rdmfail:
+	pop     de      ;Read failed
+        pop     de
+        pop     de
+	call	ibeam
+	jp	xlterr
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Checksum the game file - add all bytes from 40h, for length DBC.
+;
+fvrfy:	ld	hl,0
+	ld	(vrsumr),hl
+	call	waitcur
+	call	vralloc
+	jr	c,vrend0
+	ld	a,1		;Set the bank 0 ('start at 40h') flag.
+	ld	(vbank0),a	
+	xor	a
+	ld	(vrcount),a	;Bank count
+	call	vropen
+	jr	c,vrend1
+	ld	hl,0
+vrloop:	call	vrload		;Load bank	
+	call	vrsum		;Sum bank
+	jr	nc,vrloop
+
+vrend2:	call	vrclose
+vrend1:	call	vrfree
+vrend0:	ld	hl,(vrsumr)
+	jp	ibeam
+
+;
+;Open the game file to checksum it
+;
+vropen:	push	bc
+	push	de
+	ld	hl,gametype
+	ld	de,2000h
+        ld      bc,38
+        ldir                    ;Copied to 2000h
+	ld	b,0		;Open to read
+        ld      de,2000h        ;Filetype
+        ld      hl,2005h        ;Filename
+	ld	a,os_open_file
+	call	ANNE
+	pop	de
+	pop	bc	
+	ret
+;
+;Close the game file
+;
+vrclose:
+	push	af
+	push	hl
+	ld	a,os_close_file
+	ld	b,0
+	call	ANNE
+	pop	hl
+	pop	af
+	ret
+;
+;Load a 16k bank to checksum it
+;
+vrload: push	bc
+	push	de
+
+	ld	a,(vrcount)
+	inc	a
+	ld	(vrcount),a
+        ld      de,vrbnkstr       ;Show the "progress" box with
+        call    sphex2          ;the current memory bank
+        ld      hl,vringstr
+        call    expand_local
+        ld      de,vringstre-vringstr
+        ld      a,os_report
+        call    ANNE
+
+	ld	a,(vram)
+	ld	c,a
+	ld	hl,0C000h
+	ld	b,l
+	ld	e,l	
+	ld	d,40h	;BDE = 4000h, length of bank	
+	ld	a,os_read_file
+	call	ANNE
+
+	push	af
+	ld	a,os_report_remove
+	call	ANNE
+	pop	af
+
+	pop	de
+	pop	bc
+	ret
+;
+;Checksum a bank 
+;
+vrsum:	call	bgetram3
+	push	af	;A = old bank 3
+	ld	a,(vram)
+	call	bsetram3
+
+	ld	hl,0C000h
+	ld	a,(vbank0)
+	or	a
+	jr	z,vrsum1
+	ld	l,40h		;Start at C040h for 1st bank
+vrsum1: xor	a
+	ld	(vbank0),a
+	ld	a,b
+	or	c
+	or	d
+	jr	z,cksend
+cksloop:
+	push	de
+	push	hl
+	ld	e,(hl)
+	ld	d,0		;Add to the total
+	ld	hl,(vrsumr)
+	add	hl,de
+	ld	(vrsumr),hl
+	pop	hl
+	pop	de
+	dec	bc
+	ld	a,b		;Continue counting down
+	and	c
+	inc	a		;If it's 0FFFFh, roll over D
+	jr	nz,cksne
+	dec	d		;DEC DBC
+cksne:	ld	a,b
+	or	c
+	or	d
+	jr	z,cksend	;Countdown reaches 0. All bytes summed.
+
+	inc	hl		;End of bank?
+	ld	a,h
+	or	a
+	jr	z,cksnxt	;End. Go to next bank.
+	jr	cksloop			
+
+cksend: pop	af	;Restore previous bank 3
+	call	bsetram3
+	scf		;End of checksumming
+	ret
+;
+cksnxt:	pop	af	;Restore previous bank 3
+	call	bsetram3
+	xor	a	;Not end of checksumming
+	ret	
+;
+;Allocate 16k for checksumming (we read in and sum 16k at a time)
+;
+vralloc:
+	push	de
+	push	bc
+	ld	b,1
+	ld	e,0
+	ld	a,os_get_mem
+	call	ANNE
+	pop	bc
+	pop	de
+	ret	c	;Invalid call
+	ld	a,b
+	or	a
+	scf
+	ret	z	;Out of memory
+	ld	a,(hl)	;A = memory bank to use.
+	ld	(vram),a
+	and	a
+	ret
+;
+;Free the memory used for checksumming
+;
+vrfree:	push	af
+	push	hl
+	ld	hl,vram
+	call	expand_addr
+	ld	e,0
+	ld	a,os_release_mem
+	call	ANNE
+	pop	hl
+	pop	af
+	ret	
+;
+vrsumr:	defw	0	;Checksum of current bank
+vram:	defb	0,0	;Memory bank used for verification buffer
+vbank0:	defb	0	;Set to 1 if doing first bank of file (start at 40h)
+vrcount: defb	0	;No. of memory banks done so far
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;If (usezr) is 1: HL = z-address of block, DE = length of block.
+;                 returns CHL = 24-bit address, DE = length of block 
+;		  without crossing into the next memory bank.
+;
+;If (usezr) is 0: As above, but HL = address in ZXZVM's memory space.
+;
+blkad0:	ld	a,(usezr)
+	and	a
+	jr	nz,blkadz
+	call	expand_addr	;Expand HL to CHL.
+	jr	blkadc
+;
+blkadz:	ld      a,h     ;Let HL = true address of block, C the bank it is in,
+        rlca            ;    DE = amount of block within this bank.
+        rlca            ;A = 0 - 3, bank number
+        and     3
+	push	hl
+	ld	hl,zram
+	add	a,l
+	ld	l,a
+	ld	a,(hl)	;A = Anne bank number
+	pop	hl
+	ld      c,a     ;C is bank - 1, 3, 4, 0
+blkadc:
+	push	hl	;HL = address
+        ld      a,h
+        and     03Fh    ;Limit HL to 14 bits (base address in this bank)
+	ld	h,a
+        push    de      ;DE = length of block
+        ld      de,4000h
+        and     a
+	ex	de,hl	;4000h - base in this block = length
+        sbc     hl,de   ;HL = max length in this bank
+        pop     de      ;DE = length of block
+	ld      a,h
+        cp	d 
+        jr      nc,blkad2       ;If HL >= DE, return DE
+        ld      a,l
+        cp      e
+        jr      nc,blkad2
+        ex      de,hl           ;DE = length to read/write
+blkad2: pop     hl              ;HL = base address
+        ret
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;In read or write mode?
+;
+fmode:	defb	0
+;
+;ASCII equivalents of disc error numbers
+;
+dkerrs:	defw	derr0,derr1,derr2,derr3,derr4,derr5,derr6	;<< v0.03 >>
+derr0:	defb	'Disc error '
+	defb	0B0h	;'0'+80h
+derr1:	defb	'Disc error '
+	defb	0B1h	;'1'+80h
+derr2:	defb	'File not foun'
+	defb	0E4h	;'d'+80h
+derr3:	defb	'Disc error '
+	defb	0B3h	;'3'+80h
+derr4:	defb	'Too many open file'
+	defb	0F3h	;'s'+80h
+derr5:	defb	'Disc is read-onl'
+	defb	0F9h	;'y'+80h
+derr6:	defb	'Disc is ful'		; << v0.03 Added this error
+	defb	0ECh	;'l'+80h	; >> v0.03
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Read data with no overflow. CHL = address; DE = length
+;
+;Because of Rosanne's tendency to overflow by up to 511 bytes, we can't
+;do a direct load. Instead, do it in the same way as we would to read 
+;byte at a time under CP/M, right down to the 128-byte records.
+;
+;Earlier code has insured that HL will not overflow its bank.
+;
+xread:	ld	a,d
+	or	e
+	scf
+	ret	z
+	call	rdbyte		;A = byte
+	ret	nc
+	push	de
+	ld	e,a
+	ld	a,os_put_byte_24bit
+	ld	b,0
+	call	ANNE		;Write the byte to memory
+	pop	de
+	inc	hl
+	dec	de
+	jr	xread
+;
+rdbyte: ld	a,(rdptr)	;Get the next byte from the file. 
+	cp	80h		;Preserve BC DE HL.
+	call	nc,xrload
+	ret	nc
+	push	hl
+	push	de	
+	ld	e,a
+	inc	a
+	ld	(rdptr),a
+	ld	d,0
+	ld	hl,rdbuf
+	add	hl,de
+	pop	de
+	ld	a,(hl)
+	pop	hl
+	scf
+	ret
+;
+xrload:	push	hl		;Load 128 bytes into the buffer.
+	push	bc
+	push	de
+	ld	hl,rdbuf
+	call	expand_addr
+	ld	de,80h
+	ld	b,0
+	ld	a,os_read_file
+	call	ANNE
+	ccf
+	pop	de
+	pop	bc
+	pop	hl
+	jr	c,xrok	; << v0.03 do not give error on EOF.
+	cp	0A1h	;    It may be caused by overrun.
+	jr	z,xrok
+	and	a
+	ret
+;	
+xrok:	xor	a	; >> v0.03
+	scf
+	ret
+;
+rdptr:	defb	80h
+rdbuf:	defs	640	;Allow for 80h bytes plus 512-byte overflow
+;

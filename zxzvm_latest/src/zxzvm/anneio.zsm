@@ -1,0 +1,473 @@
+;    ZXZVM: Z-Code interpreter for the Z80 processor
+;    Copyright (C) 1998-9,2006,2016  John Elliott <seasip.webmaster@gmail.com>
+;
+;    This program is free software; you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation; either version 2 of the License, or
+;    (at your option) any later version.
+;
+;    This program is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with this program; if not, write to the Free Software
+;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+;ZXZVM I/O module for ROSanne (the PCW16 operating system)
+;
+;PCW16 programs load at 4000h and are executed at 4100h.
+;This means the ZXZVM jumpblock fits in nicely at 4000h. However, Rosanne
+;overwrites the start of the .PRG file with argv[0], so we have to copy the
+;jumpblock in manually.
+;
+	org	4000h
+;
+;Entry points for the PCW16 BIOS
+;
+bsetram1 equ	0BFh
+bsetram2 equ	0C2h
+bsetram3 equ	0C5h
+bgetram0 equ	0C8h
+bgetram1 equ	0CBh
+bgetram2 equ	0CEh
+bgetram3 equ	0D1h
+bprintbyte equ  137h
+
+;
+;Initial header files
+;
+	include	anneos.inc
+	include in_zxzvm.inc
+
+TERPTYPE equ	7003h	;Interpreter type
+	
+ANNE	equ	003Bh
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+	defs	40FCh-$	;Allow 4 bytes for default memory configuration
+ram0:	defb	0
+ram1:	defb	0
+ram2:	defb	0
+ram3:	defb	0
+;
+begin:	jp	begin2
+zspl:	defs	2	;32k for the z-machine, 32k to give back to the OS
+zram:	defs	7Eh	;I want 'zram' to fit entirely in one 256-byte page,
+			;for reasons of speed accessing it.
+
+begin2:	ld	hl,jblock
+	ld	de,4000h
+	ld	bc,jblend-jblock
+	ldir
+	call	bgetram0	; This is the entry point for the .PRG file.
+	ld	(ram0),a
+	call	bgetram1
+	ld	(ram1),a
+	call	bgetram2
+	ld	(ram2),a
+	call	bgetram3
+	ld	(ram3),a
+;
+;Get our app ID
+;
+	ld	a,(ram1)
+	ld	e,a
+	ld	a,os_get_mem_ownerid
+	call	ANNE
+	ld	(gl_apid),de 
+	xor	a
+	call	init_app	;init_app to return non-zero to quit 
+	or	a		;immediately.
+	jr	nz,quit
+	ld	a,os_flush_events
+	call	ANNE
+;
+;This is where the main message pump would normally be. However, it isn't.
+;
+;ZXZVM was written as an imperative program, and event handling happens when
+;it releases control (call to ZXRCPU), or when it is awaiting keyboard input.
+;Consequently, the message pump is in ZXRCPU and the keyboard input code.
+;
+	ld	a,2		;Claim to be an Apple IIe, so that Beyond Zork
+	ld	(TERPTYPE),a	;uses ASCII art.
+	call	7000h		;Start the Z-machine. 
+;
+quit:	call	exit_app
+	ld	de,(gl_apid)
+	ld	a,os_release_allmem
+	call	ANNE
+	ld	a,os_app_exit
+	jp	ANNE
+;
+;End of "AnneMain" function
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;1. Attempt to allocate memory.
+;
+init_app:
+	call	waitcur
+	call	annezalloc	;Allocate 32k for the VM.
+	jr	c,init_ap1
+init_ap0:
+	ld	hl,nomem
+	ld	de,nomend-nomem
+	call	alert
+	jp	quit
+;
+;2. Attempt to load ZXZVM.BIN itself.
+;
+init_ap1:
+	ld	a,(zspl)	;Map in the RAM for ZXZVM.
+	call	bsetram2
+	ld	a,(zspl+1)
+	call	bsetram3
+
+	call	load_zvm
+	jp	nc,quit
+
+	call	makemenu	;Create & display the menu
+;
+;If there's any more initialisation to do, it can go here or in init1 below.
+;
+;init1 is (or had better be) called by ZXZVM.BIN.
+;
+	xor	a
+	ld	(running),a
+	ret
+;
+;Deinitialisation. Close any files that may be open.
+;
+exit_app:			;Functions to perform just before
+	ld	a,(ofile)	;termination
+	or	a
+	ret	z
+closelp:
+	ld	b,0
+	ld	a,os_close_file
+	call	ANNE
+	ld	a,(ofile)
+	dec	a
+	ld	(ofile),a
+	jr	nz,closelp
+	ret
+;
+;Initialise the Z-program.
+;
+init1:	call	discinit
+	ret	nc
+	call	ZXCLS	
+	call	ibeam	;Select I-beam cursor
+	ld	a,1	;Select proportional font
+	call	ZXSFNT	
+	scf
+	ret
+;
+;Terminate the Z-program.
+;
+exit1:	jp	nc,diewith
+	ret
+;
+;Restart the Z-program.
+;
+rst1:	ld	hl,10h	;Preserve Flags 2 through the restart
+	call	ZXPK64
+	ld	b,a
+	inc	hl
+	call	ZXPK64
+	ld	c,a	;BC = flags 2
+	push	bc
+	call	discreset	;Reload story file
+	call	ZXCLS
+	call	ibeam
+	ld	a,1
+	call	ZXSFNT
+	pop	bc	;Restore Flags 2
+	ld	hl,10h
+	ld	a,b
+	call	ZXPOKE
+	inc	hl
+	ld	a,c
+	call	ZXPOKE
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Get a random integer into DE
+;
+rndi1:  ld      a,os_get_timedate
+        call    ANNE
+        ld      a,(hl)  ;Tick count
+        ld      d,a
+        inc     hl
+        inc     hl
+        ld      e,a     ;DE = randomish number
+        scf
+        ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;No-op calls and dummy jumps
+;
+scol1:	scf	;Colours are not supported, full stop
+	ret
+;
+STUB:	ld	hl,stub$
+	jp	diewith
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Expand a 16-bit Z80 address to a 24-bit Anne address
+;
+expand_addr:
+	ld	a,h
+	rlca
+	rlca
+	and	3
+	or	0F0h
+	ld	c,a
+	in	a,(c)	;Get RAM configuration for bank <n>	
+	ld	c,a
+	ret	
+;
+expand_local:		;Expand an address in this bank
+	ld	a,(ram1)
+	ld	c,a
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Numeric data
+;
+gl_apid:
+	defw	0		;Application ID
+running:
+	defb	0		;Is the Z-machine running? 
+				;0 if not yet started; 1 if running;
+				;2 if terminated.
+;
+;Alerts
+;
+errbuf:	defs	32			;32 bytes message
+errend:	defb	0,0			;33 34
+;;;	defb	1			;35   1 button
+	defb	2			;35   For debugging, 2 buttons. 
+	defb	0FBh, 80h		;36 Tick	
+	defb	 0Dh, 80h		;38 CR
+	defb	'o',  80h		;40 O
+	defb	' ',  80h		;42 SPACE
+	defb	' ',1Fh,'OK ',0A5h,' ',0;44-51 "OK"
+	defb	0FCh, 80h
+	defb	's',80h
+	defb	's',80h
+	defb	's',80h
+	defb	' ',1Fh,'Stop ',0A4h,' ',0
+errbe:
+
+nomem:	defb	'Not enough free memory to run the Z-machine',0
+	defb	'The Z-machine needs 112k free.',0,0
+	defb	1
+	defb	0FBh, 80h, 0Dh, 80h, 'o', 80h, ' ', 80h
+	defb	' ',1Fh, 'OK ',0A5h,' ',0
+nomend:
+
+stub$:	defb	'Stub encountered'
+	defb	0A1h			;'!'+80h
+;
+brk1:	defw	0
+;
+brk$:	defb	'Debug breakpoint '
+brkn:	defb	'0000'
+	defb	0A0h			;'t'+80h
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+pusha:	ex	(sp),hl		;HL = return address, (SP) = old HL.
+	ld	(pushb+1),hl	;Return address
+	pop	hl
+	push	af
+	push	bc
+	push	de
+	push	hl
+	push	ix
+	push	iy
+pushb:	jp	0
+;
+popa:	pop	iy
+	pop	ix
+	pop	hl
+	pop	de
+	pop	bc
+	pop	af
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Alert functions
+;
+yes_i_live:
+	call	pusha
+;;;	call	print_buf
+	ld	hl,(brk1)
+	inc	hl
+	ld	(brk1),hl
+	ld	de,brkn
+	call	sphex4
+	ld	hl,brk$
+	call	do_alert
+	jp	popa
+
+diewith:
+	call	do_alert
+	jp	quit
+;
+ilalert:	
+	ex	(sp),hl
+	push	bc
+	push	de
+	push	af
+	ld	de,errbuf
+	ld	b,32
+ilal0:	ld	a,(hl)
+	cp	'$'
+	jr	z,ilal1
+	ld	(de),a
+	inc	hl
+	inc	de
+	djnz	ilal0
+
+ilal1:	inc	hl	;HL -> ret addr
+	push	hl
+	ld	a,b
+	or	a
+	jr	z,ilal3
+	ld	a,' '
+ilal2:	ld	(de),a
+	inc	de
+	djnz	ilal2	
+ilal3:	call	diew3
+	pop	hl
+	pop	af
+	pop	de
+	pop	bc
+	ex	(sp),hl
+	ret
+;
+do_alert:
+	push	hl
+	ld	hl,errbuf	;Fill the message buffer with spaces
+	ld	de,errbuf
+	ld	bc,31
+	inc	de
+	ld	(hl),20h
+	ldir	
+	pop	hl
+	ld	de,errbuf
+	ld	b,32
+diew0:	ld	a,(hl)
+	bit	7,a
+	jr	nz,diew1
+	ld	(de),a
+	inc	hl
+	inc	de
+	djnz	diew0
+	jr	diew3
+;
+diew1:	and	7fh
+	ld	(de),a
+diew3:	ld	hl,0
+	ld	(errend),hl
+	ld	de,errbe-errbuf
+	ld	hl,errbuf
+	call	alert
+	ret	
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+udiv16: ld      a,d     ;Divides BC by DE. Gives result in BC, remainder in HL.
+        or      e
+        ret     z       ;Return NC if dividing by 0
+        ld      hl,0
+        ld      a,16
+udiv1:  scf
+        rl      c
+        rl      b
+        adc     hl,hl
+        sbc     hl,de
+        jr      nc,udiv2
+        add     hl,de
+        dec     c
+udiv2:  dec     a
+        jr      nz,udiv1
+        scf
+        ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;The jumpblock. This ends up at 4000h...
+;
+jblock:
+	jp	init1	;Initialise, load story file
+	jp	exit1	;Deinitialise
+	jp	cls1	;Clear screen
+	jp	peek1	;Read byte from Z-machine memory
+	jp	poke1	;Write byte to Z-machine memory
+	jp	peek64	;Read byte from low 64k
+	jp	peekw	;Read word from Z-machine memory
+	jp	ipeekw	;Read word with auto increment
+	jp	fdos1	;CP/M-like I/O functions
+	jp	ihdr1	;Initialise the header
+	jp	tmem1	;Get top of available host memory
+	jp	eraw1	;Erase window
+	jp	zchr1	;Output a ZSCII letter in HL.
+	jp	swnd1	;Split window
+	jp	swnd2	;Select window
+	jp	styl1	;Set text style
+	jp	scur1	;Set cursor position
+	jp	LINEINP	;Line input
+	jp	RCHAR	;Read character
+	jp	scol1	;Set colours
+	jp	sfont1	;Set font
+	jp	rndi1	;Get randomish number (eg, the computer's clock)
+	jp	getx1	;Get cursor X position
+	jp	gety1	;Get cursor Y position
+	jp	strm1	;Open or close stream in A
+	jp	eral1	;Erase to EOL
+	jp	snd1	;Make a sound
+	jp	rst1	;Restart
+	jp	gname	;Get filename
+	jp	fopn	;Open file
+	jp	fclse	;Close file
+	jp	fread	;Read bytes
+	jp	fwrite	;Write bytes
+	jp	frmem	;Read z-machine memory
+	jp	fwmem	;Write z-machine memory
+	jp	fvrfy	;Verify the game file
+	jp	bfit1	;Check if word in buffer will fit on screen.
+	jp	rcpu1	;Relinquish the CPU (allow event pump to run)
+	jp	yes_i_live
+	ld	a,VMVER	;Return I/O module compatibility number
+	ret
+	jp	print_buf	;Flush any text buffers
+jblend:
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Other source files...
+;
+	include annedisc.zsm	;Disc I/O
+	include annemem.zsm	;Memory functions
+	include annemenu.zsm	;Menu and GUI functions
+	include annevt.zsm	;Event handler
+	include annescr.zsm	;Screen functions
+	include annescrl.zsm	;Scrolling
+	include	annedbg.zsm	;Debug code
+	include in_wrhex.inc
+;
+	end
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

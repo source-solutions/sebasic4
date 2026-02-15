@@ -1,0 +1,626 @@
+;    ZXZVM: Z-Code interpreter for the Z80 processor
+;    Copyright (C) 1998-9,2006,2016  John Elliott <seasip.webmaster@gmail.com>
+;
+;    This program is free software; you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation; either version 2 of the License, or
+;    (at your option) any later version.
+;
+;    This program is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with this program; if not, write to the Free Software
+;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+;
+load_zvm:
+	ld	de,zvmfcb
+	call	find_fcb	
+	ld	de,cfind$
+	jp	nc,errpr
+;
+;The file has been found.
+;
+	ld	de,zvmfcb
+	call	zfcb		;Zero all reserved fields in the FCB
+	ld	c,0Fh
+	call	FDOS		;Try to open it
+	ld	de,cfind$	;Can't open it?
+	inc	a
+	jp	z,errpr		;Fail.
+;
+;File open.
+;
+	ld	hl,7000h
+	ld	de,zvmfcb
+rnext:	call	readrec		;Read 1 record at HL, with auto-increment
+	jp	nc,diewith
+	or	a
+	jr	z,rnext
+;
+	ld	de,zvmfcb
+	ld	c,10h
+	call	FDOS
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Read one record from DE->FCB, at HL. Add 80h to HL.
+;
+;If OK:    returns carry set.    A=0 for OK, 1 for EOF.
+;If error: returns carry reset, HL-> ASCII7 reason.
+;
+readrec:
+	push	de
+	ex	de,hl		;DE = record load address
+	call	setdma
+	ld	hl,80h		;Add 80h to address
+	add	hl,de		;since record is 80h bytes
+	pop	de
+	push	hl
+	push	de
+	ld	c,14h		;Read next record
+	call	FDOS
+	pop	de
+	cp	2
+	jr	nc,xlterr	;Some read error
+	pop	hl
+	ret			;with Carry set.
+;
+xlterr:	cp	1
+	ld	hl,dflerr
+	jr	z,xltend
+	cp	2
+	jr	z,xltend
+	cp	10
+	ld	hl,mederr
+	jr	z,xltend
+	cp	9
+	ld	hl,fcberr
+	jr	z,xltend
+	ld	a,h
+	cp	11
+	jr	c,xlter1
+	ld	h,0
+xlter1:	ld	l,h
+	ld	h,0	
+	add	hl,hl
+	ld	bc,hwerrs
+	add	hl,bc
+	ld	a,(hl)
+	inc	hl
+	ld	h,(hl)
+	ld	l,a	
+xltend:	xor	a
+	pop	bc
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+hwerrs:
+	defw	hw0,hw1,hw2,hw3,hw4,hw5,hw6,hw7,hw8,hw9,hw10
+
+hw1:	defb	'Failed to access disc driv',0E5h	;'e'+80h
+hw2:	defb	'The disc is read-onl',0F9h		;'y'+80h
+hw3:	defb	'The file is read-onl',0F9h		;'y'+80h
+hw4:	defb	'Not a valid drive lette',0F2h		;'r'+80h
+hw5:	defb	'File is already ope',0EFh		;'n'+80h
+hw0:
+hw6:	defb 	'Hardware erro',0F2h			;'r'+80h
+hw7:	defb	'File is password protecte',0E4h	;'d'+80h
+hw8:	defb	'File exist',0F3h			;'s'+80h
+hw9:	defb	'? in filenam',0E5h			;'e'+80h
+hw10:	defb	'File is wheel protecte',0E4h		;'d'+80h
+
+mederr:	defb	'Disc change',0E4h		;'d'+80h
+fcberr:	defb	'Invalid FC',0C2h		;'B'+80h
+dflerr:	defb	'Disc ful',0ECh			;'l'+80h
+nfer$:	defb	'File not foun',0E4h		;'d'+80h
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Search for a file. DE->FCB; returns carry set if found; else
+;carry reset.
+;
+find_fcb:
+	push	de
+	ld	a,(de)		;Drive as passed
+	ld	hl,tmpfcb
+	ld	bc,36
+	ex	de,hl
+	ldir			;Copy the FCB in question to tmpfcb
+	or	a		;Resets Carry
+	call	nz,trydrv	;Was a drive passed?
+	jr	c,gotdrv
+	xor	a		;Try the default drive.
+	call	trydrv
+	jr	c,gotdrv
+	ld	a,(iy+4Ch)	;1st "search" drive
+	cp	0FFh
+	jr	z,tryept
+	call	trydrv
+	jr	c,gotdrv
+	ld	a,(iy+4Dh)	;2nd "search" drive
+	cp	0FFh
+	jr	z,tryept
+	call	trydrv
+	jr	c,gotdrv
+	ld	a,(iy+4Eh)	;3rd "search" drive
+	cp	0FFh
+	jr	z,tryept
+	call	trydrv
+	jr	c,gotdrv
+	ld	a,(iy+4Fh)	;4th "search" drive
+	cp	0FFh
+	jr	z,tryept
+	call	trydrv
+	jr	c,gotdrv
+tryept:	xor	a
+	pop	de
+	ret
+;
+gotdrv:	pop	de
+	ld	a,(tmpfcb)
+	ld	(de),a
+	scf
+	ret
+;
+trydrv:	cp	0FFh		;Attempt to find the file in tmpfcb
+	jr	nz,trydrv1	;on a given drive (drive in A).
+	xor	a
+	ret
+;
+;Rather than use 'find first', I'm using 'open file' to check if the file
+;is there. 'open file' can see system files in user 0 from other user areas,
+;which 'find first' can't.
+;
+trydrv1:
+	ld	de,tmpfcb
+	ld	(de),a
+	call	zfcb		;Zero all reserved fields in the FCB
+	ld	c,0Fh		;Open existing file.
+	call	FDOS
+	inc	a
+	scf
+	ccf	
+	ret	z		;Not found
+	ld	c,10h
+	ld	de,tmpfcb	;Close it again, this was only a dummy
+	call	FDOS		;attempt.
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Set the data transfer address.
+;
+setdma:	call	pusha
+	ld	c,1Ah
+	call	FDOS
+	jp	popa
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Zero all the reserved fields in the FCB. DE->FCB
+;
+zfcb:	push	hl
+	push	de
+	push	bc
+	ld	hl,12
+	add	hl,de	;HL -> 1st field
+	ld	d,h
+	ld	e,l
+	inc	de
+	ld	bc,23
+	ld	(hl),b
+	ldir
+	pop	bc
+	pop	de
+	pop	hl
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Open the story file in DE. Load either the first 64k, or all of it.
+;
+st_open:
+	xor	a
+	ld	(lbank),a
+	push	de
+	call	willitfit
+	pop	de
+	ret	nc
+	push	af
+	ld	a,1
+	ld	(allhere),a
+	call	zfcb		;Zero all reserved fields in the FCB
+	ld	c,0Fh
+	call	FDOS		;Try to open the story file.
+	ld	hl,nostor$	;Can't open it?
+	inc	a
+	jp	z,ret_nc
+	pop	af
+	jr	z,ldall
+	ld	b,4
+lbloop:	call	ldbank	;Load 4 banks
+	ret	nc
+	ret	z	
+	djnz	lbloop
+	xor	a
+	ld	hl,21h		;Reset the record counter
+	ld	de,(story)
+	add	hl,de
+	ld	(hl),a
+	inc	hl
+	ld	(hl),a
+	inc	hl
+	ld	(hl),a
+	ld	(allhere),a
+	scf
+	ret
+;
+ret_nc:	xor	a
+	ret
+;
+ldall:	call	ldbank	;Load every bank
+	ret	nc
+	ret	z
+	jr	ldall
+;
+st_close:
+	ld	de,(story)
+	ld	c,10h
+	call	FDOS
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+st_reload:
+	ld	hl,10h
+	call	ZXPK64
+	ld	b,a
+	inc	hl
+	call	ZXPK64
+	ld	c,a	;BC = Flags 10 (preserve through restart)
+	push	bc
+	xor	a
+	ld	(lbank),a
+	ld	de,(story)
+	ld	c,10h
+	call	FDOS
+	ld	de,(story)
+	call	zfcb		;Zero all reserved fields in the FCB
+	ld	c,0Fh
+	call	FDOS		;Try to open the story file.
+	cp	0FFh
+	pop	bc
+	jp	z,xfcber	
+	push	bc
+	ld	b,4
+rbloop:	call	ldbank	;Load 4 banks
+	pop	hl
+	ret	nc
+	jr	z,rbend
+	push	hl
+	djnz	rbloop
+	pop	hl
+rbend:	ex	de,hl	;DE = flags 2
+	ld	hl,10h
+	ld	a,d
+	call	ZXPOKE
+	inc	hl
+	ld	a,e
+	call	ZXPOKE
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Some variables
+;
+tmpfcb:	defs	36
+findbuf:
+	defs	80h
+recbuf:	defs	80h
+
+zvmfcb:	defb	0,'ZXZVM   BIN'
+	defs	24
+;
+allhere:
+	defb	0	;Load all the file, or only the first 64k?
+;
+m_dph:	defw	0	;Disc parameter header for M:
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Push / pop all the registers that ZXZVM uses. 
+;
+pusha:	ex	(sp),hl	;HL = return address
+	ld	(pusha1+1),hl
+	pop	hl
+	push	af
+	push	bc
+	push	de
+	push	hl
+	push	ix	
+	push	iy	;Note: ZXZVM _never_ uses IY, so I'm going
+pusha1:	jp	0	;to use it to point at the SCB.
+
+popa:	pop	iy
+	pop	ix
+	pop	hl
+	pop	de
+	pop	bc
+	pop	af
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Disable drive M: (so that the user can't (eg) use it to save files to)
+;
+disable_M:
+	call	drvtbl	;HL -> DPH table, 2 bytes / drive
+	ld	de,24	;Offset to M:
+	add	hl,de
+	ld	c,(hl)
+	ld	(hl),0
+	inc	hl
+	ld	b,(hl)
+	ld	(hl),0
+	ld	(m_dph),bc
+	ld	c,30h	;Force empty of all disc buffers (which might be
+	ld	e,0FFh	;looking at M:)
+	call	FDOS
+	ret
+;	
+drvtbl:	ld	hl,(1)
+	ld	de,3Fh	;DRVTBL
+	add	hl,de
+	jp	(hl)
+;
+enable_M:
+	ld	hl,rdbuf
+	ld	de,rdbuf+1
+	ld	bc,7fh
+	ld	(hl),0E5h
+	ldir
+	call	drvtbl
+	ld	de,24
+	ld	bc,(m_dph)
+	add	hl,de
+	ld	(hl),c
+	inc	hl
+	ld	(hl),b
+;
+; CP/M seems to be very stubborn about reloading cached directory buffers
+; looking at M:. Force it to.
+;
+	ld	c,32h	;Force CP/M to examine drive M:
+	ld	de,biosp1
+	call	FDOS
+	or	a
+	jr	nz,disend
+	ld	c,32h
+	ld	de,biosp2
+	call	FDOS
+	ld	c,32h
+	ld	de,biosp3
+	call	FDOS
+	ld	c,32h
+	ld	de,biosp4
+	call	FDOS
+	ld	c,32h
+	ld	de,biosp5
+	call	FDOS
+
+disend:
+	ld	c,30h	;Force empty of all disc buffers (which might be
+	ld	e,0FFh	;looking at M:)
+	call	FDOS
+	ret
+;
+biosp1:	defw	 9, 0Ch, 0, 0	;SELDSK to M:
+biosp2:	defw	10,   3, 0, 0	;SETTRK to track 3 (directory)
+biosp3:	defw	11,   1, 0, 0	;SETSEC to sector 1
+biosp4:	defw	12,rdbuf,0, 0	;SETDMA to RDBUF
+biosp5:	defw	14,   1, 0, 0	;WRITE data
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Output_stream directive. 
+;
+;<< v1.00 record state of printer output
+;
+strm1:	cp	2
+	jr	z,ptron
+	cp	0FEh
+	jr	z,ptroff
+	scf
+	ret
+;
+ptron:	defb	03Eh
+ptroff:	xor	a
+	ld	(printing),a
+	scf
+	ret
+;
+printing:
+	defb	0
+;
+;>> v1.00
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+fopn:	ld	(tfcb),hl
+	ex	de,hl
+	call	zfcb
+	ld	a,b
+	or	a	;0=open 1=create
+	jr	nz,creat
+	ld	a,80h
+	ld	(rdptr),a
+	ld	c,0Fh
+	call	FDOS
+	cp	0FFh
+	scf
+	ret	nz
+	ld	a,h
+	or	a
+	jr	z,nferr
+xfcber:	push	bc
+	jp	xlterr
+;
+nferr:	ld	hl,nfer$
+	xor	a
+	ret
+;
+creat:	xor	a
+	ld	(wrptr),a
+	ld	c,13h
+	call	FDOS
+	ld	de,(tfcb)
+	ld	c,16h
+	call	FDOS
+	cp	0FFh
+	scf
+	ret	nz
+	push	bc
+	jp	xlterr
+;
+tfcb:	defw	0
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+fclse:	ld	a,(wrptr)
+	or	a
+	scf
+	call	nz,putrec
+	ret	nc
+	ld	de,(tfcb)
+	ld	c,10h
+	call	FDOS
+	cp	0FFh
+	scf
+	ret	nz
+	push	bc
+	jp	xlterr
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Memory read & write functions
+;
+rdbuf:	defs	80h
+wrbuf:	defs	80h
+rdptr:	defb	80h
+wrptr:	defb	0
+;
+fread:	ld	a,b
+	or	c
+	scf
+	ret	z
+	call	getbyt
+	ret	nc
+	ld	(hl),a
+	inc	hl
+	dec	bc
+	jr	fread
+;
+fwrite:	ld	a,b
+	or	c
+	scf
+	ret	z
+	ld	a,(hl)
+	call	putbyt
+	ret	nc
+	inc	hl
+	dec	bc
+	jr	fwrite
+;
+fwmem:	ld	a,b
+	or	c
+	scf
+	ret	z
+	call	ZXPK64
+	call	putbyt
+	ret	nc
+	inc	hl
+	dec	bc
+	jr	fwmem
+;
+frmem:	ld	a,b
+	or	c
+	scf
+	ret	z
+	call	getbyt
+	ret	nc
+	call	ZXPOKE
+	inc	hl
+	dec	bc
+	jr	frmem
+;
+getbyt:	push	hl
+	push	bc
+	ld	a,(rdptr)
+	cp	80h
+	call	nc,getrec
+	jr	nc,endit
+	ld	l,a
+	ld	h,0
+	ld	de,rdbuf
+	inc	a
+	ld	(rdptr),a
+	add	hl,de
+	ld	a,(hl)
+	scf
+endit:	pop	bc
+	pop	hl
+	scf
+	ret
+;
+putbyt:	push	hl
+	push	bc
+	ld	c,a
+	ld	a,(wrptr)
+	cp	80h
+	call	nc,putrec
+	jr	nc,endit
+	ld	l,a
+	ld	h,0
+	ld	de,wrbuf
+	inc	a
+	ld	(wrptr),a
+	add	hl,de
+	ld	(hl),c
+	scf
+	jr	endit
+;
+getrec:	ld	de,rdbuf
+	call	setdma
+	ld	c,14h
+	ld	de,(tfcb)
+	call	FDOS
+	or	a
+	scf
+	ret	z
+	push	bc
+	jp	xlterr
+;
+
+putrec:	push	bc
+	ld	de,wrbuf
+	call	setdma
+	ld	c,15h
+	ld	de,(tfcb)
+	call	FDOS
+	pop	bc
+	or	a
+	scf
+	ret	z
+	push	bc
+	jp	xlterr
+;

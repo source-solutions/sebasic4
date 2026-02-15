@@ -1,0 +1,904 @@
+
+;    ZXZVM: Z-Code interpreter for the Z80 processor
+;    Copyright (C) 1998-9,2006,2016  John Elliott <seasip.webmaster@gmail.com>
+;
+;    This program is free software; you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation; either version 2 of the License, or
+;    (at your option) any later version.
+;
+;    This program is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with this program; if not, write to the Free Software
+;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+; esxDOS specific routines.
+
+;Spectrum addresses between 4000h and 0BFFFh always refer to the same area
+;of memory. Those above 0C000h can refer to one of eight memory banks, so
+;I'll write them as 0:C000 to 7:C000. Memory banks 2 and 5 mirror what is
+;in memory below 0C000h, so they aren't very useful. Addresses below 4000h
+;can refer to one of four ROMS, so I'll write them as R0:0000 to R3:0000.
+;
+;The I/O subsystem lives in the Spectrum's screen RAM (so I can be sure that
+;code which needs to bank switch is below 0BFE0h). Thus screen output goes
+;to the shadow screen at 7:C000, which can be switched out when not needed.
+;
+;A bug in +3DOS necessitates the following workaround:
+;
+; - Despite what it says in the manual, it is necessary to have at least 
+;  one buffer in the disc cache, or files are read incorrectly. So put the
+;  cache at the top of Bank 6, and run the interpreter with Bank 6 paged. 
+;  The game file then loads in the 1,3,4,0 environment.
+;
+; - Although this was forced on me by +3DOS, I might have done it anyway;
+;  my previous plan (game in 1,3,4,6) would have meant implementing my own
+;  cache manually, a nasty business.
+
+	org	ZJT
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Other source files
+;
+	include zxio.zsm	;ZX I/O - must come first
+	include zxesxdos.zsm    ;esxdos 3DOS specific functions
+	include zx64.zsm	;64-column printing	
+	include in_wrhex.inc	;Render numbers into hex or decimal
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;
+;Spectrum system variables:
+;
+ONERR	EQU	5B3Ah	;Memory paging subroutine used in reporting errors
+BANKM	EQU	5B5Ch	;Memory paging latch
+;OLDSP	EQU	5B6Ah	;Saved stack pointer used while BASIC is calling +3DOS
+SYNRET  EQU     5B6Ch   ;Return address for ONERR
+PRAMT	EQU	5CB4H	;Top of physical memory
+BANKIO  EQU     7FFDh   ;I/O port for memory paging
+
+SAVEPG 	EQU	6 ; memory page for savefile
+HDRADDR	EQU	0C000h
+SCRADDR	EQU	0C000h
+
+typeset	EQU	070ffh	; poked by BASIC to 0 or 1
+
+;
+;Enter a filename
+;
+NAMEBUF:
+	DEFS	20
+FNBUF:	DEFS	20
+FNAME$:	DEFB	13,10,'Filename> $'
+
+GNAME:	
+;
+	LD	DE,FNAME$
+	LD	C,9
+	CALL	ZXFDOS
+	LD	A,3	;Z-address 4000h
+	CALL	SELMEM
+	LD	DE,NAMEBUF
+	LD	HL,0C000h
+	LD	BC,20
+	LDIR		;Backup Z-machine memory at 4000h
+	LD	HL,0C000h
+	LD	(HL),16	;Max. 16 characters in name
+	INC	HL
+	LD	(HL),0	;None provided
+	LD	A,6
+	CALL	SELMEM
+	LD	DE,0
+	LD	HL,4000h	;Filename buffer
+	CALL	LINEINP
+	LD	A,3
+	CALL	SELMEM
+	LD	DE,FNBUF
+	LD	HL,0C000h
+	LD	BC,20
+	PUSH	BC
+	PUSH	HL
+	LDIR	
+	POP	DE
+	POP	BC		;Length of buffer
+	LD	HL,NAMEBUF
+	LD	DE,0C000h
+	LDIR			;Original contents of buffer
+	LD	HL,FNBUF+1
+	LD	E,(HL)
+	LD	D,0
+	INC	HL
+	ADD	HL,DE
+	LD	(HL),0FFh	;FFh-terminated filename string
+	LD	A,6
+	CALL	SELMEM
+	LD	HL,FNBUF+2
+	LD	A,E		;<< v1.01  A = length of input
+	OR	A
+	SCF			; If it's 0, then no name was input.
+	RET	NZ
+	CCF			;>> v1.01
+	RET
+
+;
+; Chime an error
+;
+CHIME:	CALL	PUSHA
+	LD	DE,0E00H
+	LD	HL,CHIMEBF
+	LD	BC,0FFFDH
+CHIME1:	LD	A,(HL)
+	OUT	(C),E
+	LD	B,0BFH
+	OUT	(C),A
+	LD	B,0FFH
+	INC	HL
+	INC	E
+	DEC	D
+	JP	Z,POPA
+	JR	CHIME1
+;
+CHIMEBF:
+	DEFW	01A6H,014FH,011AH
+	DEFB	0,78H,10H,10H,10H,0,8,0,0
+
+; Ask the user to change the disc
+;
+chgsub:
+	; Not implemented for esxDOS as it can hold the full story file?
+	ret
+;
+;Read/write BC bytes of z-machine memory at HL.
+;
+p3rmem:	ld	a,b
+	or	c
+	scf
+	ret	z
+	ld	d,b
+	ld	e,c	;DE = no. of bytes to read
+
+p3rm1:	push	hl
+	push	de
+	call	blkadd	;Returns HL = block base, DE = block lenth, C=bank
+	push	de
+	
+;	ld	b,SAVENO
+;	call	dodos
+;	defw	DOS_READ
+
+	push hl
+	push bc
+
+	ld a, c
+	call selmem
+
+	pop bc
+	pop ix
+
+	ld a, (esxdos_save_file_handle)
+
+	rst ESXDOS_SYS_CALL
+	defb ESXDOS_SYS_F_READ
+
+	jr c, p3rend
+
+	pop	bc	;BC = no. of bytes read
+	pop	hl	;HL = total bytes to transfer
+	and	a
+	sbc	hl,bc	;HL = bytes left to transfer
+	jr	c,p3re2
+	jr	z,p3re2	;End of transfer
+	ex	de,hl	;DE = no. of bytes left to transfer
+	pop	hl
+	add	hl,bc	;HL = new base address
+	jr	p3rm1
+;;
+p3wmem: ld	a,b
+	or	c
+	scf
+	ret	z
+	ld      d,b
+        ld      e,c     ;DE = no. of bytes to write
+p3wm1:  push    hl
+        push    de
+        call    blkadd  ;Returns HL = block base, DE = block lenth, C=bank
+        push    de
+
+	push hl
+	push bc
+
+	ld a, c
+	call selmem
+
+	pop bc
+	pop ix
+
+	ld a, (esxdos_save_file_handle)
+
+	rst ESXDOS_SYS_CALL
+	defb ESXDOS_SYS_F_WRITE
+
+	jr c, p3rend
+
+
+;        ld      b,SAVENO
+;        call    dodos
+;        defw    DOS_WRITE
+;        jr      nc,p3rend
+
+        pop     bc      ;BC = no. of bytes read
+        pop     hl      ;HL = total bytes to transfer
+        and     a
+        sbc     hl,bc   ;HL = bytes left to transfer
+        jr      c,p3re2
+        jr      z,p3re2 ;End of transfer
+        ex      de,hl   ;DE = no. of bytes left to transfer
+        pop     hl
+        add     hl,bc   ;HL = new base address
+        jr      p3wm1
+;
+p3re2:	pop	de
+	scf
+	ret
+;
+p3rend:	pop	de	;Read failed
+	pop	de
+	pop	de
+	ccf
+	ret
+;
+blkadd:	ld	a,h	;Let HL = true address of block, C the bank it is in,
+	rlca		;    DE = amount of block within this bank.
+	rlca		;A = 0 - 3, bank number
+	and	3
+	inc	a	;A is 1, 2, 3, 4
+	cp	1
+	jr	z,blkad1
+	inc	a	;A is 3, 4 or 5
+	cp	5
+	jr	nz,blkad1
+	xor	a
+blkad1:	ld	c,a	;C is bank - 1, 3, 4, 0
+	push	hl
+	ld	a,h
+	and	03Fh	;Limit HL to 14 bits
+	ld	h,a	;<< v0.02 >> arithmetic bug fix
+	push	de	;DE = length of block
+	ld	de,4000h
+	and	a
+	ex	de,hl	;<< v0.02 >> arithmetic bug fix
+	sbc	hl,de	;HL = max length in this bank
+	pop	de	;DE = length of block
+	ld	a,h
+	cp	d
+	jr	nc,blkad2	;If HL >= DE, return DE
+	ld	a,l
+	cp	e
+	jr	nc,blkad2
+	ex	de,hl		;DE = length to read/write
+blkad2:	pop	hl		;HL = base address
+	ld	a,h
+	or	0C0h
+	ld	h,a
+	ret	
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Open the story file
+;
+st_open:
+
+	ld a, ESXDOS_CURRENT_DRIVE	; *
+	ld b, ESXDOS_MODE_READ	
+
+	push hl
+	pop ix
+
+	rst ESXDOS_SYS_CALL		; open filename in hl
+	defb ESXDOS_SYS_F_OPEN
+
+	jr c, st_open_err
+
+	ld (esxdos_file_handle), a
+	jr st_op1
+
+st_reload:
+
+	ld bc, 0
+	ld de, 0
+	ld ix, ESXDOS_SEEK_SET
+
+	ld a, (esxdos_file_handle)
+	rst ESXDOS_SYS_CALL
+	defb ESXDOS_SYS_F_SEEK
+
+	jr c, st_open_err
+
+st_op1:
+
+	ld	c,1	;Load up to the first 64k of the file
+	call	ldbank
+	ret	c
+	ld	c,3
+	call	ldbank
+	ret	c
+	ld	c,4
+	call	ldbank
+	ret	c
+	ld	c,0
+	call	ldbank
+	
+	scf
+	ret
+	
+st_open_err:
+
+	ccf
+	ret
+
+st_close:
+
+	ld a, (esxdos_file_handle)
+	rst ESXDOS_SYS_CALL
+	defb ESXDOS_SYS_F_CLOSE
+	ret
+
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Load 16k from the file into memory bank C
+;
+ldbank: 
+	ld a, c
+	call selmem
+
+	ld a, (esxdos_file_handle)
+	ld bc, $4000
+	ld ix, $c000
+
+	rst ESXDOS_SYS_CALL
+	defb ESXDOS_SYS_F_READ
+
+	ret
+
+_128only:
+
+	defb "Needs 128k!"
+	defb 0dh
+	defb 00h
+
+;
+; Initialisation.
+;
+init1:	ld	(story),de
+	ld	a,(typeset)	; choose typeset
+	and	a
+	ld	hl,set532
+	jr	z,type32
+	ld	hl,set564
+type32:	ld	de,scrset5
+	ld	bc,set564 - set532
+	ldir
+
+init2:
+	ld a, 48
+	ld (0c000h),a
+	di
+	ld	a,(bankm)
+	and	0F8h		;Switch to bank 6 at the same time...
+	;or	0Eh		;Activate the shadow screen
+	or 	1eh		;Activate the shadow screen and page ROM 1 in
+	ld	bc,bankio
+	di
+	ld	(bankm),a
+	out	(c),a
+	ei
+
+	ld a, (0c000h)		;this will be 48 if we're on 48k as the shadow screen
+				;doesn't exist
+	cp 48
+
+	jr nz, init128 
+
+	xor a
+	ret
+
+
+init128:
+
+	call	erall		;Clear the screen
+	
+	ld	a,1
+	ld	(cfont),a	;Set current font
+	ld	de,signon
+	call	print		;Sign on
+	ld	hl,(story)
+pslp:	ld	e,(hl)
+	inc	e		;Print story name (FF-terminated)
+	jr	z,pslend
+	dec	e
+	call	opchar
+	inc	hl
+	jr	pslp
+
+pslend:	ld	de,sign1	;Second part of sign-on message
+	xor a 
+	ld (hl), a			;Remove $ff terminator for esxdos
+	call	print
+	ld	hl,(story)
+	call	st_open		;Load the story file
+	ret	nc
+	call	ZXCLS
+	ld	a,6
+	call	selmem
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+exit1:	push	af
+	push	hl
+	call	st_close
+	pop	hl
+	pop	af
+	jp	c,zxerr
+	ld	hl,finished
+	jp	zxerr
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+
+peek_page1:		defb 0
+peek_page2:		defb 0
+peek_page_addr:		defw 0
+peek_page_count:	defb 0
+
+PEEK_PAGE_SIZE		EQU 8192
+PEEK_PAGE_ADDRESS1 	EQU 49152
+PEEK_PAGE_ADDRESS2 	EQU 57344
+
+BORDER_TIMINGS EQU 0
+
+;
+peek1:
+
+	ld	a,e
+	and	a
+	jp	z, peek64	; inst fetch in RAM = same
+
+				; seek position in e, h and l
+
+peek_disk:
+
+	push de
+
+	ld a, h			; divide seek position by 8192
+	rlca			; rotate top 3 bits round to right
+	rlca
+	rlca
+	and %00000111		; mask off the top 5 bits
+
+	ld d, a
+	ld a, e
+
+	sla a			; top 5 bits of e in a
+	sla a
+	sla a
+	or d
+
+	ld d, a
+	ld a, (peek_page1)
+	cp d
+
+IF BORDER_TIMINGS
+
+	jr z, hit
+
+ELSE
+
+	jp z, memread
+
+ENDIF
+
+	ld a, (peek_page2)
+	cp d
+
+IF BORDER_TIMINGS
+
+	jr z, hit2
+
+ELSE
+
+	jp z, memread2
+
+ENDIF
+
+IF BORDER_TIMINGS
+
+	ld a, 2
+	out (254), a
+
+ENDIF
+
+	push bc
+	push hl
+
+	ld a, (peek_page_count)		; which page? 0 - 1, 1 - 2
+	and a
+	jr nz, set_page2
+
+					; page 1
+	inc a				; set next page
+	ld (peek_page_count), a
+	ld a, d
+	ld (peek_page1), a
+	ld bc, PEEK_PAGE_ADDRESS1
+	ld (peek_page_addr), bc
+	jr seek
+
+set_page2:
+
+	xor a				; set next page
+	ld (peek_page_count), a
+	ld a, d
+	ld (peek_page2), a
+	ld bc, PEEK_PAGE_ADDRESS2
+	ld (peek_page_addr), bc
+	jr seek
+
+IF BORDER_TIMINGS
+
+hit:
+	ld a, 4
+	out (254), a
+	jp memread
+
+hit2:
+	ld a, 3
+	out (254), a
+	jp memread2
+
+
+ENDIF
+
+seek:
+	push ix
+
+	ld b, 0
+	ld c, e
+
+	ld a, h				; seek to 8k boundary
+	and %11100000
+
+	ld d, a
+	ld e, b
+
+	ld ix, ESXDOS_SEEK_SET
+
+	ld a, (esxdos_file_handle)
+	rst ESXDOS_SYS_CALL
+	defb ESXDOS_SYS_F_SEEK
+
+	ld a, (esxdos_file_handle)	; read data in
+
+	ld bc, PEEK_PAGE_SIZE
+	ld ix, (peek_page_addr)
+
+	rst ESXDOS_SYS_CALL
+	defb ESXDOS_SYS_F_READ
+
+	pop ix
+
+	pop hl
+	pop bc
+
+	ld a, (peek_page_count)		; 1 is page 1, 0 is page 2
+	and a
+	jr z, memread2
+
+memread:
+
+	ld e, l
+	ld a, h
+	and %00011111			; get 8k offset
+
+	or %11000000			; 49152 - top two bits of h
+
+	ld d, a
+
+IF BORDER_TIMINGS
+
+	ld a, 7
+	out (254), a
+
+ENDIF
+
+	ld a, (de)
+
+	pop de
+
+	scf
+	ret
+
+memread2:
+
+	ld e, l
+	ld a, h
+	and %00011111			; get 8k offset
+
+	or %11100000			; 57344 - top three bits of h
+
+	ld d, a
+
+IF BORDER_TIMINGS
+
+	ld a, 7
+	out (254), a
+
+ENDIF
+
+	ld a, (de)
+
+	pop de
+
+	scf
+	ret
+
+
+peek64:	push	bc
+	push	hl
+;
+; Inline zbank to save on pushes and pops
+;
+	ld	bc,bankio
+	ld	a,h
+        rlca
+        rlca
+        and     3       ;A = Z-machine bank, 0-3
+        inc     a       ;A = 1-4
+	cp	1
+	jr	z,p64a
+	inc	a	;A = 1, 3, 4 or 5
+	cp	5
+	jr	c,p64a
+	xor	a 	;A = 1, 3, 4 or 0
+p64a:	di
+	or	8	;Shadow screen
+	out	(c),a
+	pop	hl
+	push	hl
+	ld	a,h
+	or	0C0h
+	ld	h,a	;HL = address
+	ld	l,(hl)	; L = value
+	ld	a,(bankm)
+	out	(c),a
+	ei
+	ld	a,l
+	pop	hl
+	pop	bc	
+	scf
+	ret
+
+;
+slowpw:	and	a
+	call	peek1
+	ld	b,a
+	inc	hl
+	ld	a,h
+	or	l
+	jr	nz,slowp1
+	inc	e
+slowp1:	and	a
+	call	peek1
+	inc	hl
+	ld	c,a
+	ld	a,h
+	or	l
+	jr	nz,slowp2
+	inc	e
+slowp2:	
+	pop	af
+	scf
+	ret
+;
+peekw:	push	hl
+	push	de
+	call	ipeekw
+	pop	de
+	pop	hl
+	ret
+;
+ipeekw:	push	af
+	ld	a,e
+	or	a	;Is the word in RAM?
+	jr	nz,slowpw
+	ld	a,l
+	cp	0FFH	;Is there a chance the word might go across 2 pages?	
+	jr	z,slowpw
+;
+;Read a word from the low 64k; we know it does not extend over a page boundary
+;
+        push    de
+	push	hl
+;
+; Inline zbank to save on pushes and pops
+;
+	ld	bc,bankio
+	ld	a,h
+        rlca
+        rlca
+        and     3       ;A = Z-machine bank, 0-3
+        inc     a       ;A = 1-4
+	cp	1
+	jr	z,p64wa
+	inc	a	;A = 1, 3, 4 or 5
+	cp	5
+	jr	c,p64wa
+	xor	a 	;A = 1, 3, 4 or 0
+p64wa:	di
+	or	8	;Shadow screen
+	out	(c),a
+	pop	hl
+	push	hl
+	ld	a,h
+	or	0C0h
+	ld	h,a	;HL = address
+	ld	d,(hl)	
+	inc	hl
+	ld	e,(hl)	;DE = value
+	ld	a,(bankm)
+	out	(c),a
+	ei
+	ld	c,e
+	ld	b,d	;Move value to BC
+	pop	hl
+	pop	de	;EHL = address
+	inc	hl
+	inc	hl
+	ld	a,h	;<< v1.03 Check for rollover at FFFE -> 10000
+	or	l
+	jr	nz,fpw1
+	inc	e
+fpw1:			;>> v1.03
+	pop	af
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+poke1:	push	hl
+	push	de
+	push	bc
+	ld	d,a
+	call	zbank
+	ld	a,0c0h
+	or	h
+	ld	h,a	;HL |= 0C000h
+	ld	(hl),d
+	call	nbank
+	pop	bc
+	pop	de
+	pop	hl
+	scf
+	ret
+
+;
+; Page header in and out.
+;
+headerin:
+	ld	a,1
+	jp	selmem
+
+headerout:
+	ld	a,6
+	jp	selmem
+
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+tmem1:	ld	hl,0bfffh	;Top of memory. The top 16k is a 
+	ret			;disk cache; we may have to shrink this.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Switch to the memory bank containing Z-address HL. Pushes the previous
+;bank onto the stack.
+;
+zbank:	pop	bc	;Return address
+	ld	a,(bankm)
+	push	af
+	push	bc
+        and     0F8h    ;Only change the memory banking settings
+        ld      c,a
+        ld      a,h
+        rlca
+        rlca
+        and     3       ;A = Z-machine bank, 0-3
+        inc     a       ;A = 1-4
+	cp	1
+	jr	z,zbank1
+	inc	a	;A = 1, 3, 4 or 5
+	cp	5
+	jr	c,zbank1
+	xor	a 	;A = 1, 3, 4 or 0
+zbank1:	or	c	
+	ld	bc,bankio
+	di
+	ld	(bankm),a
+	out	(c),a
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+nbank:	ld	l,a
+	pop	bc	;Switch out of the Zmachine bank
+	pop	af	;NOTE: pops 1 word off the stack
+	push	bc
+	ld	bc,bankio
+	di
+	ld	(bankm),a
+	out	(c),a
+	ei
+	ld	a,l
+	ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Select memory bank in A
+;
+selmem:	push	af
+	push	bc
+	and	7
+	ld	b,a
+	ld	a,(bankm)
+	and	0F8h	;Only change the bits we want to
+	or	b
+	ld	bc,bankio
+	di
+	ld	(bankm),a
+	out	(c),a
+	ei	
+	pop	bc
+	pop	af
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+ZXERR:	push af
+	push	hl
+	call	erall
+	pop	de
+	pop af
+	
+	jr c, ZXERR_QUIT
+
+	call	print7
+	LD	IY,5C3AH	;Spectrum system veriables
+	EI
+	ld	sp,(ERRSP)
+	ld	a,$ff
+	ld	(ERRNO),a
+zxerr2:	call	con6
+	or	a
+	jr	z,zxerr2	; wait for a keypress
+
+ZXERR_QUIT:
+
+	di		;Switch back to the conventional screen
+	ld	a,(bankm)
+	and	0F0h
+	ld	bc,bankio
+	di
+	ld	(bankm),a
+	out	(c),a
+	ei
+	ret
+
+	end
+

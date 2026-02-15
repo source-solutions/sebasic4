@@ -1,0 +1,389 @@
+
+;    ZXZVM: Z-Code interpreter for the Z80 processor
+;    Copyright (C) 1998-9,2006,2016  John Elliott <seasip.webmaster@gmail.com>
+;
+;    This program is free software; you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation; either version 2 of the License, or
+;    (at your option) any later version.
+;
+;    This program is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with this program; if not, write to the Free Software
+;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+;
+;I'll refer to the older PCWs (8000 series, 9000 series, 10 series) as 
+;"Joyce"; this avoids confusion with the PCW16 ("Anne").
+;
+;The module for Joyce is written as a CP/M .COM file, so start with a
+;preamble to stop it being run under DOS or other CP/M versions.
+;
+	org	0100h
+
+	include	in_zxzvm.inc
+
+FCB	equ	005ch
+BDOS	equ	5
+cr	equ	0dh
+lf	equ	0ah
+eof	equ	1ah
+esc	equ	1bh
+
+	defb	0ebh,04h	;DOS protection... JMPS LABE
+	ex	de,hl
+	jp	begin
+	defb	0b4h,09h	;DOS protection... MOV AH,9
+	defb	0bah
+	defw	bvmes		;DOS protection... MOV DX,OFFSET BVMES
+	defb	0cdh,021h	;DOS protection... INT 21h.
+	defb	0cdh,020h	;DOS protection... INT 20h.
+;
+sidcall:
+	nop			;Change this to RST 30h to make it
+	ret			;into a debug breakpoint for SID.
+;
+vermes:	defb	cr
+	include	in_ver.inc
+	defb	' Copyright John Elliott',cr,lf
+	defb	'Date: 15/05/2016',cr,lf,eof
+;
+bvmes:	defb	'This program requires an Amstrad PCW.',cr,lf,'$'
+
+begin:	sub	a		;Screen out 8080 processors (the PCW
+	jp	pe,badver	;has a Z80).
+	ld	c,0ch
+	call	BDOS
+	cp	30h		;Must be CP/M 3.0 or higher
+	jr	c,badver
+	call	getver		;Get the XBIOS type. Returns A=0 for CPC,
+	dec	a		;1 for PCW, 3 for Spectrum +3
+	jr	z,main
+badver:	ld	de,bvmes	;Not a PCW. Abandon
+	ld	c,9
+	jp	BDOS
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+main:	ld	c,2Dh
+	ld	e,0FFh
+	call	BDOS	;If there's a disc error, let the program handle it
+;
+;Check for available memory
+;
+	ld	hl,(BDOS+1)
+	ld	a,h
+	cp	0C3h	;We need this much for the stack plus ZXZVM
+	ld	de,memstr	;plus interrupt code
+	jp	c,errpr
+	dec	h	;Allow 1 page for interrupt code.
+	ld	l,0
+	ld	sp,hl
+;
+;Zero-terminate the command line, and copy it to our own buffer.
+;
+	ld	de,80h
+	push	de
+	ld	a,(de)	;Length of command
+	inc	de
+	ld	l,a	;HL = length of command
+	ld	h,0
+	add	hl,de
+	ld	(hl),0	;Zero-terminate the command
+	pop	hl
+	ld	de,command
+	ld	b,h
+	ld	c,l	;BC = HL = 80h
+	inc	hl
+	ldir		;Copied the command tail to 'command'.
+;
+; Locate the System Control Block.
+;
+	ld	c,31h
+	ld	de,scbpb
+	call	BDOS		;HL := address of the SCB
+	push	hl
+	pop	iy		;IY = SCB address. Since ZXZVM.BIN
+	call	load_zvm	;never uses IY, IY won't be corrupted,
+	jp	nc,errpr	;provided we always call FDOS and not BDOS
+				;(since FDOS preserves IY).
+	ld	hl,jblock	
+	ld	bc,jblend-jblock
+	ld	de,4000h
+	ldir
+
+	ld	hl,5Ch
+	ld	de,705ch	;Story FCB
+	ld	bc,36
+	ldir
+
+	call	7000h		;Start the zmachine...
+	
+	rst	0		;If it terminated OK, fine.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Some numeric values...
+;
+scbpb:	defw	3Ah	;Parameter corresponding to the address of the SCB
+story:	defw	0	;Address of the FCB for the story file
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Some strings...
+;
+STUBstr:defb	'Stub encountered. End of program.',cr,lf,'$'
+cfindstr:	defb	'Cannot find the file ZXZVM.BIN. Please ensure it is',cr,lf
+	defb	'on the current drive or a drive mentioned in your',cr,lf
+	defb	'search path (see SETDEF).'
+crlfstr:	defb	cr,lf,'$'
+synerrstr:
+	defb	'You need to enter the name of a story file to load.',cr,lf,lf
+	defb	'eg:  PCWZVM CURSES.Z',0B5h	;'5'+80h
+nostorstr:
+	defb	'The story file could not be found',0AEh	;'.'+80h
+
+memstr:	defb	'You need at least 49k of TPA memory to run this program.'
+	defb	cr,lf,'$'
+;	
+signon:	
+	include	in_ver.inc
+
+	defb	           ' for PCW8000/9000/10 series      '
+	defb	'   Copyright 1998-9,2006,2016 by John Elliott',cr,lf
+	defb	'Story file: $'
+sign1:	defb	cr,lf,lf
+	defb	'                                  The story i'
+	defb	's loading...',cr,lf,'$'
+
+;
+command:
+	defs	80h	;The command line passed to this program, 
+			;zero-terminated.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+ildie:	pop	de
+	jp	errpr
+;
+;Print a bit 7-terminated string, report an error, and leave.
+;
+diewith:
+	call	deinit
+	ld	a,(hl)
+	inc	hl
+	call	achar
+	bit	7,a
+	jr	z,diewith
+	ld	de,crlfstr
+;
+;Print a $-terminated string, report an error, and leave.
+;
+errpr:	call	deinit
+	ld	c,9
+	call	FDOS
+;
+;Report an error, and leave.
+;
+error:	call	deinit
+	ld	c,6Ch
+	ld	de,0FF00h	;Report program failure.
+	call	FDOS
+	rst	0
+;
+achar:	push	af		;Print a 7-bit character in A.
+	push	bc
+	push	hl
+	and	7fh
+	ld	e,a
+	ld	c,2
+	call	FDOS
+	pop	hl
+	pop	bc
+	pop	af
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Call the CP/M FDOS, preserving IY
+;
+FDOS:	push	iy
+	call	BDOS
+	pop	iy
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Debug breakpoint
+;
+yes_i_live:
+	call	sidcall	;Actual breakpoint.
+	call	pusha	;Get a keypress before resuming
+	ld	c,6
+	ld	e,0FDh
+	call	FDOS
+	jp	popa
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;The all-important jump block. This ends up at 4000h...
+;
+jblock:
+	jp	init1	;Initialise, load story file
+	jp	exit1	;Deinitialise
+	jp	cls1	;Clear screen
+	jp	peek1	;Read byte from Z-machine memory
+	jp	poke1	;Write byte to Z-machine memory
+	jp	peek64	;Read byte from low 64k
+	jp	peekw	;Read word from Z-machine memory
+	jp	ipeekw	;Read word with auto increment
+	jp	fdos1	;Easy to have CP/M-like I/O functions under CP/M
+	jp	ihdr1	;Initialise the header
+	jp	tmem1	;Get top of available host memory
+	jp	eraw1	;Erase window
+	jp	zchr1	;Output a ZSCII letter in HL.
+	jp	swnd1	;Split window
+	jp	swnd2	;Select window
+	jp	styl1	;Set text style
+	jp	scur1	;Set cursor position
+	jp	LINEINP	;Line input
+	jp	RCHAR	;Read character
+	jp	scol1	;Set colours
+	jp	sfont1	;Set font
+	jp	rndi1	;Get randomish number (eg, the computer's clock)
+	jp	getx1	;Get cursor X position
+	jp	gety1	;Get cursor Y position
+	jp	strm1	;Open or close stream in A
+	jp	eral1	;Erase to EOL
+	jp	snd1	;Make a sound
+	jp	st_reload
+			;Restart
+	jp	gname	;Get filename
+	jp	fopn	;Open file
+	jp	fclse	;Close file
+	jp	fread	;Read bytes
+	jp	fwrite	;Write bytes
+	jp	frmem	;Read z-machine memory
+	jp	fwmem	;Write z-machine memory
+	jp	fvrfy	;Verify the game file
+	jp	bfit1	;Check if word in buffer will fit on screen.
+	ret		;Relinquish the CPU.
+	nop
+	nop
+	jp	yes_i_live
+	ld	a,VMVER	;Return I/O module compatibility number
+	ret
+	ret		;Update the screen. Not necessary.
+	nop
+	nop
+jblend:
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+init1:	ld	(story),de
+	inc	de
+	ld	a,(de)
+	dec	de
+	cp	' '
+	jr	nz,init1a
+	ld	hl,synerrstr
+	xor	a
+	ret
+;
+init1a:
+	call	find_fcb
+	jr	c,init2
+	ld	hl,nostorstr
+	xor	a
+	ret
+;
+init2:	call	scrinit
+	ld	a,1
+	ld	(zfont),a	;Set current font
+	call	ZXCLS		;Clear the screen
+	ld	de,signon
+	ld	c,9
+	call	FDOS		;Sign on
+	ld	hl,(story)
+	inc	hl
+	ld	b,11
+pslp:	ld	a,(hl)
+	cp	' '
+	call	nz,achar
+	inc	hl
+	ld	a,b
+	cp	4
+	ld	a,'.'
+	call	z,achar
+	djnz	pslp
+	ld	de,sign1	;Second part of sign-on message
+	ld	c,9
+	call	fdos
+	ld	de,(story)
+	scf
+	call	st_open		;Load the story file
+	ret	nc
+	call	ZXCLS
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+exit1:	push	af
+	push	hl
+	call	deinit
+	call	st_close	;Close the story file
+	pop	hl
+	pop	af
+	ret	c
+	jp	diewith
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+fdos1:	ld	a,c		;We need to handle printing functions
+	cp	2		;specially. This is because of the windowed 
+	jr	z,printch	;screen; ZXZVM wants to keep track of where
+	cp	9		;it is on the window, so all printing is
+	jp	nz,FDOS		;done using ZXZCHR. This also means that
+printl:	ld	a,(de)		;the [More] counter will work, etc.
+	inc	de		
+	cp	'$'
+	ret	z
+	cp	0Ah
+	jr	z,printl
+	push	de
+	ld	l,a
+	ld	h,0
+	ld	a,1
+	call	ZXZCHR
+	pop	de
+	jr	printl
+
+printch:
+	ld	a,(inited)	;Print a single character.
+	or	a
+	jp	z,FDOS
+	ld	a,e
+	cp	0Ah
+	ret	z
+	ld	l,e
+	ld	h,0
+	ld	a,1
+	jp	ZXZCHR
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Other source files:
+;
+	include joybdos.zsm	;PCW disc filing routines
+	include	joyuserf.zsm	;PCW file related to the extended BIOS
+	include joycescr.zsm	;PCW file related to the screen
+	include joycemem.zsm	;PCW file related to memory management
+	include	joyceinp.zsm	;PCW file related to keyboard input
+	include joycrtp.zsm	;Detect enhanced screen driver
+	include in_wrhex.inc	;Hex and decimal output
+;

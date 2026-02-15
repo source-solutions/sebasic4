@@ -1,0 +1,59 @@
+
+;    ZXZVM: Z-Code interpreter for the Z80 processor
+;    Copyright (C) 1998-9,2006,2016  John Elliott <seasip.webmaster@gmail.com>
+;
+;    This program is free software; you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation; either version 2 of the License, or
+;    (at your option) any later version.
+;
+;    This program is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with this program; if not, write to the Free Software
+;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+;
+;XBIOS code for the PCW
+;
+TE_ASK	equ	00BFh	;Get screen size and cursor position
+CD_VERS	equ	00E3h	;Get XBIOS type and version
+CD_INFO	equ	00E6h	;Get memory size and other system info
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Call a routine in the system bank
+;
+userf:	push	hl
+	push	de
+	ld	hl,(1)
+	ld	de,57h
+	add	hl,de
+	pop	de
+	ex	(sp),hl
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Get the XBIOS version number.
+;
+getver:	call	userf
+	defw	CD_VERS
+	ret
+;	
+;Get XBIOS info
+;
+getinfo:
+	call	userf
+	defw	CD_INFO
+	ret
+;
+;Get screen cursor X,Y
+;
+getxy:	call	userf
+	defw	TE_ASK
+	ret
+;

@@ -1,0 +1,308 @@
+;    ZXZVM: Z-Code interpreter for the Z80 processor
+;    Copyright (C) 1998-9,2006,2016  John Elliott <seasip.webmaster@gmail.com>
+;
+;    This program is free software; you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation; either version 2 of the License, or
+;    (at your option) any later version.
+;
+;    This program is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with this program; if not, write to the Free Software
+;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;A conventional PCW16 has RAM banks numbered 80h-BFh. Under Rosanne 1.12,
+;the .PRG file, Z-machine and OS occupy up to 95h, so the game starts loading
+;at 96h. This gives us 672k, and since gamefiles can only be up to 512k in
+;size, we're OK - at least until the Z9 format is released.
+;
+annezalloc:
+	ld	e,0
+	ld	b,2	;Ask for 32k to load ZXZVM.BIN
+	ld	a,os_get_mem
+	call	ANNE
+	ccf
+	ret	nc
+	ld	a,b	
+	cp	2
+	ccf
+	ret	nc
+	ld	a,(hl)
+	ld	(zspl),a
+	inc	hl
+	ld	a,(hl)
+	ld	(zspl+1),a
+	xor	a
+	ld	(zram),a	;Initialise the zram array
+	ld	(memsiz),a
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Because of the PCW16's simplistic disc I/O, I load the entire game into
+;memory. This function allocates a page of memory for it, returning its number
+;in A.
+;
+annealloc:
+	ld	b,1
+	ld	e,0
+	ld	a,os_get_mem
+	call	ANNE
+	ccf
+	ret	nc		;Should never happen (oh yes?)
+;
+;B = no. of banks we got.
+;
+	ld	a,b
+	or	a
+	ret	z
+;
+;Add it to the zram list
+;
+	ld	a,(hl)
+	push	af
+	ld	de,zram
+	ld	a,(memsiz)
+	add	a,e
+	ld	e,a		;Relies on zram fitting in a page...
+	pop	af
+	ld	(de),a
+	push	af
+	inc	de
+	xor	a
+	ld	(de),a
+	ld	a,(memsiz)
+	inc	a
+	ld	(memsiz),a
+	pop	af
+	scf
+	ret
+;
+memsiz:	defb	0		;Memory size allocated, in 16k blocks
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Memory access
+;
+;Because of the PCW16's feeble file I/O calls (no seek command for disc files)
+;we load the _entire_ Z-code file into RAM, and if it doesn't fit, tough.
+;
+;Provided the PCW is empty, though, the file will fit.
+;
+;The alternative is really speed-killing disc I/O.
+;
+;
+peek64:	push	de
+	ld	e,0
+	call	peek1
+	pop	de
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+peek1:
+	push	hl
+	push	de
+	push	bc
+	call	zbank	;PUSHes AF, switches to correct bank
+	ld	a,0C0h
+	or	h
+	ld	h,a	;HL |= 0C000h
+	ld	a,(hl)
+	call	nbank
+	pop	bc
+	pop	de
+	pop	hl
+	scf
+	ret
+;
+slowpw:	call	peek1
+	ld	b,a
+	inc	hl
+	ld	a,h
+	or	l
+	jr	nz,slowp1
+	inc	e
+slowp1:	call	peek1
+	inc	hl
+	ld	c,a
+	ld	a,h
+	or	l
+	jr	nz,slowp2
+	inc	e
+slowp2:	pop	af
+	scf
+	ret
+;
+peekw:	push	hl
+	push	de
+	call	ipeekw
+	pop	de
+	pop	hl
+	ret
+;
+ipeekw:	push	af
+	ld	a,l
+	cp	0FFH	;Is there a chance the word might go across 2 pages?	
+	jr	z,slowpw
+;
+;Read a word; we know it does not extend over a page boundary
+;
+	push    hl
+        push    de
+        call    zbank   ;PUSHes AF, switches to {1,3,4,0}[HL>>14]
+        ld      a,0C0h
+        or      h
+        ld      h,a     ;HL |= 0C000h
+        ld      d,(hl)
+	inc	hl
+	ld	e,(hl)
+        call    nbank
+	ld	b,d
+	ld	c,e
+        pop     de
+        pop     hl
+	inc	hl
+	inc	hl
+	ld	a,h
+	or	l
+	jr	nz,fpeekw1
+	inc	e
+fpeekw1:pop	af
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+poke1:	push	hl
+	push	de
+	push	bc
+	ld	d,a
+	ld	e,0	;<--- IMPORTANT! Otherwise it will poke
+	call	zbank	;     flying saucers into the program!
+	ld	a,0c0h
+	or	h
+	ld	h,a	;HL |= 0C000h
+	ld	(hl),d
+	call	nbank
+	pop	bc
+	pop	de
+	pop	hl
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+tmem1:	ld	hl,0ffffh	;PCW16 allows all of memory for Z-stack
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+vzram:	push	hl	;Sanity checking. Check that the Z-machine
+	push	bc	;does not access memory outside the range
+	ld	c,a	;allocated.
+	bit	7,c
+	jr	z,vzr01
+	ld	hl,zram
+	ld	b,80h
+vzr00:	ld	a,(hl)
+	cp	c
+	jr	z,vzr02
+	or	a
+	jr	z,vzr01
+	inc	hl
+	djnz	vzr00
+;
+vzr01:	push	bc
+	ld	a,e
+	ld	de,vzre
+	call	sphex2
+	pop	bc
+	ld	a,c
+	ld	hl,(ohl)
+	ld	bc,(ode)
+	ld	de,vzrx
+	call	sphex6
+	ld	hl,vzr$
+	ld	de,vzrend-vzr$
+	call	alert
+	ld	hl,(vzsp)
+	call	dumphl	;for debugging
+	jp	quit
+;
+vzr02:	ld	a,c
+	pop	bc
+	pop	hl
+	ret
+;
+vzr$:	defb	'The Z-machine has tried to use an invalid address.',0
+	defb	'The address it tried to use was '
+vzrx:	defb	'****** in memory bank '
+vzre:	defb	'00',0,0
+        defb    1
+        defb    0FCh, 80h
+        defb    ' ',80h
+        defb    0Dh,80h
+        defb    's',80h
+        defb    ' ',1Fh,'Stop ',0A4h,' ',0
+
+vzrend:
+
+ohl:	defw	0
+ode:	defw	0
+vzsp:	defw	0
+;
+zbank:	ld	(vzsp),sp
+	push	hl	;Switch to the memory bank in DEHL.
+	push	de
+	call	bgetram3
+	pop	de	
+	pop	hl
+	pop	bc	;Return address
+	push	af
+	push	bc
+
+	ld	(ohl),hl
+	ld	(ode),de
+
+	push	hl
+	push	de	;<-- Important! Otherwise it mangles E
+	ld	a,h
+	sla	a
+	rl	e
+	sla	a		
+	rl	e	;E = bank number
+	ld	hl,zram
+	ld	a,l
+	add	a,e
+	ld	l,a	;HL -> bank number
+	ld	a,(hl)	;Bank number
+;;; For debugging
+	call	vzram
+;;; 
+	call	bsetram3	
+	pop	de
+	pop	hl
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+nbank:	ld	l,a
+	pop	bc	;Switch out of the Zmachine bank
+	pop	af	;NOTE: pops 1 word off the stack
+	push	bc	;NOTE: corrupts HL
+	push	hl
+	call	bsetram3
+	pop	hl
+	ld	a,l
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	

@@ -1,0 +1,1263 @@
+
+;    ZXZVM: Z-Code interpreter for the Z80 processor
+;    Copyright (C) 1998-9,2006,2016  John Elliott <seasip.webmaster@gmail.com>
+;
+;    This program is free software; you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation; either version 2 of the License, or
+;    (at your option) any later version.
+;
+;    This program is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with this program; if not, write to the Free Software
+;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+;
+;Spectrum I/O and utility code
+;
+;I originally wrote these routines to match their namesakes in a CP/M library -
+;therefore CON6 refers to the CP/M BDOS, function 6.
+;
+FRAMES	EQU	5C78h	;50Hz counter
+
+OHL:	DEFW	0
+;
+PUSHA:	LD	(OHL),HL
+	POP	HL	;Return address
+	LD	(PA1+1),HL
+	LD	HL,(OHL)
+	PUSH	AF
+	PUSH	BC
+	PUSH	DE
+	PUSH	HL
+	PUSH	IX
+	PUSH	IY
+PA1:	JP	0
+;
+POPA:	POP	IY
+	POP	IX
+	POP	HL
+	POP	DE
+	POP	BC
+	POP	AF
+	RET
+;
+
+MORE:				;Rather than print [MORE], use a flashing
+	PUSH	HL		;cursor.
+	LD	A,7
+	CALL	SELMEM
+	LD	HL,SCRADDR+1AFFh	;Bottom right hand corner
+	LD	A,(HL)
+	XOR	0C0h		;Bright and flashing!
+	LD	(HL),A
+MORE1:	CALL	CON6
+	OR	A
+	JR	Z,MORE1
+	LD	A,(HL)
+	XOR	0C0h		;Remove the bright/flashing attribute
+	LD	(HL),A
+	LD	A,6
+	CALL	SELMEM
+	POP	HL
+RES_MORE:
+	PUSH	HL
+	LD	A,(win_hc)
+	dec	a
+	LD	HL,LWTOP
+	SUB	(HL)		;A = no. of scrolls to next [MORE]
+	LD	(SCRLS),A
+	POP	HL
+	INC	A
+	RET
+;
+UPCASEA:
+	CP	'a'	;CONVERT THE CHARACTER IN A TO UPPERCASE.
+	RET	C
+	CP	'z'+1
+	RET	NC
+	RES	5,A
+	RET
+;
+LCASE:	CP	'A'	;convert the character in a to lowercase.
+	RET	C
+	CP	'Z'+1
+	RET	NC	;<< v0.02 >> use RET NC not RET C, it might help :-)
+	SET	5,A
+	RET
+;
+CON6:	PUSH    BC      ;IF THERE IS NO KEYPRESS, A:=0 ELSE A:=KEYPRESS
+	PUSH    DE
+	PUSH    HL
+	EI
+	CALL    PUTCUR
+	XOR     A                ;L mode
+	LD      IY,05C3AH	;IY required by subroutine
+	SET	3,(IY+1)
+	RES	5,(IY+2)
+	RES	3,(IY+2)
+	CALL    10A8H           ;Get keyboard character.
+	JR      C,CON6X2        ;Input OK.
+;
+;Check specially for BREAK.
+;
+	LD	BC,0FEFEH
+	IN	A,(C)		;Port FEFE
+	CPL
+	AND	1		;CAPS
+	JR	Z,CON6X2
+	LD	B,07FH
+	IN	A,(C)
+	CPL
+	AND	1		;1 => BREAK, 0 => no character.
+CON6X2: CALL    PUTCUR
+	POP     HL
+	POP     DE
+	POP     BC
+	RET
+;
+PRINT:	CALL	PUSHA
+	LD	C,E
+	LD	B,D
+PRI1:	LD	A,(BC)
+	CP	'$'
+	JP	Z,POPA
+	LD	E,A
+	CALL	OPCHAR
+	INC	BC
+	JR	PRI1
+
+; As above, but for bit7-terminated messages
+PRINT7: CALL	PUSHA
+	LD	C,E
+	LD	B,D
+PRI71:	LD	A,(BC)
+	RES	7,A		; clear terminator bit
+	LD	E,A
+	CALL	OPCHAR
+	LD	A,(BC)
+	BIT	7,A		; check terminator
+	JP	NZ,POPA
+	INC	BC
+	JR	PRI71
+
+
+;
+STRING$:		;PRINT THE CHARACTER IN E B TIMES.
+	PUSH	BC
+STRI$1:	CALL	OPCHAR
+	DEC	B
+	JP	NZ,STRI$1
+	POP	BC
+;
+OPCHAR:
+	CALL	PUSHA
+	PUSH	AF
+	LD	A,7
+	CALL	SELMEM
+	POP	AF
+	CALL	PR64
+	LD	A,6
+	CALL	SELMEM
+	JP	POPA
+;
+ANYCHAR:
+	CALL	PUSHA
+	PUSH	AF
+	LD	A,7
+	CALL	SELMEM
+	POP	AF
+	CALL	PR64A
+	LD	A,6
+	CALL	SELMEM
+	JP	POPA
+;
+PRINAT:
+	PUSH	AF	;Move cursor, limiting it to within the screen
+	PUSH	DE
+	push	hl
+	ld	hl,(win_hc)	; H=width, L=height
+	LD	A,E
+	CP	h
+	JR	C,PRINA1
+	LD	A,h
+	dec	a
+PRINA1:	LD	A,D	;Y
+	CP	l
+	JR	C,PRINA2
+	LD	A,l
+	dec	a
+PRINA2: ld	l,a	; L=character line
+	ld	a,(win_ch)
+	ld	h,a
+	xor	a
+PRINA3:	add	a,l
+	dec	h
+	jr	nz,prina3
+	ld	d,a	; D=pixel line
+	LD	(XPOS),DE
+	pop	hl
+	POP	DE
+	POP	AF
+	RET
+;
+HIVON:	PUSH	AF
+	XOR	A
+	DEC	A
+	LD	(HVF),A
+	POP	AF
+	RET
+;
+HIVOFF:
+	PUSH	AF
+	XOR	A
+	LD	(HVF),A
+	POP	AF
+	RET
+;
+CURON:	PUSH	AF
+	XOR	A
+	DEC	A
+	LD	(CURFLG),A
+	POP	AF
+	RET
+;
+CUROFF:
+	PUSH	AF
+	XOR	A
+	LD	(CURFLG),A
+	POP	AF
+	RET
+;
+ZIBUF:	DEFW	0	;Z-address of input buffer
+INPPOS:	DEFW	0	;X,Y of start of input buffer
+MAXL:	DEFB	0	;Max input length
+ACTL:	DEFB	0	;Actual input length
+CURP:	DEFB	0	;Cursor position
+OFRAME:	DEFB	0	;Last value of FRAMES ticker
+TIMEV:	DEFW	0	;Countdown in 50ths of a second to timeout
+;
+;Initialise timed input
+;
+INITIME:
+        PUSH    HL
+        LD      H,D     ;DE = timeout in tenths of a second
+        LD      L,E
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,DE   ;HL = timeout in 50ths of a second
+        LD      (TIMEV),HL
+        LD      A,(FRAMES)
+        LD      (OFRAME),A
+        POP     HL
+	RET
+;
+;Read character, with timeout
+;
+RCHAR:	CALL	INITIME
+	CALL	RCHAR1
+	AND	A
+	RET	Z
+	PUSH	AF
+	CALL	RES_MORE
+	POP	AF
+XLTCHR:	LD	B,A		;Translate Spectrum control codes
+	LD	HL,XLTAB	;to Z-machine control codes. B=code to do.
+XLTLP:	LD	A,(HL)
+	INC	HL
+	INC	HL
+	OR	A
+	JR	Z,XLTEND
+	CP	B
+	JR	NZ,XLTLP
+	DEC	HL
+	LD	A,(HL)
+	RET
+;
+XLTEND:	LD	A,B
+	RET
+;
+;Translation table: Spectrum control codes to Z-machine
+;
+XLTAB:	DEFB	12,8	;Delete
+	DEFB	8,131	;Left
+	DEFB	9,132	;Right
+	DEFB	11,129	;Up
+	DEFB	10,130	;Down
+	DEFB	0	;End of table
+;
+RCHAR1:	LD      HL,OFRAME       ;Has the 50Hz counter changed?
+        LD      A,(FRAMES)
+        CP      (HL)
+        JR      Z,RCHAR2
+        LD      (HL),A
+        LD      HL,(TIMEV)      ;If time is 0, don't time out.
+        LD      A,H
+        OR      L
+        JR      Z,RCHAR2
+        DEC     HL
+        LD      A,H
+        OR      L
+	RET	Z		;Return with timeout 
+        LD      (TIMEV),HL
+RCHAR2:	CALL    CON6
+        OR      A
+	RET	NZ
+        JR      RCHAR1
+;
+LINEINP:
+;
+;Line input into buffer at HL, timeout DE (0 for none)
+;
+	CALL	CURON
+	CALL	INITIME
+	LD	(ZIBUF),HL
+	LD	HL,(LWX)
+	EX	DE,HL
+	CALL	PRINAT
+	EX	DE,HL
+	XOR	A
+	LD	(WRAPPED),A
+	LD	A,(CWIN)
+	OR	A
+	JR	NZ,LINEI1
+	LD	HL,(UWX)
+LINEI1: LD	(INPPOS),HL
+	LD	HL,(ZIBUF)
+	CALL	PEEK64
+	LD	(MAXL),A
+	INC	HL
+	CALL	PEEK64
+	LD	(ACTL),A
+	LD	(CURP),A
+;
+;If the game has printed text already, step back past it & reset our X,Y. 
+;
+	LD	B,A		;CURP
+	LD	A,(INPPOS)
+	SUB	B
+	LD	(INPPOS),A	;Input is now at correct coordinates.
+	JR	INPUT
+;
+COMTAB:	DEFW	TIMED0	;Timeout
+	DEFW	INPUTB	;^A (ignore BREAK)
+	DEFW	INPUT3	;^B
+	DEFW	INPUT3 	;^C
+	DEFW	INPUT3	;^D
+	DEFW	INPUT3	;^E
+	DEFW	INPUT3	;^F
+	DEFW	RDEL	;^G
+	DEFW	MOVLT 	;^H
+	DEFW	MOVRT 	;^I
+	DEFW	TRUEVID	;^J
+	DEFW	INVVID 	;^K
+	DEFW	DELETE	;^L
+	DEFW	FINISH	;^M
+	DEFW	LINEOL	;^N
+	DEFW	RDEL	;^O
+	DEFW	INPUT3	;^P
+	DEFW	INPUT3	;^Q
+	DEFW	INPUT3	;^R
+	DEFW	INPUT3	;^S
+	DEFW	INPUT3	;^T
+	DEFW	INPUT3	;^U
+	DEFW	INPUT3	;^V
+	DEFW	INPUT3	;^W
+	DEFW	INPUT3 	;^X
+	DEFW	INPUT3	;^Y
+	DEFW	INPUT3	;^Z
+	DEFW	INPUT3	;^[
+	DEFW	INPUT3 	;^\
+	DEFW	INPUT3	;^]
+	DEFW	INPUT3 	;^^
+	DEFW	INPUT3 	;^_
+;
+INPUT:	CALL	RCHAR1	;Get character with timer
+INPUT2:	CALL	MOVXY	;Move cursor to the right place
+	CP	' '	
+	JP	NC,INPUT3
+;
+	LD	L,A		;Command characters
+	LD	H,0
+	ADD	HL,HL
+	LD	DE,COMTAB
+	ADD	HL,DE
+	LD	D,(HL)
+	INC	HL
+	LD	H,(HL)
+	LD	L,D
+	JP	(HL)
+;
+TIMED0:	LD	B,0		;Input timed out!
+	JR	CEND
+;
+FINISH:	LD	B,0Ah
+	JR	CEND
+;
+ABANDON:
+	LD	B,27
+	JR	CEND
+;
+CEND:	PUSH	BC	;B = terminating character
+	LD	HL,(INPPOS)
+	LD	A,(CWIN)
+	OR	A
+	JR	Z,CENDU
+	LD	(LWX),HL
+	JR	CENDC
+
+CENDU:	LD	(UWX),HL
+CENDC:		
+;	LD	HL,0Dh
+;	CALL	ZXZCHR
+	LD	A,(ACTL)
+	LD	B,A
+	LD	HL,(ZIBUF)
+	INC	HL
+	CALL	ZXPOKE
+LCLP:	INC	HL		;Force it to lowercase
+	CALL	PEEK64
+	PUSH	AF
+	PUSH	BC
+	PUSH	DE
+	PUSH	HL
+	LD	L,A
+	LD	H,0
+	CALL	cktschar
+	POP	HL
+	POP	DE
+	POP	BC	
+	POP	AF
+	CALL	LCASE
+	CALL	ZXPOKE
+	DJNZ	LCLP
+	LD	HL,0Dh		;<< v1.11 Force a CR/LF.
+	CALL	OUT1A		;>> v1.11
+	CALL	CUROFF
+	PUSH	AF
+	CALL	RES_MORE
+	POP	AF
+	POP	BC
+	SCF
+	RET
+;
+DELETE:	LD	A,(CURP)
+	OR	A		;DEL LEFT/^H. AT THE LH END OF THE LINE?
+	CALL	Z,CHIME
+	JP	Z,INPUT
+;
+	LD	D,A
+	LD	A,(ACTL)
+	CP	D		;LAST CHARACTER SPECIAL CASE
+	JP	Z,DELLAST
+;
+	CALL	GETPPOS		;DE=NEXT CHARACTER
+	LD	D,H
+	LD	E,L
+	DEC	HL		;HL=THIS CHARACTER
+	LD	A,(CURP)
+	LD	B,A
+	LD	A,(ACTL)
+	SUB	B		;Length of line - cursor pos = no. to shift
+	LD	B,A		;B = no, to shift
+DEL1:	EX	DE,HL
+	CALL	PEEK64
+	EX	DE,HL
+	CALL	ZXPOKE
+	INC	HL
+	INC	DE
+	DJNZ	DEL1
+	LD	HL,ACTL
+	DEC	(HL)
+	LD	HL,CURP
+	DEC	(HL)
+	CALL	UPDLN		;UPDATE LINE
+	CALL	MOVXY
+	JP	INPUT
+;
+DELLAST:			;Delete last character
+	LD	HL,ACTL
+	DEC	(HL)
+	LD	HL,CURP
+	DEC	(HL)
+	CALL	UPDLN
+	CALL	MOVXY	
+	JP	INPUT
+;
+RDEL:	LD	A,(CURP)	;Delete right
+	LD	HL,ACTL
+	CP	(HL)
+	CALL	Z,CHIME
+	JP	Z,INPUT
+	CALL	GETPPOS
+	LD	D,H
+	LD	E,L
+	INC	DE		;HL=THIS CHARACTER
+	LD	A,(CURP)
+	LD	B,A
+	LD	A,(ACTL)
+	SUB	B		;No. of characters to swallow
+	DEC	A
+	JR	Z,RDEL2		;No characters need swallowing
+	LD	B,A
+RDEL1:	EX	DE,HL
+	CALL	PEEK64
+	EX	DE,HL
+	CALL	ZXPOKE
+	INC	HL
+	INC	DE
+	DJNZ	RDEL1
+RDEL2:	LD	HL,ACTL
+	DEC	(HL)
+	CALL	UPDLN		;UPDATE LINE
+	CALL	MOVXY
+	JP	INPUT
+;
+CUT:	CALL	DEL2E		;Delete line
+	JP	DEL2BOL
+;
+DEL2EOL:
+	CALL	DEL2E		;Delete to end of line
+	JP	INPUT
+;
+DEL2E:	CALL	GETPPOS
+	LD	A,(CURP)
+	LD	(ACTL),A
+	CALL	UPDLN
+	CALL	MOVXY
+	JP	INPUT
+;
+DEL2BOL:			;Delete to start of line
+	CALL	GETPPOS
+	LD	DE,(ZIBUF)
+	INC	DE
+	INC	DE
+	LD	A,(CURP)
+	LD	B,A
+	LD	A,(ACTL)
+	SUB	B
+	LD	C,0
+	LD	B,A		;B = no. of characters to move to start
+	OR	A
+	JR	Z,DEL4B
+DEL3B:	CALL	PEEK64
+	EX	DE,HL
+	CALL	ZXPOKE
+	EX	DE,HL
+	INC	HL
+	INC	DE
+	INC	C
+	DJNZ	DEL3B	
+DEL4B:	LD	A,C
+	LD	(ACTL),A
+	XOR	A
+	LD	(CURP),A
+	CALL	UPDLN
+	CALL	MOVXY
+	JP	INPUT
+
+;
+TRUEVID:ld	a,(ATTR_P)
+	ld	e,a
+	and	0F8h
+	ld	d,a		; D=colour with INK masked out
+	ld	a,e
+	inc	a
+	and	7		; A=next INK
+setattr:or	d
+	ld	(ATTR_P),a
+	ld	(BORDCR),a
+	call	clattr		; clear attribs
+	ld	a,6
+	call	selmem
+	jp	input
+
+INVVID:	ld	a,(ATTR_P)
+	ld	e,a
+	and	0C7h
+	ld	d,a		; D=colour with PAPER masked out
+	ld	a,e
+	add	a,8
+	and	038h		; A=next PAPER
+	jr	setattr
+;
+INPUTB:	LD	A,' '	;BREAK -> SPACE
+INPUT3:	CALL	INSERT	;Insert a simple character
+	CALL	UPDLN	
+	CALL	MOVXY
+	JP	INPUT
+;
+yil:	defb	0
+yes_i_live:
+	call	pusha
+	ld	a,(yil)
+	out	(254),a
+	inc	a
+	and	7
+	ld	(yil),a
+yil1:	call	con6
+	or	a
+	jr	z,yil1
+	jp	popa
+;
+CHAR:	DEFB	0
+;
+INSERT:	LD	(CHAR),A	;INSERT A CHARACTER
+	LD	A,(ACTL)
+	LD	HL,MAXL
+	CP	(HL)		;IS LENGTH=MAXIMUM?
+	CALL	Z,CHIME		;IF YES, BLEEP; DISALLOW
+	RET	Z
+;
+	LD	HL,CURP
+	CP	(HL)		;IS THIS THE LAST CHARACTER?
+	JR	NZ,INSERT1	;SPECIAL CASE IF JUST ADDING THE LAST CHARACTER
+	CALL	GETLPOS
+	LD	A,(CHAR)
+	CALL	ZXPOKE
+	LD	A,(ACTL)
+	INC	A
+	LD	(ACTL),A
+	LD	(CURP),A
+	RET
+;
+INSERT1:
+	CALL	GETPPOS		;HL=CURRENT POSITION
+	CALL	PEEK64		;Insert, and move up
+	LD	C,A
+	LD	A,(CURP)
+	LD	B,A
+	LD	A,(ACTL)
+	SUB	B
+	LD	B,A		;B = no. of chars to move up
+INSERT2:
+	CALL	PEEK64
+	PUSH	AF
+	LD	A,C
+	CALL	ZXPOKE
+	POP	AF
+	LD	C,A
+	INC	HL
+	DJNZ	INSERT2
+	CALL	GETPPOS
+	LD	A,(CHAR)
+	CALL	ZXPOKE	 ;STORE NEW CHARACTER
+	LD	HL,CURP
+	INC	(HL)
+	LD	HL,ACTL
+	INC	(HL)
+	RET
+;
+GETPPOS:
+	PUSH	DE
+	LD	DE,(ZIBUF)
+	INC	DE
+	INC	DE
+	LD	HL,(CURP)
+	LD	H,0
+	ADD	HL,DE	;HL=CURSOR POS.
+	POP	DE
+	RET
+;
+MOVLT:	LD	A,(CURP)
+	OR	A
+	JP	Z,INPUT
+	DEC	A
+	LD	(CURP),A
+	CALL	MOVXY
+	JP	INPUT
+;
+MOVRT:	LD	A,(CURP)
+	LD	HL,ACTL
+	CP	(HL)
+	JP	Z,INPUT
+	INC	A
+	LD	(CURP),A
+	CALL	MOVXY
+	JP	INPUT
+;
+GETLPOS:
+	PUSH	DE
+	LD	DE,(ZIBUF)
+	INC	DE
+	INC	DE
+	LD	HL,(ACTL)
+	LD	H,0
+	ADD	HL,DE
+	POP	DE
+	RET
+;
+MOVXY:	CALL	PUSHA
+	LD	DE,(INPPOS)
+	LD	A,(CURP)
+	ADD	A,E
+	LD	E,A	;PRINT AT CURSOR POSITION.
+	CALL	PRINAT
+	JP	POPA
+;
+UPDLN:	CALL	PUSHA
+	LD	DE,(INPPOS)
+	CALL	PRINAT
+	LD	HL,(ZIBUF)
+	INC	HL
+	INC	HL
+	LD	A,(ACTL)
+	OR	A
+	JR	Z,UPDLN3
+	LD	B,A
+UPDLN1:	CALL	PEEK64
+	LD	E,A
+	INC	HL
+	CALL	ANYCHAR
+	DJNZ	UPDLN1
+UPDLN3:	LD	A,(MAXL)
+	LD	HL,ACTL
+	SUB	(HL)		;A=UNUSED CHARS
+	OR	A
+	JP	Z,POPA
+	LD	B,A
+	LD	E,' '
+UPDLN4:	CALL	OPCHAR
+	DJNZ	UPDLN4
+	JP	POPA
+;
+LINEOL:	LD	A,(CURP)
+	OR	A
+	JR	Z,EOL
+	XOR	A
+	LD	(CURP),A
+	CALL	MOVXY
+	JP	INPUT
+;
+EOL:	LD	A,(ACTL)
+	LD	(CURP),A
+	CALL	MOVXY
+	JP	INPUT
+;
+wrapped:
+	defb	0	;Did the last character cause a line wrap?
+WRAP:	DEFB	0	;Wrap at end of line?
+XPOS:	DEFB	0	;Cursor X, characters
+YPOS:	DEFB	0	;Cursor Y, pixels
+SCRATCH:
+	DEFB	0	;Used while scrolling
+OVER:	DEFB	0	;Overprinting on?
+HVF:	DEFB	0	;High (reversed) video on?
+ITF:	DEFB	0	;Underlining on?
+CURFLG:	DEFB	0
+;
+PUTCUR:	CALL	PUSHA
+	LD	A,(CURFLG)
+	OR	A
+	JP	Z,POPA
+	XOR	A
+	DEC	A
+	LD	(OVER),A
+	LD	A,7
+	CALL	SELMEM
+	LD	A,'_'
+	CALL	OPC64
+	LD	A,6
+	CALL	SELMEM
+	JP	POPA
+;
+DOLF:	LD	A,(YPOS)
+	ld	l,a
+	ld	a,(win_ch)
+	add	a,l
+	LD	(YPOS),A
+	JP	NOCR1
+;
+PR64:	LD	A,E
+	CP	0DH
+	JP	Z,DOCR
+	CP	0AH
+	JR	Z,DOLF
+	CP	07H
+	JP	Z,CHIME
+	CP	20H
+	RET	C
+	CP	0E0h
+	RET	NC
+PR64A:	XOR	A
+	LD	(OVER),A
+	ld	a,(win_ftype)
+	and	a
+	jr	nz,PR64B	; 32-char printing handles reverse internally
+	LD	A,(HVF)
+	OR	A
+	JR	Z,PR64B
+	LD	A,143
+	PUSH	DE
+	CALL	OPC64
+	POP	DE
+	LD	A,0FFh		;The text character will be drawn overprinted
+	LD	(OVER),A
+PR64B:	LD	A,(ITF)
+	OR	A
+	JR	Z,PR64C
+	LD	A,'_'
+	PUSH	DE
+	CALL	OPC64
+	POP	DE
+	LD	A,0FFh
+	LD	(OVER),A
+PR64C:	ld	a,(win_wc)
+	ld	l,a
+	LD	A,(XPOS)	
+	CP	l
+	JR	C,GOODX
+BADPARS:
+	RST	8
+	DEFB	19H	;Parameter error
+;
+GOODX:	ld	a,(win_hp)
+	dec	a
+	ld	l,a
+	LD	A,(YPOS)
+	CP	l
+	JR	NC,BADPARS
+	LD	A,E	;A=character
+	CALL	OPC64	;Print character
+	ld	a,(win_wc)
+	ld	l,a
+	LD	A,(XPOS)
+	INC	A
+	LD	(XPOS),A
+	CP	l	;Auto CRLF?
+	JR	NZ,NOCR1
+	ld	(wrapped),a
+	LD	A,(WRAP)	;Wrap text at EOL?
+	OR	A
+	JR	NZ,WRAP1
+	LD	A,(XPOS)
+	DEC	A
+	LD	(XPOS),A
+	RET
+;
+; Auto linewrap has taken place!
+;
+WRAP1:	LD	A,(YPOS)
+	ld	l,a
+	ld	a,(win_ch)
+	add	a,l
+	LD	(YPOS),A
+DOCR:	XOR	A
+	LD	(XPOS),A
+NOCR1:	ld	a,(win_ch)
+	ld	l,a
+	ld	a,(win_hp)
+	sub	l
+	ld	l,a
+	LD	A,(YPOS)
+	CP	l
+	RET	C
+	ret	z
+	push	hl
+	CALL	SCROLL
+	pop	hl
+	LD	A,l
+	LD	(YPOS),A
+	XOR	A
+	LD	(XPOS),A
+	RET
+;
+SCRL_N:	CALL	PUSHA
+	PUSH	AF
+	LD	A,7
+	CALL	SELMEM
+	POP	AF
+	CALL	RFCD5
+	LD	A,6
+	CALL	SELMEM
+	JP	POPA	
+;
+ZAPLN:	PUSH	BC	;Clear a screen line (line passed in B)
+	ld	a,(win_ch)
+	ld	c,a
+	xor	a
+zapl3:	ADD	a,b
+	dec	c
+	jr	nz,zapl3
+	LD	(SCRATCH),A
+	ld	a,(win_ch)
+	LD	B,a
+ZAPL1:	PUSH	BC
+	LD	A,(SCRATCH)
+	CALL	YCOORD
+	LD	B,32
+ZAPL2:	LD	(HL),0
+	INC	HL
+	DJNZ	ZAPL2
+	LD	A,(SCRATCH)
+	INC	A
+	LD	(SCRATCH),A
+	POP	BC
+	DJNZ	ZAPL1
+	POP	BC
+	RET
+;	
+SCROLL:	XOR	A	;Scroll from line 0
+RFCD5:	PUSH	AF
+	ld	b,a
+	ld	a,(win_ch)
+	ld	c,a
+	xor	a
+rfcdx:	add	a,b
+	dec	c
+	jr	nz,rfcdx
+	LD	(SCRATCH),A
+	ld	a,(win_ch)
+	LD	B,a
+RFCDF:	PUSH	BC
+	LD	A,(SCRATCH)
+	CALL	YCOORD
+	EX	DE,HL
+	LD	A,(SCRATCH)
+	ld	c,a
+	ld	a,(win_ch)
+	ADD	A,c
+	CALL	YCOORD
+	LD	BC,32
+	LDIR
+	LD	A,(SCRATCH)
+	INC	A
+	LD	(SCRATCH),A
+	POP	BC
+	DJNZ	RFCDF	;$-1F
+	ld	a,(win_hc)
+	dec	a
+	ld	c,a
+	POP	AF
+	INC	A
+	CP	c
+	JR	NZ,RFCD5 ;$-2F
+	ld	a,(win_ch)
+	ld	b,a
+	LD	A,(win_hp)
+RFD08:	dec	a
+	PUSH	AF
+	push	bc
+	CALL	YCOORD
+	PUSH	HL
+	POP	DE
+	INC	DE
+	LD	BC,31
+	LD	(HL),0
+	LDIR
+	pop	bc
+	POP	AF
+	djnz	RFD08
+	RET
+
+OPC64:	LD	(SCRATCH),A
+	ld	a,(win_ftype)
+	and	a
+	ld	a,(SCRATCH)
+	jp	z,OPC_64
+
+; The standard 32-character routine
+
+OPC_32:	cp	128
+	jr	nc,opc32trans	; translate chars > 127
+	cp	96		; should be `, but Speccy has pound
+	jr	nz,opc32np
+	ld	a,39		; replace with '
+	jr	opc32ok
+opc32np:cp	32
+	jr	nc,opc32ok
+useqm:	ld	a,'?'		; all chars 0-31 undefined
+opc32ok:
+	ld	l,a
+opc32ok2:
+	ld	h,0
+	add	hl,hl
+	add	hl,hl
+	add	hl,hl
+	ld	bc,(CHARS)
+	ld	a,(cfont)
+	cp	3
+	jr	nz,opc32_2
+	ld	bc,font32_3
+opc32_2:add	hl,bc
+	ex	de,hl		; DE=character address
+	ld	a,(ypos)
+	call	ycoord		; HL=screen address (top line, char 0)
+	ld	a,(xpos)
+	add	a,l
+	ld	l,a		; HL=screen address
+	ld	b,8		; 8 character lines to do
+	ld	a,(over)
+	and	a
+	jr	z,opc32n	; move on if not OVER-printing
+opc32o:	ld	a,(hvf)
+	and	a
+	jr	z,opc32on	; move on if not reverse
+opc32or:ld	a,(de)
+	cpl
+	xor	(hl)
+	ld	(hl),a
+	inc	de
+	inc	h
+	djnz	opc32or
+	ret
+opc32on:ld	a,(de)
+	xor	(hl)
+	ld	(hl),a
+	inc	de
+	inc	h
+	djnz	opc32on
+	ret
+opc32n:	ld	a,(hvf)
+	and	a
+	jr	z,opc32nn	; move on if not reverse
+opc32nr:ld	a,(de)
+	cpl
+	ld	(hl),a
+	inc	de
+	inc	h
+	djnz	opc32nr
+	ret
+opc32nn:ld	a,(de)
+	ld	(hl),a
+	inc	de
+	inc	h
+	djnz	opc32nn
+	ret
+
+; 32-character extra character translations
+; Non-standard ASCII characters are translated, so any standard
+; Spectrum font may be used.
+
+opc32trans:
+	sub	155
+	jr	c,useqm		; 127-154 undefined
+	cp	224-155
+	jr	nc,useqm	; 224-255 undefined
+	ld	l,a
+	ld	h,0
+	add	hl,hl
+	ld	bc,stdtrans+1
+	add	hl,bc		; HL=translation address
+	ld	a,(hl)		; optional 2nd char
+	dec	hl
+	ld	l,(hl)		; 1st char
+	and	a
+	jr	z,opc32ok2	; only 1 char
+	push	af		; save 2nd char
+	ld	e,l
+	call	PR64
+	pop	af
+	jr	opc32ok
+
+; Standard translation table. This is only really valid for v1-4, as
+; v5+ may optionally specify a custom unicode translation table; however,
+; this is not considered here.
+
+stdtrans:
+	defb	'ae'	; diaeresis [155-160]
+	defb	'oe'
+	defb	'ue'
+	defb	'Ae'
+	defb	'Oe'
+	defb	'Ue'
+	defb	'ss'	; sz-ligature [161]
+	defb	'>>'	; quotations [162-163]
+	defb	'<<'
+	defb	'e',0	; diaeresis [164-168]
+	defb	'i',0
+	defb	'y',0
+	defb	'E',0
+	defb	'I',0
+	defb	'a',0	; acute [169-180]
+	defb	'e',0
+	defb	'i',0
+	defb	'o',0
+	defb	'u',0
+	defb	'y',0
+	defb	'A',0
+	defb	'E',0
+	defb	'I',0
+	defb	'O',0
+	defb	'U',0
+	defb	'Y',0
+	defb	'a',0	; grave [181-190]
+	defb	'e',0
+	defb	'i',0
+	defb	'o',0
+	defb	'u',0
+	defb	'A',0
+	defb	'E',0
+	defb	'I',0
+	defb	'O',0
+	defb	'U',0
+	defb	'a',0	; circumflex [191-200]
+	defb	'e',0
+	defb	'i',0
+	defb	'o',0
+	defb	'u',0
+	defb	'A',0
+	defb	'E',0
+	defb	'I',0
+	defb	'O',0
+	defb	'U',0
+	defb	'a',0	; ring [201-202]
+	defb	'A',0
+	defb	'o',0	; slash [203-204]
+	defb	'O',0
+	defb	'a',0	; tilde [205-210]
+	defb	'n',0
+	defb	'o',0
+	defb	'A',0
+	defb	'N',0
+	defb	'O',0
+	defb	'ae'	; ligatures [211-212]
+	defb	'AE'
+	defb	'c',0	; cedilla [213-214]
+	defb	'C',0
+	defb	'th'	; Icelandic [215-218]
+	defb	'th'
+	defb	'Th'
+	defb	'Th'
+	defb	96,0	; Pound [219]
+	defb	'oe'	; ligatures [220-221]
+	defb	'OE'
+	defb	'!',0	; inverted marks [222-223]
+	defb	'?',0
+
+
+; The 64-character routine
+OPC_64:
+	SRL	A
+	LD	L,A
+	LD	H,0
+	ADD	HL,HL
+	PUSH	HL
+	POP	BC
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,FONT
+	LD	A,(CFONT)
+	CP	3
+	JR	NZ,GFD78
+	LD	BC,FONT3
+GFD78:	ADD	HL,BC
+	EX	DE,HL
+	XOR	A	;Counter 0-5.
+RFD79:	PUSH	AF
+	LD	B,A
+	LD	A,(YPOS)
+	ADD	A,B
+	CALL	YCOORD	;HL=address of screen line needed.
+	LD	B,0
+	LD	A,(XPOS)
+	SRL	A	;Calculate X address.
+	LD	C,A
+	ADD	HL,BC
+	LD	A,(SCRATCH)
+	AND	1
+	LD	B,A
+	LD	A,(XPOS)
+	AND	1
+	XOR	B
+	JR	NZ,RFDAB
+	LD	A,(SCRATCH)
+	AND	1
+	JR	NZ,RFDA6
+	LD	A,(DE)
+	AND	0F0H
+	JR	RFDC6	;L -> L
+
+RFDA6:	LD	A,(DE)
+	AND	0FH
+	JR	RFDC6	;R -> R
+
+RFDAB:	LD	A,(SCRATCH)
+	AND	1
+	JR	Z,RFDBD	;Character wants to go R -> L
+	LD	A,(DE)
+	SLA	A
+	SLA	A
+	SLA	A
+	SLA	A
+	JR	RFDC6
+
+RFDBD:	LD	A,(DE)	;Character wants to go L -> R
+	SRL	A
+	SRL	A
+	SRL	A
+	SRL	A
+RFDC6:	LD	B,A
+	LD	A,(OVER)
+	OR	A
+	JR	Z,RFDD3	;If 'over', XOR the data in.
+	LD	A,B
+	XOR	(HL)
+	LD	(HL),A
+	JR	NXCHR
+
+RFDD3:	LD	A,(XPOS)
+	AND	1
+	JR	NZ,RFDDF
+	LD	A,(HL)	;Right-hand character
+	AND	0FH
+	JR	RFDE2
+
+RFDDF:	LD	A,(HL)
+	AND	0F0H	;Left-hand character
+RFDE2:	OR	B
+	LD	(HL),A
+NXCHR:	INC	DE
+	ld	a,(win_ch)
+	ld	l,a
+	POP	AF
+	INC	A
+	CP	l
+	RET	Z
+	JR	RFD79 ;$-70
+;
+YCOORD:	LD	B,A	;Convert Y coordinates to screen address
+	AND	38H
+	SLA	A	;/2
+	SLA	A	;/4
+	LD	L,A
+	LD	A,B
+	AND	7
+	LD	H,A
+	LD	A,B
+	AND	0C0H
+	SRL	A
+	SRL	A
+	SRL	A
+	OR	H
+	LD	H,A
+	LD	BC,SCRADDR
+	ADD	HL,BC
+	RET
+;
+;This font descriptor record is not used by anything, but in case I ever write
+;a font editor for 64-column fonts, this is where it should look :-)
+;
+	DEFB	'64FONT->'
+	DEFB	1	;Descriptor type 1
+	DEFB	20H	;First character defined
+	DEFB	0E0H	;First character which is undefined
+FONT	EQU	$-96
+
+	include	zxfont64.zsm	;Programatically generated from FONT64.XBM
+	DEFB	'64FONT->'
+	DEFB	1, 20H, 0E0h
+FONT3	EQU	$-96
+	include	zxfnt643.zsm	;Generated from FONT64_3.XBM
+
+; 32-character fonts
+; NB: Only the character graphics font is included here. The current
+;     standard Spectrum character set, as defined by CHARS, is used
+;     for ASCII characters.
+
+font32_3 equ	6A00h-256
+

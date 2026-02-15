@@ -1,0 +1,16 @@
+ 5 REM Simple ZXZVM test harness
+10 clear 26623
+20 cat "a:*.z5"
+30 cat "a:*.z8"
+40 input "Story file >"; LINE a$
+50 load "zxgrph.zxb" code 27136
+55 load "zxfont32.zxb" code 27904: poke 23607,108
+60 load "zxzvm.zxb" code 28672
+70 load "zxio.zxb" code 16384
+80 for n = 1 to len a$: poke 28763 + n, code a$(n): next n
+90 poke 28763 + n, 255
+100 poke 28764 + n, 36
+105 poke 28927, 1: rem 64 column mode
+110 pause 250
+120 let x = usr 28672
+130 stop

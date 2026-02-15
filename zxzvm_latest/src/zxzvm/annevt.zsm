@@ -1,0 +1,367 @@
+;    ZXZVM: Z-Code interpreter for the Z80 processor
+;    Copyright (C) 1998-9,2006,2016  John Elliott <seasip.webmaster@gmail.com>
+;
+;    This program is free software; you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation; either version 2 of the License, or
+;    (at your option) any later version.
+;
+;    This program is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with this program; if not, write to the Free Software
+;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;This code is Anne's main event handler.
+;
+process_event:
+	ld	l,(ix+0)
+	ld	h,(ix+1)
+	ld	de,handlers
+	ld	b,16
+proce1:	add	hl,hl
+	jr	c,proce2
+	inc	de
+	inc	de
+	djnz	proce1
+	xor	a	;Should never happen...
+	scf
+	ret
+;
+proce2:	ld	a,(de)
+	ld	l,a
+	inc	de
+	ld	a,(de)
+	ld	h,a	
+	jp	(hl)
+;
+handlers:
+	defw	on_spare
+	defw	on_char
+	defw	on_message
+	defw	on_evrect
+	defw	on_mousemove
+	defw	on_lbup
+	defw	on_lbdclick
+	defw	on_lbclick	
+
+	defw	on_cbup
+	defw	on_cbdclick
+	defw	on_cbclick
+	defw	on_rbup
+	defw	on_rbdclick
+	defw	on_rbclick
+	defw	on_menu
+	defw	on_timer
+;
+;
+on_message:
+        ld      a,(ix+2)
+        cp      om_exit
+        jp	nz,procev0
+procev2:
+	ld      a,2     ;Quit forthwith, obeying om_exit
+	ret
+;
+on_evrect:
+	ld	a,(ix+2)
+	or	a
+	call	z,ibeam
+	call	nz,arrowcur
+	ld	a,1
+	ret
+;
+on_menu:
+	ld	a,(ix+2)	;Menu number
+	or	a
+	jr	nz,nottsk	;Not the Task menu
+	ld	a,(ix+3)	
+	cp	8		;<< v1.01  Save and continue
+	jp	z,putsave	;>> v1.01
+	or	a		;Stop?
+	jp	nz,procev0
+	ld	a,2		;Quit
+	ret
+;
+nottsk:	cp	0FFh		;<< v1.01 Help
+	jp	z,puthelp	;>> v1.01
+	ld	a,(ix+3)
+	or	a
+	jp	z,infobox
+	dec	a
+	jp	z,aboutbox
+	jp	procev0
+;
+on_spare:
+on_mousemove:
+on_lbup:
+on_rbup:
+on_cbup:
+on_lbclick:
+on_rbclick:
+on_cbclick:
+on_lbdclick:
+on_cbdclick:
+on_rbdclick:
+on_timer:
+on_char:
+
+procev0:
+	xor	a	;No special handlers
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; << v1.01 pass text commands to the game
+;
+putsave:
+	ld	b,4
+	ld	hl,savestr
+	call	inscmd
+	jp	procev0
+;
+puthelp:
+	ld	b,4
+	ld	hl,helpstr
+	call	inscmd
+	jp	procev0
+;
+savestr:defb	'Save'
+helpstr:defb	'Help'
+;
+; Insert B characters from HL into the Z-machine's command buffer.
+;
+inscmd:	ex	de,hl	
+	ld	hl,(zibuf)
+	inc	hl	
+	ld	a,b	;Store length of command
+	ld	(actl),a
+	call	ZXPOKE
+	inc	hl
+inslp:	ld	a,(de)
+	call	ZXPOKE
+	inc	hl
+	inc	de
+	djnz	inslp	
+	call	UPDLN		;Display what was just input
+	ld	a,0Dh		;Set to 0Dh - carriage return.
+	ld	(insert),a
+	ret
+;
+; >> v1.01
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Two informative alert boxes.
+;
+aboutbox:
+	ld	hl,babout
+	ld	de,babend-babout
+	call	alert		
+	jp	procev0
+;
+infobox:
+	ld	b,32
+	ld	hl,gamename
+	ld	de,biname
+ibox0:	ld	a,(hl)
+	or	a
+	jr	z,ibox1
+	ld	(de),a
+	inc	hl
+	jr	ibox2
+;
+ibox1:	ld	a,' '
+	ld	(de),a
+ibox2:	inc	de
+	djnz	ibox0
+	ld	hl,0
+	call	ZXPK64
+	add	a,'0'
+	ld	(biver),a
+
+	ld	hl,binfo
+	ld	de,biend-binfo
+	call	alert
+	jp	procev0
+
+
+babout: 
+
+	include	in_ver.inc	;<< v0.03 >> Version no. stored in one place
+	defb	0
+	defb	'Copyright 1998-9,2006,2016 by John Elliott',0,0
+        defb    1
+        defb    0FBh, 80h, 0Dh, 80h, 'o', 80h, ' ', 80h
+        defb    ' ',1Fh, 'OK ',0A5h,' ',0
+babend:
+
+binfo:	defb    'Story file: '
+biname:	defb	'********************************',0
+	defb	'Story file type: '
+biver:	defb	'*',0,0
+        defb    1
+        defb    0FBh, 80h, 0Dh, 80h, 'o', 80h, ' ', 80h
+        defb    ' ',1Fh, 'OK ',0A5h,' ',0
+biend:
+
+
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;Keyboard polling. This function is to pump events until there's one from the
+;keyboard. If it gets one, it returns it. If there are no events, it returns 0.
+;
+pollkey:
+	ld	a,(insert)
+	or	a
+	scf
+	ret	z
+	ld	hl,0FFFFh
+	ld	a,os_get_event
+	call	ANNE
+	jr	z,pkret0
+	xor	a
+	call	process_event
+	or	a
+	jr	z,pkret1
+	cp	1
+	jr	z,pollkey
+	jp	quit	
+
+pkret1:	ld	a,(ix+1)	;Bit 6 set if keyboard
+	bit	6,a
+	jr	z,pkret2
+	push	ix
+	ld	a,os_process_event
+	call	ANNE
+	pop	ix
+	ld	a,(ix+2)
+	scf
+	ret
+;
+pkret2:	ld	a,os_process_event
+	call	ANNE
+	jr	pollkey
+
+pkret0:	xor	a
+	scf
+	ret
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;getkey works like pollkey, except that it only returns when there is a 
+;       keypress. It could be done simply by: 
+;
+;getkey:
+;	call	pollkey
+;	or	a
+;	jr	z,getkey
+;
+; but this would mean busy-waiting, which is a Bad Thing.
+;
+;tgetkey is similar, but also returns on timer events.
+;
+getkey: ld	a,(insert)
+	cp	0Dh
+	scf
+	ret	z	
+	ld      hl,0FFFFh
+        ld      a,os_wait_event
+        call    ANNE
+        xor     a
+        call    process_event
+        or      a
+        jr      z,gkret1
+        cp      1
+        jr      z,getkey
+        jp      quit
+
+gkret1:	ld      a,(ix+1)        ;Bit 6 set if keyboard
+        bit     6,a
+        jr      z,gkret0
+        push    ix
+        ld      a,os_process_event
+        call    ANNE
+        pop     ix
+	ld	a,(ix+2)
+	scf
+	ret
+;
+gkret0:	ld	a,os_process_event
+	call	ANNE	
+	jr	getkey
+;
+;Get key with timer
+;
+tgetkey:
+	ld	a,(insert)
+	cp	0Dh
+	scf
+	ret	z
+	ld      hl,0FFFFh
+        ld      a,os_wait_event
+        call    ANNE
+        xor     a
+        call    process_event
+        or      a
+        jr      z,tgkret1
+        cp      1
+        jr      z,tgetkey
+        jp      quit
+
+tgkret1:
+	ld	a,(ix+0)
+	bit	0,a
+	jr	z,tgkret2
+	ld	a,os_process_event
+	call	ANNE
+	xor	a	;0 => timeout
+	scf
+	ret
+;	
+tgkret2:
+	ld      a,(ix+1)        ;Bit 6 set if keyboard
+        bit     6,a
+        jr      z,tgkret0
+        push    ix
+        ld      a,os_process_event
+        call    ANNE
+        pop     ix
+        ld      a,(ix+2)
+        scf
+        ret
+;
+tgkret0:
+	ld      a,os_process_event
+        call    ANNE
+        jr      tgetkey
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Flow of control comes here from the Z-machine every 2000-odd instructions.
+;
+; Make it handle all outstanding events.
+;
+rcpu1:	call	pusha
+rcpu2:	ld	hl,0FFFFh
+	ld	a,os_get_event
+	call	ANNE
+	jp	z,popa		;No event forthcoming
+	xor	a
+	call	process_event
+	or	a		;Return 0 to use default handler
+	jr	z,rcpu3
+	cp	1		;Return 1 if event handled
+	jr	z,rcpu2
+	jp	quit		;Quit unceremoniously if A>1
+
+rcpu3:	ld	a,os_process_event
+	call	ANNE
+	jr	rcpu2
+;	
