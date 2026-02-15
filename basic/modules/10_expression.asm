@@ -100,7 +100,7 @@ f_brace:
 	pop hl;								// discard error handler
 	pop hl;								// old error handler to HL
 	ld (err_sp), hl;					// restore it
-	jp s_string;						// immediate jump
+	jr s_brce;							// immediate jump
 
 s_brace_j:
 	rst get_char;						// HL = address of opening brace
@@ -131,6 +131,9 @@ s_brcl:
 	ld c, l;							// to
 	ld b, h;							// BC = length
 	rst next_char;						// step past closing brace
+
+s_brce:
+	jr s_string;						// immediate jump
 
 sf_loop:
 	ld a, (hl);							// get table character
