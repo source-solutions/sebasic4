@@ -240,7 +240,7 @@ scan_func:
 	defb '(';
 	defw s_bracket;		// (
 	defb '.';
-	defw s_decimal;		// ,
+	defw s_decimal;		// .
 	defb '+';
 	defw s_u_plus;		// +
 	defb '{';
@@ -251,7 +251,7 @@ scan_func:
 	defw s_decimal;		// @
 	defb op_hex;
 	defw s_decimal;		// $
-	defb tk_eof
+	defb tk_eof;
 	defw s_eof;			// EOF
 	defb tk_fn;
 	defw s_fn;			// FN

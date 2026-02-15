@@ -148,10 +148,10 @@ sf_loop:
 
 sf_found:
 	inc hl;								// point to address
-	ld a, (hl);							// get low byte
+	ld c, (hl);							// get low byte
 	inc hl;								// point to high byte  
 	ld h, (hl);							// get high byte
-	ld l, a;							// complete address in HL
+	ld l, c;							// complete address in HL
 	jp (hl);							// jump to handler
 
 ;;
