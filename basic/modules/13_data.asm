@@ -30,6 +30,192 @@
 ;	// Data stored from $4000 is located in RAM and can be modified by the boot
 ;	// ROM or the user
 
+
+;	// used in 16_audio
+
+;   // calculated coarse / fine values for a 1.75Mhz clock
+; notes:
+; 	defw (28 * 256) +  14;				// Cb0 - 15.434 Hz
+; 	defw (26 * 256) + 123;				// C0  - 16.352 Hz
+; 	defw (24 * 256) + 254;				// C#0 - 17.324 Hz
+; 	defw (23 * 256) + 151;				// D0  - 18.354 Hz
+; 	defw (22 * 256) +  68;				// D#0 - 19.445 Hz
+; 	defw (21 * 256) +   4;				// E0  - 20.602 Hz
+; 	defw (19 * 256) + 214;				// F0  - 21.827 Hz
+; 	defw (18 * 256) + 185;				// F#0 - 23.125 Hz
+; 	defw (17 * 256) + 172;				// G0  - 24.500 Hz
+; 	defw (16 * 256) + 174;				// G#0 - 25.957 Hz
+; 	defw (15 * 256) + 191;				// A0  - 27.500 Hz
+; 	defw (14 * 256) + 220;				// A#0 - 29.135 Hz
+; 	defw (14 * 256) +   7;				// B0  - 30.868 Hz
+; 	defw (13 * 256) +  61;				// C1  - 32.703 Hz
+
+; ;	// +1 offset in case note is flattened
+; semitones::
+; 	defb 10, 12, 1, 3, 5, 6, 8;			// A, B, C, D, E, F, G
+
+; ;   // multiply by 150 for BPM with 60 Hz frame counter
+; durations:
+; 	defb 3;								// thirty-second note / demisemiquaver FIXME: not used
+; 	defb 6;								// sixteenth note / semiquaver
+; 	defb 9;								// dotted sixteenth note / dotted semiquaver
+; 	defb 12;							// eighth note / quaver
+; 	defb 18;							// dotted eighth note / dotted quaver
+; 	defb 24;							// quarter note / crotchet
+; 	defb 36;							// dotted quarter note / dotted crotchet
+; 	defb 48;							// half note / minim
+; 	defb 72;							// dotted quarter note / dotted minim
+; 	defb 96;							// whole note / semibreve
+; 	defb 4;								// twenty-fourth note / triple semiquaver
+; 	defb 8;								// twelfth note / triple quaver
+; 	defb 16;							// sixth note / triple crotchet
+
+; ;	// 24 unused bytes
+; 	defs 24, $ff;						// RESERVED
+
+	org $3d00;
+
+;	// used in 14_screen_1
+;	// attributes are stored internally with the foreground in the high nibble and the background in the low nibble
+;	// this table converts an attribute to its 64-color equivalent in the default palette.
+;	// must be stored on an edge so that $hh + attibute byte will give the correct converted attribute value
+
+attributes:
+	defb $00, $08, $10, $18, $20, $28, $30, $38, $80, $88, $90, $98, $a0, $a8, $b0, $b8; background 0-15, foreground 0
+	defb $01, $09, $11, $19, $21, $29, $31, $39, $81, $89, $91, $99, $a1, $a9, $b1, $b9; background 0-15, foreground 1
+	defb $02, $0a, $12, $1a, $22, $2a, $32, $3a, $82, $8a, $92, $9a, $a2, $aa, $b2, $ba; background 0-15, foreground 2
+	defb $03, $0b, $13, $1b, $23, $2b, $33, $3b, $83, $8b, $93, $9b, $a3, $ab, $b3, $bb; background 0-15, foreground 3
+	defb $04, $0c, $14, $1c, $24, $2c, $34, $3c, $84, $8c, $94, $9c, $a4, $ac, $b4, $bc; background 0-15, foreground 4
+	defb $05, $0d, $15, $1d, $25, $2d, $35, $3d, $85, $8d, $95, $9d, $a5, $ad, $b5, $bd; background 0-15, foreground 5
+	defb $06, $0e, $16, $1e, $26, $2e, $36, $3e, $86, $8e, $96, $9e, $a6, $ae, $b6, $be; background 0-15, foreground 6
+	defb $07, $0f, $17, $1f, $27, $2f, $37, $3f, $87, $8f, $97, $9f, $a7, $af, $b7, $bf; background 0-15, foreground 7
+	defb $40, $48, $50, $58, $60, $68, $70, $78, $c0, $c8, $d0, $d8, $e0, $e8, $f0, $f8; background 0-15, foreground 8
+	defb $41, $49, $51, $59, $61, $69, $71, $79, $c1, $c9, $d1, $d9, $e1, $e9, $f1, $f9; background 0-15, foreground 9
+	defb $42, $4a, $52, $5a, $62, $6a, $72, $7a, $c2, $ca, $d2, $da, $e2, $ea, $f2, $fa; background 0-15, foreground 10
+	defb $43, $4b, $53, $5b, $63, $6b, $73, $7b, $c3, $cb, $d3, $db, $e3, $eb, $f3, $fb; background 0-15, foreground 11
+	defb $44, $4c, $54, $5c, $64, $6c, $74, $7c, $c4, $cc, $d4, $dc, $e4, $ec, $f4, $fc; background 0-15, foreground 12
+	defb $45, $4d, $55, $5d, $65, $6d, $75, $7d, $c5, $cd, $d5, $dd, $e5, $ed, $f5, $fd; background 0-15, foreground 13
+	defb $46, $4e, $56, $5e, $66, $6e, $76, $7e, $c6, $ce, $d6, $de, $e6, $ee, $f6, $fe; background 0-15, foreground 14
+	defb $47, $4f, $57, $5f, $67, $6f, $77, $7f, $c7, $cf, $d7, $df, $e7, $ef, $f7, $ff; background 0-15, foreground 15
+
+;   // used in 10_expression
+
+;	// scanning function table
+scan_func:
+	defb '"';
+	defw s_quote;		// "
+	defb '(';
+	defw s_bracket;		// (
+	defb '.';
+	defw s_decimal;		// .
+	defb '+';
+	defw s_u_plus;		// +
+	defb '{';
+	defw s_brace_j;		// {
+	defb op_bin;
+	defw s_decimal;		// %
+	defb op_oct;
+	defw s_decimal;		// @
+	defb op_hex;
+	defw s_decimal;		// $
+	defb tk_eof;
+	defw s_eof;			// EOF
+	defb tk_loc;
+	defw s_loc;			// LOC
+	defb tk_lof;
+	defw s_lof;			// LOF
+	defb tk_fn;
+	defw s_fn;			// FN
+	defb tk_rnd;
+	defw s_rnd;			// RND
+	defb tk_pi;
+	defw s_pi;			// PI
+	defb tk_inkey_str;
+	defw s_inkey_str;	// INKEY$
+	defb 0;				// null terminator
+
+
+
+;	// used in 16_audio
+
+;play_ttab:
+;	defb "<>XZHMSVNT][LO'";				// 15 characters
+;	defb "<>XZHMSVT][LO'";				// 14 characters
+;	ttab_chars equ 14;					// used by lookup
+
+;play_tab:
+;	defw play_other;					// 
+;	defw play_comment;					// '
+;	defw play_octave;					// O
+;	defw play_scan;						// L
+;	defw play_rep;						// [
+;	defw play_rep_end;					// ]
+;	defw play_tempo;					// T
+;	defw play_volume;					// V
+;	defw play_envelope;					// S
+;	defw play_envdur;					// M
+;	defw play_midi_chan;				// H
+;	defw play_z;						// Z
+;	defw play_ret;						// X
+;	defw play_oct_inc;					// >
+;	defw play_oct_dec;					// <
+
+;	// used in 10_expression
+tbl_ops_priors:
+	defb '+', op_fadd + %11000000, 8;	// +
+	defb '-', op_fsub + %11000000, 8;	// -
+	defb '*', op_fmul + %11000000, 11;	// *
+	defb '/', op_fdiv + %11000000, 11;	// /
+	defb '^', op_ftop + %11000000, 12;	// ^
+	defb '=', $0e + %11000000, 7;		// =  fcp(eq)
+	defb '>', $0c + %11000000, 7;		// >  fcp(gt)
+	defb '<', $0d + %11000000, 7;		// <  fcp(lt)
+	defb tk_le, $09 + %11000000, 7;		// <= fcp(le)
+	defb tk_ge, $0a + %11000000, 7;		// >= fcp(ge)
+	defb tk_ne, $0b + %11000000, 7;		// <> fcp(ne)
+	defb tk_or, op_fbor + %11000000, 4;	// OR
+	defb tk_and, op_fband + $c0, 5;		// AND
+	defb tk_xor, op_fxor + %11000000, 3;// XOR
+	defb tk_mod, op_fmod + %11000000, 9;// MOD
+	defb '\\', op_fquot + %11000000, 10;// \
+	defb 0;								// null terminator
+
+;	// note priority is always $10 except for NOT which is $06
+;	// bit 6 = input, bit 7 = output; 0 = string, 1 = number
+
+tbl_prefix_ops:
+	defb op_fabs	+ %11000000;		// ABS
+	defb op_facos	+ %11000000;		// ACOS
+	defb op_fasc	+ %10000000;		// ASC
+	defb op_fasin	+ %11000000;		// ASIN
+	defb op_fatan	+ %11000000;		// ATAN
+	defb op_fchrs	+ %01000000;		// CHR$
+	defb op_fcos	+ %11000000;		// COS
+	defb op_fdeek	+ %11000000;		// DEEK
+	defb op_fexp	+ %11000000;		// EXP
+	defb op_ftrn	+ %11000000;		// FIX
+	defb op_finp	+ %11000000;		// INP
+	defb op_fint	+ %11000000;		// INT
+	defb op_flen	+ %10000000;		// LEN
+	defb op_flogn	+ %11000000;		// LOG
+	defb op_fnot	+ %11000000;		// NOT
+	defb op_fpeek	+ %11000000;		// PEEK
+	defb op_fsin	+ %11000000;		// SIN
+	defb op_fsgn	+ %11000000;		// SGN
+	defb op_fsqrt	+ %11000000;		// SQR
+	defb op_ftan	+ %11000000;		// TAN
+	defb op_fusr	+ %11000000;		// USR
+	defb op_fval	+ %10000000;		// VAL
+	defb op_fvals	+ %00000000;		// VAL$
+
+tab_func:
+	defw s_left;
+	defw s_mid;
+	defw s_right;
+	defw s_str;
+	defw s_string_str;
+	defw s_instr;
+
 ;	// used in 12_calculator
 constants:
 	defb $00, $00, $00, $00, $00;		// 0
@@ -164,185 +350,6 @@ tbl_offs equ $ - tbl_addrs
 	defw fp_st_mem_xx;
 	defw fp_get_mem_xx;
 
-;	// used in 16_audio
-
-;   // calculated coarse / fine values for a 1.75Mhz clock
-; notes:
-; 	defw (28 * 256) +  14;				// Cb0 - 15.434 Hz
-; 	defw (26 * 256) + 123;				// C0  - 16.352 Hz
-; 	defw (24 * 256) + 254;				// C#0 - 17.324 Hz
-; 	defw (23 * 256) + 151;				// D0  - 18.354 Hz
-; 	defw (22 * 256) +  68;				// D#0 - 19.445 Hz
-; 	defw (21 * 256) +   4;				// E0  - 20.602 Hz
-; 	defw (19 * 256) + 214;				// F0  - 21.827 Hz
-; 	defw (18 * 256) + 185;				// F#0 - 23.125 Hz
-; 	defw (17 * 256) + 172;				// G0  - 24.500 Hz
-; 	defw (16 * 256) + 174;				// G#0 - 25.957 Hz
-; 	defw (15 * 256) + 191;				// A0  - 27.500 Hz
-; 	defw (14 * 256) + 220;				// A#0 - 29.135 Hz
-; 	defw (14 * 256) +   7;				// B0  - 30.868 Hz
-; 	defw (13 * 256) +  61;				// C1  - 32.703 Hz
-
-; ;	// +1 offset in case note is flattened
-; semitones::
-; 	defb 10, 12, 1, 3, 5, 6, 8;			// A, B, C, D, E, F, G
-
-; ;   // multiply by 150 for BPM with 60 Hz frame counter
-; durations:
-; 	defb 3;								// thirty-second note / demisemiquaver FIXME: not used
-; 	defb 6;								// sixteenth note / semiquaver
-; 	defb 9;								// dotted sixteenth note / dotted semiquaver
-; 	defb 12;							// eighth note / quaver
-; 	defb 18;							// dotted eighth note / dotted quaver
-; 	defb 24;							// quarter note / crotchet
-; 	defb 36;							// dotted quarter note / dotted crotchet
-; 	defb 48;							// half note / minim
-; 	defb 72;							// dotted quarter note / dotted minim
-; 	defb 96;							// whole note / semibreve
-; 	defb 4;								// twenty-fourth note / triple semiquaver
-; 	defb 8;								// twelfth note / triple quaver
-; 	defb 16;							// sixth note / triple crotchet
-
-; ;	// 24 unused bytes
-; 	defs 24, $ff;						// RESERVED
-
-	org $3d00;
-
-;	// used in 14_screen_1
-;	// attributes are stored internally with the foreground in the high nibble and the background in the low nibble
-;	// this table converts an attribute to its 64-color equivalent in the default palette.
-;	// must be stored on an edge so that $hh + attibute byte will give the correct converted attribute value
-
-attributes:
-	defb $00, $08, $10, $18, $20, $28, $30, $38, $80, $88, $90, $98, $a0, $a8, $b0, $b8; background 0-15, foreground 0
-	defb $01, $09, $11, $19, $21, $29, $31, $39, $81, $89, $91, $99, $a1, $a9, $b1, $b9; background 0-15, foreground 1
-	defb $02, $0a, $12, $1a, $22, $2a, $32, $3a, $82, $8a, $92, $9a, $a2, $aa, $b2, $ba; background 0-15, foreground 2
-	defb $03, $0b, $13, $1b, $23, $2b, $33, $3b, $83, $8b, $93, $9b, $a3, $ab, $b3, $bb; background 0-15, foreground 3
-	defb $04, $0c, $14, $1c, $24, $2c, $34, $3c, $84, $8c, $94, $9c, $a4, $ac, $b4, $bc; background 0-15, foreground 4
-	defb $05, $0d, $15, $1d, $25, $2d, $35, $3d, $85, $8d, $95, $9d, $a5, $ad, $b5, $bd; background 0-15, foreground 5
-	defb $06, $0e, $16, $1e, $26, $2e, $36, $3e, $86, $8e, $96, $9e, $a6, $ae, $b6, $be; background 0-15, foreground 6
-	defb $07, $0f, $17, $1f, $27, $2f, $37, $3f, $87, $8f, $97, $9f, $a7, $af, $b7, $bf; background 0-15, foreground 7
-	defb $40, $48, $50, $58, $60, $68, $70, $78, $c0, $c8, $d0, $d8, $e0, $e8, $f0, $f8; background 0-15, foreground 8
-	defb $41, $49, $51, $59, $61, $69, $71, $79, $c1, $c9, $d1, $d9, $e1, $e9, $f1, $f9; background 0-15, foreground 9
-	defb $42, $4a, $52, $5a, $62, $6a, $72, $7a, $c2, $ca, $d2, $da, $e2, $ea, $f2, $fa; background 0-15, foreground 10
-	defb $43, $4b, $53, $5b, $63, $6b, $73, $7b, $c3, $cb, $d3, $db, $e3, $eb, $f3, $fb; background 0-15, foreground 11
-	defb $44, $4c, $54, $5c, $64, $6c, $74, $7c, $c4, $cc, $d4, $dc, $e4, $ec, $f4, $fc; background 0-15, foreground 12
-	defb $45, $4d, $55, $5d, $65, $6d, $75, $7d, $c5, $cd, $d5, $dd, $e5, $ed, $f5, $fd; background 0-15, foreground 13
-	defb $46, $4e, $56, $5e, $66, $6e, $76, $7e, $c6, $ce, $d6, $de, $e6, $ee, $f6, $fe; background 0-15, foreground 14
-	defb $47, $4f, $57, $5f, $67, $6f, $77, $7f, $c7, $cf, $d7, $df, $e7, $ef, $f7, $ff; background 0-15, foreground 15
-
-;   // used in 10_expression
-
-;	// scanning function table
-scan_func:
-	defb '"';
-	defw s_quote;		// "
-	defb '(';
-	defw s_bracket;		// (
-	defb '.';
-	defw s_decimal;		// .
-	defb '+';
-	defw s_u_plus;		// +
-	defb '{';
-	defw s_brace_j;		// {
-	defb op_bin;
-	defw s_decimal;		// %
-	defb op_oct;
-	defw s_decimal;		// @
-	defb op_hex;
-	defw s_decimal;		// $
-	defb tk_eof;
-	defw s_eof;			// EOF
-	defb tk_fn;
-	defw s_fn;			// FN
-	defb tk_rnd;
-	defw s_rnd;			// RND
-	defb tk_pi;
-	defw s_pi;			// PI
-	defb tk_inkey_str;
-	defw s_inkey_str;	// INKEY$
-	defb 0;				// null terminator
-
-;	// used in 16_audio
-
-;play_ttab:
-;	defb "<>XZHMSVNT][LO'";				// 15 characters
-;	defb "<>XZHMSVT][LO'";				// 14 characters
-;	ttab_chars equ 14;					// used by lookup
-
-;play_tab:
-;	defw play_other;					// 
-;	defw play_comment;					// '
-;	defw play_octave;					// O
-;	defw play_scan;						// L
-;	defw play_rep;						// [
-;	defw play_rep_end;					// ]
-;	defw play_tempo;					// T
-;	defw play_volume;					// V
-;	defw play_envelope;					// S
-;	defw play_envdur;					// M
-;	defw play_midi_chan;				// H
-;	defw play_z;						// Z
-;	defw play_ret;						// X
-;	defw play_oct_inc;					// >
-;	defw play_oct_dec;					// <
-
-;	// used in 10_expression
-tbl_ops_priors:
-	defb '+', op_fadd + %11000000, 8;	// +
-	defb '-', op_fsub + %11000000, 8;	// -
-	defb '*', op_fmul + %11000000, 11;	// *
-	defb '/', op_fdiv + %11000000, 11;	// /
-	defb '^', op_ftop + %11000000, 12;	// ^
-	defb '=', $0e + %11000000, 7;		// =  fcp(eq)
-	defb '>', $0c + %11000000, 7;		// >  fcp(gt)
-	defb '<', $0d + %11000000, 7;		// <  fcp(lt)
-	defb tk_le, $09 + %11000000, 7;		// <= fcp(le)
-	defb tk_ge, $0a + %11000000, 7;		// >= fcp(ge)
-	defb tk_ne, $0b + %11000000, 7;		// <> fcp(ne)
-	defb tk_or, op_fbor + %11000000, 4;	// OR
-	defb tk_and, op_fband + $c0, 5;		// AND
-	defb tk_xor, op_fxor + %11000000, 3;// XOR
-	defb tk_mod, op_fmod + %11000000, 9;// MOD
-	defb '\\', op_fquot + %11000000, 10;// \
-	defb 0;								// null terminator
-
-;	// note priority is always $10 except for NOT which is $06
-;	// bit 6 = input, bit 7 = output; 0 = string, 1 = number
-
-tbl_prefix_ops:
-	defb op_fabs	+ %11000000;		// ABS
-	defb op_facos	+ %11000000;		// ACOS
-	defb op_fasc	+ %10000000;		// ASC
-	defb op_fasin	+ %11000000;		// ASIN
-	defb op_fatan	+ %11000000;		// ATAN
-	defb op_fchrs	+ %01000000;		// CHR$
-	defb op_fcos	+ %11000000;		// COS
-	defb op_fdeek	+ %11000000;		// DEEK
-	defb op_fexp	+ %11000000;		// EXP
-	defb op_ftrn	+ %11000000;		// FIX
-	defb op_finp	+ %11000000;		// INP
-	defb op_fint	+ %11000000;		// INT
-	defb op_flen	+ %10000000;		// LEN
-	defb op_flogn	+ %11000000;		// LOG
-	defb op_fnot	+ %11000000;		// NOT
-	defb op_fpeek	+ %11000000;		// PEEK
-	defb op_fsin	+ %11000000;		// SIN
-	defb op_fsgn	+ %11000000;		// SGN
-	defb op_fsqrt	+ %11000000;		// SQR
-	defb op_ftan	+ %11000000;		// TAN
-	defb op_fusr	+ %11000000;		// USR
-	defb op_fval	+ %10000000;		// VAL
-	defb op_fvals	+ %00000000;		// VAL$
-
-tab_func:
-	defw s_left;
-	defw s_mid;
-	defw s_right;
-	defw s_str;
-	defw s_string_str;
-	defw s_instr;
-
 ;	// used in 05_miscellaneous
 renum_tbl:
 	defb tk_restore;
@@ -472,7 +479,7 @@ kt_alpha_sym:
 kt_dig_sym:
 	defb "_!@#$%&'()";
 
-	org $3ff1
+;	org $3ff1
 ;	// used in 07_editor
 ed_f_keys_t:
 	defb s_f1 - $;						// $11
@@ -491,7 +498,7 @@ ed_f_keys_t:
 	defb s_f14 - $;						// $1e
 	defb s_f15 - $;						// $1f
 
-	org $4000
+;	org $4000
 ;	// macro definitions
 ;	// each definition is 16 bytes. The last byte is always zero.
 s_f1:

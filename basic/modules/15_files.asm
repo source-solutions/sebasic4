@@ -57,7 +57,7 @@
 	buffer		equ handle_1 + 1;		// (iy + $68)
 	buffer_1	equ buffer + 2;			// (iy + $6a)
 
-	org $4b70
+;	org $4b70
 
 ;	// vectored file system routines
 
@@ -307,11 +307,13 @@ ffh_error:
 ; @return carry set if at EOF, carry clear if not at EOF
 ;;
 check_eof:
+	ld c, a;							// save file handle in C
 	push bc;							// save registers
 	push de;
 	push hl;
 	
 	; Get current file position
+	ld a, c;							// restore file handle to A
 	rst divmmc;
 	defb f_fgetpos;						// get current file position to BCDE
 	jr c, ceof_error;					// jump if error
@@ -320,6 +322,7 @@ check_eof:
 	
 	; Get file size
 	ld ix, f_stats;						// buffer for file stats
+	ld a, c;							// restore file handle to A
 	rst divmmc;
 	defb f_fstat;						// get file statistics
 	jr c, ceof_error_pos;				// jump if error
@@ -330,18 +333,17 @@ check_eof:
 	pop de;								// DE = current position low word
 	pop bc;								// BC = current position high word
 	
-	; Compare: if position >= file_size then EOF
-	ld hl, (f_size + 2);				// HL = file size high word
-	or a;								// clear carry
-	sbc hl, bc;							// file_size_high - position_high
-	jr c, ceof_eof;						// if carry set, position > file_size (EOF)
-	jr nz, ceof_not_eof;				// if not zero, position < file_size (not EOF)
+	; Simplify to 16-bit comparison - since all other code uses 16-bit file sizes
+	; If position high word is non-zero, we're definitely past any reasonable file size
+	ld a, b;							// check position high word
+	or c;
+	jr nz, ceof_eof;					// if position > 64K, definitely EOF
 	
-	; High words are equal, check low words
-	ld hl, (f_size);					// HL = file size low word
+	; Compare 16-bit position (in DE) with 16-bit file size
+	ld hl, (f_size);					// HL = file size (16-bit)
 	or a;								// clear carry
-	sbc hl, de;							// file_size_low - position_low
-	jr c, ceof_eof;						// if carry set, position >= file_size (EOF)
+	sbc hl, de;							// file_size - position
+	jr c, ceof_eof;						// if carry set, position > file_size (EOF)
 	jr z, ceof_eof;						// if zero, position == file_size (EOF)
 	
 ceof_not_eof:

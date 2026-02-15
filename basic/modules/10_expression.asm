@@ -2430,23 +2430,71 @@ report_syntax_err_nz:
 
 ; // Add new functinos here to prevent overruns
 
-s_eof:
+s_file_handle
 	rst next_char;						// next character
 	call expt_1num;						// file handle number
-	call syntax_z;						// checking syntax?
-	jr z, s_eof_end;					// jump if so
+	call unstack_z;						// checking syntax?
 	call fp_to_a;						// file handle to A
-	call find_file_handle;				// find file structure
-	jr c, s_eof_error;					// jump if file not open
+	jp find_file_handle;				// return with file structure or error if not found
+
+s_eof:
+	call s_file_handle;					// get file handle
+	jr z, s_file_end;					// jump if checking syntax
+
+	jr c, s_stream_error;				// jump if file not open
+
 	call check_eof;						// check if at end of file
-	ld a, 0;							// assume not at EOF
-	jr nc, s_eof_push;					// jump if not at EOF
-	ld a, $ff;							// -1 indicates EOF
-s_eof_push:
-	call stack_a;						// push result to calculator stack
-s_eof_end:
+	jr c, s_eof_true;					// jump if at EOF
+	fwait;								// enter calculator
+	fstk0;								// stack zero (not at EOF)
+	fce;								// exit calculator
+	jr s_file_end;						// jump to end
+
+s_eof_true:
+	fwait;								// enter calculator
+	fstk1;								// stack one
+	fneg;								// negate to get -1
+	fce;								// exit calculator
+
+s_file_end:
 	jp s_cont_2r;						// continue expression evaluation
 
-s_eof_error:
+s_stream_error:
 	rst error;
 	defb undefined_stream;				// error
+
+s_loc:
+	call s_file_handle;					// get file handle
+	jr z, s_file_end;					// jump if checking syntax
+
+	call fp_to_a;						// file handle to A
+	call find_file_handle;				// find file structure
+
+	jr c, s_stream_error;				// jump if file not open
+
+	rst divmmc;
+	defb f_fgetpos;						// get current file position to BCDE
+	jr c, s_stream_error;					// jump if error
+	ld b, d;							// move position to HL (using low 16 bits)
+	ld c, e;
+	call stack_bc;						// stack file position
+	jr s_file_end;						// jump to end
+
+
+s_lof:
+	call s_file_handle;					// get file handle
+	jr z, s_file_end;					// jump if checking syntax
+
+	call fp_to_a;						// file handle to A
+	call find_file_handle;				// find file structure
+
+	jr c, s_stream_error;				// jump if file not open
+
+	ld ix, f_stats;						// buffer for file stats
+	rst divmmc;
+	defb f_fstat;						// get file statistics
+	jr c, s_stream_error;				// jump if error
+	ld bc, (f_size);					// get file size (16-bit)
+	call stack_bc;						// stack file size
+	jr s_file_end;						// jump to end
+

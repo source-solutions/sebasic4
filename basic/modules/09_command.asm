@@ -1364,8 +1364,8 @@ pr_posn_1:
 	jr pr_posn_3;						// immediate jump
 
 pr_posn_2:
-;	cp "\\";							// backslash (\)
-	cp "'";								// apostrophe (newline)
+	cp 92;								// backslash (\)
+;	cp "'";								// apostrophe (newline)
 	ret nz;								// return if not
 	call print_cr;						// print carriage return
 
