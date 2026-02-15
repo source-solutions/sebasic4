@@ -33,15 +33,10 @@ scanning_1:
 	push bc;							// stack it
 
 s_loop_1:
-	ld hl, scan_func;					// index
+	ld hl, scan_func;					// table address
 	ld c, a;							// table code to C
-	call indexer;						// find offset from table
-	ld a, c;							// code to A
-	jp nc, s_multi;						// jump if code not in table
-	ld c, (hl);							// code
-	ld b, 0;							// to BC
-	add hl, bc;							// address to HL
-	jp (hl);							// immediate jump
+
+	jp sf_loop
 
 s_quote_s:
 	call ch_add_plus_1;					// next character
@@ -105,7 +100,7 @@ f_brace:
 	pop hl;								// discard error handler
 	pop hl;								// old error handler to HL
 	ld (err_sp), hl;					// restore it
-	jr s_brce;							// immediate jump
+	jp s_string;						// immediate jump
 
 s_brace_j:
 	rst get_char;						// HL = address of opening brace
@@ -137,27 +132,24 @@ s_brcl:
 	ld b, h;							// BC = length
 	rst next_char;						// step past closing brace
 
-s_brce:
-	jr s_string;						// immediate jump
+sf_loop:
+	ld a, (hl);							// get table character
+	and a;								// null terminator?
+	jp z, s_multi;						// jump if code not in table
+	cp c;								// matching code?
+	jr z, sf_found;						// jump if found
+	inc hl;								// skip character
+	inc hl;								// skip address
+	inc hl;								// skip address
+	jr sf_loop;							// try next entry
 
-;	// scanning function table
-scan_func:
-	defb '"', s_quote - 1 - $;";				// "
-	defb '(', s_bracket - 1 - $;				// (
-	defb '.', s_decimal - 1 - $;				// ,
-	defb '+', s_u_plus - 1 - $;					// +
-	defb '{', s_brace - 1 - $;					// {
-	defb op_bin, s_decimal - 1 - $;				// %
-	defb op_oct, s_decimal - 1 - $;				// @
-	defb op_hex, s_decimal - 1 - $;				// $
-	defb tk_fn, s_fn - 1 - $;					// FN
-	defb tk_rnd, s_rnd - 1 - $;					// RND
-	defb tk_pi, s_pi - 1 - $;					// PI
-	defb tk_inkey_str, s_inkey_str - 1 - $;		// INKEY$
-	defb 0;										// null terminator
-
-s_brace:
-	jr	s_brace_j;						// 
+sf_found:
+	inc hl;								// point to address
+	ld a, (hl);							// get low byte
+	inc hl;								// point to high byte  
+	ld h, (hl);							// get high byte
+	ld l, a;							// complete address in HL
+	jp (hl);							// jump to handler
 
 ;;
 ; scanning function
@@ -2432,3 +2424,29 @@ report_syntax_err_nz:
 	jp nz, report_syntax_err;			// error if not
 	rst next_char;						// next character
 	jr s_numeric_j;						// immedaite jump
+
+; // Add new functinos here to prevent overruns
+
+s_eof:
+	rst next_char;						// next character
+	cp '#';								// hash expected?
+	jp nz, report_syntax_err;			// error if not
+	rst next_char;						// next character
+	call expt_1num;						// file handle number
+	call syntax_z;						// checking syntax?
+	jr z, s_eof_end;					// jump if so
+	call fp_to_a;						// file handle to A
+	call find_file_handle;				// find file structure
+	jr c, s_eof_error;					// jump if file not open
+	call check_eof;						// check if at end of file
+	ld a, 0;							// assume not at EOF
+	jr nc, s_eof_push;					// jump if not at EOF
+	ld a, $ff;							// -1 indicates EOF
+s_eof_push:
+	call stack_a;						// push result to calculator stack
+s_eof_end:
+	jp s_cont_2r;						// continue expression evaluation
+
+s_eof_error:
+	rst error;
+	defb syntax_error;

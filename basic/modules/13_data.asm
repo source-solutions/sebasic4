@@ -22,7 +22,7 @@
 ;;
 :
 
-	org $3c17
+;	org $3c17
 
 ;	// Executable code cannot be stored between $3d00 and $3fff because the
 ;	// divMMC hardware traps these locations
@@ -167,44 +167,44 @@ tbl_offs equ $ - tbl_addrs
 ;	// used in 16_audio
 
 ;   // calculated coarse / fine values for a 1.75Mhz clock
-notes:
-	defw (28 * 256) +  14;				// Cb0 - 15.434 Hz
-	defw (26 * 256) + 123;				// C0  - 16.352 Hz
-	defw (24 * 256) + 254;				// C#0 - 17.324 Hz
-	defw (23 * 256) + 151;				// D0  - 18.354 Hz
-	defw (22 * 256) +  68;				// D#0 - 19.445 Hz
-	defw (21 * 256) +   4;				// E0  - 20.602 Hz
-	defw (19 * 256) + 214;				// F0  - 21.827 Hz
-	defw (18 * 256) + 185;				// F#0 - 23.125 Hz
-	defw (17 * 256) + 172;				// G0  - 24.500 Hz
-	defw (16 * 256) + 174;				// G#0 - 25.957 Hz
-	defw (15 * 256) + 191;				// A0  - 27.500 Hz
-	defw (14 * 256) + 220;				// A#0 - 29.135 Hz
-	defw (14 * 256) +   7;				// B0  - 30.868 Hz
-	defw (13 * 256) +  61;				// C1  - 32.703 Hz
+; notes:
+; 	defw (28 * 256) +  14;				// Cb0 - 15.434 Hz
+; 	defw (26 * 256) + 123;				// C0  - 16.352 Hz
+; 	defw (24 * 256) + 254;				// C#0 - 17.324 Hz
+; 	defw (23 * 256) + 151;				// D0  - 18.354 Hz
+; 	defw (22 * 256) +  68;				// D#0 - 19.445 Hz
+; 	defw (21 * 256) +   4;				// E0  - 20.602 Hz
+; 	defw (19 * 256) + 214;				// F0  - 21.827 Hz
+; 	defw (18 * 256) + 185;				// F#0 - 23.125 Hz
+; 	defw (17 * 256) + 172;				// G0  - 24.500 Hz
+; 	defw (16 * 256) + 174;				// G#0 - 25.957 Hz
+; 	defw (15 * 256) + 191;				// A0  - 27.500 Hz
+; 	defw (14 * 256) + 220;				// A#0 - 29.135 Hz
+; 	defw (14 * 256) +   7;				// B0  - 30.868 Hz
+; 	defw (13 * 256) +  61;				// C1  - 32.703 Hz
 
-;	// +1 offset in case note is flattened
-semitones::
-	defb 10, 12, 1, 3, 5, 6, 8;			// A, B, C, D, E, F, G
+; ;	// +1 offset in case note is flattened
+; semitones::
+; 	defb 10, 12, 1, 3, 5, 6, 8;			// A, B, C, D, E, F, G
 
-;   // multiply by 150 for BPM with 60 Hz frame counter
-durations:
-	defb 3;								// thirty-second note / demisemiquaver FIXME: not used
-	defb 6;								// sixteenth note / semiquaver
-	defb 9;								// dotted sixteenth note / dotted semiquaver
-	defb 12;							// eighth note / quaver
-	defb 18;							// dotted eighth note / dotted quaver
-	defb 24;							// quarter note / crotchet
-	defb 36;							// dotted quarter note / dotted crotchet
-	defb 48;							// half note / minim
-	defb 72;							// dotted quarter note / dotted minim
-	defb 96;							// whole note / semibreve
-	defb 4;								// twenty-fourth note / triple semiquaver
-	defb 8;								// twelfth note / triple quaver
-	defb 16;							// sixth note / triple crotchet
+; ;   // multiply by 150 for BPM with 60 Hz frame counter
+; durations:
+; 	defb 3;								// thirty-second note / demisemiquaver FIXME: not used
+; 	defb 6;								// sixteenth note / semiquaver
+; 	defb 9;								// dotted sixteenth note / dotted semiquaver
+; 	defb 12;							// eighth note / quaver
+; 	defb 18;							// dotted eighth note / dotted quaver
+; 	defb 24;							// quarter note / crotchet
+; 	defb 36;							// dotted quarter note / dotted crotchet
+; 	defb 48;							// half note / minim
+; 	defb 72;							// dotted quarter note / dotted minim
+; 	defb 96;							// whole note / semibreve
+; 	defb 4;								// twenty-fourth note / triple semiquaver
+; 	defb 8;								// twelfth note / triple quaver
+; 	defb 16;							// sixth note / triple crotchet
 
-;	// 24 unused bytes
-	defs 24, $ff;						// RESERVED
+; ;	// 24 unused bytes
+; 	defs 24, $ff;						// RESERVED
 
 	org $3d00;
 
@@ -230,6 +230,38 @@ attributes:
 	defb $45, $4d, $55, $5d, $65, $6d, $75, $7d, $c5, $cd, $d5, $dd, $e5, $ed, $f5, $fd; background 0-15, foreground 13
 	defb $46, $4e, $56, $5e, $66, $6e, $76, $7e, $c6, $ce, $d6, $de, $e6, $ee, $f6, $fe; background 0-15, foreground 14
 	defb $47, $4f, $57, $5f, $67, $6f, $77, $7f, $c7, $cf, $d7, $df, $e7, $ef, $f7, $ff; background 0-15, foreground 15
+
+;   // used in 10_expression
+
+;	// scanning function table
+scan_func:
+	defb '"';
+	defw s_quote;		// "
+	defb '(';
+	defw s_bracket;		// (
+	defb '.';
+	defw s_decimal;		// ,
+	defb '+';
+	defw s_u_plus;		// +
+	defb '{';
+	defw s_brace_j;		// {
+	defb op_bin;
+	defw s_decimal;		// %
+	defb op_oct;
+	defw s_decimal;		// @
+	defb op_hex;
+	defw s_decimal;		// $
+	defb tk_eof
+	defw s_eof;			// EOF
+	defb tk_fn;
+	defw s_fn;			// FN
+	defb tk_rnd;
+	defw s_rnd;			// RND
+	defb tk_pi;
+	defw s_pi;			// PI
+	defb tk_inkey_str;
+	defw s_inkey_str;	// INKEY$
+	defb 0;				// null terminator
 
 ;	// used in 16_audio
 
@@ -582,7 +614,7 @@ token_table:
 ;	// exceptional functions (no arguments, and so on)
 	first_tk		equ $80
 	tk_eof			equ $80;
-	str "EOF #";
+	str "EOF";
 	tk_fn			equ $81;
 tk_ptr_fn:
 	str "FN";
