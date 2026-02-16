@@ -163,6 +163,7 @@ fp_to_bcde:
 	fxch;								// swap with float					int (x/65536), x
 	fgt 0;								// get value						int (x/65536), x, 65536
 	fmod;								// modulo 65536 					int (x/65536), x mod 65536
+	fxch;								// swap with float					x mod 65536, int (x/65536)
 	fce;								// exit calculator
 	call fp_to_bc;						// get low word to BC				BC = low word
 	push bc;							// stack it

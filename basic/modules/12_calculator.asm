@@ -37,6 +37,9 @@
 ;	// ----------+--------+--------------------------------
 ;	// xxxxxxxx  | s      | mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
 
+;	// Note: In this format, rounding occurs after the 8th digit.
+;	// This means that for files larger than 100,000,000 bytes (95.36743 MB), in BASIC you should SEEK to the nearest 100 bytes before the position you want and read forward from there.
+
 ;;
 ; calculator
 ;;
