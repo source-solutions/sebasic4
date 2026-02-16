@@ -116,7 +116,7 @@ int_store:
 	ret;								// end of subroutine
 
 ;;
-; floating point to BC
+; floating point to BC (16-bit integer)
 ;;
 fp_to_bc:
 	fwait;								// stkend_5 
@@ -150,7 +150,7 @@ fp_to_bc_delete:
 	ret;								// end of subroutine
 
 ;;
-; floating point to BCDE (32-bit integer) FIXME: numbers above 2^32 − 1 are not trapped
+; floating point to BCDE (32-bit integer)
 ;;
 fp_to_bcde:
 	fwait;								// calculate timing loop counter	x
@@ -192,7 +192,7 @@ log_2_a:
 	fce;								// exit calculator
 
 ;;
-; floating point to A
+; floating point to A (8-bit integer)
 ;
 fp_to_a:
 	call fp_to_bc;						// last value on calc stack to BC
