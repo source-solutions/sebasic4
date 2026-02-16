@@ -26,7 +26,7 @@
 # SE BASIC
 A classic BASIC interpreter for the Z80 architecture
 
-Copyright © 1999-2024 Source Solutions, Inc.
+Copyright © 1999-2026 Source Solutions, Inc.
 
 ## Build tools
 Building this software locally requires:

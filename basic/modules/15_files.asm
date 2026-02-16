@@ -1,5 +1,5 @@
-;	// SE Basic IV 4.2 Cordelia
-;	// Copyright (c) 1999-2024 Source Solutions, Inc.
+;	// SE Basic IV 4.3 Drusilla
+;	// Copyright (c) 1999-2026 Source Solutions, Inc.
 
 ;	// SE Basic IV is free software: you can redistribute it and/or modify
 ;	// it under the terms of the GNU General Public License as published by
@@ -7,7 +7,7 @@
 ;	// (at your option) any later version.
 ;	// 
 ;	// SE Basic IV is distributed in the hope that it will be useful,
-;	// but WITHOUT ANY WARRANTY; without even the implied warranty o;
+;	// but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;	// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 ;	// GNU General Public License for more details.
 ;	// 
@@ -273,102 +273,6 @@ open_file_err:
 report_bad_io_dev:
 	rst error;							// throw
 	defb bad_io_device;					// error
-
-;;
-; find file handle from stream number
-; @param A - stream number (3-15)
-; @return A - file handle, carry clear if found, carry set if invalid/not open
-;;
-find_file_handle:
-	cp 3;								// minimum stream number
-	jr c, ffh_error;					// error if less than 3
-	cp 16;								// maximum stream number + 1
-	jr nc, ffh_error;					// error if >= 16
-	call str_data2;						// get stream data
-	jr z, ffh_error;					// error if stream not open
-	ld hl, (chans);						// base address of channels
-	add hl, bc;							// add stream offset
-	inc hl;								// skip to file handle
-	inc hl;
-	inc hl;
-	inc hl;
-	inc hl;
-	ld a, (hl);							// get file handle
-	and a;								// clear carry flag (success)
-	ret;
-
-ffh_error:
-	scf;								// set carry flag (error)
-	ret;
-
-;;
-; check if file is at end-of-file 
-; @param A - file handle
-; @return carry set if at EOF, carry clear if not at EOF
-;;
-check_eof:
-	ld c, a;							// save file handle in C
-	push bc;							// save registers
-	push de;
-	push hl;
-	
-	; Get current file position
-	ld a, c;							// restore file handle to A
-	rst divmmc;
-	defb f_fgetpos;						// get current file position to BCDE
-	jr c, ceof_error;					// jump if error
-	push bc;							// save current position (high word)
-	push de;							// save current position (low word)
-	
-	; Get file size
-	ld ix, f_stats;						// buffer for file stats
-	ld a, c;							// restore file handle to A
-	rst divmmc;
-	defb f_fstat;						// get file statistics
-	jr c, ceof_error_pos;				// jump if error
-	
-	; Compare current position with file size
-	; Current position is on stack: BC=high, DE=low
-	; File size is in f_size (4 bytes): (f_size) = low word, (f_size+2) = high word
-	pop de;								// DE = current position low word
-	pop bc;								// BC = current position high word
-	
-	; Simplify to 16-bit comparison - since all other code uses 16-bit file sizes
-	; If position high word is non-zero, we're definitely past any reasonable file size
-	ld a, b;							// check position high word
-	or c;
-	jr nz, ceof_eof;					// if position > 64K, definitely EOF
-	
-	; Compare 16-bit position (in DE) with 16-bit file size
-	ld hl, (f_size);					// HL = file size (16-bit)
-	or a;								// clear carry
-	sbc hl, de;							// file_size - position
-	jr c, ceof_eof;						// if carry set, position > file_size (EOF)
-	jr z, ceof_eof;						// if zero, position == file_size (EOF)
-	
-ceof_not_eof:
-	pop hl;								// restore registers
-	pop de;
-	pop bc;
-	and a;								// clear carry (not at EOF)
-	ret;
-	
-ceof_eof:
-	pop hl;								// restore registers
-	pop de;
-	pop bc;
-	scf;								// set carry (at EOF)
-	ret;
-
-ceof_error_pos:
-	pop de;								// clean up position from stack
-	pop bc;
-ceof_error:
-	pop hl;								// restore registers
-	pop de;
-	pop bc;
-	scf;								// set carry (error)
-	ret;
 
 ;	// get destination and source path and set pointer in DE and IX
 paths_to_de_ix:
