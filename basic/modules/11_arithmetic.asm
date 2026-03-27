@@ -309,7 +309,7 @@ pf_small:
 	add a, (hl);						// add to A
 	ld (hl), a;							// and store
 	pop hl;								// unstack pointer to f2
-	jr pf_fractn;						// immediate jump
+	jp pf_fractn;						// immediate jump
 
 pf_large:
 	sub 128;							// e - 128 = e'
@@ -357,13 +357,25 @@ pf_bytes:
 	djnz pf_bits;						// loop until all bits of int (x) done 
 	ld de, mem_3;						// destination mem_3
 	ld hl, mem_4;						// source mem_4
-	ld b, 9;							// nine digits
-	xor a;								// LD A, 0
-	rld;								// discard high nibble of mem_4
+	ld b, 10;							// ten digits
 	ld c, 255;							// signal leading zero
 
 pf_digits:
+	ld a, b;							// check iteration count
+	cp 10;								// first iteration?
+	jr nz, pf_rld_cont;					// jump if not first
+	ld a, (hl);							// get first byte
+	rrca;								// rotate high nibble to low
+	rrca;
+	rrca;	
+	rrca;
+	and $0f;							// mask to get high nibble
+	jr pf_digit_got;					// immediate jump
+
+pf_rld_cont:
 	rld;								// high nibble to A, low nibble to high
+
+pf_digit_got:
 	jr nz, pf_insert;					// jump if not zero
 	dec c;								// leading
 	inc c;								// zero?
@@ -378,17 +390,22 @@ pf_insert:
 
 pf_test_2:
 	bit 0, b;							// even pass through loop?
-	jr z, pf_all_9;						// jump if not
+	jr z, pf_all_10;						// jump if not
 	inc hl;								// increment source pointer
 
-pf_all_9:
-	djnz pf_digits;						// loop for all nine digits
+pf_all_10:
+	djnz pf_digits;						// loop for all ten digits
 	ld a, (mem_5);						// get counter
-	sub 9;								// nine digits excluding leading zeros?
+	sub 10;								// ten digits excluding leading zeros?
 	jr c, pf_more;						// jump if not
 	dec (iy + _mem_5);					// reduce count for rounding
+	ld hl, mem_4_4;						// address of tenth digit location
+	ld b, (hl);							// get byte containing tenth digit
+	ld a, b;							// tenth digit to A
+	and $0f;							// mask low nibble (tenth digit)
+	ld b, a;							// store tenth digit in B
 	ld a, 4;							// compare four
-	cp (iy + _mem_4_3);					// with ninth digit
+	cp b;								// with tenth digit
 	jr pf_round;						// immediate jump
 
 pf_more:
@@ -410,7 +427,7 @@ pf_fractn:
 
 pf_frn_lp:
 	ld a, (iy + _mem_5);				// get count
-	cp 8;								// eight digits?
+	cp 10;								// ten digits?
 	jr c, pf_fr_dgt;					// jump if not
 	exx;								// alternate register set
 	rl d;								// rotate D' to set carry
@@ -476,7 +493,7 @@ pf_count:
 	ld bc, (mem_5);						// set counter
 	ld hl, mem_3;						// start of digits
 	ld a, b;							// B to A
-	cp 10;								// more than ten digits?
+	cp 11;								// more than ten digits?
 	jr c, pf_not_e;						// jump if not
 	cp 252;								// more than four leading zeros after decimal?
 	jr c, pf_e_frmt;					// jump if so
