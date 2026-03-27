@@ -46,6 +46,29 @@
 			},
 			"problemMatcher": []
 		},
+        {
+			"label": "Run in Console",
+			"type": "shell",
+			"linux": {
+				"command": "./scripts/run-console.sh",
+			},
+			"osx": {
+				"command": "./scripts/run-console.sh",
+			},
+			"windows": {
+				"command": ".\\scripts\\run-console.cmd"
+			},
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"problemMatcher": []
+		},
+
 
 		{
 			"label": "asmdoc",
