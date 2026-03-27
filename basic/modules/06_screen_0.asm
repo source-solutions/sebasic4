@@ -35,10 +35,11 @@
 ;	//       | even columns  |
 ;	// $C000 +---------------+ 49152
 
-	org $0800
+;	org $0800
+	org $0564
 
 ;	// reserved to extend screen 0 code
-	defs 26, $ff;						// RESERVED
+;	defs 26, $ff;						// RESERVED
 
 v_pr_str_lo:
 	push af;							// stack AF
@@ -90,7 +91,7 @@ s0_API_return:
 	pop af;								// unstack AF
 	ret;								// end of subroutine
 
-	org $0853
+;	org $0853
 
 get_reg:
 	ld b, e;							// register port
