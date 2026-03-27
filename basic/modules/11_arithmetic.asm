@@ -476,7 +476,7 @@ pf_count:
 	ld bc, (mem_5);						// set counter
 	ld hl, mem_3;						// start of digits
 	ld a, b;							// B to A
-	cp 9;								// more than nine digits?
+	cp 10;								// more than ten digits?
 	jr c, pf_not_e;						// jump if not
 	cp 252;								// more than four leading zeros after decimal?
 	jr c, pf_e_frmt;					// jump if so
