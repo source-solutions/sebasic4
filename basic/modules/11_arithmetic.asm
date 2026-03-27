@@ -390,7 +390,7 @@ pf_insert:
 
 pf_test_2:
 	bit 0, b;							// even pass through loop?
-	jr z, pf_all_10;						// jump if not
+	jr z, pf_all_10;					// jump if not
 	inc hl;								// increment source pointer
 
 pf_all_10:

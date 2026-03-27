@@ -2091,6 +2091,7 @@ stack_bcde_end:
 ;;
 int_to_fp:
 	push af;							// stack first digit
+	ld b, 0;							// initialize digit counter
 	fwait;								// enter calculator
 	fstk0;								// stack zero
 	fce;								// exit calculator
@@ -2099,6 +2100,20 @@ int_to_fp:
 nxt_dgt_2:
 	call stk_digit;						// stack floating point form
 	ret c;								// return if not a digit
+	inc b;								// increment digit counter
+	ld a, b;							// check digit count
+	cp 15;								// more than 15 digits? (conservative safe limit)
+	jr c, continue_digit;				// if not, continue normally
+	
+	; Skip remaining digits to avoid overflow
+skip_remaining:
+	call ch_add_plus_1;					// move to next character
+	rst get_char;						// get next character
+	call numeric;						// still a digit?
+	jr nc, skip_remaining;				// if so, keep skipping
+	ret;								// return with accumulated value
+
+continue_digit:
 	fwait;								// enter calculator
 	fxch;								// swap with previous last value
 	fstk10;								// stack 10
