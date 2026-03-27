@@ -2527,3 +2527,29 @@ s_loc:
 ;	call stack_bc;						// stack file size
 ;	jr s_file_end;						// jump to end
 
+; --- Return amount of free BASIC RAM as a floating point value ---
+s_fre:
+    call syntax_z            ; checking syntax?
+    jr z, s_fre_end          ; skip if syntax check
+
+	ld bc, 0;							// clear BC
+	call test_room;						// how much room is there?
+	ex de, hl;							// swap pointers	
+	ld hl, $0;							// top of memory
+	sbc hl, de;							// free RAM = top of memory - current stack pointer
+
+	ld c, l;							// result
+	ld b, h;							// to BC
+;	ret;								// done	
+
+
+;    ld hl, (stkend)          ; HL = end of stack (top of BASIC RAM)
+ ;   ld de, (worksp)          ; DE = start of BASIC RAM
+  ;  sbc hl, de               ; HL = stkend - worksp (free RAM)
+   ; ld b, h
+;    ld c, l
+    call stack_bc            ; push free RAM as floating point
+
+s_fre_end:
+    rst next_char            ; next character
+    jp s_numeric             ; immediate jump

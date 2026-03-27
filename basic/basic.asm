@@ -45,6 +45,7 @@
 	include "modules/14_screen_1.asm"
 	include "modules/15_files.asm"
 ;	include "modules/16_audio.asm"
+	include "modules/16_extensions.asm"
 	include "modules/17_messages.asm"
 
 ;	// last byte

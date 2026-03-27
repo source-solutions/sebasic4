@@ -118,6 +118,8 @@ scan_func:
 	defw s_decimal;		// @
 	defb op_hex;
 	defw s_decimal;		// $
+	defb tk_fre;
+	defw s_fre;         //
 	defb tk_eof;
 	defw s_eof;			// EOF
 	defb tk_loc;
@@ -763,8 +765,8 @@ tk_ptr_then:
 	str "_BC";
 	tk__bd			equ $bd;
 	str "_BD";
-	tk__be			equ $be;
-	str "_BE";
+	tk_fre			equ $be;
+	str "FRE";
 
 ;	// commands
 	first_cmd		equ $bf;
