@@ -91,6 +91,25 @@ s0_API_return:
 	pop af;								// unstack AF
 	ret;								// end of subroutine
 
+;;
+; write character to lower screen character map
+;;
+write_lower:
+	; A contains character to write
+	; HL contains character map address (calculated by po_any)
+	; Use the address calculated by po_any, don't recalculate
+
+	ld b, (iy + _df_sz);				// number of rows in lower display
+	ld de, 80;							// 80 characters per row
+	ld hl, $df80;						// end of character map + 80 (line 0)
+
+sbc_lines:
+	sbc hl, de;							// subtract 80 characters for each row
+	djnz sbc_lines;						// B holds line count (zero on loop exit)
+	add hl, bc;							// add column offset
+	
+	jp write_char;						// use the HL address from po_any
+
 ;	org $0853
 
 get_reg:
@@ -662,19 +681,8 @@ add_lines:
 add_columns:
 	add hl, bc;							// Add offset in character map to HL
 	bit 0, (iy + _vdu_flag);			// lower screen?
-	jr z, write_char;					// jump if not
+	jp nz, write_lower;					// jump if lower screen
 
-	jr no_write_char;					// BUG PATCH - lower screen was not updating character map correctly
-
-;	ld b, (iy + _df_sz);				// number of rows in lower display
-;	ld de, 80;							// 80 characters per row
-;	ld hl, $df80 + 80;					// end of character map + 80 (line 0)
-
-;sbc_lines:
-;	sbc hl, de;							// subtract 80 characters for each row
-;	djnz sbc_lines;						// B holds line count (zero on loop exit)
-;	add hl, bc;							// add column offset
-	
 write_char:
 	ld bc, paging;						// paging address
 	ld de, $181f;						// ROM 1, VRAM 1, D = HOME 0, E = HOME 7 

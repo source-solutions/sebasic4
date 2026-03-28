@@ -1183,8 +1183,8 @@ out_curs:
 	ret nz;								// return if not
 
 out_curs_ready:
-;	ld a, '_';							// use underline as cursor (for ncurses)
-	ld a, ' ';							// use space as cursor
+	ld a, '_';							// use underline as cursor (for ncurses)
+;	ld a, ' ';							// use space as cursor
 	exx;								// alternate register set
 	ld hl, p_flag;						// address sysvar
 	ld d, (hl);							// p_flag to D
