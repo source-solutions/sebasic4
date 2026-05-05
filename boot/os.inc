@@ -58,26 +58,6 @@
 	mmcdev equ $e7;						// divMMC device (write only?)	
 	mmcspi equ $eb;						// divMMC SPI (read/write)
 
-;	// UNODOS3 ROM ROUTINES
-	v_rst10 equ $0010;					// vector to RST $10
-	v_rst20 equ $0020;					// vector to RST $20
-	v_pr_str equ $1fd0;					// vector to pr_str
-	v_pr_msg equ $1fee;					// vector to L0C90
-	V0297 equ $1ff1;					// vector to L0297
-	V0861 equ $1fd3;					// vector to L0861
-	V089A equ $1fd6;					// vector to L089A
-	V0DEB equ $1fd9;					// vector to L0DEB
-	V2488 equ $1fdc;					// vector to L2488
-	V24A6 equ $1fdf;					// vector to L24A6
-	V24C1 equ $1fe2;					// vector to L24C1
-	V24CD equ $1fe5;					// vector to L24CD
-	V24E6 equ $1fcd;					// vector to L24E6
-	V24F2 equ $1fca;					// vector to L24F2
-	V24F5 equ $1fe8;					// vector to L24F5
-	V2502 equ $1feb;					// vector to L2502
-	V1FFA equ $1ffa;					// vector to L1FFA
-
-
 ;	// UNODOS3 VARIABLES
 ;	// (stored in divMMC page 0)
 	mmc_1 equ $2e7a;					// if SP is $3d00 - #3dff, automapper
